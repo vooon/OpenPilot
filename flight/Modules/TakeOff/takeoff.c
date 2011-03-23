@@ -67,6 +67,7 @@ static xQueueHandle queue;
 
 // Private functions
 static void takeOffTask(void *parameters);
+static void updateDesiredAttitude();
 static float bound(float val, float min, float max);
 
 /**
@@ -87,6 +88,11 @@ int32_t TakeOffInitialize()
 
 	return 0;
 }
+
+
+static uint8_t takeOffModeLast = 0;
+static int32_t takeOffTargetAltitude = 0;
+static float pitchIntegral = 0;
 
 /**
  * Module thread, should not return.
@@ -125,11 +131,37 @@ static void takeOffTask(void *parameters)
 		     (systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_FIXEDWINGELEVON) ||
 		     (systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_FIXEDWINGVTAIL) ))
 		{
-			// do stuff
-			bound(1,0,1);
+			// Initialize when mode gets engaged
+			if (takeOffModeLast == 0) {
+				BaroAltitudeData baroAltitude;
+
+				takeOffModeLast = 1;
+				BaroAltitudeGet(&baroAltitude);
+				takeOffTargetAltitude = baroAltitude.Altitude * 100 + takeOffSettings.TargetAltitude;
+
+			}
+
+			updateDesiredAttitude();
+
+		} else {
+			// reset
+			takeOffModeLast = 0;
+			takeOffTargetAltitude = 0;
+
 		}
 		
 	}
+}
+
+/**
+ * Actual TakeOff Sequence
+ */
+static void updateDesiredAttitude()
+{
+
+	// so far nothing
+	bound(pitchIntegral,0,1); // remove this
+
 }
 
 
