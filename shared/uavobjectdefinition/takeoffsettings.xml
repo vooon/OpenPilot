@@ -1,0 +1,14 @@
+<xml>
+    <object name="TakeOffSettings" singleinstance="true" settings="true">
+        <description>Settings for the @ref TakeOffModule</description>
+        <field name="TargetAltitude" units="cm" type="int32" elements="1" defaultvalue="2000"/>
+        <field name="MaxPitch" units="deg" type="float" elements="1" defaultvalue="15"/>
+        <field name="Throttle" units="" type="float" elementnames="Climb,Hold" defaultvalue="1.0,0.7"/>
+        <field name="VerticalPI" units="" type="float" elementnames="Kp,Ki,ILimit" defaultvalue="0.1,0.1,5.0"/>
+        <field name="UpdatePeriod" units="" type="int32" elements="1" defaultvalue="100"/>
+        <access gcs="readwrite" flight="readwrite"/>
+        <telemetrygcs acked="true" updatemode="onchange" period="0"/>
+        <telemetryflight acked="true" updatemode="onchange" period="0"/>
+        <logging updatemode="never" period="0"/>
+    </object>
+</xml>
