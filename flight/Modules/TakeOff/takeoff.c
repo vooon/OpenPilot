@@ -51,6 +51,7 @@
 #include "stabilizationdesired.h"
 #include "positiondesired.h"
 #include "baroaltitude.h"
+#include "manualcontrol.h"
 #include "manualcontrolcommand.h"
 #include "systemsettings.h"
 #include "CoordinateConversions.h"
@@ -129,9 +130,13 @@ static void takeOffTask(void *parameters)
 		thisTime = xTaskGetTickCount();
 		if( (thisTime - lastUpdateTime) < (takeOffSettings.UpdatePeriod / portTICK_RATE_MS) )
 			continue;
+
+		lastUpdateTime = xTaskGetTickCount();
 		
+		ManualControlCommandGet(&manualControl);
+		SystemSettingsGet(&systemSettings);
 		
-		if ((manualControl.FlightMode == MANUALCONTROLCOMMAND_FLIGHTMODE_TAKEOFF) &&
+		if ((PARSE_FLIGHT_MODE(manualControl.FlightMode) == FLIGHTMODE_TAKEOFF) &&
 		    ((systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_FIXEDWING) ||
 		     (systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_FIXEDWINGELEVON) ||
 		     (systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_FIXEDWINGVTAIL) ))
@@ -175,7 +180,7 @@ static void updateDesiredAttitude()
 	StabilizationDesiredData stabDesired;
 
 	float altitudeError;
-	float altitudeDelta;
+	static float altitudeDelta;
 	float verticalVelocity;
 	float verticalError;
 
@@ -185,19 +190,24 @@ static void updateDesiredAttitude()
 		dT = (thisSysTime - lastSysTime) / portTICK_RATE_MS / 1000.0f;		
 	lastSysTime = thisSysTime;
 
+	if (!dT>0) return;
+
 	// Read out UAVObjects
 	TakeOffSettingsGet(&takeOffSettings);
 	BaroAltitudeGet(&baroAltitude);
 	StabilizationDesiredGet(&stabDesired);
 
 	// Compute vertical velocity from barometric altitude
-	// NOTE: no filtering right now, altitude module already does filtering
+	// filter over 10 samples
+	#define SMOOTH_FACTOR 10
 	if (oldAltitude < OLD_ALTITUDE_TEST_UNSET) {
 		oldAltitude = baroAltitude.Altitude * 100;
 		altitudeDelta = 0;
 	} else {
-		altitudeDelta = ((baroAltitude.Altitude * 100) - oldAltitude) / dT;
+		altitudeDelta = (SMOOTH_FACTOR -1 * altitudeDelta + (((baroAltitude.Altitude * 100) - oldAltitude) / dT)) / SMOOTH_FACTOR;
 	}
+
+	oldAltitude = baroAltitude.Altitude * 100;
 
 	// Compute desired vertical velocity (proportional with max)
 	altitudeError = takeOffTargetAltitude - baroAltitude.Altitude * 100;
@@ -211,8 +221,8 @@ static void updateDesiredAttitude()
 	verticalError = verticalVelocity - altitudeDelta;
 	verticalVelIntegral = bound (
 		verticalVelIntegral + verticalError * dT * takeOffSettings.VerticalPI[TAKEOFFSETTINGS_VERTICALPI_KI],
-		takeOffSettings.VerticalPI[TAKEOFFSETTINGS_VERTICALPI_ILIMIT],
-		-takeOffSettings.VerticalPI[TAKEOFFSETTINGS_VERTICALPI_ILIMIT]
+		-takeOffSettings.VerticalPI[TAKEOFFSETTINGS_VERTICALPI_ILIMIT],
+		takeOffSettings.VerticalPI[TAKEOFFSETTINGS_VERTICALPI_ILIMIT]
 		);
 	stabDesired.Pitch = bound (
 		verticalError * takeOffSettings.VerticalPI[TAKEOFFSETTINGS_VERTICALPI_KP] + verticalVelIntegral,
@@ -228,11 +238,6 @@ static void updateDesiredAttitude()
 	} else {
 		stabDesired.Throttle = takeOffSettings.Throttle[TAKEOFFSETTINGS_THROTTLE_HOLD];
 	}
-
-printf("TakeOffMode:\n");
-printf("Altitude: %i	- Desired: %i\n",(int)(baroAltitude.Altitude*100),takeOffTargetAltitude);
-printf("V-Speed: %f	- Desired: %f\n",altitudeDelta,verticalVelocity);
-printf("Pitch: %f\n",stabDesired.Pitch);
 
 	// fly straight
 	stabDesired.Yaw = 0;
