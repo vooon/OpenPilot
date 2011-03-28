@@ -92,7 +92,12 @@ int32_t TakeOffInitialize()
 
 static uint8_t takeOffModeLast = 0;
 static int32_t takeOffTargetAltitude = 0;
-static float pitchIntegral = 0;
+static float verticalVelIntegral = 0;
+
+#define OLD_ALTITUDE_UNSET -10000
+#define OLD_ALTITUDE_TEST_UNSET -9000
+
+static float oldAltitude = OLD_ALTITUDE_UNSET;
 
 /**
  * Module thread, should not return.
@@ -147,6 +152,8 @@ static void takeOffTask(void *parameters)
 			// reset
 			takeOffModeLast = 0;
 			takeOffTargetAltitude = 0;
+			verticalVelIntegral = 0;
+			oldAltitude = OLD_ALTITUDE_UNSET;
 
 		}
 		
@@ -159,9 +166,86 @@ static void takeOffTask(void *parameters)
 static void updateDesiredAttitude()
 {
 
-	// so far nothing
-	bound(pitchIntegral,0,1); // remove this
+	static portTickType lastSysTime;
+	portTickType thisSysTime = xTaskGetTickCount();
+	float dT;
+	
+	BaroAltitudeData baroAltitude;
+	TakeOffSettingsData takeOffSettings;
+	StabilizationDesiredData stabDesired;
 
+	float altitudeError;
+	float altitudeDelta;
+	float verticalVelocity;
+	float verticalError;
+
+
+	// Check how long since last update
+	if(thisSysTime > lastSysTime) // reuse dt in case of wraparound
+		dT = (thisSysTime - lastSysTime) / portTICK_RATE_MS / 1000.0f;		
+	lastSysTime = thisSysTime;
+
+	// Read out UAVObjects
+	TakeOffSettingsGet(&takeOffSettings);
+	BaroAltitudeGet(&baroAltitude);
+	StabilizationDesiredGet(&stabDesired);
+
+	// Compute vertical velocity from barometric altitude
+	// NOTE: no filtering right now, altitude module already does filtering
+	if (oldAltitude < OLD_ALTITUDE_TEST_UNSET) {
+		oldAltitude = baroAltitude.Altitude * 100;
+		altitudeDelta = 0;
+	} else {
+		altitudeDelta = ((baroAltitude.Altitude * 100) - oldAltitude) / dT;
+	}
+
+	// Compute desired vertical velocity (proportional with max)
+	altitudeError = takeOffTargetAltitude - baroAltitude.Altitude * 100;
+	verticalVelocity = bound(
+		altitudeError * takeOffSettings.AltitudeP[TAKEOFFSETTINGS_ALTITUDEP_KP],
+		- takeOffSettings.AltitudeP[TAKEOFFSETTINGS_ALTITUDEP_MAX],
+		takeOffSettings.AltitudeP[TAKEOFFSETTINGS_ALTITUDEP_MAX]
+		);
+	
+	// Compute desired pitch (PI loop)
+	verticalError = verticalVelocity - altitudeDelta;
+	verticalVelIntegral = bound (
+		verticalVelIntegral + verticalError * dT * takeOffSettings.VerticalPI[TAKEOFFSETTINGS_VERTICALPI_KI],
+		takeOffSettings.VerticalPI[TAKEOFFSETTINGS_VERTICALPI_ILIMIT],
+		-takeOffSettings.VerticalPI[TAKEOFFSETTINGS_VERTICALPI_ILIMIT]
+		);
+	stabDesired.Pitch = bound (
+		verticalError * takeOffSettings.VerticalPI[TAKEOFFSETTINGS_VERTICALPI_KP] + verticalVelIntegral,
+		- takeOffSettings.MaxPitch,
+		takeOffSettings.MaxPitch
+		);
+
+	// Compute desired throttle
+	// throttle is takeoff throttle for 90% of climb
+	// and hold throttle if within the last 10%
+	if ( (baroAltitude.Altitude * 100) < takeOffTargetAltitude - (takeOffSettings.TargetAltitude / 10) ) {
+		stabDesired.Throttle = takeOffSettings.Throttle[TAKEOFFSETTINGS_THROTTLE_CLIMB];
+	} else {
+		stabDesired.Throttle = takeOffSettings.Throttle[TAKEOFFSETTINGS_THROTTLE_HOLD];
+	}
+
+printf("TakeOffMode:\n");
+printf("Altitude: %i	- Desired: %i\n",(int)(baroAltitude.Altitude*100),takeOffTargetAltitude);
+printf("V-Speed: %f	- Desired: %f\n",altitudeDelta,verticalVelocity);
+printf("Pitch: %f\n",stabDesired.Pitch);
+
+	// fly straight
+	stabDesired.Yaw = 0;
+
+	// fly level
+	stabDesired.Roll = 0;
+
+	stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_ROLL] = STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE;
+	stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_PITCH] = STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE;
+	stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_YAW] = STABILIZATIONDESIRED_STABILIZATIONMODE_RATE;
+	
+	StabilizationDesiredSet(&stabDesired);
+	
 }
 
 
