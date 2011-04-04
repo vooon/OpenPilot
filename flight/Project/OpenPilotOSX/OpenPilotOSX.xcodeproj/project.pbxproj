@@ -70,6 +70,14 @@
 		65209A1912208B0600453371 /* gpsposition.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = gpsposition.xml; sourceTree = "<group>"; };
 		6526645A122DF972006F9A3C /* pios_i2c_priv.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pios_i2c_priv.h; sourceTree = "<group>"; };
 		6526645B122DF972006F9A3C /* pios_wdg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pios_wdg.h; sourceTree = "<group>"; };
+		6526C2BB1349D595006FF712 /* esc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = esc.c; path = ../../ESC/esc.c; sourceTree = SOURCE_ROOT; };
+		6526C2BC1349D595006FF712 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; name = Makefile; path = ../../ESC/Makefile; sourceTree = SOURCE_ROOT; };
+		6526C2BD1349D595006FF712 /* pios_board.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pios_board.c; path = ../../ESC/pios_board.c; sourceTree = SOURCE_ROOT; };
+		6526C2BF1349D6AC006FF712 /* pios_esc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pios_esc.c; sourceTree = "<group>"; };
+		6526C2C61349D71D006FF712 /* pios_esc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pios_esc.h; sourceTree = "<group>"; };
+		6526C2CE1349D898006FF712 /* esc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = esc.h; sourceTree = "<group>"; };
+		6526C2CF1349D898006FF712 /* pios_config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pios_config.h; sourceTree = "<group>"; };
+		6526C2FA1349E45F006FF712 /* pios_esc_priv.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pios_esc_priv.h; sourceTree = "<group>"; };
 		6528CCB412E406B800CF5144 /* pios_adxl345.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pios_adxl345.c; sourceTree = "<group>"; };
 		6528CCE212E40F6700CF5144 /* pios_adxl345.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pios_adxl345.h; sourceTree = "<group>"; };
 		652C8568132B632A00BFCC70 /* firmwareiapobj.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = firmwareiapobj.xml; sourceTree = "<group>"; };
@@ -3489,6 +3497,27 @@
 			path = inc;
 			sourceTree = "<group>";
 		};
+		6526C2B513493562006FF712 /* ESC */ = {
+			isa = PBXGroup;
+			children = (
+				6526C2CD1349D898006FF712 /* inc */,
+				6526C2BB1349D595006FF712 /* esc.c */,
+				6526C2BC1349D595006FF712 /* Makefile */,
+				6526C2BD1349D595006FF712 /* pios_board.c */,
+			);
+			name = ESC;
+			sourceTree = "<group>";
+		};
+		6526C2CD1349D898006FF712 /* inc */ = {
+			isa = PBXGroup;
+			children = (
+				6526C2CE1349D898006FF712 /* esc.h */,
+				6526C2CF1349D898006FF712 /* pios_config.h */,
+			);
+			name = inc;
+			path = ../../ESC/inc;
+			sourceTree = SOURCE_ROOT;
+		};
 		65632DF41251650300469B77 /* Boards */ = {
 			isa = PBXGroup;
 			children = (
@@ -3508,6 +3537,7 @@
 				65B7E6AC120DF1CD000C1123 /* AHRS */,
 				65E6DF7012E02E8E00058553 /* CopterControl */,
 				65E8EF1E11EEA61E00BBF654 /* OpenPilot */,
+				6526C2B513493562006FF712 /* ESC */,
 				650D8E1F12DFE16400D05CC9 /* Modules */,
 				657CEEB6121DBC63007A1FBE /* Libraries */,
 				65E8F02F11EFF25C00BBF654 /* PiOS */,
@@ -7631,6 +7661,8 @@
 				65E8F03D11EFF25C00BBF654 /* pios_com_priv.h */,
 				65E8F03E11EFF25C00BBF654 /* pios_debug.h */,
 				65E8F03F11EFF25C00BBF654 /* pios_delay.h */,
+				6526C2C61349D71D006FF712 /* pios_esc.h */,
+				6526C2FA1349E45F006FF712 /* pios_esc_priv.h */,
 				65E8F04011EFF25C00BBF654 /* pios_exti.h */,
 				65E8F04111EFF25C00BBF654 /* pios_gpio.h */,
 				65E8F04211EFF25C00BBF654 /* pios_hmc5843.h */,
@@ -7671,6 +7703,7 @@
 				65E8F0DC11EFF25C00BBF654 /* pios_adc.c */,
 				65E8F0DD11EFF25C00BBF654 /* pios_debug.c */,
 				65E8F0DE11EFF25C00BBF654 /* pios_delay.c */,
+				6526C2BF1349D6AC006FF712 /* pios_esc.c */,
 				65E8F0DF11EFF25C00BBF654 /* pios_exti.c */,
 				65E8F0E011EFF25C00BBF654 /* pios_gpio.c */,
 				65E8F0E111EFF25C00BBF654 /* pios_i2c.c */,

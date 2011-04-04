@@ -72,6 +72,7 @@
 #include <pios_usart.h>
 #include <pios_irq.h>
 #include <pios_adc.h>
+#include <pios_esc.h>
 #include <pios_servo.h>
 #include <pios_i2c.h>
 #include <pios_spi.h>

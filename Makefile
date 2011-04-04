@@ -401,6 +401,29 @@ bl_ins_clean:
 	$(V0) @echo " CLEAN     $@"
 	$(V1) $(RM) -fr $(BUILD_DIR)/bl_ins
 
+.PHONY: esc
+esc: esc_bin
+
+esc_%: 
+	$(V1) mkdir -p $(BUILD_DIR)/esc/dep
+	$(V1) $(MAKE) -r --no-print-directory OUTDIR="$(BUILD_DIR)/esc" TCHAIN_PREFIX="$(ARM_SDK_PREFIX)" REMOVE_CMD="$(RM)" OOCD_EXE="$(OPENOCD)" -C $(ROOT_DIR)/flight/ESC $*
+
+.PHONY: esc_clean
+esc_clean:
+	$(V0) @echo " CLEAN     $@"
+	$(V1) $(RM) -fr $(BUILD_DIR)/esc
+
+.PHONY: bl_esc
+bl_esc: bl_esc_elf
+
+bl_esc%:
+	$(V1) mkdir -p $(BUILD_DIR)/bl_esc/dep
+	$(V1) $(MAKE) -r --no-print-directory OUTDIR="$(BUILD_DIR)/bl_esc" TCHAIN_PREFIX="$(ARM_SDK_PREFIX)" REMOVE_CMD="$(RM)" OOCD_EXE="$(OPENOCD)" -C $(ROOT_DIR)/flight/Bootloaders/ESC $*
+
+.PHONY: bl_esc_clean
+bl_esc_clean:
+	$(V0) @echo " CLEAN     $@"
+	$(V1) $(RM) -fr $(BUILD_DIR)/bl_esc
 
 .PHONY: sim_posix
 sim_posix: sim_posix_elf

@@ -11,6 +11,10 @@
 #include "STM32103CB_CC_Rev1.h"
 #elif USE_STM3210E_INS
 #include "STM3210E_INS.h"
+#elif USE_STM32F103CB_ESC_Rev1
+#include "STM32F103CB_ESC_Rev1.h"
+#else
+#error Undefined board type
 #endif
 
 #endif /* PIOS_BOARD_H_ */
