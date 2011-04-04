@@ -78,6 +78,7 @@
 		6526C2CE1349D898006FF712 /* esc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = esc.h; sourceTree = "<group>"; };
 		6526C2CF1349D898006FF712 /* pios_config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pios_config.h; sourceTree = "<group>"; };
 		6526C2FA1349E45F006FF712 /* pios_esc_priv.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pios_esc_priv.h; sourceTree = "<group>"; };
+		6526C385134A32B5006FF712 /* STM32F103CB_ESC_Rev1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STM32F103CB_ESC_Rev1.h; sourceTree = "<group>"; };
 		6528CCB412E406B800CF5144 /* pios_adxl345.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pios_adxl345.c; sourceTree = "<group>"; };
 		6528CCE212E40F6700CF5144 /* pios_adxl345.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pios_adxl345.h; sourceTree = "<group>"; };
 		652C8568132B632A00BFCC70 /* firmwareiapobj.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = firmwareiapobj.xml; sourceTree = "<group>"; };
@@ -3525,6 +3526,7 @@
 				65632DF71251650300469B77 /* STM3210E_OP.h */,
 				65632DF61251650300469B77 /* STM32103CB_AHRS.h */,
 				65E6E06112E031E300058553 /* STM32103CB_CC_Rev1.h */,
+				6526C385134A32B5006FF712 /* STM32F103CB_ESC_Rev1.h */,
 				65E6E06212E031E300058553 /* STM32103CB_PIPXTREME_Rev1.h */,
 			);
 			path = Boards;
