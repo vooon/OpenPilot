@@ -14,7 +14,7 @@
    height="79.57505"
    id="svg3604"
    version="1.1"
-   inkscape:version="0.48.0 r9654"
+   inkscape:version="0.47 r22583"
    sodipodi:docname="system-health-text.svg"
    inkscape:export-filename="C:\NoBackup\OpenPilot\mainboard-health.png"
    inkscape:export-xdpi="269.53"
@@ -665,6 +665,13 @@
        y1="44.980297"
        x2="18.379412"
        y2="3.0816143" />
+    <inkscape:perspective
+       id="perspective3252"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
   </defs>
   <sodipodi:namedview
      inkscape:document-units="mm"
@@ -673,22 +680,22 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="3.3075467"
-     inkscape:cx="64.615075"
-     inkscape:cy="52.121615"
-     inkscape:current-layer="g3368"
+     inkscape:zoom="6.6150934"
+     inkscape:cx="22.28686"
+     inkscape:cy="45.605462"
+     inkscape:current-layer="g3285"
      id="namedview3608"
      showgrid="false"
-     inkscape:window-width="1366"
-     inkscape:window-height="691"
-     inkscape:window-x="0"
-     inkscape:window-y="24"
+     inkscape:window-width="1280"
+     inkscape:window-height="978"
+     inkscape:window-x="-6"
+     inkscape:window-y="-6"
      inkscape:window-maximized="1"
      showguides="true"
      inkscape:guide-bbox="true">
     <sodipodi:guide
        orientation="0,1"
-       position="68.372091,-63.708224"
+       position="-34.466634,-32.047922"
        id="guide3857" />
     <sodipodi:guide
        orientation="0,1"
@@ -698,10 +705,6 @@
        orientation="0,1"
        position="-180.96091,-53.199384"
        id="guide3360" />
-    <sodipodi:guide
-       orientation="0,1"
-       position="34.202366,114.41506"
-       id="guide3168" />
   </sodipodi:namedview>
   <metadata
      id="metadata3610">
@@ -928,7 +931,7 @@
     <rect
        inkscape:label="#rect4000-7-6-7-1"
        style="fill:#332d2d;fill-opacity:1;stroke:#ffffff;stroke-width:0.53149605;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       id="rect3347"
+       id="TakeOff"
        width="18.153212"
        height="8.1216154"
        x="515.23181"
@@ -1963,6 +1966,70 @@
   </g>
   <g
      inkscape:groupmode="layer"
+     id="g3285"
+     inkscape:label="TakeOff-OK"
+     style="display:none">
+    <rect
+       inkscape:label="#rect8365"
+       y="31.277248"
+       x="17.590176"
+       height="8.1216154"
+       width="18.153212"
+       id="TakeOff-OK"
+       style="fill:#04b629;fill-opacity:1;stroke:#ffffff;stroke-width:0.53149605;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="g3281"
+     inkscape:label="TakeOff-Warning"
+     style="display:none">
+    <rect
+       style="fill:#f1b907;fill-opacity:1;stroke:#ffffff;stroke-width:0.53149605;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       id="TakeOff-Warning"
+       width="18.023544"
+       height="8.2846708"
+       x="17.607738"
+       y="31.110256"
+       inkscape:label="#rect3132" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="g3273"
+     inkscape:label="TakeOff-Error"
+     style="display:none">
+    <g
+       style="stroke:#cf0e0e;stroke-width:2;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       id="TakeOff-Error"
+       transform="translate(13.592125,29.719299)"
+       inkscape:label="#g3114">
+      <path
+         style="fill:none;stroke:#cf0e0e;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+         d="M 3.9588091,1.7664579 22.097352,10.043968"
+         id="path3277"
+         inkscape:connector-curvature="0" />
+      <path
+         style="fill:none;stroke:#cf0e0e;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+         d="M 4.2467224,10.043968 22.025374,1.8384362"
+         id="path3279"
+         inkscape:connector-curvature="0" />
+    </g>
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="g3269"
+     inkscape:label="TakeOff-Critical"
+     style="display:none">
+    <rect
+       y="31.101501"
+       x="17.575802"
+       height="8.2846708"
+       width="18.023544"
+       id="TakeOff-Critical"
+       style="fill:#cf0e0e;fill-opacity:1;stroke:#f9f9f9;stroke-width:0.53149605;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       inkscape:label="#rect3108" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
      id="foreground"
      inkscape:label="Foreground"
      style="display:inline"
@@ -2738,9 +2805,20 @@
          x="39.287102"
          id="tspan3355"
          sodipodi:role="line">Guidance</tspan></text>
+    <text
+       id="text3353-5"
+       y="36.605137"
+       x="20.237648"
+       style="font-size:33.09410858px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;display:inline;font-family:Bitstream Vera Sans"
+       xml:space="preserve"><tspan
+         style="font-size:3.30941081px;fill:#ffffff;fill-opacity:1"
+         y="36.605137"
+         x="20.237648"
+         id="tspan3355-0"
+         sodipodi:role="line">TakeOff</tspan></text>
   </g>
   <g
-     style="display:inline"
+     style="display:none"
      transform="translate(-497.66563,-344.28037)"
      id="g3368"
      inkscape:groupmode="layer"
@@ -2749,7 +2827,7 @@
        id="nolink"
        inkscape:label="#g10909">
       <rect
-         style="fill:#453e3e;fill-opacity:0.86363637;fill-rule:evenodd;stroke:#000000;stroke-width:0.99921262000000000;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+         style="fill:#453e3e;fill-opacity:0.86363639;fill-rule:evenodd;stroke:#000000;stroke-width:0.99921262;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
          id="rect3370"
          width="93.746948"
          height="79.063599"

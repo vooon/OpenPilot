@@ -121,9 +121,9 @@ static void takeOffTask(void *parameters)
 		// Wait until the AttitudeRaw object is updated, if a timeout then go to failsafe
 		if ( xQueueReceive(queue, &ev, takeOffSettings.UpdatePeriod / portTICK_RATE_MS) != pdTRUE )
 		{
-			AlarmsSet(SYSTEMALARMS_ALARM_GUIDANCE,SYSTEMALARMS_ALARM_WARNING);
+			AlarmsSet(SYSTEMALARMS_ALARM_TAKEOFF,SYSTEMALARMS_ALARM_WARNING);
 		} else {
-			AlarmsClear(SYSTEMALARMS_ALARM_GUIDANCE);
+			AlarmsClear(SYSTEMALARMS_ALARM_TAKEOFF);
 		}
 				
 		// Continue collecting data if not enough time
