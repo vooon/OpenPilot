@@ -55,7 +55,7 @@ void PIOS_LED_Init(void)
 		GPIO_Init(LED_GPIO_PORT[LEDNum], &GPIO_InitStructure);
 
 		/* LED's Off */
-		LED_GPIO_PORT[LEDNum]->BSRR = LED_GPIO_PIN[LEDNum];
+//		LED_GPIO_PORT[LEDNum]->BSRR = LED_GPIO_PIN[LEDNum];
 	}
 }
 
