@@ -39,7 +39,7 @@ public class UAVObjectMetaData extends UAVObject {
     public int getObjID() {
         return parent.getObjID() | 1; 
     }
-
+    
     public String getObjName() {
         return parent.getObjName()+"MetaData";
     }
@@ -273,4 +273,12 @@ public class UAVObjectMetaData extends UAVObject {
     private long last_send_time;
 
     private boolean ack_pending=false;
+
+    public boolean isSetting() {
+        return false;
+    }
+
+    public boolean isMetaData() {
+        return true;
+    }
 }

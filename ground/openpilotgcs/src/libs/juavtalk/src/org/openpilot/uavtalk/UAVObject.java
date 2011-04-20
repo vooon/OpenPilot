@@ -39,6 +39,9 @@ public abstract class UAVObject {
 
     abstract public void setGeneratedMetaData();
 
+    abstract public boolean isSetting();
+    abstract public boolean isMetaData();
+    
     abstract public UAVObjectFieldDescription[] getFieldDescriptions(); 
 
     private Vector change_listeners=new Vector();
