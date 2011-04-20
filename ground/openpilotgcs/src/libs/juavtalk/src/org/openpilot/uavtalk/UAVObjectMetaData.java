@@ -250,9 +250,6 @@ public class UAVObjectMetaData extends UAVObject {
         return ack_pending;
     }
 
-    public final static boolean TRUE=true;
-    public final static boolean FALSE=false;
-
     private byte gcsAccess;
     private boolean gcsTelemetryAcked;
     private byte gcsTelemetryUpdateMode;
