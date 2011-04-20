@@ -77,4 +77,7 @@ public abstract class UAVObject {
     public int getDataLength() {
     	return serialize().length;
     }
+
+    public final static boolean TRUE=true;
+    public final static boolean FALSE=false;
 }

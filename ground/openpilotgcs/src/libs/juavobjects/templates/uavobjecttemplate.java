@@ -69,5 +69,14 @@ $(FIELDSINIT)
 	return "$(DESCRIPTION)";
     }
 
+    public boolean isSetting() {
+	return $(ISSETTINGSTF);
+    }
+
+    public boolean isMetaData() {
+	return false;
+    }
+
+
 $(GETTERSETTER)
 }
