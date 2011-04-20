@@ -40,6 +40,7 @@ struct pios_adc_cfg {
 	struct stm32_dma dma;
 	uint32_t half_flag;
 	uint32_t full_flag;
+	bool compute_downsample;
 };
 
 struct pios_adc_dev {
