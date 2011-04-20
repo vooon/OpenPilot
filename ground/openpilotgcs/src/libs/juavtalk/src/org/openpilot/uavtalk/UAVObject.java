@@ -37,7 +37,12 @@ public abstract class UAVObject {
     abstract public Object getField(int fieldid,int arr_pos);
     abstract public void setField(int fieldid,int arr_pos,Object val);
 
+    abstract public void setGeneratedMetaData();
+
+    abstract public UAVObjectFieldDescription[] getFieldDescriptions(); 
+
     private Vector change_listeners=new Vector();
+    private UAVObjectMetaData myMetaData=null;
 
     private void notifyChangeListeners() {
 	for (Object listener: change_listeners)
@@ -61,10 +66,6 @@ public abstract class UAVObject {
     	getMetaData().last_deserialize=System.currentTimeMillis();
     }
     
-    abstract public UAVObjectFieldDescription[] getFieldDescriptions(); 
-    
-    private UAVObjectMetaData myMetaData=null;
-    
     public UAVObjectMetaData getMetaData() {
     	if (myMetaData==null) {
     		myMetaData=new UAVObjectMetaData();
@@ -72,8 +73,6 @@ public abstract class UAVObject {
     	}
     	return myMetaData;
     }
-    
-    abstract public void setGeneratedMetaData();
 
     public int getDataLength() {
     	return serialize().length;
