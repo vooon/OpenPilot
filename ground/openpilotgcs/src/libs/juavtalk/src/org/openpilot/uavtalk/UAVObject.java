@@ -17,6 +17,7 @@
 package org.openpilot.uavtalk;
 
 import org.openpilot.uavtalk.UAVObjectFieldDescription;
+import java.util.Vector;
 
 /**
  ******************************************************************************
@@ -35,7 +36,18 @@ public abstract class UAVObject {
 
     abstract public Object getField(int fieldid,int arr_pos);
     abstract public void setField(int fieldid,int arr_pos,Object val);
-    
+
+    private Vector change_listeners=new Vector();
+
+    private void notifyChangeListeners() {
+	for (Object listener: change_listeners)
+	    ((UAVObjectChangeListener)listener).notifyUAVObjectChange(this);
+    }
+
+    private void addChangeListener(UAVObjectChangeListener newChangeListener) {
+	change_listeners.add(newChangeListener);
+    }
+
     public byte[] serialize() {
     	getMetaData().last_serialize=System.currentTimeMillis();
     	return new byte[0];
