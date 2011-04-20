@@ -29,7 +29,6 @@
  * scope.  
  *
  * NOTE: THIS IS THE ONLY PLACE THAT SHOULD EVER INCLUDE THIS FILE
- */
 #include "board_hw_defs.c"
 
 #include <pios.h>
