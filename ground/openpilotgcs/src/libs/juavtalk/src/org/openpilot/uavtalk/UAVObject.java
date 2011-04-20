@@ -44,12 +44,12 @@ public abstract class UAVObject {
     private Vector change_listeners=new Vector();
     private UAVObjectMetaData myMetaData=null;
 
-    private void notifyChangeListeners() {
+    public void notifyChangeListeners() {
 	for (Object listener: change_listeners)
 	    ((UAVObjectChangeListener)listener).notifyUAVObjectChange(this);
     }
 
-    private void addChangeListener(UAVObjectChangeListener newChangeListener) {
+    public void addChangeListener(UAVObjectChangeListener newChangeListener) {
 	change_listeners.add(newChangeListener);
     }
 
