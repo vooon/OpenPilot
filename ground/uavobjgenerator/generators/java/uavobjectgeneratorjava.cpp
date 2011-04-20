@@ -273,7 +273,7 @@ bool UAVObjectGeneratorJava::process_object(ObjectInfo* info)
         if (!act_field_info->units.isEmpty()) // when we have unit info
             gettersetter.append(QString("\n    /**\n    * unit: %1\n    */\n").arg(act_field_info->units));
 
-        gettersetter.append(QString("    public void set%1( %2 _%1 ) { %1=_%1; }\n").arg(act_field_info->name).arg(typespec));
+        gettersetter.append(QString("    public void set%1( %2 _%1 ) { %1=_%1; notifyChangeListeners(); }\n").arg(act_field_info->name).arg(typespec));
 
         if (n!=0)
             fielddesc.append(QString("\t,"));
@@ -322,8 +322,8 @@ bool UAVObjectGeneratorJava::process_object(ObjectInfo* info)
     outCode.replace(QString("$(FIELDSINIT)"), fieldsinit);
 
     fielddesc.append(QString("};}"));
-    fieldgetter.append(QString("};\n return null;\n}\n"));
-    fieldsetter.append(QString("};\n}\n"));
+    fieldgetter.append(QString("};\n    return null;\n}\n"));
+    fieldsetter.append(QString("};\n    notifyChangeListeners();\n}\n"));
     outCode.replace(QString("$(GETTERSETTER)"), gettersetter + serialize_code+ fielddesc + fieldgetter + fieldsetter);
 
     bool res = writeFileIfDiffrent(javaCodePath.absolutePath() + "/uavobjects/" + info->name + ".java", outCode );
