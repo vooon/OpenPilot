@@ -42,18 +42,18 @@ $(FIELDSINIT)
 
     public void setGeneratedMetaData() {
 
-	getMetaData().gcsAccess = UAVObjectMetaData.$(GCSACCESS);
-	getMetaData().gcsTelemetryAcked = UAVObjectMetaData.$(GCSTELEM_ACKEDTF);
-	getMetaData().gcsTelemetryUpdateMode = UAVObjectMetaData.$(GCSTELEM_UPDATEMODE);
-	getMetaData().gcsTelemetryUpdatePeriod = $(GCSTELEM_UPDATEPERIOD);
+        getMetaData().setGCSAccess(UAVObjectMetaData.$(GCSACCESS));
+	getMetaData().setGCSTelemetryAcked(UAVObjectMetaData.$(GCSTELEM_ACKEDTF));
+	getMetaData().setGCSTelemetryUpdateMode(UAVObjectMetaData.$(GCSTELEM_UPDATEMODE));
+	getMetaData().setGCSTelemetryUpdatePeriod($(GCSTELEM_UPDATEPERIOD));
 
-	getMetaData().flightAccess = UAVObjectMetaData.$(FLIGHTACCESS);
-	getMetaData().flightTelemetryAcked = UAVObjectMetaData.$(FLIGHTTELEM_ACKEDTF);
-	getMetaData().flightTelemetryUpdateMode = UAVObjectMetaData.$(FLIGHTTELEM_UPDATEMODE);
-	getMetaData().flightTelemetryUpdatePeriod = $(FLIGHTTELEM_UPDATEPERIOD);
+	getMetaData().setFlightAccess(UAVObjectMetaData.$(FLIGHTACCESS));
+        getMetaData().setFlightTelemetryAcked(UAVObjectMetaData.$(FLIGHTTELEM_ACKEDTF));
+	getMetaData().setFlightTelemetryUpdateMode(UAVObjectMetaData.$(FLIGHTTELEM_UPDATEMODE));
+	getMetaData().setFlightTelemetryUpdatePeriod($(FLIGHTTELEM_UPDATEPERIOD));
 
-	getMetaData().loggingUpdateMode = UAVObjectMetaData.$(LOGGING_UPDATEMODE);
-	getMetaData().loggingUpdatePeriod = $(LOGGING_UPDATEPERIOD);
+	getMetaData().setLoggingUpdateMode(UAVObjectMetaData.$(LOGGING_UPDATEMODE));
+	getMetaData().setLoggingUpdatePeriod($(LOGGING_UPDATEPERIOD));
 
     }
     
