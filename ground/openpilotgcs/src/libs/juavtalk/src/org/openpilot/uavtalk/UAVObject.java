@@ -68,7 +68,7 @@ public abstract class UAVObject {
     
     public UAVObjectMetaData getMetaData() {
     	if (myMetaData==null) {
-    		myMetaData=new UAVObjectMetaData();
+    		myMetaData=new UAVObjectMetaData(this);
     		setGeneratedMetaData();
     	}
     	return myMetaData;

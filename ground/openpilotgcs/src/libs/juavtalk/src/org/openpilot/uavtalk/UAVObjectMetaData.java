@@ -27,6 +27,12 @@ package org.openpilot.uavtalk;
 */
 public class UAVObjectMetaData {
 
+    public UAVObjectMetaData(UAVObject parent) {
+	this.parent=parent;
+    }
+
+    private UAVObject parent;
+
     public final static byte ACCESS_READWRITE=0;
     public final static byte ACCESS_READONLY=1;
     public final static byte ACCESS_WRITEONLY=2;
