@@ -56,6 +56,18 @@ public class UAVObjectMetaData extends UAVObject {
     }
 
     public void setGeneratedMetaData() {
+        getMetaData().gcsAccess = ACCESS_READWRITE;
+        getMetaData().gcsTelemetryAcked = FALSE;
+        getMetaData().gcsTelemetryUpdateMode = UPDATEMODE_ONCHANGE;
+        getMetaData().gcsTelemetryUpdatePeriod = 0;
+
+        getMetaData().flightAccess = ACCESS_READWRITE;
+        getMetaData().flightTelemetryAcked = FALSE;
+        getMetaData().flightTelemetryUpdateMode = UPDATEMODE_ONCHANGE;
+        getMetaData().flightTelemetryUpdatePeriod = 0;
+
+        getMetaData().loggingUpdateMode = UPDATEMODE_NEVER;
+        getMetaData().loggingUpdatePeriod = 0;
     }
 
     public UAVObjectFieldDescription[] getFieldDescriptions() {
