@@ -25,13 +25,43 @@ package org.openpilot.uavtalk;
  *
  ****************************************************************************
 */
-public class UAVObjectMetaData {
+public class UAVObjectMetaData extends UAVObject {
 
     public UAVObjectMetaData(UAVObject parent) {
 	this.parent=parent;
     }
 
     private UAVObject parent;
+
+    /**
+     * the MetaData objId is the parent objId with lsb to 1
+    **/
+    public int getObjID() {
+	return parent.getObjID() | 1; 
+    }
+
+    public String getObjName() {
+	return parent.getObjName()+"MetaData";
+    }
+    
+    public String getObjDescription() {
+	return "MetaData for " + parent.getObjName();
+    }
+
+    public Object getField(int fieldid,int arr_pos) {
+	return null;
+    }
+    
+    public void setField(int fieldid,int arr_pos,Object val) {
+    }
+
+    public void setGeneratedMetaData() {
+    }
+
+    public UAVObjectFieldDescription[] getFieldDescriptions() {
+	return null;
+    }
+
 
     public final static byte ACCESS_READWRITE=0;
     public final static byte ACCESS_READONLY=1;
