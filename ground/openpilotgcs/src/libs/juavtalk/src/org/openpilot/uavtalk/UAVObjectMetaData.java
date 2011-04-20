@@ -24,34 +24,34 @@ package org.openpilot.uavtalk;
  * @brief      Class to handle the metadata of an UAVObject
  *
  ****************************************************************************
-*/
+ */
 public class UAVObjectMetaData extends UAVObject {
 
     public UAVObjectMetaData(UAVObject parent) {
-	this.parent=parent;
+        this.parent=parent;
     }
 
     private UAVObject parent;
 
     /**
      * the MetaData objId is the parent objId with lsb to 1
-    **/
+     **/
     public int getObjID() {
-	return parent.getObjID() | 1; 
+        return parent.getObjID() | 1; 
     }
 
     public String getObjName() {
-	return parent.getObjName()+"MetaData";
+        return parent.getObjName()+"MetaData";
     }
-    
+
     public String getObjDescription() {
-	return "MetaData for " + parent.getObjName();
+        return "MetaData for " + parent.getObjName();
     }
 
     public Object getField(int fieldid,int arr_pos) {
-	return null;
+        return null;
     }
-    
+
     public void setField(int fieldid,int arr_pos,Object val) {
     }
 
@@ -59,7 +59,7 @@ public class UAVObjectMetaData extends UAVObject {
     }
 
     public UAVObjectFieldDescription[] getFieldDescriptions() {
-	return null;
+        return null;
     }
 
 
@@ -68,69 +68,200 @@ public class UAVObjectMetaData extends UAVObject {
     public final static byte ACCESS_WRITEONLY=2;
 
     public final static String getAccessString(byte access_mode) {
-	switch (access_mode) {
-	case ACCESS_READWRITE:
-	    return "Read/Write";
-	case ACCESS_WRITEONLY:
-	    return "Write only";
-	case ACCESS_READONLY:
-	    return "Read only";
-	default:
-	    return "unknowm Access Mode";
-	}
+        switch (access_mode) {
+        case ACCESS_READWRITE:
+            return "Read/Write";
+        case ACCESS_WRITEONLY:
+            return "Write only";
+        case ACCESS_READONLY:
+            return "Read only";
+        default:
+            return "unknowm Access Mode";
+        }
     }
-	
+
     public final static byte UPDATEMODE_NEVER=0;
     public final static byte UPDATEMODE_MANUAL=1;
     public final static byte UPDATEMODE_ONCHANGE=2;
     public final static byte UPDATEMODE_PERIODIC=3;
-    
+
     public final static String getUpdateModeString(byte update_mode) {
-	switch(update_mode) {
-	case UPDATEMODE_NEVER:
-	    return "never";
-	case UPDATEMODE_MANUAL:
-	    return "manual";
-	case UPDATEMODE_ONCHANGE:
-	    return "on change";
-	case UPDATEMODE_PERIODIC:
-	    return "periodic";
-	default:
-	    return "unknown";
-	    
-	}
+        switch(update_mode) {
+        case UPDATEMODE_NEVER:
+            return "never";
+        case UPDATEMODE_MANUAL:
+            return "manual";
+        case UPDATEMODE_ONCHANGE:
+            return "on change";
+        case UPDATEMODE_PERIODIC:
+            return "periodic";
+        default:
+            return "unknown";
+        }
     }
-	
+
+    public void setGCSAccess(byte gcsAccess) {
+        this.gcsAccess = gcsAccess;
+    }
+
+    public byte getGCSAccess() {
+        return gcsAccess;
+    }
+
+    public void setGCSTelemetryAcked(boolean gcsTelemetryAcked) {
+        this.gcsTelemetryAcked = gcsTelemetryAcked;
+    }
+
+    public boolean isGCSTelemetryAcked() {
+        return gcsTelemetryAcked;
+    }
+
+    public void setGCSTelemetryUpdateMode(byte gcsTelemetryUpdateMode) {
+        this.gcsTelemetryUpdateMode = gcsTelemetryUpdateMode;
+    }
+
+    public byte getGCSTelemetryUpdateMode() {
+        return gcsTelemetryUpdateMode;
+    }
+
+    public void setGCSTelemetryUpdatePeriod(int gcsTelemetryUpdatePeriod) {
+        this.gcsTelemetryUpdatePeriod = gcsTelemetryUpdatePeriod;
+        this.notifyChangeListeners();
+    }
+
+    public int getGCSTelemetryUpdatePeriod() {
+        return gcsTelemetryUpdatePeriod;
+    }
+
+    public void setFlightAccess(byte flightAccess) {
+        this.flightAccess = flightAccess;
+    }
+
+    public byte getFlightAccess() {
+        return flightAccess;
+    }
+
+    public void setFlightTelemetryAcked(boolean flightTelemetryAcked) {
+        this.flightTelemetryAcked = flightTelemetryAcked;
+    }
+
+    public boolean isFlightTelemetryAcked() {
+        return flightTelemetryAcked;
+    }
+
+    public void setFlightTelemetryUpdatePeriod(int flightTelemetryUpdatePeriod) {
+        this.flightTelemetryUpdatePeriod = flightTelemetryUpdatePeriod;
+        this.notifyChangeListeners();
+    }
+
+    public int getFlightTelemetryUpdatePeriod() {
+        return flightTelemetryUpdatePeriod;
+    }
+
+    public void setFlightTelemetryUpdateMode(byte flightTelemetryUpdateMode) {
+        this.flightTelemetryUpdateMode = flightTelemetryUpdateMode;
+    }
+
+    public byte getFlightTelemetryUpdateMode() {
+        return flightTelemetryUpdateMode;
+    }
+
+    public void setLoggingUpdateMode(byte loggingUpdateMode) {
+        this.loggingUpdateMode = loggingUpdateMode;
+    }
+
+    public byte getLoggingUpdateMode() {
+        return loggingUpdateMode;
+    }
+
+    public void setLoggingUpdatePeriod(int loggingUpdatePeriod) {
+        this.loggingUpdatePeriod = loggingUpdatePeriod;
+    }
+
+    public int getLoggingUpdatePeriod() {
+        return loggingUpdatePeriod;
+    }
+
+    public void setLastSerialize(long last_serialize) {
+        this.last_serialize = last_serialize;
+    }
+
+    public long getLastSerialize() {
+        return last_serialize;
+    }
+
+    public void setLastDeserialize(long last_deserialize) {
+        this.last_deserialize = last_deserialize;
+    }
+
+    public long getLastDeserialize() {
+        return last_deserialize;
+    }
+
+    public void setLastLog(long last_log) {
+        this.last_log = last_log;
+    }
+
+    public long getLastLog() {
+        return last_log;
+    }
+
+    public void setLastGCSUpdate(long last_gcs_update) {
+        this.last_gcs_update = last_gcs_update;
+    }
+
+    public long getLastGCSUpdate() {
+        return last_gcs_update;
+    }
+
+    public void setLastFligtUpdate(long last_fligt_update) {
+        this.last_fligt_update = last_fligt_update;
+    }
+
+    public long getLastFlightUpdate() {
+        return last_fligt_update;
+    }
+
+    public void setLastSendTime(long last_send_time) {
+        this.last_send_time = last_send_time;
+    }
+
+    public long getLastSendTime() {
+        return last_send_time;
+    }
+
+    public void setAckPending(boolean ack_pending) {
+        this.ack_pending = ack_pending;
+    }
+
+    public boolean isAckPending() {
+        return ack_pending;
+    }
+
     public final static boolean TRUE=true;
     public final static boolean FALSE=false;
-    
-    /* constant */
-    public byte gcsAccess;
-    public boolean gcsTelemetryAcked;
-    public byte gcsTelemetryUpdateMode;
-    public int gcsTelemetryUpdatePeriod;
-      
-    public byte flightAccess; 
-    public boolean  flightTelemetryAcked;
-    public byte  flightTelemetryUpdateMode;
-    public int flightTelemetryUpdatePeriod;
-      
-    public byte loggingUpdateMode;
-    public int loggingUpdatePeriod;
 
-    /* changing */
-    public long last_serialize;
-    public long last_deserialize;
-    
-    public long last_log;
-    public long last_gcs_update;
-    public long last_fligt_update;
+    private byte gcsAccess;
+    private boolean gcsTelemetryAcked;
+    private byte gcsTelemetryUpdateMode;
+    private int gcsTelemetryUpdatePeriod;
 
-    public long last_send_time;
-    
-    public boolean gcs_flight_was_acked=false;
-    public boolean gcs_ground_was_acked=false;
-    
-    public boolean req_pending=false;
-    public boolean ack_pending=false;
+    private byte flightAccess; 
+    private boolean  flightTelemetryAcked;
+    private byte  flightTelemetryUpdateMode;
+    private int flightTelemetryUpdatePeriod;
+
+    private byte loggingUpdateMode;
+    private int loggingUpdatePeriod;
+
+    private long last_serialize;
+    private long last_deserialize;
+
+    private long last_log;
+    private long last_gcs_update;
+    private long last_fligt_update;
+
+    private long last_send_time;
+
+    private boolean ack_pending=false;
 }

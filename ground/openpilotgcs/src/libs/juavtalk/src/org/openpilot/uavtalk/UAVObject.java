@@ -54,7 +54,7 @@ public abstract class UAVObject {
     }
 
     public byte[] serialize() {
-    	getMetaData().last_serialize=System.currentTimeMillis();
+    	getMetaData().setLastSerialize(System.currentTimeMillis());
     	return new byte[0];
     }
     
@@ -63,7 +63,7 @@ public abstract class UAVObject {
     }
     
     public void deserialize(byte[] data,int offset) {
-    	getMetaData().last_deserialize=System.currentTimeMillis();
+    	getMetaData().setLastDeserialize(System.currentTimeMillis());
     }
     
     public UAVObjectMetaData getMetaData() {
