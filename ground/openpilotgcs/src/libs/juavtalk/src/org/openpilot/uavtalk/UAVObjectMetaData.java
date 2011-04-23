@@ -48,6 +48,32 @@ public class UAVObjectMetaData extends UAVObject {
         return "MetaData for " + parent.getObjName();
     }
 
+    @Override
+    public byte[] serialize() {
+        super.serialize();
+        return new byte[] {
+            getFlightAccess(),
+            getGCSAccess(),
+            isFlightTelemetryAcked()?(byte)1:(byte)0,
+            getFlightTelemetryUpdateMode(),
+            (byte)((getFlightTelemetryUpdatePeriod()>>0)&0xFF),
+            (byte)((getFlightTelemetryUpdatePeriod()>>8)&0xFF),
+            (byte)((getFlightTelemetryUpdatePeriod()>>16)&0xFF),
+            (byte)((getFlightTelemetryUpdatePeriod()>>24)&0xFF),
+            isGCSTelemetryAcked()?(byte)1:(byte)0,
+            getGCSTelemetryUpdateMode(),
+            (byte)((getGCSTelemetryUpdatePeriod()>>0)&0xFF),
+            (byte)((getGCSTelemetryUpdatePeriod()>>8)&0xFF),
+            (byte)((getGCSTelemetryUpdatePeriod()>>16)&0xFF),
+            (byte)((getGCSTelemetryUpdatePeriod()>>24)&0xFF),
+            getLoggingUpdateMode(),
+            (byte)((getLoggingUpdatePeriod()>>0)&0xFF),
+            (byte)((getLoggingUpdatePeriod()>>8)&0xFF),
+            (byte)((getLoggingUpdatePeriod()>>16)&0xFF),
+            (byte)((getLoggingUpdatePeriod()>>24)&0xFF),
+        };
+    }
+
     public Object getField(int fieldid,int arr_pos) {
         return null;
     }
@@ -74,7 +100,6 @@ public class UAVObjectMetaData extends UAVObject {
         return null;
     }
 
-
     public final static byte ACCESS_READWRITE=0;
     public final static byte ACCESS_READONLY=1;
     public final static byte ACCESS_WRITEONLY=2;
@@ -92,10 +117,10 @@ public class UAVObjectMetaData extends UAVObject {
         }
     }
 
-    public final static byte UPDATEMODE_NEVER=0;
-    public final static byte UPDATEMODE_MANUAL=1;
-    public final static byte UPDATEMODE_ONCHANGE=2;
-    public final static byte UPDATEMODE_PERIODIC=3;
+    public final static byte UPDATEMODE_NEVER=3;
+    public final static byte UPDATEMODE_MANUAL=2;
+    public final static byte UPDATEMODE_ONCHANGE=1;
+    public final static byte UPDATEMODE_PERIODIC=0;
 
     public final static String getUpdateModeString(byte update_mode) {
         switch(update_mode) {
