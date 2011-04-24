@@ -57,7 +57,7 @@
 #include "pios_flash_w25x.h"
 
 // Private constants
-#define STACK_SIZE_BYTES 540
+#define STACK_SIZE_BYTES PIOS_ATTITUDE_STACK_SIZE
 #define TASK_PRIORITY (tskIDLE_PRIORITY+3)
 
 #define UPDATE_RATE  2.0f
