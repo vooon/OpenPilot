@@ -92,7 +92,7 @@
 /* Task stack sizes */
 #define PIOS_ACTUATOR_STACK_SIZE       1020
 #define PIOS_MANUAL_STACK_SIZE          644
-#define PIOS_SYSTEM_STACK_SIZE          644
+#define PIOS_SYSTEM_STACK_SIZE          544
 #define PIOS_STABILIZATION_STACK_SIZE   504
 #define PIOS_TELEM_STACK_SIZE_RX        352
 #define PIOS_TELEM_STACK_SIZE_TX        464
