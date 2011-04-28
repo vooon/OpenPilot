@@ -31,14 +31,14 @@
 #
 
 
-from uavobject import *
+from openpilot.uavtalk.uavobject import *
 
 $(DATAFIELDS)
 
 # Object $(NAME) definition
 class $(NAME)(UAVObject):
 	# Object constants
-	OBJID = $(UOBJID)
+	OBJID = $(OBJID)
 
 	# Constructor
 	def __init__(self):
