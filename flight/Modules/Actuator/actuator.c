@@ -173,65 +173,74 @@ static void actuatorTask(void* parameters)
 		ActuatorCommandGet(&command);
 		ActuatorSettingsGet(&settings);
 
-		int nMixers = 0;
-		Mixer_t * mixers = (Mixer_t *)&mixerSettings.Mixer1Type;
-		for(int ct=0; ct < MAX_MIX_ACTUATORS; ct++)
+
+		// Can we write to ActuatorCommand?
+		if (! ActuatorCommandReadOnly(dummy))	// dummy is not used
 		{
-			if(mixers[ct].type != MIXERSETTINGS_MIXER1TYPE_DISABLED)
+			// Apply filters to ActuatorDesired and write into ActuatorCommand
+			int nMixers = 0;
+			Mixer_t * mixers = (Mixer_t *)&mixerSettings.Mixer1Type;
+			for(int ct=0; ct < MAX_MIX_ACTUATORS; ct++)
 			{
-				nMixers ++;
-			}
-		}
-		if(nMixers < 2) //Nothing can fly with less than two mixers.
-		{
-			AlarmsSet(SYSTEMALARMS_ALARM_ACTUATOR, SYSTEMALARMS_ALARM_WARNING);
-			setFailsafe(); // So that channels like PWM buzzer keep working
-			continue;
-		}
-
-		AlarmsClear(SYSTEMALARMS_ALARM_ACTUATOR);
-
-		bool armed = manualControl.Armed == MANUALCONTROLCOMMAND_ARMED_TRUE;
-		armed &= desired.Throttle > 0.00; //zero throttle stops the motors
-
-		float curve1 = MixerCurve(desired.Throttle,mixerSettings.ThrottleCurve1);
-		float curve2 = MixerCurve(desired.Throttle,mixerSettings.ThrottleCurve2);
-		for(int ct=0; ct < MAX_MIX_ACTUATORS; ct++)
-		{
-			if(mixers[ct].type != MIXERSETTINGS_MIXER1TYPE_DISABLED)
-			{
-				status[ct] = ProcessMixer(ct, curve1, curve2, &mixerSettings, &desired, dT);
-
-				if(!armed &&
-				   mixers[ct].type == MIXERSETTINGS_MIXER1TYPE_MOTOR)
+				if(mixers[ct].type != MIXERSETTINGS_MIXER1TYPE_DISABLED)
 				{
-					command.Channel[ct] = settings.ChannelMin[ct]; //force zero throttle
-					filterAccumulator[ct] = 0;
-					lastResult[ct] = 0;
-				}else
-				{
-					// For motors when armed keep above neutral
-					if((mixers[ct].type == MIXERSETTINGS_MIXER1TYPE_MOTOR) && (status[ct] < 0)) 
-						status[ct] = 0;
-						
-					command.Channel[ct] = scaleChannel(status[ct],
-									   settings.ChannelMax[ct],
-									   settings.ChannelMin[ct],
-									   settings.ChannelNeutral[ct]);
+					nMixers ++;
 				}
 			}
-		}
-		MixerStatusSet(&mixerStatus);
+			if(nMixers < 2) //Nothing can fly with less than two mixers.
+			{
+				AlarmsSet(SYSTEMALARMS_ALARM_ACTUATOR, SYSTEMALARMS_ALARM_WARNING);
+				setFailsafe(); // So that channels like PWM buzzer keep working
+				continue;
+			}
 
-		// Store update time
-		command.UpdateTime = 1000*dT;
-		if(1000*dT > command.MaxUpdateTime)
-			command.MaxUpdateTime = 1000*dT;
-		
-		// Update output object
-		ActuatorCommandSet(&command);
-		// Update in case read only (eg. during servo configuration)
-		ActuatorCommandGet(&command);
+			AlarmsClear(SYSTEMALARMS_ALARM_ACTUATOR);
+
+			bool armed = manualControl.Armed == MANUALCONTROLCOMMAND_ARMED_TRUE;
+			armed &= desired.Throttle > 0.00; //zero throttle stops the motors
+
+			float curve1 = MixerCurve(desired.Throttle,mixerSettings.ThrottleCurve1);
+			float curve2 = MixerCurve(desired.Throttle,mixerSettings.ThrottleCurve2);
+			for(int ct=0; ct < MAX_MIX_ACTUATORS; ct++)
+			{
+				if(mixers[ct].type != MIXERSETTINGS_MIXER1TYPE_DISABLED)
+				{
+					status[ct] = ProcessMixer(ct, curve1, curve2, &mixerSettings, &desired, dT);
+
+					if(!armed &&
+					   mixers[ct].type == MIXERSETTINGS_MIXER1TYPE_MOTOR)
+					{
+						command.Channel[ct] = settings.ChannelMin[ct]; //force zero throttle
+						filterAccumulator[ct] = 0;
+						lastResult[ct] = 0;
+					}else
+					{
+						// For motors when armed keep above neutral
+						if((mixers[ct].type == MIXERSETTINGS_MIXER1TYPE_MOTOR) && (status[ct] < 0))
+							status[ct] = 0;
+
+						command.Channel[ct] = scaleChannel(status[ct],
+										   settings.ChannelMax[ct],
+										   settings.ChannelMin[ct],
+										   settings.ChannelNeutral[ct]);
+					}
+				}
+			}
+			MixerStatusSet(&mixerStatus);
+
+			// Store update time
+			command.UpdateTime = 1000*dT;
+			if(1000*dT > command.MaxUpdateTime)
+				command.MaxUpdateTime = 1000*dT;
+
+			// Update output object
+			ActuatorCommandSet(&command);
+		}
+		else
+		{
+			// We are not in command of the ActuatorCommand
+			AlarmsClear(SYSTEMALARMS_ALARM_ACTUATOR);
+		}
 
 		// Update servo outputs
 		bool success = true;
