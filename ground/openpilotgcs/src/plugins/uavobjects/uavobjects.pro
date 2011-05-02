@@ -54,6 +54,7 @@ HEADERS += $$UAVOBJECT_SYNTHETICS/ahrsstatus.h \
     $$UAVOBJECT_SYNTHETICS/velocitydesired.h \
     $$UAVOBJECT_SYNTHETICS/velocityactual.h \
     $$UAVOBJECT_SYNTHETICS/guidancesettings.h \
+    $$UAVOBJECT_SYNTHETICS/ccguidancesettings.h \
     $$UAVOBJECT_SYNTHETICS/positiondesired.h \
     $$UAVOBJECT_SYNTHETICS/ratedesired.h \
     $$UAVOBJECT_SYNTHETICS/firmwareiapobj.h \
@@ -99,6 +100,7 @@ SOURCES += $$UAVOBJECT_SYNTHETICS/ahrsstatus.cpp \
     $$UAVOBJECT_SYNTHETICS/velocitydesired.cpp \
     $$UAVOBJECT_SYNTHETICS/velocityactual.cpp \
     $$UAVOBJECT_SYNTHETICS/guidancesettings.cpp \
+    $$UAVOBJECT_SYNTHETICS/ccguidancesettings.cpp \
     $$UAVOBJECT_SYNTHETICS/positiondesired.cpp \
     $$UAVOBJECT_SYNTHETICS/ratedesired.cpp \
     $$UAVOBJECT_SYNTHETICS/firmwareiapobj.cpp \
