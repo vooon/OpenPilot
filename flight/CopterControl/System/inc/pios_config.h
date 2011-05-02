@@ -97,6 +97,7 @@
 #define PIOS_TELEM_STACK_SIZE           500
 
 //#define PIOS_QUATERNION_STABILIZATION
+#define PIOS_GPS_PURISTIC
 
 #endif /* PIOS_CONFIG_H */
 /**
