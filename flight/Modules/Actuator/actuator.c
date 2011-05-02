@@ -175,9 +175,9 @@ static void actuatorTask(void* parameters)
 
 
 		// Can we write to ActuatorCommand?
-		// In case it is read-only, there is no need to do any calculations
-		if (! ActuatorCommandReadOnly(klojo))
+		if (! ActuatorCommandReadOnly(dummy))	// dummy is not used
 		{
+			// Apply filters to ActuatorDesired and write into ActuatorCommand
 			int nMixers = 0;
 			Mixer_t * mixers = (Mixer_t *)&mixerSettings.Mixer1Type;
 			for(int ct=0; ct < MAX_MIX_ACTUATORS; ct++)
