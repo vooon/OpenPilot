@@ -49,17 +49,31 @@
 #include "stabilizationdesired.h"
 #include "systemsettings.h"
 
+/**
+ * Mad Hack: Integrate GPS code into CCGuidance Module
+ * This allows reusing stack memory and also safes
+ * another 256 byte of thread overhead
+ */
+#ifdef PIOS_GPS_INTEGRATED_TASK
+	extern void gpsInit();
+	extern void gpsLoop();
+#endif
+
 // Private constants
 #define MAX_QUEUE_SIZE 1
-#define STACK_SIZE_BYTES 256
-#define TASK_PRIORITY (tskIDLE_PRIORITY+2)
+#define CCG_STACK_SIZE_BYTES 400
+#define GPS_STACK_SIZE_BYTES 880
+#define CCG_TASK_PRIORITY (tskIDLE_PRIORITY+2)
 #define RAD2DEG (180.0/M_PI)
 #define GEE 9.81
+#define XDelay (100 / portTICK_RATE_MS)
 // Private types
 
 // Private variables
 static xTaskHandle ccguidanceTaskHandle;
+#ifndef PIOS_GPS_INTEGRATED_TASK
 static xQueueHandle queue;
+#endif
 static uint8_t positionHoldLast = 0;
 
 
@@ -73,6 +87,9 @@ static float bound(float val, float min, float max);
  */
 int32_t CCGuidanceInitialize()
 {
+
+#ifndef PIOS_GPS_INTEGRATED_TASK
+
 	// Create object queue
 	queue = xQueueCreate(MAX_QUEUE_SIZE, sizeof(UAVObjEvent));
 	
@@ -80,7 +97,14 @@ int32_t CCGuidanceInitialize()
 	GPSPositionConnectQueue(queue);
 	
 	// Start main task
-	xTaskCreate(ccguidanceTask, (signed char *)"Guidance", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &ccguidanceTaskHandle);
+	xTaskCreate(ccguidanceTask, (signed char *)"Guidance", CCG_STACK_SIZE_BYTES/4, NULL, CCG_TASK_PRIORITY, &ccguidanceTaskHandle);
+
+#else  // PIOS_GPS_INTEGRATED_TASK
+
+	xTaskCreate(ccguidanceTask, (signed char *)"Guidance", GPS_STACK_SIZE_BYTES/4, NULL, CCG_TASK_PRIORITY, &ccguidanceTaskHandle);
+
+#endif  // PIOS_GPS_INTEGRATED_TASK
+
 	TaskMonitorAdd(TASKINFO_RUNNING_GUIDANCE, ccguidanceTaskHandle);
 
 	return 0;
@@ -97,23 +121,37 @@ static void ccguidanceTask(void *parameters)
 
 	portTickType thisTime;
 	portTickType lastUpdateTime;
+	#ifndef PIOS_GPS_INTEGRATED_TASK
 	UAVObjEvent ev;
+	#endif
 
 	float altitudeError;
 	float courseError;
+	uint8_t alarm;
+
+	#ifdef PIOS_GPS_INTEGRATED_TASK
+		gpsInit();
+	#endif
 	
 	// Main task loop
 	lastUpdateTime = xTaskGetTickCount();
 	while (1) {
+
 		CCGuidanceSettingsGet(&ccguidanceSettings);
 
-		// Wait until the GPSPosition object is updated, if a timeout then go to failsafe
-		if ( xQueueReceive(queue, &ev, ccguidanceSettings.UpdatePeriod / portTICK_RATE_MS) != pdTRUE )
-		{
-			AlarmsSet(SYSTEMALARMS_ALARM_GUIDANCE,SYSTEMALARMS_ALARM_WARNING);
-		} else {
-			AlarmsClear(SYSTEMALARMS_ALARM_GUIDANCE);
-		}
+		#ifdef PIOS_GPS_INTEGRATED_TASK
+			vTaskDelay(XDelay);
+			gpsLoop();
+			alarm=0;
+		#else  // PIOS_GPS_INTEGRATED_TASK
+			// Wait until the GPSPosition object is updated, if a timeout then go to failsafe
+			if ( xQueueReceive(queue, &ev, ccguidanceSettings.UpdatePeriod / portTICK_RATE_MS) != pdTRUE )
+			{
+				alarm=SYSTEMALARMS_ALARM_WARNING;
+			} else {
+				alarm=0;
+			}
+		#endif  // PIOS_GPS_INTEGRATED_TASK
 				
 		// Continue collecting data if not enough time
 		thisTime = xTaskGetTickCount();
@@ -186,6 +224,7 @@ static void ccguidanceTask(void *parameters)
 				stabDesired.Yaw = 0;
 				stabDesired.Pitch = ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_NEUTRAL];
 				stabDesired.Roll = ccguidanceSettings.Roll[CCGUIDANCESETTINGS_ROLL_MAX];
+				alarm = SYSTEMALARMS_ALARM_CRITICAL;
 			}
 
 			/* 3. Throttle (manual) */
@@ -196,13 +235,17 @@ static void ccguidanceTask(void *parameters)
 			stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_YAW] = STABILIZATIONDESIRED_STABILIZATIONMODE_RATE;
 			
 			StabilizationDesiredSet(&stabDesired);
+			if (alarm!=0) {
+				AlarmsSet(SYSTEMALARMS_ALARM_GUIDANCE,alarm);
+			} else {
+				AlarmsClear(SYSTEMALARMS_ALARM_GUIDANCE);
+			}
 
 
 		} else {
 			// reset globals...
 			positionHoldLast = 0;
 		}
-		
 	}
 }
 

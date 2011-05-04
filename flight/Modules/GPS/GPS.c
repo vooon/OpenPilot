@@ -52,7 +52,11 @@
 // ****************
 // Private functions
 
+#ifndef PIOS_GPS_INTEGRATED_TASK
 static void gpsTask(void *parameters);
+#endif
+void gpsInit();
+void gpsLoop();
 
 #ifdef PIOS_GPS_SETS_HOMELOCATION
 static void setHomeLocation(GPSPositionData * gpsData);
@@ -67,6 +71,7 @@ static float GravityAccel(float latitude, float longitude, float altitude);
 
 #define GPS_TIMEOUT_MS                  500
 #define GPS_COMMAND_RESEND_TIMEOUT_MS   2000
+#define XDelay (100 / portTICK_RATE_MS)
 
 #ifdef PIOS_GPS_SETS_HOMELOCATION
 // Unfortunately need a good size stack for the WMM calculation
@@ -90,12 +95,15 @@ static float GravityAccel(float latitude, float longitude, float altitude);
 
 static uint32_t gpsPort;
 
+#ifndef PIOS_GPS_INTEGRATED_TASK
 static xTaskHandle gpsTaskHandle;
+#endif
 
 #ifndef ENABLE_GPS_BINARY_GTOP
 	static char gps_rx_buffer[128];
 #endif
 
+static uint32_t timeNowMs;
 static uint32_t timeOfLastCommandMs;
 static uint32_t timeOfLastUpdateMs;
 static uint32_t numUpdates;
@@ -111,6 +119,7 @@ static uint32_t numParsingErrors;
 
 int32_t GPSInitialize(void)
 {
+#ifndef PIOS_GPS_INTEGRATED_TASK
 	signed portBASE_TYPE xReturn;
 
 	// TODO: Get gps settings object
@@ -119,28 +128,35 @@ int32_t GPSInitialize(void)
 	// Start gps task
 	xReturn = xTaskCreate(gpsTask, (signed char *)"GPS", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &gpsTaskHandle);
 	TaskMonitorAdd(TASKINFO_RUNNING_GPS, gpsTaskHandle);
-
+#endif
 	return 0;
 }
 
+#ifndef PIOS_GPS_INTEGRATED_TASK
 // ****************
 /**
  * Main gps task. It does not return.
  */
-
 static void gpsTask(void *parameters)
 {
-	portTickType xDelay = 100 / portTICK_RATE_MS;
-	uint32_t timeNowMs = xTaskGetTickCount() * portTICK_RATE_MS;;
-	GPSPositionData GpsData;
+	timeNowMs = xTaskGetTickCount() * portTICK_RATE_MS;;
+
+	gpsInit();
+	// Loop forever
+	while (1)
+	{
+		gpsLoop();
+		// Block task until next update
+		vTaskDelay(XDelay);
+	}
+}
+#endif  // PIOS_GPS_INTEGRATED_TASK
+
+void gpsInit()
+{
 	
 #ifdef ENABLE_GPS_BINARY_GTOP
 	GTOP_BIN_init();
-#else
-	uint8_t rx_count = 0;
-	bool start_flag = false;
-	bool found_cr = false;
-	int32_t gpsRxOverflow = 0;
 #endif
 	
 #ifdef FULL_COLD_RESTART
@@ -149,7 +165,7 @@ static void gpsTask(void *parameters)
 	timeOfLastCommandMs = timeNowMs;
 	while (timeNowMs - timeOfLastCommandMs < 300)	// delay for 300ms to let the GPS sort itself out
 	{
-		vTaskDelay(xDelay);	// Block task until next update
+		vTaskDelay(XDelay);	// Block task until next update
 		timeNowMs = xTaskGetTickCount() * portTICK_RATE_MS;;
 	}
 #endif
@@ -180,172 +196,178 @@ static void gpsTask(void *parameters)
 	timeOfLastUpdateMs = timeNowMs;
 	timeOfLastCommandMs = timeNowMs;
 
-	// Loop forever
-	while (1)
-	{
-		#ifdef ENABLE_GPS_BINARY_GTOP
-			// GTOP BINARY GPS mode
+}
 
-			while (PIOS_COM_ReceiveBufferUsed(gpsPort) > 0)
+void gpsLoop()
+{
+	GPSPositionData GpsData;
+
+	#ifndef ENABLE_GPS_BINARY_GTOP
+		static uint8_t rx_count = 0;
+		static bool start_flag = false;
+		static bool found_cr = false;
+		static int32_t gpsRxOverflow = 0;
+	#endif
+	#ifdef ENABLE_GPS_BINARY_GTOP
+		// GTOP BINARY GPS mode
+
+		while (PIOS_COM_ReceiveBufferUsed(gpsPort) > 0)
+		{
+			int res = GTOP_BIN_update_position(PIOS_COM_ReceiveBuffer(gpsPort), &numChecksumErrors, &numParsingErrors);
+			if (res >= 0)
 			{
-				int res = GTOP_BIN_update_position(PIOS_COM_ReceiveBuffer(gpsPort), &numChecksumErrors, &numParsingErrors);
-				if (res >= 0)
-				{
-					numUpdates++;
+				numUpdates++;
+
+				timeNowMs = xTaskGetTickCount() * portTICK_RATE_MS;
+				timeOfLastUpdateMs = timeNowMs;
+				timeOfLastCommandMs = timeNowMs;
+			}
+		}
+
+	#else
+		// NMEA or SINGLE-SENTENCE GPS mode
+
+		// This blocks the task until there is something on the buffer
+		while (PIOS_COM_ReceiveBufferUsed(gpsPort) > 0)
+		{
+			char c = PIOS_COM_ReceiveBuffer(gpsPort);
+		
+			// detect start while acquiring stream
+			if (!start_flag && (c == '$'))
+			{
+				start_flag = true;
+				found_cr = false;
+				rx_count = 0;
+			}
+			else
+			if (!start_flag)
+				continue;
+		
+			if (rx_count >= sizeof(gps_rx_buffer))
+			{
+				// The buffer is already full and we haven't found a valid NMEA sentence.
+				// Flush the buffer and note the overflow event.
+				gpsRxOverflow++;
+				start_flag = false;
+				found_cr = false;
+				rx_count = 0;
+			}
+			else
+			{
+				gps_rx_buffer[rx_count] = c;
+				rx_count++;
+			}
+		
+			// look for ending '\r\n' sequence
+			if (!found_cr && (c == '\r') )
+				found_cr = true;
+			else
+			if (found_cr && (c != '\n') )
+				found_cr = false;  // false end flag
+			else
+			if (found_cr && (c == '\n') )
+			{
+				// The NMEA functions require a zero-terminated string
+				// As we detected \r\n, the string as for sure 2 bytes long, we will also strip the \r\n
+				gps_rx_buffer[rx_count-2] = 0;
+
+				// prepare to parse next sentence
+				start_flag = false;
+				found_cr = false;
+				rx_count = 0;
+				// Our rxBuffer must look like this now:
+				//   [0]           = '$'
+				//   ...           = zero or more bytes of sentence payload
+				//   [end_pos - 1] = '\r'
+				//   [end_pos]     = '\n'
+				//
+				// Prepare to consume the sentence from the buffer
+			
+				// Validate the checksum over the sentence
+				if (!NMEA_checksum(&gps_rx_buffer[1]))
+				{	// Invalid checksum.  May indicate dropped characters on Rx.
+					//PIOS_DEBUG_PinHigh(2);
+					++numChecksumErrors;
+					//PIOS_DEBUG_PinLow(2);
+				}
+				else
+				{	// Valid checksum, use this packet to update the GPS position
+					if (!NMEA_update_position(&gps_rx_buffer[1])) {
+						//PIOS_DEBUG_PinHigh(2);
+						++numParsingErrors;
+						//PIOS_DEBUG_PinLow(2);
+					}
+					else
+						++numUpdates;
 
 					timeNowMs = xTaskGetTickCount() * portTICK_RATE_MS;
 					timeOfLastUpdateMs = timeNowMs;
 					timeOfLastCommandMs = timeNowMs;
 				}
 			}
-
-		#else
-			// NMEA or SINGLE-SENTENCE GPS mode
-
-			// This blocks the task until there is something on the buffer
-			while (PIOS_COM_ReceiveBufferUsed(gpsPort) > 0)
-			{
-				char c = PIOS_COM_ReceiveBuffer(gpsPort);
-			
-				// detect start while acquiring stream
-				if (!start_flag && (c == '$'))
-				{
-					start_flag = true;
-					found_cr = false;
-					rx_count = 0;
-				}
-				else
-				if (!start_flag)
-					continue;
-			
-				if (rx_count >= sizeof(gps_rx_buffer))
-				{
-					// The buffer is already full and we haven't found a valid NMEA sentence.
-					// Flush the buffer and note the overflow event.
-					gpsRxOverflow++;
-					start_flag = false;
-					found_cr = false;
-					rx_count = 0;
-				}
-				else
-				{
-					gps_rx_buffer[rx_count] = c;
-					rx_count++;
-				}
-			
-				// look for ending '\r\n' sequence
-				if (!found_cr && (c == '\r') )
-					found_cr = true;
-				else
-				if (found_cr && (c != '\n') )
-					found_cr = false;  // false end flag
-				else
-				if (found_cr && (c == '\n') )
-				{
-					// The NMEA functions require a zero-terminated string
-					// As we detected \r\n, the string as for sure 2 bytes long, we will also strip the \r\n
-					gps_rx_buffer[rx_count-2] = 0;
-
-					// prepare to parse next sentence
-					start_flag = false;
-					found_cr = false;
-					rx_count = 0;
-					// Our rxBuffer must look like this now:
-					//   [0]           = '$'
-					//   ...           = zero or more bytes of sentence payload
-					//   [end_pos - 1] = '\r'
-					//   [end_pos]     = '\n'
-					//
-					// Prepare to consume the sentence from the buffer
-				
-					// Validate the checksum over the sentence
-					if (!NMEA_checksum(&gps_rx_buffer[1]))
-					{	// Invalid checksum.  May indicate dropped characters on Rx.
-						//PIOS_DEBUG_PinHigh(2);
-						++numChecksumErrors;
-						//PIOS_DEBUG_PinLow(2);
-					}
-					else
-					{	// Valid checksum, use this packet to update the GPS position
-						if (!NMEA_update_position(&gps_rx_buffer[1])) {
-							//PIOS_DEBUG_PinHigh(2);
-							++numParsingErrors;
-							//PIOS_DEBUG_PinLow(2);
-						}
-						else
-							++numUpdates;
-
-						timeNowMs = xTaskGetTickCount() * portTICK_RATE_MS;
-						timeOfLastUpdateMs = timeNowMs;
-						timeOfLastCommandMs = timeNowMs;
-					}
-				}
-			}
-		#endif
-
-		// Check for GPS timeout
-		timeNowMs = xTaskGetTickCount() * portTICK_RATE_MS;
-		if ((timeNowMs - timeOfLastUpdateMs) >= GPS_TIMEOUT_MS)
-		{	// we have not received any valid GPS sentences for a while.
-			// either the GPS is not plugged in or a hardware problem or the GPS has locked up.
-
-			GPSPositionGet(&GpsData);
-			GpsData.Status = GPSPOSITION_STATUS_NOGPS;
-			GPSPositionSet(&GpsData);
-			AlarmsSet(SYSTEMALARMS_ALARM_GPS, SYSTEMALARMS_ALARM_ERROR);
-
-			if ((timeNowMs - timeOfLastCommandMs) >= GPS_COMMAND_RESEND_TIMEOUT_MS)
-			{	// resend the command .. just incase the gps has only just been plugged in or the gps did not get our last command
-				timeOfLastCommandMs = timeNowMs;
-
-				#ifdef ENABLE_GPS_BINARY_GTOP
-					GTOP_BIN_init();
-					// switch to binary mode
-					PIOS_COM_SendStringNonBlocking(gpsPort,"$PGCMD,21,1*6F\r\n");
-				#endif
-
-				#ifdef ENABLE_GPS_ONESENTENCE_GTOP
-					// switch to single sentence mode
-					PIOS_COM_SendStringNonBlocking(gpsPort,"$PGCMD,21,2*6C\r\n");
-				#endif
-
-				#ifdef ENABLE_GPS_NMEA
-					// switch to NMEA mode
-					PIOS_COM_SendStringNonBlocking(gpsPort,"$PGCMD,21,3*6D\r\n");
-				#endif
-
-				#ifdef DISABLE_GPS_TRESHOLD
-					PIOS_COM_SendStringNonBlocking(gpsPort,"$PMTK397,0*23\r\n");
-				#endif
-			}
 		}
-		else
-		{	// we appear to be receiving GPS sentences OK, we've had an update
+	#endif
 
-			GPSPositionGet(&GpsData);
+	// Check for GPS timeout
+	timeNowMs = xTaskGetTickCount() * portTICK_RATE_MS;
+	if ((timeNowMs - timeOfLastUpdateMs) >= GPS_TIMEOUT_MS)
+	{	// we have not received any valid GPS sentences for a while.
+		// either the GPS is not plugged in or a hardware problem or the GPS has locked up.
+
+		GPSPositionGet(&GpsData);
+		GpsData.Status = GPSPOSITION_STATUS_NOGPS;
+		GPSPositionSet(&GpsData);
+		AlarmsSet(SYSTEMALARMS_ALARM_GPS, SYSTEMALARMS_ALARM_ERROR);
+
+		if ((timeNowMs - timeOfLastCommandMs) >= GPS_COMMAND_RESEND_TIMEOUT_MS)
+		{	// resend the command .. just incase the gps has only just been plugged in or the gps did not get our last command
+			timeOfLastCommandMs = timeNowMs;
+
+			#ifdef ENABLE_GPS_BINARY_GTOP
+				GTOP_BIN_init();
+				// switch to binary mode
+				PIOS_COM_SendStringNonBlocking(gpsPort,"$PGCMD,21,1*6F\r\n");
+			#endif
+
+			#ifdef ENABLE_GPS_ONESENTENCE_GTOP
+				// switch to single sentence mode
+				PIOS_COM_SendStringNonBlocking(gpsPort,"$PGCMD,21,2*6C\r\n");
+			#endif
+
+			#ifdef ENABLE_GPS_NMEA
+				// switch to NMEA mode
+				PIOS_COM_SendStringNonBlocking(gpsPort,"$PGCMD,21,3*6D\r\n");
+			#endif
+
+			#ifdef DISABLE_GPS_TRESHOLD
+				PIOS_COM_SendStringNonBlocking(gpsPort,"$PMTK397,0*23\r\n");
+			#endif
+		}
+	}
+	else
+	{	// we appear to be receiving GPS sentences OK, we've had an update
+
+		GPSPositionGet(&GpsData);
 
 #ifdef PIOS_GPS_SETS_HOMELOCATION
-			HomeLocationData home;
-			HomeLocationGet(&home);
+		HomeLocationData home;
+		HomeLocationGet(&home);
 
-			if ((GpsData.Status == GPSPOSITION_STATUS_FIX3D) && (home.Set == HOMELOCATION_SET_FALSE))
-				setHomeLocation(&GpsData);
+		if ((GpsData.Status == GPSPOSITION_STATUS_FIX3D) && (home.Set == HOMELOCATION_SET_FALSE))
+			setHomeLocation(&GpsData);
 #endif
 
-			//criteria for GPS-OK taken from this post...
-			//http://forums.openpilot.org/topic/1523-professors-insgps-in-svn/page__view__findpost__p__5220
-			if ((GpsData.PDOP < 3.5) && (GpsData.Satellites >= 7))
-				AlarmsClear(SYSTEMALARMS_ALARM_GPS);
-			else
-			if (GpsData.Status == GPSPOSITION_STATUS_FIX3D)
-				AlarmsSet(SYSTEMALARMS_ALARM_GPS, SYSTEMALARMS_ALARM_WARNING);
-			else
-				AlarmsSet(SYSTEMALARMS_ALARM_GPS, SYSTEMALARMS_ALARM_CRITICAL);
-		}
-
-		// Block task until next update
-		vTaskDelay(xDelay);
+		//criteria for GPS-OK taken from this post...
+		//http://forums.openpilot.org/topic/1523-professors-insgps-in-svn/page__view__findpost__p__5220
+		if ((GpsData.PDOP < 3.5) && (GpsData.Satellites >= 7))
+			AlarmsClear(SYSTEMALARMS_ALARM_GPS);
+		else
+		if (GpsData.Status == GPSPOSITION_STATUS_FIX3D)
+			AlarmsSet(SYSTEMALARMS_ALARM_GPS, SYSTEMALARMS_ALARM_WARNING);
+		else
+			AlarmsSet(SYSTEMALARMS_ALARM_GPS, SYSTEMALARMS_ALARM_CRITICAL);
 	}
+
 }
 
 #ifdef PIOS_GPS_SETS_HOMELOCATION
