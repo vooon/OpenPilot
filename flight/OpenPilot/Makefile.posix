@@ -170,6 +170,7 @@ SRC += $(PIOSPOSIX)/pios_udp.c
 SRC += $(PIOSPOSIX)/pios_com.c
 SRC += $(PIOSPOSIX)/pios_servo.c
 SRC += $(PIOSPOSIX)/pios_wdg.c
+SRC += $(PIOSPOSIX)/pios_rctx.c
 
 ## Libraries for flight calculations
 #SRC += $(FLIGHTLIB)/fifo_buffer.c
@@ -342,6 +343,7 @@ LDFLAGS += -lc
 LDFLAGS += $(patsubst %,-l%,$(EXTRA_LIBS))
 LDFLAGS += $(MATH_LIB)
 LDFLAGS += -lc -lgcc
+LDFLAGS += -ludev
 
 
 

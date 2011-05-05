@@ -50,6 +50,10 @@ void PIOS_Board_Init(void) {
 	/* Initialize the task monitor library */
 	TaskMonitorInitialize();
 
+#if defined(PIOS_INCLUDE_RCTX)
+	PIOS_RCTX_Init();
+#endif
+
 	/* Initialize the PiOS library */
 	PIOS_COM_Init();
 
