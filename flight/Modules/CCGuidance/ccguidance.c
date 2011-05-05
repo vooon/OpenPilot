@@ -61,8 +61,8 @@
 
 // Private constants
 #define MAX_QUEUE_SIZE 1
-#define CCG_STACK_SIZE_BYTES 400
-#define GPS_STACK_SIZE_BYTES 880
+#define CCG_STACK_SIZE_BYTES 500
+#define GPS_STACK_SIZE_BYTES 752
 #define CCG_TASK_PRIORITY (tskIDLE_PRIORITY+2)
 #define RAD2DEG (180.0/M_PI)
 #define GEE 9.81

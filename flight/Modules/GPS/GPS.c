@@ -82,9 +82,9 @@ static float GravityAccel(float latitude, float longitude, float altitude);
 	#endif
 #else
 	#ifdef ENABLE_GPS_BINARY_GTOP
-		#define STACK_SIZE_BYTES            440
+		#define STACK_SIZE_BYTES            672
 	#else
-		#define STACK_SIZE_BYTES            440
+		#define STACK_SIZE_BYTES            672
 	#endif
 #endif
 
@@ -122,9 +122,6 @@ int32_t GPSInitialize(void)
 #ifndef PIOS_GPS_INTEGRATED_TASK
 	signed portBASE_TYPE xReturn;
 
-	// TODO: Get gps settings object
-	gpsPort = PIOS_COM_GPS;
-
 	// Start gps task
 	xReturn = xTaskCreate(gpsTask, (signed char *)"GPS", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &gpsTaskHandle);
 	TaskMonitorAdd(TASKINFO_RUNNING_GPS, gpsTaskHandle);
@@ -154,7 +151,10 @@ static void gpsTask(void *parameters)
 
 void gpsInit()
 {
-	
+
+	// TODO: Get gps settings object
+	gpsPort = PIOS_COM_GPS;
+
 #ifdef ENABLE_GPS_BINARY_GTOP
 	GTOP_BIN_init();
 #endif

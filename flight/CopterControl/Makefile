@@ -58,7 +58,7 @@ endif
 FLASH_TOOL = OPENOCD
 
 # List of modules to include
-MODULES = Telemetry Attitude Stabilization Actuator ManualControl FirmwareIAP GPS CCGuidance
+MODULES = Telemetry Attitude Actuator ManualControl FirmwareIAP CCGuidance GPS Stabilization
 
 # MCU name, submodel and board
 # - MCU used for compiler-option (-mcpu)
