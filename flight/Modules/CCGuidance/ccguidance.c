@@ -235,17 +235,18 @@ static void ccguidanceTask(void *parameters)
 			stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_YAW] = STABILIZATIONDESIRED_STABILIZATIONMODE_RATE;
 			
 			StabilizationDesiredSet(&stabDesired);
-			if (alarm!=0) {
-				AlarmsSet(SYSTEMALARMS_ALARM_GUIDANCE,alarm);
-			} else {
-				AlarmsClear(SYSTEMALARMS_ALARM_GUIDANCE);
-			}
-
 
 		} else {
 			// reset globals...
 			positionHoldLast = 0;
 		}
+
+		if (alarm!=0) {
+			AlarmsSet(SYSTEMALARMS_ALARM_GUIDANCE,alarm);
+		} else {
+			AlarmsClear(SYSTEMALARMS_ALARM_GUIDANCE);
+		}
+
 	}
 }
 
