@@ -144,20 +144,22 @@ ConfigOutputWidget::ConfigOutputWidget(QWidget *parent) : ConfigTaskWidget(paren
 
     firstUpdate = true;
 
-	enableControls(false);
+    connect(m_config->spinningArmed, SIGNAL(toggled(bool)), this, SLOT(setSpinningArmed(bool)));
 
-	// Listen to telemetry connection events
-	if (pm)
-	{
-		TelemetryManager *tm = pm->getObject<TelemetryManager>();
-		if (tm)
-		{
-			connect(tm, SIGNAL(myStart()), this, SLOT(onTelemetryStart()));
-			connect(tm, SIGNAL(myStop()), this, SLOT(onTelemetryStop()));
-			connect(tm, SIGNAL(connected()), this, SLOT(onTelemetryConnect()));
-			connect(tm, SIGNAL(disconnected()), this, SLOT(onTelemetryDisconnect()));
-		}
-	}
+    enableControls(false);
+
+    // Listen to telemetry connection events
+    if (pm)
+    {
+        TelemetryManager *tm = pm->getObject<TelemetryManager>();
+        if (tm)
+        {
+            connect(tm, SIGNAL(myStart()), this, SLOT(onTelemetryStart()));
+            connect(tm, SIGNAL(myStop()), this, SLOT(onTelemetryStop()));
+            connect(tm, SIGNAL(connected()), this, SLOT(onTelemetryConnect()));
+            connect(tm, SIGNAL(disconnected()), this, SLOT(onTelemetryDisconnect()));
+        }
+    }
 }
 
 ConfigOutputWidget::~ConfigOutputWidget()
@@ -307,7 +309,20 @@ void ConfigOutputWidget::assignOutputChannel(UAVDataObject *obj, QString str)
     }
 }
 
-
+/**
+  * Set the "Spin motors at neutral when armed" flag in ActuatorSettings
+  */
+void ConfigOutputWidget::setSpinningArmed(bool val)
+{
+    UAVDataObject *obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("ActuatorSettings")));
+    if (!obj) return;
+    UAVObjectField *field = obj->getField("MotorsSpinWhileArmed");
+    if (!field) return;
+    if(val)
+        field->setValue("TRUE");
+    else
+        field->setValue("FALSE");
+}
 
 /**
   Sends the channel value to the UAV to move the servo.
@@ -393,9 +408,12 @@ void ConfigOutputWidget::requestRCOutputUpdate()
         }
     }
 
+    // Get the SpinWhileArmed setting
+    UAVObjectField *field = obj->getField(QString("MotorsSpinWhileArmed"));
+    m_config->spinningArmed->setChecked(field->getValue().toString().contains("TRUE"));
 
     // Get Output rates for both banks
-    UAVObjectField* field = obj->getField(QString("ChannelUpdateFreq"));
+    field = obj->getField(QString("ChannelUpdateFreq"));
     UAVObjectUtilManager* utilMngr = pm->getObject<UAVObjectUtilManager>();
     m_config->outputRate1->setValue(field->getValue(0).toInt());
     m_config->outputRate2->setValue(field->getValue(1).toInt());
