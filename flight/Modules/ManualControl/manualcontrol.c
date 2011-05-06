@@ -165,7 +165,6 @@ static void manualControlTask(void *parameters)
 
 	uint8_t disconnected_count = 0;
 	uint8_t connected_count = 0;
-	bool grant_readwrite_access = FALSE;
 	enum { CONNECTED, DISCONNECTED } connection_state = DISCONNECTED;
 
 	// Make sure unarmed on power up
@@ -187,45 +186,13 @@ static void manualControlTask(void *parameters)
 		ManualControlSettingsGet(&settings);
 
 		if (ManualControlCommandReadOnly(&cmd)) {
-			grant_readwrite_access = FALSE;
 			FlightTelemetryStatsData flightTelemStats;
 			FlightTelemetryStatsGet(&flightTelemStats);
 			if(flightTelemStats.Status != FLIGHTTELEMETRYSTATS_STATUS_CONNECTED) {
-			// trying to fly via GCS and lost connection.  fall back to transmitter
-				grant_readwrite_access = TRUE;
-			}
-
-#if defined(PIOS_INCLUDE_RCTX)
-			// We have a transmitter ready, use it
-			if (PIOS_RCTX_Transmitter_Status_Get() == 0) {
-
-				// Transmitter can give control to GCS by changing flight mode or disconnection.
-				grant_readwrite_access = TRUE;
-			}
-#endif
-
-			if (grant_readwrite_access == TRUE) {
+				// trying to fly via GCS and lost connection.  fall back to transmitter
 				UAVObjMetadata metadata;
 				UAVObjGetMetadata(&cmd, &metadata);
 				metadata.access = ACCESS_READWRITE;
-				UAVObjSetMetadata(&cmd, &metadata);
-			}
-		}
-		else
-		{
-			grant_readwrite_access = TRUE;
-
-			// trying to fly via transmitter and lost connection.  fall back to GCS
-#if defined(PIOS_INCLUDE_RCTX)
-			// release control to GCS if transmitter is not plugged in
-			if (PIOS_RCTX_Transmitter_Status_Get()) {
-				grant_readwrite_access = FALSE;
-			}
-#endif
-			if (grant_readwrite_access == FALSE) {
-				UAVObjMetadata metadata;
-				UAVObjGetMetadata(&cmd, &metadata);
-				metadata.access = ACCESS_READONLY;
 				UAVObjSetMetadata(&cmd, &metadata);
 			}
 		}
