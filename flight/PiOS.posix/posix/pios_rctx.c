@@ -80,8 +80,10 @@ static int32_t rctx_trasmitter_connected = 0;
 /* list of all supported adapters */
 struct pios_rctx_device pios_rctx_device_supported[] =
 	{  /* vendor id , product id, periode_ms, callback input, callback status */
-		{ 1781 , 898, 200, PIOS_RCTX_Phoenix_Usb_Adapter_Buf_Set, PIOS_RCTX_Phoenix_Usb_Adapter_Status_Get }, /* PxRC PhoenixRC USB Interface */
-		{ 0, 0, 0, NULL, NULL }  /* Add new r/c transmitter USB adapter here */
+		/* PhoenixRC USB Adapter from Horizon */
+		{ 1781 , 898, 200, PIOS_RCTX_Phoenix_Usb_Adapter_Buf_Set, PIOS_RCTX_Phoenix_Usb_Adapter_Status_Get },
+		/* Add new r/c transmitter USB adapter here */
+		{ 0, 0, 0, NULL, NULL }
 	};
 
 /* size of the list of supported adapters */
