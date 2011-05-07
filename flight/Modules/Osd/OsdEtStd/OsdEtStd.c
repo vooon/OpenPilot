@@ -90,6 +90,7 @@
 
 
 static const char *UpdateConfFilePath = "/etosd/update.ocf";
+static const char *UpdateFwFilePath = "/etosd/fw.bin";
 #ifdef DUMP_CONFIG
 static const char *DumpConfFilePath = "/etosd/dump.ocf";
 #endif
@@ -114,6 +115,7 @@ static volatile bool newBaroData = FALSE;
 
 static enum
 {
+	STATE_FW,
 	STATE_DETECT,
 	STATE_UPDATE_CONF,
 	STATE_DUMP_CONF,
@@ -301,6 +303,184 @@ static bool Write(uint32_t start, uint8_t length, const uint8_t * buffer)
 	return FALSE;
 }
 
+static uint8_t calc_parity(const uint8_t * buffer)
+{
+	uint8_t parity=0;
+	for(int i=0; i<24; i++)
+	{
+		parity^=buffer[i];
+	}
+	return parity;
+}
+
+static uint8_t StartFwUpdate(void)
+{
+	// The bricker, ERASE command I guess
+	uint8_t cmd[3];
+	uint8_t ack[1];
+	//s60a05a03a40as61a01np
+
+	const struct pios_i2c_txn txn_list1[] = {
+		{
+		 .addr = OSD_ADDRESS,
+		 .rw = PIOS_I2C_TXN_WRITE,
+		 .len = sizeof(cmd),
+		 .buf = cmd,
+		 }
+		,
+		{
+		 .addr = OSD_ADDRESS,
+		 .rw = PIOS_I2C_TXN_READ,
+		 .len = sizeof(ack),
+		 .buf = ack,
+		 }
+		,
+	};
+
+	cmd[0] = 0x05;
+	cmd[1] = 0x03;
+	cmd[2] = 0x40;
+	ack[0] = 0;
+
+	//
+	// FIXME: See OP-305, the driver seems to return FALSE while all is OK
+	//
+	PIOS_I2C_Transfer(PIOS_I2C_MAIN_ADAPTER, txn_list1, NELEMENTS(txn_list1));
+	return ack[0];
+}
+
+static void EndFwUpdate(void)
+{
+	uint8_t cmd[25];
+	uint8_t ack[1];
+	//s60a04a19aFFa02aFFaFFaFFaFFaB4a93aFFaFFaFFaFFaFFaFFaFFaFFaFFaFFaFFaFFaFFaFFaDBap
+	for(int i=0; i<25; i++)
+	{
+		cmd[i]=0xFF;
+	}
+
+	const struct pios_i2c_txn txn_list1[] = {
+		{
+		 .addr = OSD_ADDRESS,
+		 .rw = PIOS_I2C_TXN_WRITE,
+		 .len = sizeof(cmd),
+		 .buf = cmd,
+		 }
+		,
+	};
+
+	cmd[0] = 0x04;
+	cmd[1] = 0x19;
+	cmd[3] = 0x02;
+	cmd[8] = 0xB4;
+	cmd[9] = 0x93;
+	cmd[24] = 0xDB;
+	ack[0] = 0;
+
+	//
+	// FIXME: See OP-305, the driver seems to return FALSE while all is OK
+	//
+	PIOS_I2C_Transfer(PIOS_I2C_MAIN_ADAPTER, txn_list1, NELEMENTS(txn_list1));
+}
+
+static uint8_t ReadType(void)
+{
+	uint8_t cmd[2];
+	uint8_t ack[1];
+	//s60a06a02a61a40np
+
+	const struct pios_i2c_txn txn_list1[] = {
+		{
+		 .addr = OSD_ADDRESS,
+		 .rw = PIOS_I2C_TXN_WRITE,
+		 .len = sizeof(cmd),
+		 .buf = cmd,
+		 }
+		,
+		{
+		 .addr = OSD_ADDRESS,
+		 .rw = PIOS_I2C_TXN_READ,
+		 .len = sizeof(ack),
+		 .buf = ack,
+		 }
+		,
+	};
+
+	cmd[0] = 0x06;
+	cmd[1] = 0x02;
+	ack[0] = 0;
+
+	//
+	// FIXME: See OP-305, the driver seems to return FALSE while all is OK
+	//
+	PIOS_I2C_Transfer(PIOS_I2C_MAIN_ADAPTER, txn_list1, NELEMENTS(txn_list1));
+	return ack[0];
+}
+
+static bool WriteFW(const uint8_t * buffer)
+{
+	uint8_t cmd[25];
+	uint8_t ack[1];
+	uint8_t parity = calc_parity(buffer);
+	uint8_t length = buffer[0];
+	for(int i=0; i<25; i++)
+	{
+		cmd[i]=0xFF;
+	}
+	//s60a04a19aFFa08a63aFEa57a38aD2aC4a56aCAa74a2Da01a63aFFaFFaFFaFFaFFaFFaFFaFFa4Ba61a01np
+
+	if(1)
+	{
+	const struct pios_i2c_txn txn_list1[] = {
+		{
+		 .addr = OSD_ADDRESS,
+		 .rw = PIOS_I2C_TXN_WRITE,
+		 .len = sizeof(cmd),
+		 .buf = cmd,
+		 }
+		,
+		{
+		 .addr = OSD_ADDRESS,
+		 .rw = PIOS_I2C_TXN_READ,
+		 .len = sizeof(ack),
+		 .buf = ack,
+		 }
+		,
+	};
+
+	/*if (length + 5 > sizeof(cmd)) {
+		// Too big
+		return FALSE;
+	}*/
+
+	cmd[0] = 0x04;
+	cmd[1] = 0x19;
+	cmd[2] = 0xFF;
+	cmd[3] = length; //length, 2,4,8,12,16
+	cmd[4] = buffer[7];
+	cmd[5] = buffer[6];
+	cmd[6] = buffer[5];
+	cmd[7] = buffer[4];
+	memcpy(&cmd[8], &buffer[8], length);
+	cmd[24] = parity;
+
+	ack[0] = 0;
+
+	//
+	// FIXME: See OP-305, the driver seems to return FALSE while all is OK
+	//
+	PIOS_I2C_Transfer(PIOS_I2C_MAIN_ADAPTER, txn_list1, NELEMENTS(txn_list1));
+//	if (PIOS_I2C_Transfer(PIOS_I2C_MAIN_ADAPTER, txn_list1, NELEMENTS(txn_list1))) {
+		//DEBUG_MSG("ACK=%d ", ack[0]);
+		if (ack[0] == 0x01) {
+			return TRUE;
+		}
+//	}
+	}
+	return FALSE;
+}
+
+
 static uint32_t ReadSwVersion(void)
 {
 	uint8_t buf[4];
@@ -315,6 +495,58 @@ static uint32_t ReadSwVersion(void)
 	}
 
 	return version;
+}
+static void UpdateFW(void)
+{
+	uint8_t buf[24];
+	//uint32_t addr = 0;
+	uint32_t n=0;
+	FILEINFO file;
+	uint32_t res;
+
+	// Try to open the file that contains a new config
+	res = DFS_OpenFile(&PIOS_SDCARD_VolInfo, (uint8_t *) UpdateFwFilePath, DFS_READ, PIOS_SDCARD_Sector, &file);
+	if (res == DFS_OK) {
+		uint32_t bytesRead;
+		bool ok = TRUE;
+
+		DEBUG_MSG("Updating FW ");
+		if(0){
+		if(ReadType() != 0x40)
+		{
+			DEBUG_MSG("Type Fail\n");
+			DFS_Close(&file);
+			return;
+		}
+		// ERASE be very careful !!!!!!!!!!!!!!!
+		if(StartFwUpdate() != 0x01)
+		{
+			DEBUG_MSG("Start Update Fail\n");
+			DFS_Close(&file);
+			return;
+		}
+		}
+		// Write the fw-data in blocks to OSD
+		while (ok) {
+			//n = MIN(CONFIG_LENGTH - addr, sizeof(buf));
+			res = DFS_ReadFile(&file, PIOS_SDCARD_Sector, buf, &bytesRead, 24);
+			if (res == DFS_OK && bytesRead == 24) {
+				n+=24;
+				ok = WriteFW(buf);
+				if (ok) {
+					//DEBUG_MSG(" %d %d\n", addr, n);
+					DEBUG_MSG(".");
+				}
+			} else {
+				DEBUG_MSG(" FILEREAD FAILED %d",n);
+				ok=FALSE;
+			}
+		}
+
+		DEBUG_MSG(ok ? " OK\n" : "FAILURE\n");
+		EndFwUpdate();
+		DFS_Close(&file);
+	}
 }
 
 static void UpdateConfig(void)
@@ -507,7 +739,10 @@ static void onTimer(UAVObjEvent * ev)
 		PIOS_COM_ChangeBaud(DEBUG_PORT, 57600);
 	#endif
 
-	if (state == STATE_DETECT) {
+	if (state == STATE_FW) {
+		UpdateFW();
+		state++;
+	} else if (state == STATE_DETECT) {
 		version = ReadSwVersion();
 		DEBUG_MSG("SW: %d ", version);
 
