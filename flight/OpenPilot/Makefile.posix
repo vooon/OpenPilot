@@ -343,10 +343,17 @@ LDFLAGS += -lc
 LDFLAGS += $(patsubst %,-l%,$(EXTRA_LIBS))
 LDFLAGS += $(MATH_LIB)
 LDFLAGS += -lc -lgcc
+
+ifneq ($(shell ls /var/lib/mlocate/mlocate.db | wc -l),1)
+$(error Database does not exist, please build it (i.e. with locate tool).)
+endif
+
+ifneq ($(shell locate libudev -c),0)
 LDFLAGS += -ludev
-
-
-
+CFLAGS += -DPIOS_INCLUDE_RCTX
+else
+$(warning "Udev library has not been found. Please install udev library in order to use a real RC transmitter with sim_posix")
+endif
 
 # Define programs and commands.
 CC      = $(TCHAIN_PREFIX)gcc

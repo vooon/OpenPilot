@@ -38,7 +38,6 @@
 #define PIOS_INCLUDE_COM
 #define PIOS_INCLUDE_UDP
 #define PIOS_INCLUDE_SERVO
-#define PIOS_INCLUDE_RCTX
 
 
 /* Defaults for Logging */
