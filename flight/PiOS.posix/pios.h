@@ -66,6 +66,8 @@
 #if defined(PIOS_INCLUDE_RCTX)
 #include <pios_rctx.h>
 #endif
+#include <pios_debug.h>
+
 
 #define NELEMENTS(x) (sizeof(x) / sizeof(*(x)))
 
