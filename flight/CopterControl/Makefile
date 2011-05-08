@@ -30,6 +30,8 @@ include $(TOP)/make/firmware-defs.mk
 # Set to YES to compile for debugging
 DEBUG ?= NO
 
+# Set to YES to build a FW version that will erase all flash memory
+ERASE_FLASH ?= NO
 # Set to YES to use the Servo output pins for debugging via scope or logic analyser
 ENABLE_DEBUG_PINS ?= NO
 
@@ -37,7 +39,7 @@ ENABLE_DEBUG_PINS ?= NO
 ENABLE_AUX_UART ?= NO
 
 #
-USE_BOOTLOADER ?= NO
+USE_BOOTLOADER ?= YES
 
 USE_SPEKTRUM ?= NO
 
@@ -144,6 +146,7 @@ SRC += $(OPUAVTALK)/uavtalk.c
 SRC += $(OPUAVOBJ)/uavobjectmanager.c
 SRC += $(OPUAVOBJ)/eventdispatcher.c
 SRC += $(OPUAVOBJ)/uavobjectsinit_linker.c
+SRC += $(OPSYSTEM)/pios_usb_hid_desc.c
 else
 ## TESTCODE
 SRC += $(OPTESTS)/test_common.c
@@ -205,7 +208,7 @@ SRC += $(PIOSSTM32F10X)/pios_wdg.c
 
 # PIOS USB related files (seperated to make code maintenance more easy)
 SRC += $(PIOSSTM32F10X)/pios_usb_hid.c
-SRC += $(PIOSSTM32F10X)/pios_usb_hid_desc.c
+#SRC += $(PIOSSTM32F10X)/pios_usb_hid_desc.c
 SRC += $(PIOSSTM32F10X)/pios_usb_hid_istr.c
 SRC += $(PIOSSTM32F10X)/pios_usb_hid_prop.c
 SRC += $(PIOSSTM32F10X)/pios_usb_hid_pwr.c
@@ -216,6 +219,7 @@ SRC += $(PIOSCOMMON)/pios_adxl345.c
 SRC += $(PIOSCOMMON)/pios_com.c
 SRC += $(PIOSCOMMON)/pios_i2c_esc.c
 SRC += $(PIOSCOMMON)/pios_iap.c
+SRC += $(PIOSCOMMON)/pios_bl_helper.c
 SRC += $(PIOSCOMMON)/printf-stdarg.c
 ## Libraries for flight calculations
 SRC += $(FLIGHTLIB)/fifo_buffer.c
@@ -388,7 +392,9 @@ endif
 ifeq ($(USE_BOOTLOADER), YES)
 CDEFS += -DUSE_BOOTLOADER
 endif
-
+ifeq ($(ERASE_FLASH), YES)
+CDEFS += -DERASE_FLASH
+endif
 ifeq ($(USE_SPEKTRUM), YES)
 CDEFS += -DUSE_SPEKTRUM
 endif
@@ -477,31 +483,8 @@ LDFLAGS += -lc -lgcc
 # Set linker-script name depending on selected submodel name
 LDFLAGS +=-T$(LINKERSCRIPTPATH)/link_$(BOARD)_$(BOOT_MODEL).ld
 
-# ---------------------------------------------------------------------------
-# Options for OpenOCD flash-programming
-# see openocd.pdf/openocd.texi for further information
-#
-OOCD_LOADFILE+=$(OUTDIR)/$(TARGET).elf
-# if OpenOCD is in the $PATH just set OOCD_EXE=openocd
-OOCD_EXE=openocd
-# debug level
-OOCD_CL=-d0
-# interface and board/target settings (using the OOCD target-library here)
-UNAME := $(shell uname)
-ifeq ($(UNAME), Darwin)
-  OOCD_CL+=-f ../Project/OpenOCD/floss-jtag.openpilot.osx.cfg -f ../Project/OpenOCD/stm32.cfg
-else
-  OOCD_CL+=-f ../Project/OpenOCD/floss-jtag.openpilot.cfg -f ../Project/OpenOCD/stm32.cfg
-endif
-# initialize
-OOCD_CL+=-c init
-# show the targets
-OOCD_CL+=-c targets
-# commands to prepare flash-write
-OOCD_CL+= -c "reset halt"
-# flash erase
-OOCD_CL+=-c "stm32x mass_erase 0"
-# flash-write
+OOCD_LOADFILE+=$(OUTDIR)/$(TARGET).elf  
+# Program                                                                                                                                                                                                                            
 OOCD_CL+=-c "flash write_image $(OOCD_LOADFILE)"
 # Verify
 OOCD_CL+=-c "verify_image $(OOCD_LOADFILE)"
@@ -509,7 +492,6 @@ OOCD_CL+=-c "verify_image $(OOCD_LOADFILE)"
 OOCD_CL+=-c "reset run"
 # terminate OOCD after programming
 OOCD_CL+=-c shutdown
-# ---------------------------------------------------------------------------
 
 # Define programs and commands.
 REMOVE  = $(REMOVE_CMD) -f
