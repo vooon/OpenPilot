@@ -24,10 +24,10 @@ plugin_welcome.subdir = welcome
 plugin_welcome.depends = plugin_coreplugin
 SUBDIRS += plugin_welcome
 
-# RawHID connection plugin
-SUBDIRS += plugin_rawhid
-plugin_rawhid.subdir = rawhid
-plugin_rawhid.depends = plugin_coreplugin
+## RawHID connection plugin
+#SUBDIRS += plugin_rawhid
+#plugin_rawhid.subdir = rawhid
+#plugin_rawhid.depends = plugin_coreplugin
 
 # Serial port connection plugin
 SUBDIRS += plugin_serial
@@ -70,12 +70,12 @@ plugin_modelview.depends = plugin_coreplugin
 plugin_modelview.depends += plugin_uavobjects
 SUBDIRS += plugin_modelview
 
-#Uploader gadget
-plugin_uploader.subdir = uploader
-plugin_uploader.depends = plugin_coreplugin
-plugin_uploader.depends += plugin_uavobjects
-plugin_uploader.depends += plugin_rawhid
-SUBDIRS += plugin_uploader
+# #Uploader gadget
+#plugin_uploader.subdir = uploader
+#plugin_uploader.depends = plugin_coreplugin
+#plugin_uploader.depends += plugin_uavobjects
+#plugin_uploader.depends += plugin_rawhid
+#SUBDIRS += plugin_uploader
 
 #Dial gadget
 plugin_dial.subdir = dial
@@ -133,8 +133,15 @@ SUBDIRS += plugin_hitlnew
 
 # Export and Import GCS Configuration
 plugin_importexport.subdir = importexport
-plugin_importexport.depends = plugin_coreplugin
+plugin_importexport.depends += plugin_coreplugin
 SUBDIRS += plugin_importexport
+
+# Manage Flight Settings
+plugin_uavsettingsmanager.subdir = uavsettingsmanager
+plugin_uavsettingsmanager.depends += plugin_coreplugin
+plugin_uavsettingsmanager.depends += plugin_uavobjectbrowser
+plugin_uavsettingsmanager.depends += plugin_importexport
+SUBDIRS += plugin_uavsettingsmanager
 
 # Telemetry data logging plugin
 plugin_logging.subdir = logging
@@ -156,12 +163,12 @@ SUBDIRS += plugin_gcscontrol
 #plugin_antennatrack.depends += plugin_uavtalk
 #SUBDIRS += plugin_antennatrack
 
-#PipXtreme gadget
-plugin_pipxtreme.subdir = pipxtreme
-plugin_pipxtreme.depends = plugin_coreplugin
-plugin_pipxtreme.depends += plugin_uavobjects
-plugin_pipxtreme.depends += plugin_rawhid
-SUBDIRS += plugin_pipxtreme
+##PipXtreme gadget
+#plugin_pipxtreme.subdir = pipxtreme
+#plugin_pipxtreme.depends = plugin_coreplugin
+#plugin_pipxtreme.depends += plugin_uavobjects
+#plugin_pipxtreme.depends += plugin_rawhid
+#SUBDIRS += plugin_pipxtreme
 
 #Scope OpenGL Gadget
 #plugin_scopeogl.subdir = scopeogl
