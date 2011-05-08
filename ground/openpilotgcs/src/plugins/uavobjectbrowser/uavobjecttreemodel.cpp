@@ -51,7 +51,19 @@ UAVObjectTreeModel::UAVObjectTreeModel(QObject *parent) :
     connect(objManager, SIGNAL(newInstance(UAVObject*)), this, SLOT(newObject(UAVObject*)));
 
     TreeItem::setHighlightTime(m_recentlyUpdatedTimeout);
-    setupModelData(objManager);
+    setupModelData(objManager->getDataObjects());
+}
+
+/* Used for Settings Manager Plugin */
+UAVObjectTreeModel::UAVObjectTreeModel(QList< QList<UAVDataObject*> > objList, bool addNonSettings, QObject *parent) :
+        QAbstractItemModel(parent),
+        m_recentlyUpdatedTimeout(500), // ms
+        m_recentlyUpdatedColor(QColor(255, 230, 230)),
+        m_manuallyChangedColor(QColor(230, 230, 255))
+{
+
+    TreeItem::setHighlightTime(m_recentlyUpdatedTimeout);
+    setupModelData(objList, addNonSettings);
 }
 
 UAVObjectTreeModel::~UAVObjectTreeModel()
@@ -59,21 +71,22 @@ UAVObjectTreeModel::~UAVObjectTreeModel()
     delete m_rootItem;
 }
 
-void UAVObjectTreeModel::setupModelData(UAVObjectManager *objManager)
+void UAVObjectTreeModel::setupModelData(QList< QList<UAVDataObject*> > objList, bool addNonSettings)
 {
     // root
     QList<QVariant> rootData;
     rootData << tr("Property") << tr("Value") << tr("Unit");
     m_rootItem = new TreeItem(rootData);
 
-    m_settingsTree = new TopTreeItem(tr("Settings"), m_rootItem);
+    m_settingsTree = new TopTreeItem(tr("Settings"));
     m_rootItem->appendChild(m_settingsTree);
-    m_nonSettingsTree = new TopTreeItem(tr("Data Objects"), m_rootItem);
-    m_rootItem->appendChild(m_nonSettingsTree);
     connect(m_settingsTree, SIGNAL(updateHighlight(TreeItem*)), this, SLOT(updateHighlight(TreeItem*)));
-    connect(m_nonSettingsTree, SIGNAL(updateHighlight(TreeItem*)), this, SLOT(updateHighlight(TreeItem*)));
 
-    QList< QList<UAVDataObject*> > objList = objManager->getDataObjects();
+    m_nonSettingsTree = new TopTreeItem(tr("Data Objects"));
+    if ( addNonSettings ){
+        m_rootItem->appendChild(m_nonSettingsTree);
+        connect(m_nonSettingsTree, SIGNAL(updateHighlight(TreeItem*)), this, SLOT(updateHighlight(TreeItem*)));
+    }
     foreach (QList<UAVDataObject*> list, objList) {
         foreach (UAVDataObject* obj, list) {
             addDataObject(obj);
@@ -293,6 +306,11 @@ QVariant UAVObjectTreeModel::data(const QModelIndex &index, int role) const
         if (objItem && objItem->highlighted())
             return QVariant(m_recentlyUpdatedColor);
     }
+
+    if (index.column() == 0 && role == Qt::CheckStateRole) {
+        return item->checkedAsVariant();
+    }
+
     if (index.column() == TreeItem::dataColumn && role == Qt::BackgroundRole) {
         FieldTreeItem *fieldItem = dynamic_cast<FieldTreeItem*>(item);
         if (fieldItem && fieldItem->highlighted())
@@ -317,10 +335,83 @@ QVariant UAVObjectTreeModel::data(const QModelIndex &index, int role) const
 
 bool UAVObjectTreeModel::setData(const QModelIndex &index, const QVariant & value, int role)
 {
-    Q_UNUSED(role)
     TreeItem *item = static_cast<TreeItem*>(index.internalPointer());
-    item->setData(value, index.column());
-    return true;
+
+    if (role == Qt::CheckStateRole && value != item->checkedAsVariant() )
+    {
+        item->setChecked(static_cast<Qt::CheckState>(value.toInt()));
+        emit dataChanged(index, index);
+        propagateChecked(item, static_cast<Qt::CheckState>(value.toInt()), true);
+        return true;
+    }
+
+    if ( role == Qt::EditRole && value != item->data(index.column()) ){
+        item->setData(value, index.column());
+        emit dataChanged(index, index);
+        return true;
+    }
+    return false;
+}
+
+
+void UAVObjectTreeModel::propagateChecked(TreeItem *item, Qt::CheckState checked, bool up)
+{
+    if ( up ){
+        TreeItem *parent = item->parent();
+        while ( parent && parent->checkable() && checked != parent->checked() ){
+            parent->setChecked(Qt::PartiallyChecked);
+            emit dataChanged(index(parent), index(parent));
+            parent = parent->parent();
+        }
+    }
+    foreach ( TreeItem * child, item->treeChildren() ){
+        if ( child->checkable() && checked != child->checked()){
+            child->setChecked(checked);
+            emit dataChanged(index(child), index(child));
+            propagateChecked(child, checked, false);
+        }
+    }
+}
+
+void UAVObjectTreeModel::invertChecked(const QModelIndex& idx)
+{
+    if ( !idx.isValid() ){
+        invertChecked(index(0,0));
+        return;
+    }
+
+    TreeItem *item = static_cast<TreeItem*>(idx.internalPointer());
+
+    if (item->checked() == Qt::Checked) {
+        item->setChecked(Qt::Unchecked);
+    } else if (item->checked() == Qt::Unchecked) {
+        item->setChecked(Qt::Checked);
+    }
+    emit dataChanged(idx, idx);
+
+    for ( int row = 0; row < rowCount(idx); row++ ){
+        invertChecked( idx.child(row,0));
+    }
+}
+
+void UAVObjectTreeModel::updated(UAVObject* obj)
+{
+    highlightUpdatedObject(obj);
+ //   emit dataChanged(index(item), index(item));
+}
+
+void UAVObjectTreeModel::accept(UAVObjectTreeModelVisitor &visitor, const QModelIndex& idx)
+{
+    if ( !idx.isValid() ){
+        accept(visitor, index(0,0));
+        return;
+    }
+
+    visitor.visit(static_cast<TreeItem*>(idx.internalPointer()));
+
+    for ( int row = 0; row < rowCount(idx); row++ ){
+        accept( visitor, idx.child(row,0));
+    }
 }
 
 
@@ -335,7 +426,7 @@ Qt::ItemFlags UAVObjectTreeModel::flags(const QModelIndex &index) const
             return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
     }
 
-    return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+    return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable;
 }
 
 QVariant UAVObjectTreeModel::headerData(int section, Qt::Orientation orientation,

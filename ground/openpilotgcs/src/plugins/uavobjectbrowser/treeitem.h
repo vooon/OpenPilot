@@ -76,6 +76,11 @@ public:
 
     inline bool changed() { return m_changed; }
     inline void setChanged(bool changed) { m_changed = changed; }
+    inline QVariant checkedAsVariant(){ return m_checkable ? m_checked : QVariant(); }
+    inline Qt::CheckState checked(){ return m_checked; }
+    inline void setChecked(Qt::CheckState checked) { m_checked = checked; }
+    inline bool checkable() { return m_checkable;}
+    inline void setCheckable(bool checkable) { m_checkable = checkable; }
 
 signals:
     void updateHighlight(TreeItem*);
@@ -91,6 +96,8 @@ private:
     TreeItem *m_parent;
     bool m_highlight;
     bool m_changed;
+    Qt::CheckState m_checked;
+    bool m_checkable;
     QTimer m_timer;
 public:
     static const int dataColumn = 1;

@@ -44,11 +44,19 @@ class UAVObjectManager;
 class QSignalMapper;
 class QTimer;
 
+class UAVObjectTreeModelVisitor
+{
+public:
+    virtual ~UAVObjectTreeModelVisitor(){}
+    virtual void visit(TreeItem *item) = 0;
+};
+
 class UAVObjectTreeModel : public QAbstractItemModel
 {
 Q_OBJECT
 public:
     explicit UAVObjectTreeModel(QObject *parent = 0);
+    UAVObjectTreeModel(QList< QList<UAVDataObject*> > objList, bool addNonSettings, QObject *parent = 0);
     ~UAVObjectTreeModel();
 
     QVariant data(const QModelIndex &index, int role) const;
@@ -61,6 +69,8 @@ public:
     QModelIndex parent(const QModelIndex &index) const;
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
+    void propagateChecked(TreeItem *item, Qt::CheckState checked, bool up);
+    void invertChecked(const QModelIndex &index = QModelIndex());
 
     void setRecentlyUpdatedColor(QColor color) { m_recentlyUpdatedColor = color; }
     void setManuallyChangedColor(QColor color) { m_manuallyChangedColor = color; }
@@ -68,11 +78,13 @@ public:
         m_recentlyUpdatedTimeout = timeout;
         TreeItem::setHighlightTime(timeout);
     }
+    void accept(UAVObjectTreeModelVisitor &visitor, const QModelIndex &index = QModelIndex());
 
 signals:
 
 public slots:
     void newObject(UAVObject *obj);
+    void updated(UAVObject *obj);
 
 private slots:
     void highlightUpdatedObject(UAVObject *obj);
@@ -87,7 +99,7 @@ private:
     void addSingleField(int index, UAVObjectField *field, TreeItem *parent);
     void addInstance(UAVObject *obj, TreeItem *parent);
     QString updateMode(quint8 updateMode);
-    void setupModelData(UAVObjectManager *objManager);
+    void setupModelData(QList< QList<UAVDataObject*> > objList, bool addNonSettings = true);
     ObjectTreeItem *findObjectTreeItem(UAVObject *obj);
     DataObjectTreeItem *findDataObjectTreeItem(UAVDataObject *obj);
 
@@ -98,5 +110,6 @@ private:
     QColor m_recentlyUpdatedColor;
     QColor m_manuallyChangedColor;
 };
+
 
 #endif // UAVOBJECTTREEMODEL_H
