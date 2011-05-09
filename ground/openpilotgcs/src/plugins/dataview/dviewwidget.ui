@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DViewWidget</class>
+ <widget class="QWidget" name="DViewWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1057</width>
+    <height>862</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_2">
+   <property name="margin">
+    <number>6</number>
+   </property>
+   <item row="1" column="0">
+    <widget class="QSplitter" name="splitter">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="childrenCollapsible">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="layoutWidget">
+      <layout class="QGridLayout" name="gridLayout" rowstretch="1,0" columnstretch="0">
+       <item row="0" column="0">
+        <layout class="QVBoxLayout" name="infoVerticalLayout" stretch="0,0,0,0,0,0,0,0,0,0,0">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <item>
+          <layout class="QHBoxLayout" name="infoHorizontalLayout1" stretch="0,0,0,0">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="lat_label">
+             <property name="font">
+              <font>
+               <weight>50</weight>
+               <italic>false</italic>
+               <bold>false</bold>
+               <underline>false</underline>
+              </font>
+             </property>
+             <property name="text">
+              <string>Coord:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="coord_value">
+             <property name="text">
+              <string>Unknown</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="coord_value_2">
+             <property name="text">
+              <string>Unknown</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="coord_value_3">
+             <property name="text">
+              <string>Unknown</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="infoHorizontalLayout2" stretch="0,0,0,0">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="speed_label">
+             <property name="text">
+              <string>Speed:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="speed_value">
+             <property name="text">
+              <string>Unknown</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="bear_label">
+             <property name="text">
+              <string>Heading:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="bear_value">
+             <property name="text">
+              <string>Unknown</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="infoHorizontalLayout3" stretch="0,0,0,0">
+           <item>
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>H / V / P DOP:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="dop_value">
+             <property name="text">
+              <string>Unknown</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_8">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_10">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="infoHorizontalLayout4" stretch="0,0,0,0">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="status_label">
+             <property name="text">
+              <string>Sats Used:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="sats_value">
+             <property name="text">
+              <string>Unknown</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_12">
+             <property name="text">
+              <string>Fix Type</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="fix_value">
+             <property name="text">
+              <string>Unknown</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="infoHorizontalLayout5" stretch="0,0,0,0">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="fix_label">
+             <property name="text">
+              <string>Time:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_9">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="time_value">
+             <property name="text">
+              <string>Unknown</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_13">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QLabel" name="ftime_label">
+             <property name="text">
+              <string>FlightTime</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="ftime_value">
+             <property name="text">
+              <string>Unknown</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <item>
+            <widget class="QLabel" name="label_4">
+             <property name="text">
+              <string>Battery</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="v0_value">
+             <property name="text">
+              <string>Unknown</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="v1_value">
+             <property name="text">
+              <string>Unknown</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="v2_value">
+             <property name="text">
+              <string>Unknown</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <item>
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>BaroAltitude</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="alt_value">
+             <property name="text">
+              <string>Unknown</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="temp_value">
+             <property name="text">
+              <string>Unknown</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="press_value">
+             <property name="text">
+              <string>Unknown</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_5">
+           <item>
+            <widget class="QLabel" name="label_7">
+             <property name="text">
+              <string>Attitude</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="roll_value">
+             <property name="text">
+              <string>Unknown</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="yaw_value">
+             <property name="text">
+              <string>Unknown</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="pitch_value">
+             <property name="text">
+              <string>Unknown</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <item>
+            <widget class="QLabel" name="label_5">
+             <property name="text">
+              <string>GroundSpeed</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="groundspeed_value">
+             <property name="text">
+              <string>Unknown</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_11">
+           <item>
+            <widget class="QLabel" name="label_2">
+             <property name="text">
+              <string>LinkStatus</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="s_value">
+             <property name="text">
+              <string>Unknown</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="v1_value_2">
+             <property name="text">
+              <string>Unknown</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="v2_value_2">
+             <property name="text">
+              <string>Unknown</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout2" stretch="0">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_2"/>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_6">
+     <property name="font">
+      <font>
+       <pointsize>15</pointsize>
+       <italic>true</italic>
+       <underline>true</underline>
+      </font>
+     </property>
+     <property name="text">
+      <string>Flight Data</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
