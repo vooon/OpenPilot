@@ -1,6 +1,6 @@
 
 TEMPLATE = lib 
-TARGET = DView
+TARGET = DataView
  
 include(../../openpilotgcsplugin.pri) 
 include(../../plugins/coreplugin/coreplugin.pri) 
@@ -24,8 +24,7 @@ SOURCES += dviewgadgetconfiguration.cpp
 SOURCES += telemetryparser.cpp
 SOURCES += gpsparser.cpp
 
-OTHER_FILES += DView.pluginspec \
-    dview.pluginspec
+OTHER_FILES += DataView.pluginspec
 
 FORMS += dviewgadgetoptionspage.ui
 FORMS += dviewwidget.ui
