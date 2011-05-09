@@ -28,6 +28,7 @@
 #ifndef UAVOBJECTBROWSERFACTORY_H_
 #define UAVOBJECTBROWSERFACTORY_H_
 
+#include "uavobjectbrowser_global.h"
 #include <coreplugin/iuavgadgetfactory.h>
 
 namespace Core {
@@ -37,7 +38,7 @@ class IUAVGadgetFactory;
 
 using namespace Core;
 
-class UAVObjectBrowserFactory : public Core::IUAVGadgetFactory
+class UAVOBJECTBROWSER_EXPORT UAVObjectBrowserFactory : public Core::IUAVGadgetFactory
 {
     Q_OBJECT
 public:

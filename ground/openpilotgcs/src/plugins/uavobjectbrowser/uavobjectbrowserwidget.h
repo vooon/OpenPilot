@@ -38,7 +38,7 @@ class ObjectTreeItem;
 class Ui_UAVObjectBrowser;
 
 
-class UAVObjectBrowserWidget : public QWidget
+class UAVOBJECTBROWSER_EXPORT UAVObjectBrowserWidget : public QWidget
 {
     Q_OBJECT
 

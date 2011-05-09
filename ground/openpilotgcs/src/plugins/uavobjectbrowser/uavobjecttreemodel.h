@@ -44,14 +44,14 @@ class UAVObjectManager;
 class QSignalMapper;
 class QTimer;
 
-class UAVObjectTreeModelVisitor
+class UAVOBJECTBROWSER_EXPORT UAVObjectTreeModelVisitor
 {
 public:
     virtual ~UAVObjectTreeModelVisitor(){}
     virtual void visit(TreeItem *item) = 0;
 };
 
-class UAVObjectTreeModel : public QAbstractItemModel
+class UAVOBJECTBROWSER_EXPORT UAVObjectTreeModel : public QAbstractItemModel
 {
 Q_OBJECT
 public:

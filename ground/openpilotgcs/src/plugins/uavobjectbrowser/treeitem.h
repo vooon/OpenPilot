@@ -28,6 +28,7 @@
 #ifndef TREEITEM_H
 #define TREEITEM_H
 
+#include "uavobjectbrowser_global.h"
 #include "uavobject.h"
 #include "uavmetaobject.h"
 #include "uavobjectfield.h"
@@ -37,7 +38,7 @@
 #include <QtCore/QObject>
 
 
-class TreeItem : public QObject
+class UAVOBJECTBROWSER_EXPORT TreeItem : public QObject
 {
 Q_OBJECT
 public:
@@ -105,7 +106,7 @@ private:
     static int m_highlightTimeMs;
 };
 
-class TopTreeItem : public TreeItem
+class UAVOBJECTBROWSER_EXPORT TopTreeItem : public TreeItem
 {
 Q_OBJECT
 public:
@@ -127,7 +128,7 @@ private:
     QList<quint32> m_objIds;
 };
 
-class ObjectTreeItem : public TreeItem
+class UAVOBJECTBROWSER_EXPORT ObjectTreeItem : public TreeItem
 {
 Q_OBJECT
 public:
@@ -141,7 +142,7 @@ private:
     UAVObject *m_obj;
 };
 
-class MetaObjectTreeItem : public ObjectTreeItem
+class UAVOBJECTBROWSER_EXPORT MetaObjectTreeItem : public ObjectTreeItem
 {
 Q_OBJECT
 public:
@@ -151,7 +152,7 @@ public:
             ObjectTreeItem(data, parent) { setObject(obj); }
 };
 
-class DataObjectTreeItem : public ObjectTreeItem
+class UAVOBJECTBROWSER_EXPORT DataObjectTreeItem : public ObjectTreeItem
 {
 Q_OBJECT
 public:
@@ -175,7 +176,7 @@ public:
     }
 };
 
-class InstanceTreeItem : public DataObjectTreeItem
+class UAVOBJECTBROWSER_EXPORT InstanceTreeItem : public DataObjectTreeItem
 {
 Q_OBJECT
 public:
@@ -187,7 +188,7 @@ public:
     virtual void update() { TreeItem::update(); }
 };
 
-class ArrayFieldTreeItem : public TreeItem
+class UAVOBJECTBROWSER_EXPORT ArrayFieldTreeItem : public TreeItem
 {
 Q_OBJECT
 public:

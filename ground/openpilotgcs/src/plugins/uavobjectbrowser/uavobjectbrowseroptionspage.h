@@ -28,6 +28,7 @@
 #ifndef UAVOBJECTBROWSEROPTIONSPAGE_H
 #define UAVOBJECTBROWSEROPTIONSPAGE_H
 
+#include "uavobjectbrowser_global.h"
 #include "coreplugin/dialogs/ioptionspage.h"
 #include <QtGui/QColor>
 #include <utils/qtcolorbutton.h>
@@ -47,7 +48,7 @@ namespace Ui {
     class UAVObjectBrowserOptionsPage;
 }
 
-class UAVObjectBrowserOptionsPage : public IOptionsPage
+class UAVOBJECTBROWSER_EXPORT UAVObjectBrowserOptionsPage : public IOptionsPage
 {
 Q_OBJECT
 public:

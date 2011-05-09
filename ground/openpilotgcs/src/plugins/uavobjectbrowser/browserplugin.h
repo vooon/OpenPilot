@@ -29,10 +29,11 @@
 #define UAVOBJECTBROWSERPLUGIN_H_
 
 #include <extensionsystem/iplugin.h>
+#include "uavobjectbrowser_global.h"
 
 class UAVObjectBrowserFactory;
 
-class BrowserPlugin : public ExtensionSystem::IPlugin
+class UAVOBJECTBROWSER_EXPORT BrowserPlugin : public ExtensionSystem::IPlugin
 {
 public:
         BrowserPlugin();

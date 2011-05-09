@@ -50,7 +50,7 @@
 
 //#define USE_SCIENTIFIC_NOTATION
 
-class FieldTreeItem : public TreeItem
+class UAVOBJECTBROWSER_EXPORT FieldTreeItem : public TreeItem
 {
 Q_OBJECT
 public:
@@ -67,7 +67,7 @@ protected:
     int m_index;
 };
 
-class EnumFieldTreeItem : public FieldTreeItem
+class UAVOBJECTBROWSER_EXPORT EnumFieldTreeItem : public FieldTreeItem
 {
 Q_OBJECT
 public:
@@ -126,7 +126,7 @@ private:
     UAVObjectField *m_field;
 };
 
-class IntFieldTreeItem : public FieldTreeItem
+class UAVOBJECTBROWSER_EXPORT IntFieldTreeItem : public FieldTreeItem
 {
 Q_OBJECT
 public:
@@ -210,7 +210,7 @@ private:
     int m_maxValue;
 };
 
-class FloatFieldTreeItem : public FieldTreeItem
+class UAVOBJECTBROWSER_EXPORT FloatFieldTreeItem : public FieldTreeItem
 {
 Q_OBJECT
 public:

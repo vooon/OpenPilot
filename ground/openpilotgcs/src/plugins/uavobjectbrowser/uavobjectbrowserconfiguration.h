@@ -28,12 +28,13 @@
 #ifndef UAVOBJECTBROWSERCONFIGURATION_H
 #define UAVOBJECTBROWSERCONFIGURATION_H
 
+#include "uavobjectbrowser_global.h"
 #include <coreplugin/iuavgadgetconfiguration.h>
 #include <QtGui/QColor>
 
 using namespace Core;
 
-class UAVObjectBrowserConfiguration : public IUAVGadgetConfiguration
+class UAVOBJECTBROWSER_EXPORT UAVObjectBrowserConfiguration : public IUAVGadgetConfiguration
 {
 Q_OBJECT
 Q_PROPERTY(QColor m_recentlyUpdatedColor READ recentlyUpdatedColor WRITE setRecentlyUpdatedColor)

@@ -29,8 +29,9 @@
 #define BROWSERITEMDELEGATE_H
 
 #include <QStyledItemDelegate>
+#include "uavobjectbrowser_global.h"
 
-class BrowserItemDelegate : public QStyledItemDelegate
+class UAVOBJECTBROWSER_EXPORT BrowserItemDelegate : public QStyledItemDelegate
 {
 Q_OBJECT
 public:

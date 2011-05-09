@@ -38,7 +38,7 @@ class UAVObjectBrowserWidget;
 
 using namespace Core;
 
-class UAVObjectBrowser : public Core::IUAVGadget
+class UAVOBJECTBROWSER_EXPORT UAVObjectBrowser : public Core::IUAVGadget
 {
     Q_OBJECT
 public:
