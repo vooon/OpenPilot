@@ -55,7 +55,7 @@ endif
 FLASH_TOOL = OPENOCD
 
 # List of modules to include
-MODULES = Telemetry Attitude Actuator ManualControl FirmwareIAP CCGuidance GPS Stabilization
+MODULES = Telemetry Attitude Actuator ManualControl CCGuidance GPS Stabilization
 
 # MCU name, submodel and board
 # - MCU used for compiler-option (-mcpu)
@@ -171,7 +171,7 @@ SRC += $(OPUAVSYNTHDIR)/ratedesired.c
 SRC += $(OPUAVSYNTHDIR)/manualcontrolsettings.c
 SRC += $(OPUAVSYNTHDIR)/mixersettings.c
 SRC += $(OPUAVSYNTHDIR)/mixerstatus.c
-SRC += $(OPUAVSYNTHDIR)/firmwareiapobj.c
+#SRC += $(OPUAVSYNTHDIR)/firmwareiapobj.c
 SRC += $(OPUAVSYNTHDIR)/attitudesettings.c
 SRC += $(OPUAVSYNTHDIR)/gpsposition.c
 SRC += $(OPUAVSYNTHDIR)/positiondesired.c

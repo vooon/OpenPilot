@@ -57,6 +57,8 @@
 #define IDLE_COUNTS_PER_SEC_AT_NO_LOAD 995998	// calibrated by running tests/test_cpuload.c
 											  // must be updated if the FreeRTOS or compiler
 											  // optimisation options are changed.
+#endif
+
 #if defined(PIOS_SYSTEM_STACK_SIZE)
 #define STACK_SIZE_BYTES PIOS_SYSTEM_STACK_SIZE
 #elif defined(PIOS_MANUAL_STACK_SIZE)

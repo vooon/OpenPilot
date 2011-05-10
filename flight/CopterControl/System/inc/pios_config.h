@@ -90,9 +90,9 @@
 #define CPULOAD_LIMIT_CRITICAL		95
 
 /* Task stack sizes */
-#define PIOS_ATTITUDE_STACK_SIZE        428
+#define PIOS_ATTITUDE_STACK_SIZE        436
 #define PIOS_ACTUATOR_STACK_SIZE        940
-#define PIOS_MANUAL_STACK_SIZE          628
+#define PIOS_MANUAL_STACK_SIZE          664
 #define PIOS_SYSTEM_STACK_SIZE          516
 #define PIOS_STABILIZATION_STACK_SIZE   472
 #define PIOS_TELEM_STACK_SIZE_RX        328
