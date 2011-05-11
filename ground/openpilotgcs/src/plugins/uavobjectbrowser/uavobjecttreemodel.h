@@ -84,7 +84,6 @@ signals:
 
 public slots:
     void newObject(UAVObject *obj);
-    void updated(UAVObject *obj);
 
 private slots:
     void highlightUpdatedObject(UAVObject *obj);

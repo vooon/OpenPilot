@@ -55,7 +55,6 @@ UAVSettingsManagerGadgetWidget::UAVSettingsManagerGadgetWidget(QWidget *parent) 
     ui->configFile->setPromptDialogFilter(tr("XML file (*.xml)"));
     ui->configFile->setPromptDialogTitle(tr("Choose configuration file"));
 
-
     connect(ui->metaCheckBox, SIGNAL(toggled(bool)), this, SLOT(showMetaData(bool)));
 }
 
@@ -140,55 +139,6 @@ ObjectTreeItem *UAVSettingsManagerGadgetWidget::findObjectTreeItem(QModelIndex i
     }
     return objItem;
 }
-
-ObjectTreeItem *UAVSettingsManagerGadgetWidget::findCurrentObjectTreeItem()
-{
-    return findObjectTreeItem(ui->treeView->currentIndex());
-}
-
-void UAVSettingsManagerGadgetWidget::sendUpdate()
-{
-    ObjectTreeItem *objItem = findCurrentObjectTreeItem();
-    Q_ASSERT(objItem);
-    // objItem->apply(); // What is this and who needs this?
-    UAVObject *obj = objItem->object();
-    Q_ASSERT(obj);
-    obj->updated();
-}
-
-void UAVSettingsManagerGadgetWidget::saveObject()
-{
-    // Send update so that the latest value is saved
-    sendUpdate();
-    // Save object
-    ObjectTreeItem *objItem = findCurrentObjectTreeItem();
-    Q_ASSERT(objItem);
-    UAVObject *obj = objItem->object();
-    Q_ASSERT(obj);
-//    updateObjectPersistance(ObjectPersistence::OPERATION_SAVE, obj);
-}
-
-void UAVSettingsManagerGadgetWidget::loadObject()
-{
-    // Load object
-    ObjectTreeItem *objItem = findCurrentObjectTreeItem();
-    Q_ASSERT(objItem);
-    UAVObject *obj = objItem->object();
-    Q_ASSERT(obj);
-//    updateObjectPersistance(ObjectPersistence::OPERATION_LOAD, obj);
-    // Retrieve object so that latest value is displayed
-    // requestUpdate();
-}
-
-void UAVSettingsManagerGadgetWidget::eraseObject()
-{
-    ObjectTreeItem *objItem = findCurrentObjectTreeItem();
-    Q_ASSERT(objItem);
-    UAVObject *obj = objItem->object();
-    Q_ASSERT(obj);
-//    updateObjectPersistance(ObjectPersistence::OPERATION_DELETE, obj);
-}
-
 
 void UAVSettingsManagerGadgetWidget::dataChanged(const QModelIndex &index, const QModelIndex &index2)
 {

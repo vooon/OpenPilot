@@ -50,7 +50,6 @@ private:
     static UAVDataObject* dataObjectFromMgr(UAVDataObject *object);
     static void updateObjectPersistance(ObjectPersistence::OperationOptions op, UAVObject *obj);
 
-    ObjectTreeItem *findCurrentObjectTreeItem();
     ObjectTreeItem *findObjectTreeItem(QModelIndex index);
     UAVObjectTreeModel* m_model;
     UAVSettingsManagerGadgetConfiguration* m_config;
@@ -64,10 +63,6 @@ private slots:
     void on_requestButton_clicked();
     void on_invertSelectionButton_clicked();
     void on_helpButton_clicked();
-    void sendUpdate();
-    void saveObject();
-    void loadObject();
-    void eraseObject();
     void dataChanged(const QModelIndex &index, const QModelIndex &index2);
 };
 

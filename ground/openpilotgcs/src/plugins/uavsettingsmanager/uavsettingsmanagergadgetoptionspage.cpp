@@ -50,12 +50,6 @@ QWidget *UAVSettingsManagerGadgetOptionsPage::createPage(QWidget *parent)
     //main layout
     options_page->setupUi(optionsPageWidget);
 
-    // Restore the contents from the settings:
-    options_page->iniFile->setExpectedKind(Utils::PathChooser::File);
-    options_page->iniFile->setPromptDialogFilter(tr("INI file (*.ini);; XML file (*.xml)"));
-    options_page->iniFile->setPromptDialogTitle(tr("Choose configuration file"));
-    options_page->iniFile->setPath(m_config->getIniFile());
-
     return optionsPageWidget;
 }
 
@@ -67,7 +61,6 @@ QWidget *UAVSettingsManagerGadgetOptionsPage::createPage(QWidget *parent)
  */
 void UAVSettingsManagerGadgetOptionsPage::apply()
 {
-    m_config->setIniFile(options_page->iniFile->path());
 }
 
 

@@ -394,12 +394,6 @@ void UAVObjectTreeModel::invertChecked(const QModelIndex& idx)
     }
 }
 
-void UAVObjectTreeModel::updated(UAVObject* obj)
-{
-    highlightUpdatedObject(obj);
- //   emit dataChanged(index(item), index(item));
-}
-
 void UAVObjectTreeModel::accept(UAVObjectTreeModelVisitor &visitor, const QModelIndex& idx)
 {
     if ( !idx.isValid() ){
