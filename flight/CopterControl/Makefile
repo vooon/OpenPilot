@@ -159,6 +159,7 @@ SRC += $(OPUAVSYNTHDIR)/stabilizationdesired.c
 SRC += $(OPUAVSYNTHDIR)/stabilizationsettings.c
 SRC += $(OPUAVSYNTHDIR)/actuatorcommand.c
 SRC += $(OPUAVSYNTHDIR)/actuatordesired.c
+SRC += $(OPUAVSYNTHDIR)/accessorydesired.c
 SRC += $(OPUAVSYNTHDIR)/actuatorsettings.c
 SRC += $(OPUAVSYNTHDIR)/attituderaw.c
 SRC += $(OPUAVSYNTHDIR)/attitudeactual.c
