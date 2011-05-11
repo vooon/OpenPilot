@@ -346,14 +346,14 @@ LDFLAGS += $(MATH_LIB)
 LDFLAGS += -lc -lgcc
 
 ifneq ($(shell ls /var/lib/mlocate/mlocate.db | wc -l),1)
-$(error Database does not exist, please build it (i.e. with locate tool).)
-endif
-
+$(warning Database does not exist, please build it so we can check for udev library (i.e. with locate tool).)
+else
 ifneq ($(shell locate libudev -c),0)
 LDFLAGS += -ludev
 CFLAGS += -DPIOS_INCLUDE_RCTX
 else
 $(warning "Udev library has not been found. Please install udev library in order to use a real RC transmitter with sim_posix")
+endif
 endif
 
 # Define programs and commands.
