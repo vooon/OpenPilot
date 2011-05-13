@@ -220,12 +220,20 @@ static void actuatorTask(void* parameters)
 					status[ct] = 0;					
 			}
 			
-			command.Channel[ct] = scaleChannel(status[ct],
-							   settings.ChannelMax[ct],
-							   settings.ChannelMin[ct],
-							   settings.ChannelNeutral[ct]);
 		}
+		
+		// In case mixer taken over by FF testing
 		MixerStatusSet(&mixerStatus);
+		MixerStatusGet(&mixerStatus);
+		
+		for(int ct=0; ct < MAX_MIX_ACTUATORS; ct++)
+		{
+			command.Channel[ct] = scaleChannel(status[ct],
+						   settings.ChannelMax[ct],
+						   settings.ChannelMin[ct],
+						   settings.ChannelNeutral[ct]);
+		}
+		
 
 		// Store update time
 		command.UpdateTime = 1000*dT;
