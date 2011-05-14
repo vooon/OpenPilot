@@ -39,6 +39,12 @@
 #include "openpilot.h"
 #include "$(NAMELC).h"
 
+#ifndef offsetofmy
+//#define offsetof(s,m) (size_t)(unsigned long)&(((s *)0)->m)
+//#define offsetof(s,m) ((size_t)((char *)&((s *)0)->m-(char *)0))
+#define offsetofmy
+#endif
+
 // Private variables
 static UAVObjHandle handle;
 
@@ -103,6 +109,11 @@ UAVObjHandle $(NAME)Handle()
 {
 	return handle;
 }
+
+/**
+ * Get/Set object Functions
+ */
+$(SETGETFIELDS)
 
 /**
  * @}

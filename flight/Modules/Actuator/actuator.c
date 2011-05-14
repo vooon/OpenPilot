@@ -387,11 +387,21 @@ static int16_t scaleChannel(float value, int16_t max, int16_t min, int16_t neutr
  */
 static void setFailsafe()
 {
+#if 0
 	ActuatorCommandData command;
 	ActuatorSettingsData settings;
 
 	ActuatorCommandGet(&command);
 	ActuatorSettingsGet(&settings);
+#else
+	Uint8_t ChannelMin[ACTUATORCOMMAND_CHANNEL_NUMELEM];
+	ActuatorSettingsChannelMinGet(ChannelMin);
+
+	Uint8_t Channel[ACTUATORCOMMAND_CHANNEL_NUMELEM];
+	ActuatorCommandChannelGet(Channel);
+#endif
+
+
 
 	MixerSettingsData mixerSettings;
 	MixerSettingsGet (&mixerSettings);
