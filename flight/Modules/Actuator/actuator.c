@@ -128,17 +128,27 @@ static void actuatorTask(void* parameters)
 	portTickType lastSysTime;
 	portTickType thisSysTime;
 	float dT = 0.0f;
-	ActuatorCommandData command;
-	ActuatorSettingsData settings;
 
-	SystemSettingsData sysSettings;
-	MixerSettingsData mixerSettings;
-	ActuatorDesiredData desired;
-	MixerStatusData mixerStatus;
-	FlightStatusData flightStatus;
-	
+	ActuatorCommandData command; // all fields are used so don't explode
+	//SystemSettingsData sysSettings; not used
+	MixerSettingsData mixerSettings;// all fields are used so don't explode
+	ActuatorDesiredData desired;// all fields are used so don't explode
+	MixerStatusData mixerStatus;  // all fields are used so don't explode
+	FlightStatusData flightStatus; // only 1 byte would be saved if exploded
+
+#if 0
+	ActuatorSettingsData settings;
 	ActuatorSettingsGet(&settings);
 	PIOS_Servo_SetHz(&settings.ChannelUpdateFreq[0], ACTUATORSETTINGS_CHANNELUPDATEFREQ_NUMELEM);
+#else
+	uint8_t MotorsSpinWhileArmed;
+	int16_t ChannelMax[ACTUATORCOMMAND_CHANNEL_NUMELEM];
+	int16_t ChannelMin[ACTUATORCOMMAND_CHANNEL_NUMELEM];
+	int16_t ChannelNeutral[ACTUATORCOMMAND_CHANNEL_NUMELEM];
+	uint16_t ChannelUpdateFreq[ACTUATORSETTINGS_CHANNELUPDATEFREQ_NUMELEM];
+	ActuatorSettingsChannelUpdateFreqGet(ChannelUpdateFreq);
+	PIOS_Servo_SetHz(&ChannelUpdateFreq[0], ACTUATORSETTINGS_CHANNELUPDATEFREQ_NUMELEM);
+#endif
 
 	float * status = (float *)&mixerStatus; //access status objects as an array of floats
 
@@ -166,12 +176,16 @@ static void actuatorTask(void* parameters)
 
 
 		FlightStatusGet(&flightStatus);
-		SystemSettingsGet(&sysSettings);
+		//SystemSettingsGet(&sysSettings);
 		MixerStatusGet(&mixerStatus);
 		MixerSettingsGet (&mixerSettings);
 		ActuatorDesiredGet(&desired);
 		ActuatorCommandGet(&command);
-		ActuatorSettingsGet(&settings);
+
+		ActuatorSettingsMotorsSpinWhileArmedGet(&MotorsSpinWhileArmed);
+		ActuatorSettingsChannelMaxGet(ChannelMax);
+		ActuatorSettingsChannelMinGet(ChannelMin);
+		ActuatorSettingsChannelNeutralGet(ChannelNeutral);
 
 		int nMixers = 0;
 		Mixer_t * mixers = (Mixer_t *)&mixerSettings.Mixer1Type;
@@ -192,7 +206,7 @@ static void actuatorTask(void* parameters)
 
 		bool armed = flightStatus.Armed == FLIGHTSTATUS_ARMED_ARMED;
 		bool positiveThrottle = desired.Throttle >= 0.00;
-		bool spinWhileArmed = settings.MotorsSpinWhileArmed == ACTUATORSETTINGS_MOTORSSPINWHILEARMED_TRUE;
+		bool spinWhileArmed = MotorsSpinWhileArmed == ACTUATORSETTINGS_MOTORSSPINWHILEARMED_TRUE;
 		
 		float curve1 = MixerCurve(desired.Throttle,mixerSettings.ThrottleCurve1);
 		float curve2 = MixerCurve(desired.Throttle,mixerSettings.ThrottleCurve2);
@@ -223,11 +237,11 @@ static void actuatorTask(void* parameters)
 					 (status[ct] < 0) )
 					status[ct] = 0;					
 			}
-			
+
 			command.Channel[ct] = scaleChannel(status[ct],
-							   settings.ChannelMax[ct],
-							   settings.ChannelMin[ct],
-							   settings.ChannelNeutral[ct]);
+							   ChannelMax[ct],
+							   ChannelMin[ct],
+							   ChannelNeutral[ct]);
 		}
 		MixerStatusSet(&mixerStatus);
 
@@ -440,10 +454,10 @@ static void setFailsafe()
  */
 static void actuator_update_rate(UAVObjEvent * ev)
 {
-	ActuatorSettingsData settings;
+	uint16_t ChannelUpdateFreq[ACTUATORSETTINGS_CHANNELUPDATEFREQ_NUMELEM];
 	if ( ev->obj == ActuatorSettingsHandle() ) {
-		ActuatorSettingsGet(&settings);		
-		PIOS_Servo_SetHz(&settings.ChannelUpdateFreq[0], ACTUATORSETTINGS_CHANNELUPDATEFREQ_NUMELEM);
+		ActuatorSettingsChannelUpdateFreqGet(ChannelUpdateFreq);
+		PIOS_Servo_SetHz(&ChannelUpdateFreq[0], ACTUATORSETTINGS_CHANNELUPDATEFREQ_NUMELEM);
 	}
 }
 
