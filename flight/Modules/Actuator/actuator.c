@@ -129,18 +129,12 @@ static void actuatorTask(void* parameters)
 	portTickType thisSysTime;
 	float dT = 0.0f;
 
-	ActuatorCommandData command; // all fields are used so don't explode
-	//SystemSettingsData sysSettings; not used
-	MixerSettingsData mixerSettings;// all fields are used so don't explode
-	ActuatorDesiredData desired;// all fields are used so don't explode
-	MixerStatusData mixerStatus;  // all fields are used so don't explode
-	FlightStatusData flightStatus; // only 1 byte would be saved if exploded
+	ActuatorCommandData command;
+	MixerSettingsData mixerSettings;
+	ActuatorDesiredData desired;
+	MixerStatusData mixerStatus;
+	FlightStatusData flightStatus;
 
-#if 0
-	ActuatorSettingsData settings;
-	ActuatorSettingsGet(&settings);
-	PIOS_Servo_SetHz(&settings.ChannelUpdateFreq[0], ACTUATORSETTINGS_CHANNELUPDATEFREQ_NUMELEM);
-#else
 	uint8_t MotorsSpinWhileArmed;
 	int16_t ChannelMax[ACTUATORCOMMAND_CHANNEL_NUMELEM];
 	int16_t ChannelMin[ACTUATORCOMMAND_CHANNEL_NUMELEM];
@@ -148,7 +142,6 @@ static void actuatorTask(void* parameters)
 	uint16_t ChannelUpdateFreq[ACTUATORSETTINGS_CHANNELUPDATEFREQ_NUMELEM];
 	ActuatorSettingsChannelUpdateFreqGet(ChannelUpdateFreq);
 	PIOS_Servo_SetHz(&ChannelUpdateFreq[0], ACTUATORSETTINGS_CHANNELUPDATEFREQ_NUMELEM);
-#endif
 
 	float * status = (float *)&mixerStatus; //access status objects as an array of floats
 
@@ -174,9 +167,7 @@ static void actuatorTask(void* parameters)
 			dT = (thisSysTime - lastSysTime) / portTICK_RATE_MS / 1000.0f;
 		lastSysTime = thisSysTime;
 
-
 		FlightStatusGet(&flightStatus);
-		//SystemSettingsGet(&sysSettings);
 		MixerStatusGet(&mixerStatus);
 		MixerSettingsGet (&mixerSettings);
 		ActuatorDesiredGet(&desired);
