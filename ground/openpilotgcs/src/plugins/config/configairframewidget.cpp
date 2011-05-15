@@ -287,6 +287,7 @@ void ConfigAirframeWidget::toggleRudder2(int index)
   */
 void ConfigAirframeWidget::enableFFTest()
 {
+    static bool high = false;
     // Role:
     // - Check if all three checkboxes are checked
     // - Every other timer event: toggle engine from 45% to 55%
@@ -319,48 +320,48 @@ void ConfigAirframeWidget::enableFFTest()
         } else  {
             // Toggle motor state
             UAVDataObject* obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("MixerStatus")));
-            double value = obj->getField("Throttle")->getDouble();
-            double target = (value < 0.5) ? 0.65 : 0.25;
+            double target = high ? 0.65 : 0.25;
+            high = !high;
 
             if(m_aircraft->selectChan1->checkState())
-                obj->getField("Mixer1")->setValue(target);
+                obj->getField("Mixer1")->setDouble(target);
             else
-                obj->getField("Mixer1")->setValue(-1);
+                obj->getField("Mixer1")->setDouble(-1);
 
             if(m_aircraft->selectChan2->checkState())
-                obj->getField("Mixer2")->setValue(target);
+                obj->getField("Mixer2")->setDouble(target);
             else
-                obj->getField("Mixer2")->setValue(-1);
+                obj->getField("Mixer2")->setDouble(-1);
 
             if(m_aircraft->selectChan3->checkState())
-                obj->getField("Mixer3")->setValue(target);
+                obj->getField("Mixer3")->setDouble(target);
             else
-                obj->getField("Mixer3")->setValue(-1);
+                obj->getField("Mixer3")->setDouble(-1);
 
             if(m_aircraft->selectChan4->checkState())
-                obj->getField("Mixer4")->setValue(target);
+                obj->getField("Mixer4")->setDouble(target);
             else
-                obj->getField("Mixer4")->setValue(-1);
+                obj->getField("Mixer4")->setDouble(-1);
 
             if(m_aircraft->selectChan5->checkState())
-                obj->getField("Mixer5")->setValue(target);
+                obj->getField("Mixer5")->setDouble(target);
             else
-                obj->getField("Mixer5")->setValue(-1);
+                obj->getField("Mixer5")->setDouble(-1);
 
             if(m_aircraft->selectChan6->checkState())
-                obj->getField("Mixer6")->setValue(target);
+                obj->getField("Mixer6")->setDouble(target);
             else
-                obj->getField("Mixer6")->setValue(-1);
+                obj->getField("Mixer6")->setDouble(-1);
 
             if(m_aircraft->selectChan7->checkState())
-                obj->getField("Mixer7")->setValue(target);
+                obj->getField("Mixer7")->setDouble(target);
             else
-                obj->getField("Mixer7")->setValue(-1);
+                obj->getField("Mixer7")->setDouble(-1);
 
             if(m_aircraft->selectChan8->checkState())
-                obj->getField("Mixer8")->setValue(target);
+                obj->getField("Mixer8")->setDouble(target);
             else
-                obj->getField("Mixer8")->setValue(-1);
+                obj->getField("Mixer8")->setDouble(-1);
 
             obj->updated();
         }
