@@ -417,7 +417,7 @@ static void setFailsafe()
 		}
 		else
 		{
-			command.Channel[n] = 0;
+			Channel[n] = 0;
 		}
 	}
 
