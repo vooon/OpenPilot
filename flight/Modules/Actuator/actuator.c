@@ -387,21 +387,13 @@ static int16_t scaleChannel(float value, int16_t max, int16_t min, int16_t neutr
  */
 static void setFailsafe()
 {
-#if 0
-	ActuatorCommandData command;
-	ActuatorSettingsData settings;
-
-	ActuatorCommandGet(&command);
-	ActuatorSettingsGet(&settings);
-#else
-	Uint8_t ChannelMin[ACTUATORCOMMAND_CHANNEL_NUMELEM];
+	/* grab only the modules parts that we are going to use */
+	int16_t ChannelMin[ACTUATORCOMMAND_CHANNEL_NUMELEM];
 	ActuatorSettingsChannelMinGet(ChannelMin);
-
-	Uint8_t Channel[ACTUATORCOMMAND_CHANNEL_NUMELEM];
+	int16_t ChannelNeutral[ACTUATORCOMMAND_CHANNEL_NUMELEM];
+	ActuatorSettingsChannelNeutralGet(ChannelNeutral);
+	int16_t Channel[ACTUATORCOMMAND_CHANNEL_NUMELEM];
 	ActuatorCommandChannelGet(Channel);
-#endif
-
-
 
 	MixerSettingsData mixerSettings;
 	MixerSettingsGet (&mixerSettings);
@@ -412,11 +404,11 @@ static void setFailsafe()
 	{
 		if(mixers[n].type == MIXERSETTINGS_MIXER1TYPE_MOTOR)
 		{
-			command.Channel[n] = settings.ChannelMin[n];
+			Channel[n] = ChannelMin[n];
 		}
 		else
 		{
-			command.Channel[n] = settings.ChannelNeutral[n];
+			Channel[n] = ChannelNeutral[n];
 		}
 	}
 
@@ -426,11 +418,11 @@ static void setFailsafe()
 	// Update servo outputs
 	for (int n = 0; n < ACTUATORCOMMAND_CHANNEL_NUMELEM; ++n)
 	{
-		set_channel(n, command.Channel[n]);
+		set_channel(n, Channel[n]);
 	}
 
-	// Update output object
-	ActuatorCommandSet(&command);
+	// Update output object's parts that we changed
+	ActuatorCommandChannelGet(Channel);
 }
 
 

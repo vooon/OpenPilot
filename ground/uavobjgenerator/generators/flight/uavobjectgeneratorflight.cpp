@@ -241,7 +241,7 @@ bool UAVObjectGeneratorFlight::process_object(ObjectInfo* info)
     QString setgetfields;
     for (int n = 0; n < info->fields.length(); ++n)
     {
-        if (!info->fields[n]->defaultValues.isEmpty() )
+        //if (!info->fields[n]->defaultValues.isEmpty() )
         {
             // For non-array fields
             if ( info->fields[n]->numElements == 1)
@@ -309,7 +309,7 @@ bool UAVObjectGeneratorFlight::process_object(ObjectInfo* info)
      QString setgetfieldsextern;
      for (int n = 0; n < info->fields.length(); ++n)
      {
-         if (!info->fields[n]->defaultValues.isEmpty() )
+         //if (!info->fields[n]->defaultValues.isEmpty() )
          {
 
 			/* SET */

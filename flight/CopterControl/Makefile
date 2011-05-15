@@ -28,7 +28,7 @@ include $(TOP)/make/firmware-defs.mk
 
 # Set developer code and compile options
 # Set to YES to compile for debugging
-DEBUG ?= NO
+DEBUG ?= YES
 
 # Set to YES to build a FW version that will erase all flash memory
 ERASE_FLASH ?= NO
