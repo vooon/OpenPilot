@@ -67,7 +67,7 @@ static float GravityAccel(float latitude, float longitude, float altitude);
 // Private constants
 
 //#define FULL_COLD_RESTART             // uncomment this to tell the GPS to do a FULL COLD restart
-//#define DISABLE_GPS_TRESHOLD          //
+//#define DISABLE_GPS_THRESHOLD          //
 
 #define GPS_TIMEOUT_MS                  500
 #define GPS_COMMAND_RESEND_TIMEOUT_MS   2000
@@ -170,7 +170,7 @@ void gpsInit()
 	}
 #endif
 
-#ifdef DISABLE_GPS_TRESHOLD
+#ifdef DISABLE_GPS_THRESHOLD
 	PIOS_COM_SendStringNonBlocking(gpsPort, "$PMTK397,0*23\r\n");
 #endif
 
