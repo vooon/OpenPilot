@@ -349,8 +349,13 @@ ifneq ($(shell ls /var/lib/mlocate/mlocate.db | wc -l),1)
 $(warning Database does not exist, please build it so we can check for udev library (i.e. with locate tool).)
 else
 ifneq ($(shell locate libudev -c),0)
+ifneq ($(shell locate libsdl -c),0)
+LDFLAGS += `sdl-config --cflags --libs`
 LDFLAGS += -ludev
 CFLAGS += -DPIOS_INCLUDE_RCTX
+else
+$(warning "SDL library has not been found. Please install SDL development library in order to use a joystick with sim_posix")
+endif
 else
 $(warning "Udev library has not been found. Please install udev library in order to use a real RC transmitter with sim_posix")
 endif

@@ -52,6 +52,8 @@
 #include <sys/time.h>
 #include <time.h>
 
+#include <SDL/SDL.h>
+
 /* Project Includes */
 #include "pios.h"
 #include "pios_rctx_priv.h"
@@ -68,7 +70,7 @@
 
 /* function call supported for a particular USB adapter */
 static int PIOS_RCTX_Phoenix_Usb_Adapter_Buf_Set(void);
-static int PIOS_RCTX_Phoenix_Usb_Adapter_Status_Get(void);
+static int PIOS_RCTX_SDL_Buf_Set(void);
 
 /* Local Variables */
 static int rctx_fd = 0;
@@ -81,9 +83,11 @@ static int32_t rctx_trasmitter_connected = 0;
 struct pios_rctx_device pios_rctx_device_supported[] =
 	{  /* vendor id , product id, periode_ms, callback input, callback status */
 		/* PhoenixRC USB Adapter from Horizon */
-		{ 1781 , 898, 200, PIOS_RCTX_Phoenix_Usb_Adapter_Buf_Set, PIOS_RCTX_Phoenix_Usb_Adapter_Status_Get },
+		{ 1781 , 898, 200, PIOS_RCTX_Phoenix_Usb_Adapter_Buf_Set, NULL },
 		/* Add new r/c transmitter USB adapter here */
-		{ 0, 0, 0, NULL, NULL }
+
+		/* the last entry is for theSDL layer (any compatible joystick device) */
+		{ 0, 0, 0, PIOS_RCTX_SDL_Buf_Set, NULL }
 	};
 
 /* size of the list of supported adapters */
@@ -174,16 +178,6 @@ leave:
 }
 
 /**
-* Get the transmitter status
-* \output -1 transmitter disconnected
-* \output 0 transmitter connected
-*/
-static int PIOS_RCTX_Phoenix_Usb_Adapter_Status_Get(void)
-{
-	return rctx_trasmitter_connected;
-}
-
-/**
 * Set the value of the channels
 * \output pios_rctx_err errors
 * \output 0 successful
@@ -249,6 +243,41 @@ static int PIOS_RCTX_Phoenix_Usb_Adapter_Buf_Set(void)
 }
 
 /**
+* Set the value of the channels
+* \output pios_rctx_err errors
+* \output 0 successful
+*/
+static int PIOS_RCTX_SDL_Buf_Set(void)
+{
+	int i = 0;
+	int rc = 0;
+	SDL_Joystick *joystick = pios_rctx_device_supported[current_adapter_id].data;
+
+	/* TODO get the axes */
+	*(int*)&buf[0] = (((int)SDL_JoystickGetAxis(joystick, 0))+32768);
+
+	/* TODO take care of the buttons */
+	for ( i=0; i<SDL_JoystickNumButtons(joystick); ++i ) {
+		if (SDL_JoystickGetButton(joystick, i) == SDL_PRESSED) {
+
+			/* TODO check mapping */
+
+			/* TODO assign */
+			*(int*)&buf[0] = 0xFF;
+		}
+	}
+
+	rctx_printf("RCTX: read %d bytes from transmitter: ", res);
+	for (i = 0; i < RCTX_PIOS_NUM_INPUTS; i++) {
+		rctx_printf("%hhx ", buf[i]);
+		CaptureValue[i] = 0xFF & buf[i];
+	}
+	rctx_printf("\n");
+
+	return rc;
+}
+
+/**
 * read periodically the value of input transmitter
 * \param[in] pointer to file descriptor and indice to supported device
 */
@@ -272,17 +301,10 @@ static void TaskRCTX(void *pvParameters)
 		if(++second_delay_ctr >= pios_rctx_device_supported[current_adapter_id].periode_ms) {
 
 			// test the r/c transmitter USB connection
-			if (pios_rctx_device_supported[current_adapter_id].TX_Status_Get() == 0) {
+			if (rctx_trasmitter_connected == 0) {
 
 				// get the transmitter input
 				rc = pios_rctx_device_supported[current_adapter_id].TX_Input_Get();
-
-				// handle special cases that are not connection lost or technical defect related
-				if (rc == pios_rctx_trainer_enabled) {
-					// User push the trainer button should we process this as an emergency?
-					// should we report a connection failure still so that GCS takes control?
-					// TODO: implement use case for trainer switch pressed
-				}
 
 			} else {
 
@@ -308,16 +330,20 @@ static void TaskRCTX(void *pvParameters)
 */
 int32_t PIOS_RCTX_Transmitter_Status_Get(void)
 {
-	return pios_rctx_device_supported[current_adapter_id].TX_Status_Get();
+	return rctx_trasmitter_connected;
 }
 
+
 /**
-* Initialises the r/c HID interface
+* probe the USB hidraw for any unconventional joystick/transmitter
+* \output 0 no transmitter found
+* \output 1 transmitter found
 */
-void PIOS_RCTX_Init(void)
+bool PIOS_RCTX_HIDRAW_Probe(void)
 {
-	int32_t res, i = 0;
+	uint32_t res;
 	uint32_t dev_tab_i = 0;
+	bool joystick_found = FALSE;
 	char hid_raw_string[RCTX_HIDRAW_STRING_MAX];
 
 	// grab the hidraw device
@@ -333,8 +359,7 @@ void PIOS_RCTX_Init(void)
 			// populate current adapter discovered
 			current_adapter_id = dev_tab_i;
 
-			// Create task
-			xTaskCreate(TaskRCTX, (signed portCHAR *)"RCTX", configMINIMAL_STACK_SIZE , NULL, RCTX_TASK_PRIORITY, NULL);
+			joystick_found = 1;
 
 		} else {
 			perror("RCTX: Unable to open device");
@@ -343,8 +368,82 @@ void PIOS_RCTX_Init(void)
 				printf("RCTX: You also can create a udev rule for this interface because\n");
 				printf("RCTX: each time the transmitter will be plugged, the permission will need to be updated.\n");
 			}
-
 		}
+	}
+	return joystick_found;
+}
+
+/**
+* probe the SDL interface for any joystick compatible device
+* \output 0 no joystick found
+* \output 1 joystick found
+*/
+bool PIOS_RCTX_SDL_Probe(void)
+{
+	bool joystick_found = FALSE;
+
+	const char *name;
+	int i;
+	char ch_js;
+	SDL_Joystick *joystick;
+
+	/* Initialize SDL (Note: video is required to start event loop) */
+	if ( SDL_Init(SDL_INIT_VIDEO|SDL_INIT_JOYSTICK) < 0 ) {
+		fprintf(stderr, "Couldn't initialize SDL: %s\n",SDL_GetError());
+	} else
+	{
+		/* Print information about the joysticks */
+		printf("There are %d joysticks attached\n", SDL_NumJoysticks());
+		for ( i=0; i<SDL_NumJoysticks(); ++i ) {
+			name = SDL_JoystickName(i);
+			printf("[%d] Joystick: %s\n",i,name ? name : "Unknown Joystick");
+		}
+
+		/* which joystick should we pick? */
+		printf("Select the joystick you want to use:\n");
+		ch_js = getchar();
+
+		joystick = SDL_JoystickOpen(atoi(&ch_js));
+		if ( joystick == NULL ) {
+			printf("Couldn't open joystick %d: %s\n", atoi(&ch_js),
+				   SDL_GetError());
+		} else {
+			joystick_found = 1;
+
+			/* use the magic entry in the device table */
+			current_adapter_id = pios_rctx_device_supported_nitems - 1;
+
+			/* do some button mapping here (from init file?) */
+
+			/* store the joystick handle */
+			pios_rctx_device_supported[current_adapter_id].data = (void*)joystick;
+			pios_rctx_device_supported[current_adapter_id].product_id = atoi(&ch_js);
+		}
+	}
+	return joystick_found;
+}
+
+/**
+* Initialises the r/c HID interface
+*/
+void PIOS_RCTX_Init(void)
+{
+	int32_t i = 0;
+	bool joystick_found = FALSE;
+
+	// Check any joystick that support SDL
+	joystick_found = PIOS_RCTX_SDL_Probe();
+
+	if (!joystick_found)
+	{
+		// Check any r/c tx/joysticks that do not support SDL
+		joystick_found = PIOS_RCTX_HIDRAW_Probe();
+	}
+
+	if (joystick_found)
+	{
+		// Create task
+		xTaskCreate(TaskRCTX, (signed portCHAR *)"RCTX", configMINIMAL_STACK_SIZE , NULL, RCTX_TASK_PRIORITY, NULL);
 	}
 
 	for (i = 0; i < RCTX_PIOS_NUM_INPUTS; i++) {

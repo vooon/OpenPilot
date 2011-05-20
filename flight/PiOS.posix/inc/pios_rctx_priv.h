@@ -65,7 +65,7 @@ struct pios_rctx_device {
 	uint32_t product_id;
 	uint32_t periode_ms;          /* periode of execution of the transmitter callback (in ms) */
 	int (*TX_Input_Get)(void);    /* transmitter callback to be executed periodically */
-	int (*TX_Status_Get)(void);   /* transmitter connection status */
+	void *data;   /* transmitter connection status */
 };
 
 #endif /* PIOS_RCTX_PRIV_H */
