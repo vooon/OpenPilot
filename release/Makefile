@@ -13,9 +13,8 @@ ROOT_DIR := $(realpath $(WHEREAMI)/../)
 
 # Set up some macros
 BUILD_DIR    := $(ROOT_DIR)/build
-RELEASE_DATE := $(shell date +%Y%m%d)
-RELEASE_TAG  := unreleased
-RELEASE_LBL  := $(RELEASE_DATE)-$(RELEASE_TAG)
+VERSION_CMD  := python $(ROOT_DIR)/make/scripts/version-info.py --path="$(ROOT_DIR)"
+RELEASE_LBL  := $(shell $(VERSION_CMD) --format=\$${DATE}-\$${TAG_OR_HASH8})
 RELEASE_DIR  := $(BUILD_DIR)/release-$(RELEASE_LBL)
 FW_DIR       := $(RELEASE_DIR)/firmware-$(RELEASE_LBL)
 BL_DIR       := $(FW_DIR)/bootloaders
@@ -89,20 +88,20 @@ $(eval $(call INSTALL_TEMPLATE,blupd_ahrs,all_bl,$(BLUPD_DIR),AHRS_,-$(RELEASE_L
 $(eval $(call INSTALL_TEMPLATE,blupd_openpilot,all_bl,$(BLUPD_DIR),OpenPilot_,-$(RELEASE_LBL),,,blupd_openpilot,install))
 $(eval $(call INSTALL_TEMPLATE,blupd_pipxtreme,all_bl,$(BLUPD_DIR),PipXtreme_,-$(RELEASE_LBL),,,blupd_pipxtreme,install))
 
-# CopterControl flash eraser tool (change fw_spektrum to fw_ppm if fw_ppm is enabled in release_fw target below)
+# CopterControl flash eraser tool
 $(eval $(call INSTALL_TEMPLATE,fw_tools,uavobjects,$(BLUPD_DIR),,-FlashEraser-$(RELEASE_LBL),ERASE_FLASH=YES,clean,$(FW_TARGETS_TOOLS),install))
 
 # Order-only dependencies
-# They are bit complicated to support parallel (-j) builds and to
-# create the pwm/ppm/spektrum and CC flash eraser targets in a sequence of build steps
+# They are bit complicated to support parallel (-j) builds and to create
+# the pwm/ppm/spektrum and CC flash eraser targets in some fixed order
 
-fw_pwm: |		# default dependencies
+fw_pwm: |		# default dependencies, will be built first
 
-fw_spektrum: | fw_pwm	# sequential build
+fw_spektrum: | fw_pwm	# ordered build
 
-fw_ppm: | fw_spektrum   # sequential build
+fw_ppm: | fw_spektrum   # ordered build
 
-fw_tools: | fw_spektrum # sequential build, replace fw_spektrum by fw_ppm if uncommented below
+fw_tools: | fw_spektrum # ordered build, replace fw_spektrum by fw_ppm if uncommented below
 
 release_fw: | fw_common fw_pwm fw_spektrum # fw_ppm
 
@@ -133,7 +132,7 @@ MAKEFLAGS += --no-print-directory
 endif
 
 # Platform-dependent stuff
-PLATFORM := win32
+PLATFORM := winx86
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
   PLATFORM := linux
