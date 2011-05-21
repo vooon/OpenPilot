@@ -47,7 +47,7 @@ class Repo:
         self._rc = git.poll()
 
     def _get_origin(self):
-        """Get and store the repository origin URL"""
+        """Get and store the repository fetch origin path"""
         self._origin = None
         self._exec('remote -v')
         if self._rc == 0:
@@ -206,7 +206,7 @@ def file_from_template(tpl_name, out_name, dict):
             of.close()
 
 def sha1(file):
-    """Provides C source representation of sha1 sum of file."""
+    """Provides C source representation of sha1 sum of file"""
     if file == None:
         return ""
     else:
@@ -279,6 +279,7 @@ dependent targets.
         TAG_OR_HASH8 = r.tag(r.hash(8, 'untagged')),
         UNIXTIME = r.time(),
         DATE = r.time('%Y%m%d'),
+        DATETIME = r.time('%Y%m%d %H:%M'),
         BOARD_TYPE = args.type,
         BOARD_REVISION = args.revision,
         SHA1 = sha1(args.image),
