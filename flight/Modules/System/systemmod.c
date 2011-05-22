@@ -71,9 +71,9 @@
 
 // Private variables
 static uint32_t idleCounter;
-static uint32_t idleCounterClear;
+static uint8_t idleCounterClear;
 static xTaskHandle systemTaskHandle;
-static int32_t stackOverflow;
+static int8_t stackOverflow;
 
 // Private functions
 static void objectUpdatedCb(UAVObjEvent * ev);
@@ -91,8 +91,15 @@ int32_t SystemModInitialize(void)
 {
 	// Initialize vars
 	stackOverflow = 0;
+
+	// System initialization
+	OpenPilotInit();
+
 	// Create system task
 	xTaskCreate(systemTask, (signed char *)"System", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &systemTaskHandle);
+
+	// Register task
+	TaskMonitorAdd(TASKINFO_RUNNING_SYSTEM, systemTaskHandle);
 	return 0;
 }
 
@@ -103,16 +110,13 @@ static void systemTask(void *parameters)
 {
 	portTickType lastSysTime;
 
-	// System initialization
-	OpenPilotInit();
-
-	// Register task
-	TaskMonitorAdd(TASKINFO_RUNNING_SYSTEM, systemTaskHandle);
-
 	// Initialize vars
 	idleCounter = 0;
 	idleCounterClear = 0;
 	lastSysTime = xTaskGetTickCount();
+
+	// Claim some system stack back for heap
+	pvPortReclaimSysStack();
 
 	// Listen for SettingPersistance object updates, connect a callback function
 	ObjectPersistenceConnectCallback(&objectUpdatedCb);

@@ -64,6 +64,15 @@ SECTIONS
         _ebss = . ;
     } > SRAM
 
+    /* .heap section which is used for data allocation */
+    .heap (NOLOAD) :
+    {
+        _sheap = . ;
+        *(.heap)
+        . = ALIGN(4);
+        _eheap = . ;
+    } > SRAM
+    
     . = ALIGN(4);
     _end = . ;
 

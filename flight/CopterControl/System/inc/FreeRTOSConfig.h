@@ -71,6 +71,9 @@ configKERNEL_INTERRUPT_PRIORITY setting.  Here 15 corresponds to the lowest
 NVIC value of 255. */
 #define configLIBRARY_KERNEL_INTERRUPT_PRIORITY	15
 
+/* this is to reclaim a part of the system stack as a heap */
+#define HEAP_SYS_RECLAIM
+
 /**
   * @}
   */

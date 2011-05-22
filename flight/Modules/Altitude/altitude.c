@@ -70,6 +70,8 @@ int32_t AltitudeInitialize()
 {
 	// Start main task
 	xTaskCreate(altitudeTask, (signed char *)"Altitude", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &taskHandle);
+
+	// Register task
 	TaskMonitorAdd(TASKINFO_RUNNING_ALTITUDE, taskHandle);
 
 	// init down-sampling data
