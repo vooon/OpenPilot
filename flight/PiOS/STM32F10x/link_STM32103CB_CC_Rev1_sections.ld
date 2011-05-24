@@ -73,6 +73,17 @@ SECTIONS
         _eheap = . ;
     } > SRAM
     
+    /* .heap section which is used for data allocation */
+    .sysstack (NOLOAD) :
+    {
+        _ssysstack = . ;
+		/* place holder for system stack */
+		/* need to figure out the minim size and hardcode it here */
+		/* so we don't overwrite the system stack with heap. */
+		/* startup should fell this seection with pattern */
+        _esysstack = _estack ;
+    } > SRAM
+    
     . = ALIGN(4);
     _end = . ;
 
