@@ -122,7 +122,6 @@ int32_t ActuatorInitialize()
  *
  * @return -1 if error, 0 if success
  */
-volatile uint16_t channel_value_max = 0;
 static void actuatorTask(void* parameters)
 {
 	UAVObjEvent ev;
@@ -137,9 +136,9 @@ static void actuatorTask(void* parameters)
 	FlightStatusData flightStatus;
 
 	uint8_t MotorsSpinWhileArmed;
-	uint8_t ChannelMax[ACTUATORCOMMAND_CHANNEL_NUMELEM];
-	uint8_t ChannelMin[ACTUATORCOMMAND_CHANNEL_NUMELEM];
-	uint8_t ChannelNeutral[ACTUATORCOMMAND_CHANNEL_NUMELEM];
+	uint16_t ChannelMax[ACTUATORCOMMAND_CHANNEL_NUMELEM];
+	uint16_t ChannelMin[ACTUATORCOMMAND_CHANNEL_NUMELEM];
+	uint16_t ChannelNeutral[ACTUATORCOMMAND_CHANNEL_NUMELEM];
 	uint16_t ChannelUpdateFreq[ACTUATORSETTINGS_CHANNELUPDATEFREQ_NUMELEM];
 	ActuatorSettingsChannelUpdateFreqGet(ChannelUpdateFreq);
 	PIOS_Servo_SetHz(&ChannelUpdateFreq[0], ACTUATORSETTINGS_CHANNELUPDATEFREQ_NUMELEM);
@@ -252,9 +251,6 @@ static void actuatorTask(void* parameters)
 		
 		for (int n = 0; n < ACTUATORCOMMAND_CHANNEL_NUMELEM; ++n)
 		{
-			/* do some monitoring */
-			if (command.Channel[n] > channel_value_max)
-				channel_value_max = command.Channel[n];
 			success &= set_channel(n, command.Channel[n]);
 		}
 
@@ -401,11 +397,11 @@ static uint8_t scaleChannel(float value, uint8_t max, uint8_t min, uint8_t neutr
 static void setFailsafe()
 {
 	/* grab only the modules parts that we are going to use */
-	uint8_t ChannelMin[ACTUATORCOMMAND_CHANNEL_NUMELEM];
+	uint16_t ChannelMin[ACTUATORCOMMAND_CHANNEL_NUMELEM];
 	ActuatorSettingsChannelMinGet(ChannelMin);
-	uint8_t ChannelNeutral[ACTUATORCOMMAND_CHANNEL_NUMELEM];
+	uint16_t ChannelNeutral[ACTUATORCOMMAND_CHANNEL_NUMELEM];
 	ActuatorSettingsChannelNeutralGet(ChannelNeutral);
-	uint8_t Channel[ACTUATORCOMMAND_CHANNEL_NUMELEM];
+	uint16_t Channel[ACTUATORCOMMAND_CHANNEL_NUMELEM];
 	ActuatorCommandChannelGet(Channel);
 
 	MixerSettingsData mixerSettings;

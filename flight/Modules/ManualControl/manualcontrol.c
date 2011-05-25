@@ -81,10 +81,10 @@ static void processFlightMode(ManualControlSettingsData * settings, float flight
 static void processArm(ManualControlCommandData * cmd, ManualControlSettingsData * settings);
 
 static void manualControlTask(void *parameters);
-static float scaleChannel(uint8_t value, uint8_t max, uint8_t min, uint8_t neutral);
+static float scaleChannel(uint16_t value, uint16_t max, uint16_t min, uint16_t neutral);
 static uint32_t timeDifferenceMs(portTickType start_time, portTickType end_time);
 static bool okToArm(void);
-static bool validInputRange(uint8_t min, uint8_t max, uint8_t value);
+static bool validInputRange(uint16_t min, uint16_t max, uint16_t value);
 
 #define assumptions1 ( \
 		((int)MANUALCONTROLSETTINGS_STABILIZATION1SETTINGS_NONE      == (int)STABILIZATIONDESIRED_STABILIZATIONMODE_NONE)       && \
@@ -370,7 +370,7 @@ static void updateStabilizationDesired(ManualControlCommandData * cmd, ManualCon
 /**
  * Convert channel from servo pulse duration (microseconds) to scaled -1/+1 range.
  */
-static float scaleChannel(uint8_t value, uint8_t max, uint8_t min, uint8_t neutral)
+static float scaleChannel(uint16_t value, uint16_t max, uint16_t min, uint16_t neutral)
 {
 	float valueScaled;
 
@@ -589,11 +589,11 @@ static void processFlightMode(ManualControlSettingsData * settings, float flight
  * @brief Determine if the manual input value is within acceptable limits
  * @returns return TRUE if so, otherwise return FALSE
  */
-bool validInputRange(uint8_t min, uint8_t max, uint8_t value)
+bool validInputRange(uint16_t min, uint16_t max, uint16_t value)
 {
 	if (min > max)
 	{
-		uint8_t tmp = min;
+		uint16_t tmp = min;
 		min = max;
 		max = tmp;
 	}
