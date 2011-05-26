@@ -76,6 +76,13 @@ task.h is included from an application file. */
 #undef MPU_WRAPPERS_INCLUDED_FROM_API_FILE
 
 /*-----------------------------------------------------------*/
+#ifdef HEAP_SYS_RECLAIM
+void pvPortReclaimSysStack(void)
+{
+	/* empty stub: this function is implemented in PiOS flight code */
+}
+#endif
+/*-----------------------------------------------------------*/
 
 void *pvPortMalloc( size_t xWantedSize )
 {
