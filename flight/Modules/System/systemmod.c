@@ -115,8 +115,10 @@ static void systemTask(void *parameters)
 	idleCounterClear = 0;
 	lastSysTime = xTaskGetTickCount();
 
+#ifdef HEAP_SYS_RECLAIM
 	// Claim some system stack back for heap
 	pvPortReclaimSysStack();
+#endif
 
 	// Listen for SettingPersistance object updates, connect a callback function
 	ObjectPersistenceConnectCallback(&objectUpdatedCb);
