@@ -36,6 +36,7 @@
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QPushButton>
 #include <QMessageBox>
+#include <QSignalMapper>
 
 ConfigOutputWidget::ConfigOutputWidget(QWidget *parent) : ConfigTaskWidget(parent)
 {
@@ -94,29 +95,18 @@ ConfigOutputWidget::ConfigOutputWidget(QWidget *parent) : ConfigTaskWidget(paren
             << m_config->ch6Rev
             << m_config->ch7Rev;
 
-	links << m_config->ch0Link
-			<< m_config->ch1Link
-			<< m_config->ch2Link
-			<< m_config->ch3Link
-			<< m_config->ch4Link
-			<< m_config->ch5Link
-			<< m_config->ch6Link
-			<< m_config->ch7Link;
+    links << m_config->ch0Link
+              << m_config->ch1Link
+              << m_config->ch2Link
+              << m_config->ch3Link
+              << m_config->ch4Link
+              << m_config->ch5Link
+              << m_config->ch6Link
+              << m_config->ch7Link;
 
-	UAVDataObject * obj = dynamic_cast<UAVDataObject*>(objManager->getObject(QString("ActuatorSettings")));
-    QList<UAVObjectField*> fieldList = obj->getFields();
-    foreach (UAVObjectField* field, fieldList) {
-        if (field->getUnits().contains("channel")) {
-            m_config->ch0Output->addItem(field->getName());
-            m_config->ch1Output->addItem(field->getName());
-            m_config->ch2Output->addItem(field->getName());
-            m_config->ch3Output->addItem(field->getName());
-            m_config->ch4Output->addItem(field->getName());
-            m_config->ch5Output->addItem(field->getName());
-            m_config->ch6Output->addItem(field->getName());
-            m_config->ch7Output->addItem(field->getName());
-        }
-    }
+    // Register for ActuatorSettings changes:
+    UAVDataObject * obj = dynamic_cast<UAVDataObject*>(objManager->getObject(QString("ActuatorSettings")));
+    connect(obj,SIGNAL(objectUpdated(UAVObject*)),this,SLOT(requestRCOutputUpdate()));
 
 
     for (int i = 0; i < 8; i++) {
@@ -138,26 +128,46 @@ ConfigOutputWidget::ConfigOutputWidget(QWidget *parent) : ConfigTaskWidget(paren
 
     connect(m_config->saveRCOutputToSD, SIGNAL(clicked()), this, SLOT(saveRCOutputObject()));
     connect(m_config->saveRCOutputToRAM, SIGNAL(clicked()), this, SLOT(sendRCOutputUpdate()));
+
+    // Actually, this is not really needed since we are subscribing to the object updates already
+    // TODO: remove those buttons on all config gadget panels.
     connect(m_config->getRCOutputCurrent, SIGNAL(clicked()), this, SLOT(requestRCOutputUpdate()));
 
     connect(parent, SIGNAL(autopilotConnected()),this, SLOT(requestRCOutputUpdate()));
 
     firstUpdate = true;
 
-	enableControls(false);
+    connect(m_config->spinningArmed, SIGNAL(toggled(bool)), this, SLOT(setSpinningArmed(bool)));
 
-	// Listen to telemetry connection events
-	if (pm)
-	{
-		TelemetryManager *tm = pm->getObject<TelemetryManager>();
-		if (tm)
-		{
-			connect(tm, SIGNAL(myStart()), this, SLOT(onTelemetryStart()));
-			connect(tm, SIGNAL(myStop()), this, SLOT(onTelemetryStop()));
-			connect(tm, SIGNAL(connected()), this, SLOT(onTelemetryConnect()));
-			connect(tm, SIGNAL(disconnected()), this, SLOT(onTelemetryDisconnect()));
-		}
-	}
+    enableControls(false);
+
+    // Listen to telemetry connection events
+    if (pm)
+    {
+        TelemetryManager *tm = pm->getObject<TelemetryManager>();
+        if (tm)
+        {
+            connect(tm, SIGNAL(myStart()), this, SLOT(onTelemetryStart()));
+            connect(tm, SIGNAL(myStop()), this, SLOT(onTelemetryStop()));
+            connect(tm, SIGNAL(connected()), this, SLOT(onTelemetryConnect()));
+            connect(tm, SIGNAL(disconnected()), this, SLOT(onTelemetryDisconnect()));
+        }
+    }
+
+    // Connect all the help buttons to signal mapper that passes button name to SLOT function
+    QSignalMapper* signalMapper = new QSignalMapper(this);
+    connect( m_config->channelRateHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
+    signalMapper->setMapping(m_config->channelRateHelp, m_config->channelRateHelp->objectName());
+    connect( m_config->channelValuesHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
+    signalMapper->setMapping(m_config->channelValuesHelp, m_config->channelValuesHelp->objectName());
+    connect( m_config->spinningArmedlHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
+    signalMapper->setMapping(m_config->spinningArmedlHelp, m_config->spinningArmedlHelp->objectName());
+    connect( m_config->testOutputsHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
+    signalMapper->setMapping(m_config->testOutputsHelp, m_config->testOutputsHelp->objectName());
+    connect( m_config->commandHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
+    signalMapper->setMapping(m_config->commandHelp, QString("commandHelp"));
+
+    connect(signalMapper, SIGNAL(mapped(const QString &)), parent, SLOT(showHelp(const QString &)));
 }
 
 ConfigOutputWidget::~ConfigOutputWidget()
@@ -263,17 +273,34 @@ void ConfigOutputWidget::runChannelTests(bool state)
         mdata.gcsTelemetryAcked = false;
         mdata.gcsTelemetryUpdateMode = UAVObject::UPDATEMODE_ONCHANGE;
         mdata.gcsTelemetryUpdatePeriod = 100;
+
+        // Prevent stupid users from touching the minimum & maximum ranges while
+        // moving the sliders. Thanks Ivan for the tip :)
+        foreach (QSpinBox* box, outMin) {
+            box->setEnabled(false);
+        }
+        foreach (QSpinBox* box, outMax) {
+            box->setEnabled(false);
+        }
+
     }
     else
     {
         mdata = accInitialData; // Restore metadata
+        foreach (QSpinBox* box, outMin) {
+            box->setEnabled(true);
+        }
+        foreach (QSpinBox* box, outMax) {
+            box->setEnabled(true);
+        }
+
     }
     obj->setMetadata(mdata);
 
 }
 
 /**
-  * Set the dropdown option for a channel output assignement
+  * Set the label for a channel output assignement
   */
 void ConfigOutputWidget::assignOutputChannel(UAVDataObject *obj, QString str)
 {
@@ -281,33 +308,46 @@ void ConfigOutputWidget::assignOutputChannel(UAVDataObject *obj, QString str)
     QStringList options = field->getOptions();
     switch (options.indexOf(field->getValue().toString())) {
     case 0:
-        m_config->ch0Output->setCurrentIndex(m_config->ch0Output->findText(str));
+        m_config->ch0Output->setText(str);
         break;
     case 1:
-        m_config->ch1Output->setCurrentIndex(m_config->ch1Output->findText(str));
+        m_config->ch1Output->setText(str);
         break;
     case 2:
-        m_config->ch2Output->setCurrentIndex(m_config->ch2Output->findText(str));
+        m_config->ch2Output->setText(str);
         break;
     case 3:
-        m_config->ch3Output->setCurrentIndex(m_config->ch3Output->findText(str));
+        m_config->ch3Output->setText(str);
         break;
     case 4:
-        m_config->ch4Output->setCurrentIndex(m_config->ch4Output->findText(str));
+        m_config->ch4Output->setText(str);
         break;
     case 5:
-        m_config->ch5Output->setCurrentIndex(m_config->ch5Output->findText(str));
+        m_config->ch5Output->setText(str);
         break;
     case 6:
-        m_config->ch6Output->setCurrentIndex(m_config->ch6Output->findText(str));
+        m_config->ch6Output->setText(str);
         break;
     case 7:
-        m_config->ch7Output->setCurrentIndex(m_config->ch7Output->findText(str));
+        m_config->ch7Output->setText(str);
         break;
     }
 }
 
-
+/**
+  * Set the "Spin motors at neutral when armed" flag in ActuatorSettings
+  */
+void ConfigOutputWidget::setSpinningArmed(bool val)
+{
+    UAVDataObject *obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("ActuatorSettings")));
+    if (!obj) return;
+    UAVObjectField *field = obj->getField("MotorsSpinWhileArmed");
+    if (!field) return;
+    if(val)
+        field->setValue("TRUE");
+    else
+        field->setValue("FALSE");
+}
 
 /**
   Sends the channel value to the UAV to move the servo.
@@ -372,27 +412,19 @@ void ConfigOutputWidget::requestRCOutputUpdate()
     ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
     UAVObjectManager *objManager = pm->getObject<UAVObjectManager>();
 
-    // Get the Airframe type from the system settings:
-    UAVDataObject* obj = dynamic_cast<UAVDataObject*>(objManager->getObject(QString("SystemSettings")));
-    Q_ASSERT(obj);
-    obj->requestUpdate();
-    UAVObjectField *field = obj->getField(QString("AirframeType"));
-    m_config->aircraftType->setText(QString("Aircraft type: ") + field->getValue().toString());
-
     // Reset all channel assignements:
-    m_config->ch0Output->setCurrentIndex(0);
-    m_config->ch1Output->setCurrentIndex(0);
-    m_config->ch2Output->setCurrentIndex(0);
-    m_config->ch3Output->setCurrentIndex(0);
-    m_config->ch4Output->setCurrentIndex(0);
-    m_config->ch5Output->setCurrentIndex(0);
-    m_config->ch6Output->setCurrentIndex(0);
-    m_config->ch7Output->setCurrentIndex(0);
+    m_config->ch0Output->setText("-");
+    m_config->ch1Output->setText("-");
+    m_config->ch2Output->setText("-");
+    m_config->ch3Output->setText("-");
+    m_config->ch4Output->setText("-");
+    m_config->ch5Output->setText("-");
+    m_config->ch6Output->setText("-");
+    m_config->ch7Output->setText("-");
 
     // Get the channel assignements:
-    obj = dynamic_cast<UAVDataObject*>(objManager->getObject(QString("ActuatorSettings")));
+    UAVDataObject * obj = dynamic_cast<UAVDataObject*>(objManager->getObject(QString("ActuatorSettings")));
     Q_ASSERT(obj);
-    obj->requestUpdate();
     QList<UAVObjectField*> fieldList = obj->getFields();
     foreach (UAVObjectField* field, fieldList) {
         if (field->getUnits().contains("channel")) {
@@ -400,10 +432,44 @@ void ConfigOutputWidget::requestRCOutputUpdate()
         }
     }
 
+    // Get the SpinWhileArmed setting
+    UAVObjectField *field = obj->getField(QString("MotorsSpinWhileArmed"));
+    m_config->spinningArmed->setChecked(field->getValue().toString().contains("TRUE"));
+
     // Get Output rates for both banks
     field = obj->getField(QString("ChannelUpdateFreq"));
+    UAVObjectUtilManager* utilMngr = pm->getObject<UAVObjectUtilManager>();
     m_config->outputRate1->setValue(field->getValue(0).toInt());
     m_config->outputRate2->setValue(field->getValue(1).toInt());
+    if (utilMngr) {
+        int board = utilMngr->getBoardModel();
+        if ((board & 0xff00) == 1024) {
+            // CopterControl family
+            m_config->chBank1->setText("1-3");
+            m_config->chBank2->setText("4");
+            m_config->chBank3->setText("5");
+            m_config->chBank4->setText("6");
+            m_config->outputRate1->setEnabled(true);
+            m_config->outputRate2->setEnabled(true);
+            m_config->outputRate3->setEnabled(true);
+            m_config->outputRate4->setEnabled(true);
+            m_config->outputRate3->setValue(field->getValue(2).toInt());
+            m_config->outputRate4->setValue(field->getValue(3).toInt());
+        } else if ((board & 0xff00) == 256 ) {
+            // Mainboard family
+            m_config->outputRate1->setEnabled(true);
+            m_config->outputRate2->setEnabled(true);
+            m_config->outputRate3->setEnabled(false);
+            m_config->outputRate4->setEnabled(false);
+            m_config->chBank1->setText("1-4");
+            m_config->chBank2->setText("5-8");
+            m_config->chBank3->setText("-");
+            m_config->chBank4->setText("-");
+            m_config->outputRate3->setValue(0);
+            m_config->outputRate4->setValue(0);
+        }
+    }
+
 
     // Get Channel ranges:
     for (int i=0;i<8;i++) {
@@ -463,57 +529,11 @@ void ConfigOutputWidget::sendRCOutputUpdate()
     field = obj->getField(QString("ChannelUpdateFreq"));
     field->setValue(m_config->outputRate1->value(),0);
     field->setValue(m_config->outputRate2->value(),1);
-
-    // Set Actuator assignement for each channel:
-    // Rule: if two channels have the same setting (which is wrong!) the higher channel
-    // will get the setting.
-
-    // First, reset all channel assignements:
-    QList<UAVObjectField*> fieldList = obj->getFields();
-    foreach (UAVObjectField* field, fieldList) {
-        // NOTE: we assume that all options in ActuatorSettings are a channel assignement
-        // except for the options called "ChannelXXX"
-        if (field->getUnits().contains("channel")) {
-            field->setValue(field->getOptions().last());
-        }
-    }
-
-    if (m_config->ch0Output->currentIndex() != 0) {
-        field = obj->getField(m_config->ch0Output->currentText());
-        field->setValue(field->getOptions().at(0)); // -> This way we don't depend on channel naming convention
-    }
-    if (m_config->ch1Output->currentIndex() != 0) {
-        field = obj->getField(m_config->ch1Output->currentText());
-        field->setValue(field->getOptions().at(1)); // -> This way we don't depend on channel naming convention
-    }
-    if (m_config->ch2Output->currentIndex() != 0) {
-        field = obj->getField(m_config->ch2Output->currentText());
-        field->setValue(field->getOptions().at(2)); // -> This way we don't depend on channel naming convention
-    }
-    if (m_config->ch3Output->currentIndex() != 0) {
-        field = obj->getField(m_config->ch3Output->currentText());
-        field->setValue(field->getOptions().at(3)); // -> This way we don't depend on channel naming convention
-    }
-    if (m_config->ch4Output->currentIndex() != 0) {
-        field = obj->getField(m_config->ch4Output->currentText());
-        field->setValue(field->getOptions().at(4)); // -> This way we don't depend on channel naming convention
-    }
-    if (m_config->ch5Output->currentIndex() != 0) {
-        field = obj->getField(m_config->ch5Output->currentText());
-        field->setValue(field->getOptions().at(5)); // -> This way we don't depend on channel naming convention
-    }
-    if (m_config->ch6Output->currentIndex() != 0) {
-        field = obj->getField(m_config->ch6Output->currentText());
-        field->setValue(field->getOptions().at(6)); // -> This way we don't depend on channel naming convention
-    }
-    if (m_config->ch7Output->currentIndex() != 0) {
-        field = obj->getField(m_config->ch7Output->currentText());
-        field->setValue(field->getOptions().at(7)); // -> This way we don't depend on channel naming convention
-    }
+    field->setValue(m_config->outputRate3->value(),2);
+    field->setValue(m_config->outputRate4->value(),3);
 
     // ... and send to the OP Board
     obj->updated();
-
 
 }
 

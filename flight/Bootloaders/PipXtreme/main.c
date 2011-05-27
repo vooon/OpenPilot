@@ -27,6 +27,7 @@
  */
 /* Bootloader Includes */
 #include <pios.h>
+#include <pios_board_info.h>
 #include "stopwatch.h"
 #include "op_dfu.h"
 #include "usb_lib.h"
@@ -53,12 +54,11 @@ uint32_t sweep_steps2 = 100; // * 5 mS -> 500 mS
 
 
 ////////////////////////////////////////
-uint8_t tempcount=0;
-
+uint8_t tempcount = 0;
 
 /* Extern variables ----------------------------------------------------------*/
 DFUStates DeviceState;
-int16_t status=0;
+int16_t status = 0;
 uint8_t JumpToApp = FALSE;
 uint8_t GO_dfu = FALSE;
 uint8_t USB_connected = FALSE;
@@ -94,11 +94,11 @@ int main() {
 
 	if (GO_dfu == TRUE) {
 		PIOS_Board_Init();
-		if(User_DFU_request == TRUE)
+		if (User_DFU_request == TRUE)
 			DeviceState = DFUidle;
 		else
 			DeviceState = BLidle;
-		STOPWATCH_Init(100,LED_PWM_TIMER);
+		STOPWATCH_Init(100, LED_PWM_TIMER);
 	} else
 		JumpToApp = TRUE;
 
@@ -161,7 +161,8 @@ int main() {
 
 		if (STOPWATCH_ValueGet(LED_PWM_TIMER) > 100 * 50 * 100)
 			STOPWATCH_Reset(LED_PWM_TIMER);
-		if ((STOPWATCH_ValueGet(LED_PWM_TIMER) > 60000) && (DeviceState == BLidle))
+		if ((STOPWATCH_ValueGet(LED_PWM_TIMER) > 60000) && (DeviceState
+				== BLidle))
 			JumpToApp = TRUE;
 
 		processRX();
@@ -170,7 +171,9 @@ int main() {
 }
 
 void jump_to_app() {
-	if (((*(__IO uint32_t*) START_OF_USER_CODE) & 0x2FFE0000) == 0x20000000) { /* Jump to user application */
+	const struct pios_board_info * bdinfo = &pios_board_info_blob;
+
+	if (((*(__IO uint32_t*) bdinfo->fw_base) & 0x2FFE0000) == 0x20000000) { /* Jump to user application */
 		FLASH_Lock();
 		RCC_APB2PeriphResetCmd(0xffffffff, ENABLE);
 		RCC_APB1PeriphResetCmd(0xffffffff, ENABLE);
@@ -179,10 +182,10 @@ void jump_to_app() {
 		_SetCNTR(0); // clear interrupt mask
 		_SetISTR(0); // clear all requests
 
-		JumpAddress = *(__IO uint32_t*) (START_OF_USER_CODE + 4);
+		JumpAddress = *(__IO uint32_t*) (bdinfo->fw_base + 4);
 		Jump_To_Application = (pFunction) JumpAddress;
 		/* Initialize user application's Stack Pointer */
-		__set_MSP(*(__IO uint32_t*) START_OF_USER_CODE);
+		__set_MSP(*(__IO uint32_t*) bdinfo->fw_base);
 		Jump_To_Application();
 	} else {
 		DeviceState = failed_jump;

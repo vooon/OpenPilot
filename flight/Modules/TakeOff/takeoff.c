@@ -27,7 +27,7 @@
 
 /**
  * Input object: BaroAltitude
- * Input object: ManualControlCommand
+ * Input object: FlightStatus
  * Output object: PositionDesired
  * Output object: StabilizationDesired
  *
@@ -52,7 +52,7 @@
 #include "positiondesired.h"
 #include "baroaltitude.h"
 #include "manualcontrol.h"
-#include "manualcontrolcommand.h"
+#include "flightstatus.h"
 #include "systemsettings.h"
 #include "CoordinateConversions.h"
 
@@ -107,7 +107,7 @@ static void takeOffTask(void *parameters)
 {
 	SystemSettingsData systemSettings;
 	TakeOffSettingsData takeOffSettings;
-	ManualControlCommandData manualControl;
+	FlightStatusData flightStatus;
 
 	portTickType thisTime;
 	portTickType lastUpdateTime;
@@ -133,10 +133,10 @@ static void takeOffTask(void *parameters)
 
 		lastUpdateTime = xTaskGetTickCount();
 		
-		ManualControlCommandGet(&manualControl);
+		FlightStatusGet(&flightStatus);
 		SystemSettingsGet(&systemSettings);
 		
-		if ((PARSE_FLIGHT_MODE(manualControl.FlightMode) == FLIGHTMODE_TAKEOFF) &&
+		if ((PARSE_FLIGHT_MODE(flightStatus.FlightMode) == FLIGHTMODE_TAKEOFF) &&
 		    ((systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_FIXEDWING) ||
 		     (systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_FIXEDWINGELEVON) ||
 		     (systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_FIXEDWINGVTAIL) ))

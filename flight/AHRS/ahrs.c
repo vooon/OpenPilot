@@ -33,6 +33,7 @@
 
 /* OpenPilot Includes */
 #include "ahrs.h"
+#include <pios_board_info.h>
 #include "pios.h"
 #include "ahrs_timer.h"
 #include "ahrs_spi_comm.h"
@@ -99,8 +100,6 @@ void affine_rotate(float scale[3][4], float rotation[3]);
 void calibration(float result[3], float scale[3][4], float arg[3]);
 
 /* Bootloader related functions and var*/
-static uint32_t	iap_calc_crc(void);
-static void read_description(uint8_t *);
 void firmwareiapobj_callback(AhrsObjHandle obj);
 volatile uint8_t reset_count=0;
 
@@ -1230,6 +1229,8 @@ void homelocation_callback(AhrsObjHandle obj)
 
 void firmwareiapobj_callback(AhrsObjHandle obj) 
 {
+	const struct pios_board_info * bdinfo = &pios_board_info_blob;
+
 	FirmwareIAPObjData firmwareIAPObj;
 	FirmwareIAPObjGet(&firmwareIAPObj);
 	if(firmwareIAPObj.ArmReset==0)
@@ -1237,7 +1238,7 @@ void firmwareiapobj_callback(AhrsObjHandle obj)
 	if(firmwareIAPObj.ArmReset==1)
 	{
 
-		if((firmwareIAPObj.BoardType==BOARD_TYPE) || (firmwareIAPObj.BoardType==0xFF))
+		if((firmwareIAPObj.BoardType==bdinfo->board_type) || (firmwareIAPObj.BoardType==0xFF))
 		{
 
 			++reset_count;
@@ -1249,35 +1250,14 @@ void firmwareiapobj_callback(AhrsObjHandle obj)
 			}
 		}
 	}
-	else if(firmwareIAPObj.BoardType==BOARD_TYPE && firmwareIAPObj.crc!=iap_calc_crc())
+	else if(firmwareIAPObj.BoardType==bdinfo->board_type && firmwareIAPObj.crc!=PIOS_BL_HELPER_CRC_Memory_Calc())
 	{
-		read_description(firmwareIAPObj.Description);
-		firmwareIAPObj.crc=iap_calc_crc();
-		firmwareIAPObj.BoardRevision=BOARD_REVISION;
+		PIOS_BL_HELPER_FLASH_Read_Description(firmwareIAPObj.Description,bdinfo->desc_size);
+		firmwareIAPObj.crc=PIOS_BL_HELPER_CRC_Memory_Calc();
+		firmwareIAPObj.BoardRevision=bdinfo->board_rev;
 		FirmwareIAPObjSet(&firmwareIAPObj);
 	}
 }
-
-static uint32_t iap_calc_crc(void)
-{
-	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_CRC, ENABLE);
-	CRC_ResetDR();
-	CRC_CalcBlockCRC((uint32_t *) START_OF_USER_CODE, (SIZE_OF_CODE) >> 2);
-	return CRC_GetCRC();
-}
-static uint8_t *FLASH_If_Read(uint32_t SectorAddress)
-{
-	return (uint8_t *) (SectorAddress);
-}
-static void read_description(uint8_t * array)
-{
-	uint8_t x = 0;
-	for (uint32_t i = START_OF_USER_CODE + SIZE_OF_CODE; i < START_OF_USER_CODE + SIZE_OF_CODE + SIZE_OF_DESCRIPTION; ++i) {
-		array[x] = *FLASH_If_Read(i);
-		++x;
-	}
-}
-
 
 /**
  * @}

@@ -24,7 +24,6 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-
 #ifndef PIOS_CONFIG_H
 #define PIOS_CONFIG_H
 
@@ -35,6 +34,7 @@
 #define PIOS_INCLUDE_SPI
 #define PIOS_INCLUDE_SYS
 #define PIOS_INCLUDE_BL_HELPER
+#define PIOS_INCLUDE_BL_HELPER_WRITE_SUPPORT
 #define PIOS_INCLUDE_GPIO
 
 #endif /* PIOS_CONFIG_H */

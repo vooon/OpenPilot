@@ -34,6 +34,7 @@
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QPushButton>
 #include <math.h>
+#include <QSignalMapper>
 
 /**
   Helper delegate for the custom mixer editor table.
@@ -165,6 +166,9 @@ ConfigAirframeWidget::ConfigAirframeWidget(QWidget *parent) : ConfigTaskWidget(p
     connect(m_aircraft->saveAircraftToSD, SIGNAL(clicked()), this, SLOT(saveAircraftUpdate()));
     connect(m_aircraft->saveAircraftToRAM, SIGNAL(clicked()), this, SLOT(sendAircraftUpdate()));
     connect(m_aircraft->getAircraftCurrent, SIGNAL(clicked()), this, SLOT(requestAircraftUpdate()));
+    connect(m_aircraft->ffSave, SIGNAL(clicked()), this, SLOT(saveAircraftUpdate()));
+    connect(m_aircraft->ffApply, SIGNAL(clicked()), this, SLOT(sendAircraftUpdate()));
+    connect(m_aircraft->ffGetCurrent, SIGNAL(clicked()), this, SLOT(requestAircraftUpdate()));
     connect(m_aircraft->fixedWingType, SIGNAL(currentIndexChanged(QString)), this, SLOT(setupAirframeUI(QString)));
     connect(m_aircraft->multirotorFrameType, SIGNAL(currentIndexChanged(QString)), this, SLOT(setupAirframeUI(QString)));
     connect(m_aircraft->aircraftType, SIGNAL(currentIndexChanged(int)), this, SLOT(switchAirframeType(int)));
@@ -189,6 +193,32 @@ ConfigAirframeWidget::ConfigAirframeWidget(QWidget *parent) : ConfigTaskWidget(p
 
     connect(parent, SIGNAL(autopilotConnected()),this, SLOT(requestAircraftUpdate()));
 
+    // Connect all the help buttons to signal mapper that passes button name to SLOT function
+    QSignalMapper* signalMapper = new QSignalMapper(this);
+    connect( m_aircraft->acftTypeHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
+    signalMapper->setMapping(m_aircraft->acftTypeHelp, m_aircraft->acftTypeHelp->objectName());
+    connect( m_aircraft->airplaneTypeHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
+    signalMapper->setMapping(m_aircraft->airplaneTypeHelp, m_aircraft->airplaneTypeHelp->objectName());
+    connect( m_aircraft->channelAssignmentHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
+    signalMapper->setMapping(m_aircraft->channelAssignmentHelp, m_aircraft->channelAssignmentHelp->objectName());
+    connect( m_aircraft->commandHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
+    signalMapper->setMapping(m_aircraft->commandHelp, QString("commandHelp"));
+    connect( m_aircraft->throttleCurveHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
+    signalMapper->setMapping(m_aircraft->throttleCurveHelp, QString("throttleCurveHelp"));
+    connect( m_aircraft->multiFrameTypeHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
+    signalMapper->setMapping(m_aircraft->multiFrameTypeHelp, m_aircraft->multiFrameTypeHelp->objectName());
+    connect( m_aircraft->throttleCurveHelp_2, SIGNAL(clicked()), signalMapper, SLOT(map()) );
+    signalMapper->setMapping(m_aircraft->throttleCurveHelp_2, QString("throttleCurveHelp"));
+    connect( m_aircraft->tricopterYawHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
+    signalMapper->setMapping(m_aircraft->tricopterYawHelp, m_aircraft->tricopterYawHelp->objectName());
+    connect( m_aircraft->motorOutputChanHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
+    signalMapper->setMapping(m_aircraft->motorOutputChanHelp, m_aircraft->motorOutputChanHelp->objectName());
+    connect( m_aircraft->feedForwardHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
+    signalMapper->setMapping(m_aircraft->feedForwardHelp, m_aircraft->feedForwardHelp->objectName());
+    connect( m_aircraft->commandHelp_2, SIGNAL(clicked()), signalMapper, SLOT(map()) );
+    signalMapper->setMapping(m_aircraft->commandHelp_2, QString("commandHelp"));
+
+    connect(signalMapper, SIGNAL(mapped(const QString &)), parent, SLOT(showHelp(const QString &)));
 }
 
 ConfigAirframeWidget::~ConfigAirframeWidget()
@@ -1000,7 +1030,7 @@ void ConfigAirframeWidget::setupAirframeUI(QString frameType)
     } else if (frameType == "HexaX" || frameType == "Hexacopter X" ) {
         m_aircraft->aircraftType->setCurrentIndex(m_aircraft->aircraftType->findText("Multirotor"));
         m_aircraft->multirotorFrameType->setCurrentIndex(m_aircraft->multirotorFrameType->findText("Hexacopter X"));
-        quad->setElementId("quad-hexa-X");
+        quad->setElementId("quad-hexa-H");
         m_aircraft->multiMotor4->setEnabled(true);
         m_aircraft->multiMotor5->setEnabled(true);
         m_aircraft->multiMotor6->setEnabled(true);
