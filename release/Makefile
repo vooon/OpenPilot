@@ -14,19 +14,35 @@ ROOT_DIR := $(realpath $(WHEREAMI)/../)
 # Set up some macros
 BUILD_DIR    := $(ROOT_DIR)/build
 VERSION_CMD  := python $(ROOT_DIR)/make/scripts/version-info.py --path="$(ROOT_DIR)"
-RELEASE_LBL  := $(shell $(VERSION_CMD) --format=\$${DATE}-\$${TAG_OR_HASH8})
+RELEASE_LBL  := $(shell $(VERSION_CMD) --format=\$${DATE}-\$${TAG_OR_HASH8}\$${DIRTY})
 RELEASE_DIR  := $(BUILD_DIR)/release-$(RELEASE_LBL)
 FW_DIR       := $(RELEASE_DIR)/firmware-$(RELEASE_LBL)
 BL_DIR       := $(FW_DIR)/bootloaders
-BLUPD_DIR    := $(FW_DIR)/bootloader_updaters
+BU_DIR       := $(FW_DIR)/bootloader-updaters
+FE_DIR       := $(FW_DIR)/flash-erase-tools
 
-# Setup targets
-FW_TARGETS_COMMON := ahrs pipxtreme
-FW_TARGETS_INPUT  := coptercontrol openpilot
-FW_TARGETS_TOOLS  := coptercontrol
-FW_TARGETS        := $(FW_TARGETS_COMMON) $(FW_TARGETS_INPUT)
-BL_TARGETS        := $(addprefix bl_, $(FW_TARGETS))
-BLUPD_TARGETS     := $(addprefix blupd_, $(FW_TARGETS))
+# Clean build options (recommended for package testing only)
+ifeq ($(CLEAN_BUILD), NO)
+CLEAN_GROUND := NO
+CLEAN_FLIGHT := YES
+else ifeq ($(CLEAN_BUILD), NEVER)
+CLEAN_GROUND := NO
+CLEAN_FLIGHT := NO
+else
+CLEAN_GROUND := YES
+CLEAN_FLIGHT := YES
+endif
+
+# Set up targets
+FW_STEMS_COMMON   := ahrs pipxtreme
+FW_STEMS_INPUT    := coptercontrol openpilot
+FW_STEMS_TOOLS    := coptercontrol
+FW_STEMS_ALL      := $(FW_STEMS_COMMON) $(FW_STEMS_INPUT)
+FW_TARGETS_COMMON := $(addprefix fw_, $(FW_STEMS_COMMON))
+FW_TARGETS_INPUT  := $(addprefix fw_, $(FW_STEMS_INPUT))
+FW_TARGETS_TOOLS  := $(addprefix fw_, $(FW_STEMS_TOOLS))
+BL_TARGETS        := $(addprefix bl_, $(FW_STEMS_ALL))
+BU_TARGETS        := $(addprefix bu_, $(FW_STEMS_ALL))
 
 help:
 	@echo
@@ -35,14 +51,23 @@ help:
 	@echo
 	@echo "   Here is a summary of the available targets:"
 	@echo
-	@echo "   [Release build and packaging]"
-	@echo "     release              - Build and package the OpenPilot release"
-	@echo "     release_flight       - Build and package the OpenPilot flight firmware"
+	@echo "   [Packaging]"
+	@echo "     release        - Build and package the OpenPilot distributable"
+	@echo "     release_flight - Build and package the OpenPilot flight firmware only"
 	@echo
 	@echo "   Notes:"
-	@echo "     - the build directory will be removed first on every run"
-	@echo "       unless CLEAN_BUILD=NO is defined (recommended for testing only)"
-	@echo "     - release packages will be placed in $(RELEASE_DIR)"
+	@echo "     - package will be placed in $(RELEASE_DIR)"
+	@echo
+	@echo "     - the build directory will be removed first on every run unless one"
+	@echo "       of CLEAN_BUILD=NO or CLEAN_BUILD=NEVER options is defined."
+	@echo
+	@echo "       CLEAN_BUILD=NO means no clean before build except for multi-input"
+	@echo "       firmware binaries like CopterControl or OpenPilot. This usually is"
+	@echo "       safe."
+	@echo
+	@echo "       CLEAN_BUILD=NEVER means no clean will be done at all. This will,"
+	@echo "       probably, give invalid multi-input firmware and is recommended"
+	@echo "       for package testing only. Do not use for release builds."
 	@echo
 
 # Clean and build uavobjects since all parts depend on them
@@ -50,7 +75,7 @@ uavobjects: all_clean
 	$(V1) $(MAKE) -C $(ROOT_DIR) $@
 
 all_clean:
-ifneq ($(CLEAN_BUILD), NO)
+ifneq ($(CLEAN_GROUND), NO)
 	$(V1) $(MAKE) -C $(ROOT_DIR) $@
 endif
 
@@ -61,13 +86,15 @@ endif
 #   $4 = installed file name prefix (optional)
 #   $5 = installed file name suffix (optional)
 #   $6 = extra make options (for instance, USE_SPEKTRUM=YES)
-#   $7 = optional target suffix (for instance, clean, if target must be cleaned first)
+#   $7 = optional 'clean' string to clean target before rebuild
 #   $8 = list of targets to install (without _install suffix)
 #   $9 = inner make target (usually install, but can be other to just build)
 define INSTALL_TEMPLATE
 $(1): $(2)
-ifneq ($(7),)
+ifeq ($(7),clean)
+ifneq ($$(CLEAN_FLIGHT), NO)
 	$$(V1) +$(MAKE) -C $(ROOT_DIR) $(6) $(addsuffix _$(7), $(8))
+endif
 endif
 	$$(V1) +$(MAKE) -C $(ROOT_DIR) INSTALL_DIR=$(3) INSTALL_PFX=$(4) INSTALL_SFX=$(5) $(6) $(addsuffix _$(9), $(8))
 .PHONY: $(1)
@@ -79,17 +106,14 @@ $(eval $(call INSTALL_TEMPLATE,fw_pwm,uavobjects,$(FW_DIR),,-pwm-$(RELEASE_LBL),
 $(eval $(call INSTALL_TEMPLATE,fw_spektrum,uavobjects,$(FW_DIR),,-spektrum-$(RELEASE_LBL),USE_SPEKTRUM=YES,clean,$(FW_TARGETS_INPUT),install))
 $(eval $(call INSTALL_TEMPLATE,fw_ppm,uavobjects,$(FW_DIR),,-ppm-$(RELEASE_LBL),USE_PPM=YES,clean,$(FW_TARGETS_INPUT),install))
 
-# Bootloaders (change 'bin' to 'install' to install bootloaders too)
-$(eval $(call INSTALL_TEMPLATE,all_bl,uavobjects,$(BL_DIR),,-$(RELEASE_LBL),,,$(BL_TARGETS),bin))
+# Bootloaders (change 'install' to 'bin' if you don't want to install bootloaders)
+$(eval $(call INSTALL_TEMPLATE,all_bl,uavobjects,$(BL_DIR),,-$(RELEASE_LBL),,,$(BL_TARGETS),install))
 
-# Bootloader Updaters
-$(eval $(call INSTALL_TEMPLATE,blupd_coptercontrol,all_bl,$(BLUPD_DIR),CopterControl_,-$(RELEASE_LBL),,,blupd_coptercontrol,install))
-$(eval $(call INSTALL_TEMPLATE,blupd_ahrs,all_bl,$(BLUPD_DIR),AHRS_,-$(RELEASE_LBL),,,blupd_ahrs,install))
-$(eval $(call INSTALL_TEMPLATE,blupd_openpilot,all_bl,$(BLUPD_DIR),OpenPilot_,-$(RELEASE_LBL),,,blupd_openpilot,install))
-$(eval $(call INSTALL_TEMPLATE,blupd_pipxtreme,all_bl,$(BLUPD_DIR),PipXtreme_,-$(RELEASE_LBL),,,blupd_pipxtreme,install))
+# Bootloader updaters
+$(eval $(call INSTALL_TEMPLATE,all_bu,all_bl,$(BU_DIR),,-$(RELEASE_LBL),,,$(BU_TARGETS),install))
 
 # CopterControl flash eraser tool
-$(eval $(call INSTALL_TEMPLATE,fw_tools,uavobjects,$(BLUPD_DIR),,-FlashEraser-$(RELEASE_LBL),ERASE_FLASH=YES,clean,$(FW_TARGETS_TOOLS),install))
+$(eval $(call INSTALL_TEMPLATE,fw_tools,uavobjects,$(FE_DIR),,-flash-erase-$(RELEASE_LBL),ERASE_FLASH=YES,clean,$(FW_TARGETS_TOOLS),install))
 
 # Order-only dependencies
 # They are bit complicated to support parallel (-j) builds and to create
@@ -105,15 +129,15 @@ fw_tools: | fw_spektrum # ordered build, replace fw_spektrum by fw_ppm if uncomm
 
 release_fw: | fw_common fw_pwm fw_spektrum # fw_ppm
 
-release_blupd: | $(BLUPD_TARGETS)
+release_bu: | all_bu
 
-release_flight: | release_fw release_blupd fw_tools
+release_flight: | release_fw release_bu fw_tools
 
 release_ground: | ground_package
 
 release: | release_flight release_ground
 
-.PHONY: help uavobjects all_clean release release_flight release_fw release_blupd release_ground
+.PHONY: help uavobjects all_clean release release_flight release_fw release_bu release_ground
 
 # Decide on a verbosity level based on the V= parameter
 export AT := @
