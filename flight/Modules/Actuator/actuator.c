@@ -185,7 +185,7 @@ static void actuatorTask(void* parameters)
 				nMixers ++;
 			}
 		}
-		if(nMixers < 2) //Nothing can fly with less than two mixers.
+		if((nMixers < 2) && !ActuatorCommandReadOnly(dummy)) //Nothing can fly with less than two mixers. 
 		{
 			setFailsafe(); // So that channels like PWM buzzer keep working
 			continue;
@@ -201,8 +201,12 @@ static void actuatorTask(void* parameters)
 		float curve2 = MixerCurve(desired.Throttle,mixerSettings.ThrottleCurve2);
 		for(int ct=0; ct < MAX_MIX_ACTUATORS; ct++)
 		{
-			if(mixers[ct].type == MIXERSETTINGS_MIXER1TYPE_DISABLED)
+			if(mixers[ct].type == MIXERSETTINGS_MIXER1TYPE_DISABLED) {
+				// Set to minimum if disabled.  This is not the same as saying PWM pulse = 0 us
+				status[ct] = -1;
+				command.Channel[ct] = 0;
 				continue;
+			}
 			
 			status[ct] = ProcessMixer(ct, curve1, curve2, &mixerSettings, &desired, &adesired, dT);
 			
@@ -407,13 +411,18 @@ static void setFailsafe()
 	// Reset ActuatorCommand to safe values
 	for (int n = 0; n < ACTUATORCOMMAND_CHANNEL_NUMELEM; ++n)
 	{
+		
 		if(mixers[n].type == MIXERSETTINGS_MIXER1TYPE_MOTOR)
 		{
 			command.Channel[n] = settings.ChannelMin[n];
 		}
-		else
+		else if(mixers[n].type == MIXERSETTINGS_MIXER1TYPE_SERVO)
 		{
 			command.Channel[n] = settings.ChannelNeutral[n];
+		}
+		else
+		{
+			command.Channel[n] = 0;
 		}
 	}
 
