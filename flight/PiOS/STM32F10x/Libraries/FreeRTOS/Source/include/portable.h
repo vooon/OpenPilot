@@ -352,6 +352,9 @@ extern "C" {
 /*
  * Map to the memory management routines required for the port.
  */
+#ifdef HEAP_SYS_RECLAIM
+void pvPortReclaimSysStack(void) PRIVILEGED_FUNCTION;
+#endif
 void *pvPortMalloc( size_t xSize ) PRIVILEGED_FUNCTION;
 void vPortFree( void *pv ) PRIVILEGED_FUNCTION;
 void vPortInitialiseBlocks( void ) PRIVILEGED_FUNCTION;

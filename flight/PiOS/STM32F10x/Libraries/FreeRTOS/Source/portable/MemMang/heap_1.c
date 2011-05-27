@@ -71,6 +71,15 @@ task.h is included from an application file. */
 
 #undef MPU_WRAPPERS_INCLUDED_FROM_API_FILE
 
+#ifdef HEAP_SYS_RECLAIM
+#define HEAP_SYS_RECLAIM_USE_LINKER_HEAP_SECTION __attribute__((section(".heap")))
+#define HEAP_SYS_RECLAIM_KEEP_SYS_STACK_BYTE_NB 0x130
+extern unsigned int* _estack;
+extern unsigned int* _eheap;
+#else
+#define HEAP_SYS_RECLAIM_USE_LINKER_HEAP_SECTION
+#endif
+
 /* Allocate the memory for the heap.  The struct is used to force byte
 alignment without using any non-portable code. */
 static union xRTOS_HEAP
@@ -81,10 +90,41 @@ static union xRTOS_HEAP
 		volatile unsigned long ulDummy;
 	#endif	
 	unsigned char ucHeap[ configTOTAL_HEAP_SIZE ];
-} xHeap;
+} xHeap HEAP_SYS_RECLAIM_USE_LINKER_HEAP_SECTION;
 
 static size_t xNextFreeByte = ( size_t ) 0;
+
+unsigned int ReadTotalHeapSize = configTOTAL_HEAP_SIZE;
 /*-----------------------------------------------------------*/
+
+#ifdef HEAP_SYS_RECLAIM
+void pvPortReclaimSysStack(void)
+{
+	unsigned int addr;
+	int pattern = 0xA5A50001;
+
+	// some sanity check
+	if (((unsigned int)&_eheap > (unsigned int)&_estack) ||
+		((unsigned int)&_eheap > ((unsigned int)&_estack - HEAP_SYS_RECLAIM_KEEP_SYS_STACK_BYTE_NB)))
+		return;
+
+	// Claim some system stack back for heap
+	for (addr = (unsigned int)&_eheap;
+			addr < ((unsigned int)&_estack - HEAP_SYS_RECLAIM_KEEP_SYS_STACK_BYTE_NB);
+			addr+=sizeof(unsigned int))
+	{
+		*(volatile unsigned int*)addr = pattern++;
+	}
+
+	vTaskSuspendAll();
+	{
+		/* update the new heap size */
+		ReadTotalHeapSize = configTOTAL_HEAP_SIZE + HEAP_SYS_RECLAIM_KEEP_SYS_STACK_BYTE_NB;
+	}
+	xTaskResumeAll();
+}
+/*-----------------------------------------------------------*/
+#endif
 
 void *pvPortMalloc( size_t xWantedSize )
 {
@@ -102,7 +142,7 @@ void *pvReturn = NULL;
 	vTaskSuspendAll();
 	{
 		/* Check there is enough room left for the allocation. */
-		if( ( ( xNextFreeByte + xWantedSize ) < configTOTAL_HEAP_SIZE ) &&
+		if( ( ( xNextFreeByte + xWantedSize ) < ReadTotalHeapSize ) &&
 			( ( xNextFreeByte + xWantedSize ) > xNextFreeByte )	)/* Check for overflow. */
 		{
 			/* Return the next free byte then increment the index past this
@@ -145,7 +185,7 @@ void vPortInitialiseBlocks( void )
 
 size_t xPortGetFreeHeapSize( void )
 {
-	return ( configTOTAL_HEAP_SIZE - xNextFreeByte );
+	return ( ReadTotalHeapSize - xNextFreeByte );
 }
 
 

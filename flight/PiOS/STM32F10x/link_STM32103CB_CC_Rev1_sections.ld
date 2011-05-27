@@ -8,6 +8,12 @@ _estack = 0x20004FF0;
 /* Section Definitions */
 SECTIONS
 {
+    .boardinfo :
+    {
+	. = ALIGN(4);
+	PROVIDE(pios_board_info_blob = .);
+    } > BD_INFO
+
     .text :
     {
         KEEP(*(.isr_vector .isr_vector.*))
@@ -58,6 +64,26 @@ SECTIONS
         _ebss = . ;
     } > SRAM
 
+    /* .heap section which is used for data allocation */
+    .heap (NOLOAD) :
+    {
+        _sheap = . ;
+        *(.heap)
+        . = ALIGN(4);
+        _eheap = . ;
+    } > SRAM
+    
+    /* .heap section which is used for data allocation */
+    .sysstack (NOLOAD) :
+    {
+        _ssysstack = . ;
+		/* place holder for system stack */
+		/* need to figure out the minim size and hardcode it here */
+		/* so we don't overwrite the system stack with heap. */
+		/* startup should fell this seection with pattern */
+        _esysstack = _estack ;
+    } > SRAM
+    
     . = ALIGN(4);
     _end = . ;
 
