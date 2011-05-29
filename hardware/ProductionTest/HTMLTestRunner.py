@@ -555,7 +555,7 @@ class _TestResult(TestResult):
         try:
             STD_ERROR_HANDLE = -12
             self.winStdErrhandle = ctypes.windll.kernel32.GetStdHandle(STD_ERROR_HANDLE)
-        except KeyboardInterrupt:
+        except Exception:
             self.winStdErrhandle = None
 
         self.setColor(FOREGROUND_WHITE)
