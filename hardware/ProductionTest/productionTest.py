@@ -194,15 +194,15 @@ class TestFixture(object):
         
     def recordSensors(self, period, nbValues, log):
         print "Recording...",
-        start = time.clock()
+        start = time.time()
         #prev = start
         for i in xrange(nbValues):
             self.objMan.AttitudeRaw.waitUpdate(timeout=1)
-            #print "%d" % ((time.clock()-prev)*1000)
-            #prev = time.clock()
+            #print "%d" % ((time.time()-prev)*1000)
+            #prev = time.time()
             #self.objMan.waitObjUpdate(self.attitudeRaw, request=False, timeout=.2)
             log.rawData.append((self.attitudeRaw.gyros.value, self.attitudeRaw.accels.value))
-        measuredPeriod = (time.clock()-start)*1000/nbValues 
+        measuredPeriod = (time.time()-start)*1000/nbValues 
         print "Measured Period = %.2f" % measuredPeriod
         assert(measuredPeriod/period > .8 and measuredPeriod/period < 1.2)
             
