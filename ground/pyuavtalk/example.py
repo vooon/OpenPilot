@@ -44,7 +44,7 @@ class UavtalkDemo():
     
     def __init__(self):
         self.nbUpdates = 0
-        self.lastRateCalc = time.clock()
+        self.lastRateCalc = time.time()
         self.updateRate = 0
         self.objMan = None
         self.connMan = None
@@ -117,7 +117,7 @@ class UavtalkDemo():
     def _onAttitudeUpdate(self, args):
         self.nbUpdates += 1
         
-        now = time.clock()    
+        now = time.time()    
         if now-self.lastRateCalc > 1:
             self.updateRate = self.nbUpdates/(now-self.lastRateCalc) 
             self.lastRateCalc = now
