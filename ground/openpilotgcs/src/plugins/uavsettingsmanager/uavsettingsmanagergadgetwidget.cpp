@@ -28,7 +28,7 @@
  */
 #include "uavsettingsmanagergadgetwidget.h"
 #include "ui_uavsettingsmanagergadgetwidget.h"
-#include "importexport/xmlconfig.h"
+#include "utils/xmlconfig.h"
 #include "coreplugin/uavgadgetinstancemanager.h"
 #include "coreplugin/icore.h"
 #include "uavobjectmanager.h"
