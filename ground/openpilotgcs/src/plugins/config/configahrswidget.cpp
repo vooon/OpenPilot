@@ -37,6 +37,8 @@
 #include <QThread>
 #include <iostream>
 #include <Eigen/align-function.h>
+#include <QDesktopServices>
+#include <QUrl>
 
 #include "assertions.h"
 #include "calibration.h"
@@ -227,7 +229,8 @@ ConfigAHRSWidget::ConfigAHRSWidget(QWidget *parent) : ConfigTaskWidget(parent)
     connect(m_ahrs->startDriftCalib, SIGNAL(clicked()),this, SLOT(launchGyroDriftCalibration()));
     connect(parent, SIGNAL(autopilotConnected()),this, SLOT(ahrsSettingsRequest()));
 
-
+    // Connect the help button
+    connect(m_ahrs->ahrsHelp, SIGNAL(clicked()), this, SLOT(openHelp()));
 }
 
 ConfigAHRSWidget::~ConfigAHRSWidget()
@@ -1203,6 +1206,11 @@ void ConfigAHRSWidget::ahrsSettingsSaveSD()
 
 }
 
+void ConfigAHRSWidget::openHelp()
+{
+
+    QDesktopServices::openUrl( QUrl("http://wiki.openpilot.org/display/Doc/INS+Configuration", QUrl::StrictMode) );
+}
 
 /**
   @}

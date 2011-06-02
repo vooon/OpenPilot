@@ -34,6 +34,8 @@
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QPushButton>
 #include <math.h>
+#include <QDesktopServices>
+#include <QUrl>
 
 /**
   Helper delegate for the custom mixer editor table.
@@ -192,6 +194,8 @@ ConfigAirframeWidget::ConfigAirframeWidget(QWidget *parent) : ConfigTaskWidget(p
 
     connect(parent, SIGNAL(autopilotConnected()),this, SLOT(requestAircraftUpdate()));
 
+    // Connect the help button
+    connect(m_aircraft->airframeHelp, SIGNAL(clicked()), this, SLOT(openHelp()));
 }
 
 ConfigAirframeWidget::~ConfigAirframeWidget()
@@ -2132,5 +2136,11 @@ void ConfigAirframeWidget::saveAircraftUpdate()
     obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("ActuatorSettings")));
     saveObjectToSD(obj);
 
+}
+
+void ConfigAirframeWidget::openHelp()
+{
+
+    QDesktopServices::openUrl( QUrl("http://wiki.openpilot.org/display/Doc/Airframe+configuration", QUrl::StrictMode) );
 }
 

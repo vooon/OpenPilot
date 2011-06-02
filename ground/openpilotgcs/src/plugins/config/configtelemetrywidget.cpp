@@ -34,7 +34,6 @@
 #include <QtGui/QPushButton>
 
 
-
 ConfigTelemetryWidget::ConfigTelemetryWidget(QWidget *parent) : ConfigTaskWidget(parent)
 {
     m_telemetry = new Ui_TelemetryWidget();
@@ -54,7 +53,6 @@ ConfigTelemetryWidget::ConfigTelemetryWidget(QWidget *parent) : ConfigTaskWidget
     connect(m_telemetry->getTelemetryCurrent, SIGNAL(clicked()), this, SLOT(requestTelemetryUpdate()));
 
     connect(parent, SIGNAL(autopilotConnected()),this, SLOT(requestTelemetryUpdate()));
-
 }
 
 ConfigTelemetryWidget::~ConfigTelemetryWidget()

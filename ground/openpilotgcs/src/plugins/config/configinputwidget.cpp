@@ -35,6 +35,8 @@
 #include <QtGui/QTextEdit>
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QPushButton>
+#include <QDesktopServices>
+#include <QUrl>
 
 ConfigInputWidget::ConfigInputWidget(QWidget *parent) : ConfigTaskWidget(parent)
 {
@@ -155,16 +157,6 @@ ConfigInputWidget::ConfigInputWidget(QWidget *parent) : ConfigTaskWidget(parent)
     connect(m_config->saveRCInputToRAM, SIGNAL(clicked()), this, SLOT(sendRCInputUpdate()));
     connect(m_config->getRCInputCurrent, SIGNAL(clicked()), this, SLOT(requestRCInputUpdate()));
 
-       // Flightmode panel is connected to the same as rcinput because
-    // the underlying object is the same!
-    connect(m_config->saveFmsToSD, SIGNAL(clicked()), this, SLOT(saveRCInputObject()));
-    connect(m_config->saveFmsToRAM, SIGNAL(clicked()), this, SLOT(sendRCInputUpdate()));
-    connect(m_config->getFmsCurrent, SIGNAL(clicked()), this, SLOT(requestRCInputUpdate()));
-
-    connect(m_config->saveArmToSD, SIGNAL(clicked()), this, SLOT(saveRCInputObject()));
-    connect(m_config->saveArmToRAM, SIGNAL(clicked()), this, SLOT(sendRCInputUpdate()));
-    connect(m_config->getArmCurrent, SIGNAL(clicked()), this, SLOT(requestRCInputUpdate()));
-
     connect(parent, SIGNAL(autopilotConnected()),this, SLOT(requestRCInputUpdate()));
 
     connect(m_config->inSlider0, SIGNAL(valueChanged(int)),this, SLOT(onInSliderValueChanged0(int)));
@@ -199,6 +191,9 @@ ConfigInputWidget::ConfigInputWidget(QWidget *parent) : ConfigTaskWidget(parent)
             connect(tm, SIGNAL(disconnected()), this, SLOT(onTelemetryDisconnect()));
         }
     }
+
+    // Connect the help button
+    connect(m_config->inputHelp, SIGNAL(clicked()), this, SLOT(openHelp()));
 }
 
 ConfigInputWidget::~ConfigInputWidget()
@@ -296,15 +291,6 @@ void ConfigInputWidget::enableControls(bool enable)
 	m_config->getRCInputCurrent->setEnabled(enable);
 	m_config->saveRCInputToRAM->setEnabled(enable);
 	m_config->saveRCInputToSD->setEnabled(enable);
-
-	m_config->saveFmsToSD->setEnabled(enable);
-	m_config->saveFmsToRAM->setEnabled(enable);
-	m_config->getFmsCurrent->setEnabled(enable);
-
-	m_config->saveArmToSD->setEnabled(enable);
-	m_config->saveArmToRAM->setEnabled(enable);
-	m_config->getArmCurrent->setEnabled(enable);
-
 
 	m_config->doRCInputCalibration->setEnabled(enable);
 
@@ -694,3 +680,10 @@ void ConfigInputWidget::updateChannelInSlider(QSlider *slider, QLabel *min, QLab
         slider->setValue(value);
     }
 }
+
+void ConfigInputWidget::openHelp()
+{
+
+    QDesktopServices::openUrl( QUrl("http://wiki.openpilot.org/display/Doc/Input+Configuration", QUrl::StrictMode) );
+}
+

@@ -32,8 +32,8 @@
 #include <QtGui/QTextEdit>
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QPushButton>
-
-
+#include <QDesktopServices>
+#include <QUrl>
 
 ConfigStabilizationWidget::ConfigStabilizationWidget(QWidget *parent) : ConfigTaskWidget(parent)
 {
@@ -43,7 +43,7 @@ ConfigStabilizationWidget::ConfigStabilizationWidget(QWidget *parent) : ConfigTa
     m_stabilization->setupUi(this);
 
     // Now connect the widget to the ManualControlCommand / Channel UAVObject
-    UAVObject *obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("StabilizationSettings")));
+    //UAVObject *obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("StabilizationSettings")));
 
     requestStabilizationUpdate();
     connect(m_stabilization->saveStabilizationToSD, SIGNAL(clicked()), this, SLOT(saveStabilizationUpdate()));
@@ -74,6 +74,8 @@ ConfigStabilizationWidget::ConfigStabilizationWidget(QWidget *parent) : ConfigTa
     connect(m_stabilization->pitchKi, SIGNAL(valueChanged(double)), this, SLOT(updatePitchKI(double)));
     connect(m_stabilization->pitchILimit, SIGNAL(valueChanged(double)), this, SLOT(updatePitchILimit(double)));
 
+    // Connect the help button
+    connect(m_stabilization->stabilizationHelp, SIGNAL(clicked()), this, SLOT(openHelp()));
 }
 
 ConfigStabilizationWidget::~ConfigStabilizationWidget()
@@ -275,3 +277,10 @@ void ConfigStabilizationWidget::realtimeUpdateToggle(bool state)
     else
         updateTimer.stop();
 }
+
+void ConfigStabilizationWidget::openHelp()
+{
+
+    QDesktopServices::openUrl( QUrl("http://wiki.openpilot.org/display/Doc/Stabilization+panel", QUrl::StrictMode) );
+}
+

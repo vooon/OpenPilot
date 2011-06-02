@@ -53,6 +53,7 @@ private slots:
     void saveAttitudeSettings();
     void applyAttitudeSettings();
     void getCurrentAttitudeSettings();
+    void openHelp();
 
 private:
     QMutex startStop;
@@ -64,7 +65,7 @@ private:
 
     QList<double> x_accum, y_accum, z_accum;
 
-    static const int NUM_ACCEL_UPDATES = 10;
+    static const int NUM_ACCEL_UPDATES = 60;
     static const float ACCEL_SCALE = 0.004f * 9.81f;
 };
 

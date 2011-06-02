@@ -50,12 +50,12 @@ private:
     StabilizationSettings* stabSettings;
     QTimer updateTimer;
 
-
 private slots:
     void requestStabilizationUpdate();
     void sendStabilizationUpdate();
     void saveStabilizationUpdate();
     void realtimeUpdateToggle(bool);
+    void openHelp();
 
     void updateRateRollKP(double);
     void updateRateRollKI(double);
@@ -72,8 +72,6 @@ private slots:
     void updatePitchKP(double);
     void updatePitchKI(double);
     void updatePitchILimit(double);
-
-
 };
 
 #endif // ConfigStabilizationWidget_H

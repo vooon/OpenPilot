@@ -73,6 +73,7 @@
 #include <pios_irq.h>
 #include <pios_adc.h>
 #include <pios_servo.h>
+#include <pios_rtc.h>
 #include <pios_i2c.h>
 #include <pios_spi.h>
 #include <pios_ppm.h>
@@ -119,6 +120,7 @@
 
 #if defined(PIOS_INCLUDE_FLASH)
 #include <pios_flash_w25x.h>
+#include <pios_flashfs_objlist.h>
 #endif
 
 #if defined(PIOS_INCLUDE_BL_HELPER)

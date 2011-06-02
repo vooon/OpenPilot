@@ -95,6 +95,7 @@ ConfigGadgetWidget::ConfigGadgetWidget(QWidget *parent) : QWidget(parent)
     if (telMngr->isConnected())
         onAutopilotConnect();
 
+    help = 0;
 }
 
 ConfigGadgetWidget::~ConfigGadgetWidget()
@@ -138,4 +139,6 @@ void ConfigGadgetWidget::onAutopilotConnect() {
 
     emit autopilotConnected();
 }
+
+
 
