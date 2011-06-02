@@ -42,6 +42,8 @@ deviceWidget::deviceWidget(QWidget *parent) :
 
     QPixmap pix = QPixmap(QString(":uploader/images/view-refresh.svg"));
     myDevice->statusIcon->setPixmap(pix);
+
+    myDevice->certifiedFW->setText("");
 }
 
 
@@ -123,6 +125,9 @@ void deviceWidget::populate()
         QString str = m_dfu->DownloadDescription(size);
         myDevice->description->setMaxLength(size);
         myDevice->description->setText(str.left(str.indexOf(QChar(255))));
+        QPixmap pix = QPixmap(QString(":uploader/images/gtk-info.svg"));
+        myDevice->certifiedFW->setPixmap(pix);
+        myDevice->certifiedFW->setToolTip(tr("Custom Firmware Build"));
         myDevice->buildDate->setText("Warning: development firmware");
         myDevice->commitTag->setText("");
     }
@@ -163,17 +168,18 @@ bool deviceWidget::populateStructuredDescription(QByteArray desc)
         #  20 bytes: SHA1 sum of the firmware.
         #  40 bytes: free for now.
         */
-        // I don't want to use structs, ok ?
-        quint32 gitCommitTag = desc.at(4)&0xFF;
+
+        // Note: the ARM binary is big-endian:
+        quint32 gitCommitTag = desc.at(7)&0xFF;
         for (int i=1;i<4;i++) {
             gitCommitTag = gitCommitTag<<8;
-            gitCommitTag += desc.at(4+i) & 0xFF;
+            gitCommitTag += desc.at(7-i) & 0xFF;
         }
         myDevice->commitTag->setText("GIT tag 0x" + QString::number(gitCommitTag,16));
-        quint32 buildDate = desc.at(8)&0xFF;
+        quint32 buildDate = desc.at(11)&0xFF;
         for (int i=1;i<4;i++) {
             buildDate = buildDate<<8;
-            buildDate += desc.at(8+i) & 0xFF;
+            buildDate += desc.at(11-i) & 0xFF;
         }
 
         myDevice->buildDate->setText(QString("Build time: ") + QDateTime::fromTime_t(buildDate).toString());
@@ -182,6 +188,9 @@ bool deviceWidget::populateStructuredDescription(QByteArray desc)
         QString dscText = QString(desc.mid(14,26));
         myDevice->description->setText(dscText);
 
+        QPixmap pix = QPixmap(QString(":uploader/images/application-certificate.svg"));
+        myDevice->certifiedFW->setPixmap(pix);
+        myDevice->certifiedFW->setToolTip(tr("Official Firmware Build"));
         return true;
     }
 
@@ -268,12 +277,7 @@ void deviceWidget::uploadFirmware()
         if (firmwareBoard != board) {
             status("Error: firmware does not match board", STATUSICON_FAIL);
             return;
-        } else {
-            // Not a structured description: warn user
-            myDevice->buildDate->setText("Warning: development firmware");
-            myDevice->commitTag->setText("");
         }
-
         // Check the firmware embedded in the file:
         QByteArray firmwareHash = desc.mid(40,20);
         QByteArray fileHash = QCryptographicHash::hash(arr.left(arr.length()-100), QCryptographicHash::Sha1);
@@ -281,16 +285,11 @@ void deviceWidget::uploadFirmware()
             status("Error: firmware file corrupt", STATUSICON_FAIL);
             return;
         }
-
-
-
     } else {
         // The firmware is not packaged, just upload the text in the description field
         // if it is there.
         descriptionArray.clear();
     }
-
-
 
 
     status("Starting firmware upload", STATUSICON_RUNNING);
@@ -416,7 +415,7 @@ QString deviceWidget::setOpenFileName()
     QString fileName = QFileDialog::getOpenFileName(this,
                                                     tr("Select firmware file"),
                                                     "",
-                                                    tr("Firmware Files (*.bin)"),
+                                                    tr("Firmware Files (*.bin *.opfw)"),
                                                     &selectedFilter,
                                                     options);
     return fileName;
