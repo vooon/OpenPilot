@@ -229,7 +229,7 @@ int32_t UAVTalkProcessInputStream(uint8_t rxbyte)
 	static uint32_t objId;
 	static uint16_t instId;
 	static uint32_t length;
-	static uint8_t cs, csRx;
+	static uint32_t cs, csRx;
 	static int32_t rxCount;
 	static RxState state = STATE_SYNC;
 	static uint16_t rxPacketLength = 0;
@@ -406,7 +406,7 @@ int32_t UAVTalkProcessInputStream(uint8_t rxbyte)
 			
 			// the CRC byte
 			csRx = rxbyte;
-			
+			cs = (uint8_t) cs;
 			if (csRx != cs)
 			{   // packet error - faulty CRC
 				stats.rxErrors++;
@@ -660,7 +660,7 @@ static int32_t sendSingleObject(UAVObjHandle obj, uint16_t instId, uint8_t type)
 	txBuffer[3] = (uint8_t)(((dataOffset+length) >> 8) & 0xFF);
 	
 	// Calculate checksum
-	txBuffer[dataOffset+length] = PIOS_CRC_updateCRC(0, txBuffer, dataOffset+length);
+	txBuffer[dataOffset+length] = (uint8_t) PIOS_CRC_updateCRC(0, txBuffer, dataOffset+length);
 	
 	// Send buffer
 	if (outStream!=NULL) (*outStream)(txBuffer, dataOffset+length+CHECKSUM_LENGTH);
