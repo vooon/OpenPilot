@@ -108,7 +108,7 @@ private:
     quint16 rxLength;
     quint16 rxPacketLength;
 
-    quint8 rxCSPacket, rxCS;
+    quint32 rxCSPacket, rxCS;
     qint32 rxCount;
     qint32 packetSize;
     RxStateType rxState;
@@ -124,8 +124,8 @@ private:
     bool transmitNack(quint32 objId);
     bool transmitObject(UAVObject* obj, quint8 type, bool allInstances);
     bool transmitSingleObject(UAVObject* obj, quint8 type, bool allInstances);
-    quint8 updateCRC(quint8 crc, const quint8 data);
-    quint8 updateCRC(quint8 crc, const quint8* data, qint32 length);
+    quint32 updateCRC(quint32 crc, const quint8 data);
+    quint32 updateCRC(quint32 crc, const quint8* data, qint32 length);
 
 };
 
