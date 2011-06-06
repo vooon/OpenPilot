@@ -6,6 +6,7 @@
         <field name="Pitch" units="%" type="float" elements="1"/>
         <field name="Yaw" units="%" type="float" elements="1"/>
         <field name="Throttle" units="%" type="float" elements="1"/>
+        <field name="Auxiliary" units="%" type="float" elements="1"/>
 		
         <field name="Accessory1" units="%" type="float" elements="1"/>
         <field name="Accessory2" units="%" type="float" elements="1"/>

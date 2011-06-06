@@ -248,6 +248,7 @@ static void manualControlTask(void *parameters)
 
 			if (cmd.Connected == MANUALCONTROLCOMMAND_CONNECTED_FALSE) {
 				cmd.Throttle = -1;	// Shut down engine with no control
+				cmd.Auxiliary = 0;
 				cmd.Roll = 0;
 				cmd.Yaw = 0;
 				cmd.Pitch = 0;
@@ -264,6 +265,7 @@ static void manualControlTask(void *parameters)
 				cmd.Pitch          = scaledChannel[settings.Pitch];
 				cmd.Yaw            = scaledChannel[settings.Yaw];
 				cmd.Throttle       = scaledChannel[settings.Throttle];
+				cmd.Auxiliary       = scaledChannel[settings.Auxiliary];
 				flightMode         = scaledChannel[settings.FlightMode];
 
 				// Set accessory channels
@@ -313,6 +315,7 @@ static void updateActuatorDesired(ManualControlCommandData * cmd)
 	actuator.Pitch = cmd->Pitch;
 	actuator.Yaw = cmd->Yaw;
 	actuator.Throttle = (cmd->Throttle < 0) ? -1 : cmd->Throttle;
+	actuator.Auxiliary = cmd->Auxiliary;
 	ActuatorDesiredSet(&actuator);	
 }
 
@@ -364,6 +367,7 @@ static void updateStabilizationDesired(ManualControlCommandData * cmd, ManualCon
 	     0; // this is an invalid mode
 	
 	stabilization.Throttle = (cmd->Throttle < 0) ? -1 : cmd->Throttle; 
+	stabilization.Auxiliary = cmd->Auxiliary; 
 	StabilizationDesiredSet(&stabilization);
 }
 

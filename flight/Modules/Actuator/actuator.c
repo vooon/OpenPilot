@@ -75,16 +75,21 @@ static void setFailsafe();
 static float MixerCurve(const float throttle, const float* curve);
 static bool set_channel(uint8_t mixer_channel, uint16_t value);
 
+float ProcessCurve(const int index,MixerSettingsData* mixerSettings, ActuatorDesiredData* desired);
 float ProcessMixer(const int index, const float curve1, const float curve2,
 		   MixerSettingsData* mixerSettings, ActuatorDesiredData* desired,
 		   const float period);
 
-//this structure is equivalent to the UAVObjects for one mixer.
+// this structure is equivalent to the UAVObjects for one mixer (we hope!).
 typedef struct {
 	uint8_t type;
 	int8_t matrix[5];
 } __attribute__((packed)) Mixer_t;
 
+typedef struct {
+	float curve[5];
+	int8_t matrix[2];
+} __attribute__((packed)) Curve_t;
 
 /**
  * @brief Module initialization
@@ -199,8 +204,8 @@ static void actuatorTask(void* parameters)
 		bool positiveThrottle = desired.Throttle >= 0.00;
 		bool spinWhileArmed = MotorsSpinWhileArmed == ACTUATORSETTINGS_MOTORSSPINWHILEARMED_TRUE;
 		
-		float curve1 = MixerCurve(desired.Throttle,mixerSettings.ThrottleCurve1);
-		float curve2 = MixerCurve(desired.Throttle,mixerSettings.ThrottleCurve2);
+		float curve1 = MixerCurve(ProcessCurve(0,&mixerSettings,&desired),mixerSettings.ThrottleCurve1);
+		float curve2 = MixerCurve(ProcessCurve(1,&mixerSettings,&desired),mixerSettings.ThrottleCurve2);
 		for(int ct=0; ct < MAX_MIX_ACTUATORS; ct++)
 		{
 			if(mixers[ct].type == MIXERSETTINGS_MIXER1TYPE_DISABLED) {
@@ -263,6 +268,18 @@ static void actuatorTask(void* parameters)
 	}
 }
 
+/**
+ * Process mixing for one curve
+ */
+
+float ProcessCurve(const int index,MixerSettingsData* mixerSettings, ActuatorDesiredData* desired)
+{
+	Curve_t * curves = (Curve_t *)&mixerSettings->ThrottleCurve1;
+	Curve_t * curve = &curves[index];
+	float result = ((curve->matrix[MIXERSETTINGS_THROTTLECURVE1MIXER_THROTTLE] / 128.0f) * desired->Throttle) +
+	((curve->matrix[MIXERSETTINGS_THROTTLECURVE1MIXER_AUXILIARY] / 128.0f) * desired->Auxiliary);
+	return(result);
+}
 
 
 /**
