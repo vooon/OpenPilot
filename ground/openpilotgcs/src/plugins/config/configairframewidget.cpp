@@ -34,7 +34,8 @@
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QPushButton>
 #include <math.h>
-#include <QSignalMapper>
+#include <QDesktopServices>
+#include <QUrl>
 
 /**
   Helper delegate for the custom mixer editor table.
@@ -165,14 +166,12 @@ ConfigAirframeWidget::ConfigAirframeWidget(QWidget *parent) : ConfigTaskWidget(p
 
     connect(m_aircraft->saveAircraftToSD, SIGNAL(clicked()), this, SLOT(saveAircraftUpdate()));
     connect(m_aircraft->saveAircraftToRAM, SIGNAL(clicked()), this, SLOT(sendAircraftUpdate()));
-    connect(m_aircraft->getAircraftCurrent, SIGNAL(clicked()), this, SLOT(requestAircraftUpdate()));
+
     connect(m_aircraft->ffSave, SIGNAL(clicked()), this, SLOT(saveAircraftUpdate()));
     connect(m_aircraft->ffApply, SIGNAL(clicked()), this, SLOT(sendAircraftUpdate()));
-    connect(m_aircraft->ffGetCurrent, SIGNAL(clicked()), this, SLOT(requestAircraftUpdate()));
     connect(m_aircraft->fixedWingType, SIGNAL(currentIndexChanged(QString)), this, SLOT(setupAirframeUI(QString)));
     connect(m_aircraft->multirotorFrameType, SIGNAL(currentIndexChanged(QString)), this, SLOT(setupAirframeUI(QString)));
     connect(m_aircraft->aircraftType, SIGNAL(currentIndexChanged(int)), this, SLOT(switchAirframeType(int)));
-    requestAircraftUpdate();
 
     connect(m_aircraft->fwThrottleReset, SIGNAL(clicked()), this, SLOT(resetFwMixer()));
     connect(m_aircraft->mrThrottleCurveReset, SIGNAL(clicked()), this, SLOT(resetMrMixer()));
@@ -191,40 +190,40 @@ ConfigAirframeWidget::ConfigAirframeWidget(QWidget *parent) : ConfigTaskWidget(p
     connect(m_aircraft->ffTestBox2, SIGNAL(clicked(bool)), this, SLOT(enableFFTest()));
     connect(m_aircraft->ffTestBox3, SIGNAL(clicked(bool)), this, SLOT(enableFFTest()));
 
-    connect(parent, SIGNAL(autopilotConnected()),this, SLOT(requestAircraftUpdate()));
+    enableControls(false);
+    refreshValues();
+    connect(parent, SIGNAL(autopilotConnected()),this, SLOT(onAutopilotConnect()));
+    connect(parent, SIGNAL(autopilotDisconnected()), this, SLOT(onAutopilotDisconnect()));
 
-    // Connect all the help buttons to signal mapper that passes button name to SLOT function
-    QSignalMapper* signalMapper = new QSignalMapper(this);
-    connect( m_aircraft->acftTypeHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
-    signalMapper->setMapping(m_aircraft->acftTypeHelp, m_aircraft->acftTypeHelp->objectName());
-    connect( m_aircraft->airplaneTypeHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
-    signalMapper->setMapping(m_aircraft->airplaneTypeHelp, m_aircraft->airplaneTypeHelp->objectName());
-    connect( m_aircraft->channelAssignmentHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
-    signalMapper->setMapping(m_aircraft->channelAssignmentHelp, m_aircraft->channelAssignmentHelp->objectName());
-    connect( m_aircraft->commandHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
-    signalMapper->setMapping(m_aircraft->commandHelp, QString("commandHelp"));
-    connect( m_aircraft->throttleCurveHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
-    signalMapper->setMapping(m_aircraft->throttleCurveHelp, QString("throttleCurveHelp"));
-    connect( m_aircraft->multiFrameTypeHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
-    signalMapper->setMapping(m_aircraft->multiFrameTypeHelp, m_aircraft->multiFrameTypeHelp->objectName());
-    connect( m_aircraft->throttleCurveHelp_2, SIGNAL(clicked()), signalMapper, SLOT(map()) );
-    signalMapper->setMapping(m_aircraft->throttleCurveHelp_2, QString("throttleCurveHelp"));
-    connect( m_aircraft->tricopterYawHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
-    signalMapper->setMapping(m_aircraft->tricopterYawHelp, m_aircraft->tricopterYawHelp->objectName());
-    connect( m_aircraft->motorOutputChanHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
-    signalMapper->setMapping(m_aircraft->motorOutputChanHelp, m_aircraft->motorOutputChanHelp->objectName());
-    connect( m_aircraft->feedForwardHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
-    signalMapper->setMapping(m_aircraft->feedForwardHelp, m_aircraft->feedForwardHelp->objectName());
-    connect( m_aircraft->commandHelp_2, SIGNAL(clicked()), signalMapper, SLOT(map()) );
-    signalMapper->setMapping(m_aircraft->commandHelp_2, QString("commandHelp"));
+    // Register for ManualControlSettings changes:
+    obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("SystemSettings")));
+    connect(obj,SIGNAL(objectUpdated(UAVObject*)),this,SLOT(refreshValues()));
+    obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("MixerSettings")));
+    connect(obj,SIGNAL(objectUpdated(UAVObject*)),this,SLOT(refreshValues()));
+    obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("ActuatorSettings")));
+    connect(obj,SIGNAL(objectUpdated(UAVObject*)),this,SLOT(refreshValues()));
 
-    connect(signalMapper, SIGNAL(mapped(const QString &)), parent, SLOT(showHelp(const QString &)));
+    // Connect the help button
+    connect(m_aircraft->airframeHelp, SIGNAL(clicked()), this, SLOT(openHelp()));
+
 }
 
 ConfigAirframeWidget::~ConfigAirframeWidget()
 {
    // Do nothing
 }
+
+/**
+  Enable or disable controls depending on whether we're ronnected or not
+  */
+void ConfigAirframeWidget::enableControls(bool enable)
+{
+   //m_aircraft->saveAircraftToRAM->setEnabled(enable);
+   m_aircraft->saveAircraftToSD->setEnabled(enable);
+   //m_aircraft->ffApply->setEnabled(enable);
+   m_aircraft->ffSave->setEnabled(enable);
+}
+
 
 /**
   Slot for switching the airframe type. We do it explicitely
@@ -463,14 +462,13 @@ void ConfigAirframeWidget::updateCustomThrottle2CurveValue(QList<double> list, d
   * Aircraft settings
   **************************/
 /**
-  Request the current value of the SystemSettings which holds the aircraft type
+  Refreshes the current value of the SystemSettings which holds the aircraft type
   */
-void ConfigAirframeWidget::requestAircraftUpdate()
+void ConfigAirframeWidget::refreshValues()
 {
     // Get the Airframe type from the system settings:
     UAVDataObject* obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("SystemSettings")));
     Q_ASSERT(obj);
-    obj->requestUpdate();
     UAVObjectField *field = obj->getField(QString("AirframeType"));
     Q_ASSERT(field);
     // At this stage, we will need to have some hardcoded settings in this code, this
@@ -480,7 +478,6 @@ void ConfigAirframeWidget::requestAircraftUpdate()
 
     obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("MixerSettings")));
     Q_ASSERT(obj);
-    obj->requestUpdate();
     field = obj->getField(QString("ThrottleCurve1"));
     Q_ASSERT(field);
     QList<double> curveValues;
@@ -1547,7 +1544,7 @@ bool ConfigAirframeWidget::setupMixer(double mixerFactors[8][3])
             setupQuadMotor(channel, mixerFactors[i][0]*pFactor,
                        rFactor*mixerFactors[i][1], yFactor*mixerFactors[i][2]);
     }
-    obj->updated();
+//    obj->updated();
     return true;
 }
 
@@ -1591,7 +1588,7 @@ void ConfigAirframeWidget::setupMotors(QList<QString> motorList)
         field = obj->getField(motor);
         field->setValue(mmList.takeFirst()->currentText());
     }
-    obj->updated(); // Save...
+    //obj->updated(); // Save...
 }
 
 
@@ -2049,14 +2046,12 @@ void ConfigAirframeWidget::sendAircraftUpdate()
                 m_aircraft->mrStatusLabel->setText("Error: Assign a Yaw channel");
                 return;
             }
+            motorList << "VTOLMotorNW" << "VTOLMotorNE" << "VTOLMotorS";
+            setupMotors(motorList);
             obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("ActuatorSettings")));
             Q_ASSERT(obj);
             field = obj->getField("FixedWingYaw1");
             field->setValue(m_aircraft->triYawChannel->currentText());
-            // No need to send a obj->updated() here because setupMotors
-            // will do it.
-            motorList << "VTOLMotorNW" << "VTOLMotorNE" << "VTOLMotorS";
-            setupMotors(motorList);
 
             // Motor 1 to 6, Y6 Layout:
             //     pitch   roll    yaw
@@ -2135,10 +2130,13 @@ void ConfigAirframeWidget::sendAircraftUpdate()
             field->setValue(m_aircraft->customMixerTable->item(5,i)->text(),ti);
         }
 
-        obj->updated();
     }
 
-    UAVDataObject* obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("SystemSettings")));
+    UAVDataObject* obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("ActuatorSettings")));
+    obj->updated();
+    obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("MixerSettings")));
+    obj->updated();
+    obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("SystemSettings")));
     UAVObjectField* field = obj->getField(QString("AirframeType"));
     field->setValue(airframeType);
     obj->updated();
@@ -2159,5 +2157,11 @@ void ConfigAirframeWidget::saveAircraftUpdate()
     obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("ActuatorSettings")));
     saveObjectToSD(obj);
 
+}
+
+void ConfigAirframeWidget::openHelp()
+{
+
+    QDesktopServices::openUrl( QUrl("http://wiki.openpilot.org/display/Doc/Airframe+configuration", QUrl::StrictMode) );
 }
 

@@ -52,13 +52,11 @@ public:
 
 public slots:
     void onAutopilotConnect();
-    void showHelp(const QString &helpName);
-
-private slots:
-    bool eventFilter(QObject *obj, QEvent *event);
+    void onAutopilotDisconnect();
 
 signals:
     void autopilotConnected();
+    void autopilotDisconnected();
 
 protected:
         void resizeEvent(QResizeEvent * event);

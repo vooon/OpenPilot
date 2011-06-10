@@ -30,7 +30,8 @@
 #include <QMutexLocker>
 #include <QMessageBox>
 #include <QDebug>
-#include <QSignalMapper>
+#include <QDesktopServices>
+#include <QUrl>
 
 ConfigCCAttitudeWidget::ConfigCCAttitudeWidget(QWidget *parent) :
         ConfigTaskWidget(parent),
@@ -40,29 +41,31 @@ ConfigCCAttitudeWidget::ConfigCCAttitudeWidget(QWidget *parent) :
     connect(ui->zeroBias,SIGNAL(clicked()),this,SLOT(startAccelCalibration()));
     connect(ui->saveButton,SIGNAL(clicked()),this,SLOT(saveAttitudeSettings()));        
     connect(ui->applyButton,SIGNAL(clicked()),this,SLOT(applyAttitudeSettings()));
-    connect(ui->getCurrentButton,SIGNAL(clicked()),this,SLOT(getCurrentAttitudeSettings()));
 
     // Make it smart:
-    connect(parent, SIGNAL(autopilotConnected()),this, SLOT(getCurrentAttitudeSettings()));
-    getCurrentAttitudeSettings(); // The 1st time this panel is instanciated, the autopilot is already connected.
+    connect(parent, SIGNAL(autopilotConnected()),this, SLOT(onAutopilotConnect()));
+    connect(parent, SIGNAL(autopilotDisconnected()), this, SLOT(onAutopilotDisconnect()));
 
-    // Connect all the help buttons to signal mapper that passes button name to SLOT function
-    QSignalMapper* signalMapper = new QSignalMapper(this);
-    connect( ui->attitudeRotationHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
-    signalMapper->setMapping(ui->attitudeRotationHelp, ui->attitudeRotationHelp->objectName());
-    connect( ui->attitudeCalibHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
-    signalMapper->setMapping(ui->attitudeCalibHelp, ui->attitudeCalibHelp->objectName());
-    connect( ui->zeroOnArmHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
-    signalMapper->setMapping(ui->zeroOnArmHelp, ui->zeroOnArmHelp->objectName());
-    connect( ui->commandHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
-    signalMapper->setMapping(ui->commandHelp, QString("commandHelp"));
+    enableControls(true);
+    refreshValues(); // The 1st time this panel is instanciated, the autopilot is already connected.
+    UAVObject * settings = getObjectManager()->getObject(QString("AttitudeSettings"));
+    connect(settings,SIGNAL(objectUpdated(UAVObject*)), this, SLOT(refreshValues()));
 
-    connect(signalMapper, SIGNAL(mapped(const QString &)), parent, SLOT(showHelp(const QString &)));
+    // Connect the help button
+    connect(ui->ccAttitudeHelp, SIGNAL(clicked()), this, SLOT(openHelp()));
+
+
 }
 
 ConfigCCAttitudeWidget::~ConfigCCAttitudeWidget()
 {
     delete ui;
+}
+
+void ConfigCCAttitudeWidget::enableControls(bool enable)
+{
+    //ui->applyButton->setEnabled(enable);
+    ui->saveButton->setEnabled(enable);
 }
 
 void ConfigCCAttitudeWidget::attitudeRawUpdated(UAVObject * obj) {
@@ -135,9 +138,8 @@ void ConfigCCAttitudeWidget::applyAttitudeSettings() {
     settings->updated();
 }
 
-void ConfigCCAttitudeWidget::getCurrentAttitudeSettings() {
+void ConfigCCAttitudeWidget::refreshValues() {
     UAVDataObject * settings = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("AttitudeSettings")));
-    settings->requestUpdate();
     UAVObjectField * field = settings->getField("BoardRotation");
     ui->rollBias->setValue(field->getDouble(0));
     ui->pitchBias->setValue(field->getDouble(1));
@@ -183,3 +185,10 @@ void ConfigCCAttitudeWidget::saveAttitudeSettings() {
     UAVDataObject * obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("AttitudeSettings")));
     saveObjectToSD(obj);
 }
+
+void ConfigCCAttitudeWidget::openHelp()
+{
+
+    QDesktopServices::openUrl( QUrl("http://wiki.openpilot.org/display/Doc/CopterControl+Attitude+Configuration", QUrl::StrictMode) );
+}
+

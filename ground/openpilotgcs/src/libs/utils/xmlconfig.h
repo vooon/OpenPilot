@@ -23,42 +23,40 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
+#ifndef XMLCONFIG_H
+#define XMLCONFIG_H
 
-#ifndef IMPORTEXPORTGADGETCONFIGURATION_H
-#define IMPORTEXPORTGADGETCONFIGURATION_H
+#if defined(QTCREATOR_UTILS_LIB)
+#  define XMLCONFIG_EXPORT Q_DECL_EXPORT
+#else
+#  define XMLCONFIG_EXPORT Q_DECL_IMPORT
+#endif
 
-#include <coreplugin/iuavgadgetconfiguration.h>
-#include "importexport_global.h"
+#include <QtCore/qglobal.h>
+#include <QSettings>
+#include <QDomElement>
+#include <QObject>
 
-using namespace Core;
-
-/* This is a generic bargraph dial
-   supporting one indicator.
-  */
-class IMPORTEXPORT_EXPORT ImportExportGadgetConfiguration : public IUAVGadgetConfiguration
+class XMLCONFIG_EXPORT XmlConfig : QObject
 {
-    Q_OBJECT
+
 public:
-    ImportExportGadgetConfiguration(QString classId, QSettings* qSettings = 0, UAVConfigInfo *configInfo = 0, QObject *parent = 0);
+    static const QSettings::Format XmlSettingsFormat;
 
-    //set dial configuration functions
-    void setIniFile(QString filename) {
-        iniFile = filename;
-    }
-
-    //get dial configuration functions
-    QString getIniFile() const{
-        return iniFile;
-    }
-
-    void saveConfig(QSettings* settings, Core::UAVConfigInfo *configInfo) const;
-    IUAVGadgetConfiguration *clone();
+    static bool readXmlFile(QIODevice &device, QSettings::SettingsMap &map);
+    static bool writeXmlFile(QIODevice &device, const QSettings::SettingsMap &map);
 
 private:
-    QString iniFile;
+    static QString rootName;
+
+    static void handleNode(QDomElement* node, QSettings::SettingsMap &map, QString path = "");
+    static QSettings::SettingsMap settingsToMap(QSettings& qs);
+    static QString variantToString(const QVariant &v);
+    static QVariant stringToVariant(const QString &s);
+    static QStringList splitArgs(const QString &s, int idx);
 };
 
-#endif // IMPORTEXPORTGADGETCONFIGURATION_H
+#endif // XMLCONFIG_H
 /**
  * @}
  * @}

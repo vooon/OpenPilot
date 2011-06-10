@@ -90,10 +90,11 @@ ConfigGadgetWidget::ConfigGadgetWidget(QWidget *parent) : QWidget(parent)
     ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
     TelemetryManager* telMngr = pm->getObject<TelemetryManager>();
     connect(telMngr, SIGNAL(connected()), this, SLOT(onAutopilotConnect()));
+    connect(telMngr, SIGNAL(disconnected()), this, SLOT(onAutopilotDisconnect()));
 
     // And check whether by any chance we are not already connected
     if (telMngr->isConnected())
-        onAutopilotConnect();
+        onAutopilotConnect();    
 
     help = 0;
 }
@@ -109,6 +110,10 @@ void ConfigGadgetWidget::resizeEvent(QResizeEvent *event)
 {
 
     QWidget::resizeEvent(event);
+}
+
+void ConfigGadgetWidget::onAutopilotDisconnect() {
+    emit autopilotDisconnected();
 }
 
 void ConfigGadgetWidget::onAutopilotConnect() {
@@ -135,48 +140,8 @@ void ConfigGadgetWidget::onAutopilotConnect() {
             ftw->insertTab(3, qwd, QIcon(":/configgadget/images/AHRS-v1.3.png"), QString("INS"));
         }
     }
-
-
     emit autopilotConnected();
 }
 
-void ConfigGadgetWidget::showHelp(const QString &helpName)
-{
-    // Close any previous help windows still open
-    if(help != 0) {
-        help->close();
-    }
-
-    // Make help windows with given filename and resize to config gadget width
-    help = new QTextBrowser(this);
-    help->setSource(QUrl::fromLocalFile( QString(Utils::PathUtils().InsertDataPath("%%DATAPATH%%help/")) +
-					 helpName + QString(".html") ));
-    QSize size = help->sizeHint();
-    size.setWidth(this->width());
-    help->resize(size);
-
-    // Now catch closing events, show the window and give it focus
-    help->installEventFilter(this);
-    help->show();
-    help->setFocus();
-}
-
-bool ConfigGadgetWidget::eventFilter(QObject *obj, QEvent *event)
-{
-    // If help is open and we get a close event, close the help window
-    // Close events currently are any key press and the mouse leaving the help window
-
-    //printf("event type: %d\n",event->type());
-    if(help != 0) {
-        if (event->type() == QEvent::Leave || event->type() == QEvent::KeyPress) {
-            help->close();
-            help=0;
-            return true;
-        }
-    } 
-
-    // standard event processing
-    return QObject::eventFilter(obj, event);
-}
 
 
