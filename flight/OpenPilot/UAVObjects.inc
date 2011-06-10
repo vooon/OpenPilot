@@ -26,7 +26,6 @@
 UAVOBJSRCFILENAMES =
 UAVOBJSRCFILENAMES += actuatorcommand
 UAVOBJSRCFILENAMES += actuatordesired
-UAVOBJSRCFILENAMES += accessorydesired
 UAVOBJSRCFILENAMES += actuatorsettings
 UAVOBJSRCFILENAMES += ahrscalibration
 UAVOBJSRCFILENAMES += ahrssettings

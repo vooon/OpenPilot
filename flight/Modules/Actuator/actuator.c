@@ -40,7 +40,6 @@
 #include "flightstatus.h"
 #include "mixersettings.h"
 #include "mixerstatus.h"
-#include "accessorydesired.h"
 
 
 // Private constants
@@ -78,12 +77,12 @@ static bool set_channel(uint8_t mixer_channel, uint16_t value);
 
 float ProcessMixer(const int index, const float curve1, const float curve2,
 		   MixerSettingsData* mixerSettings, ActuatorDesiredData* desired,
-		   AccessoryDesiredData* adesired, const float period);
+		   const float period);
 
 //this structure is equivalent to the UAVObjects for one mixer.
 typedef struct {
 	uint8_t type;
-	int8_t matrix[8];
+	int8_t matrix[5];
 } __attribute__((packed)) Mixer_t;
 
 
@@ -137,7 +136,6 @@ static void actuatorTask(void* parameters)
 	ActuatorDesiredData desired;
 	MixerStatusData mixerStatus;
 	FlightStatusData flightStatus;
-	AccessoryDesiredData adesired;
 	
 	ActuatorSettingsGet(&settings);
 	PIOS_Servo_SetHz(&settings.ChannelUpdateFreq[0], ACTUATORSETTINGS_CHANNELUPDATEFREQ_NUMELEM);
@@ -172,7 +170,6 @@ static void actuatorTask(void* parameters)
 		MixerStatusGet(&mixerStatus);
 		MixerSettingsGet (&mixerSettings);
 		ActuatorDesiredGet(&desired);
-		AccessoryDesiredGet(&adesired);
 		ActuatorCommandGet(&command);
 		ActuatorSettingsGet(&settings);
 
@@ -208,7 +205,7 @@ static void actuatorTask(void* parameters)
 				continue;
 			}
 			
-			status[ct] = ProcessMixer(ct, curve1, curve2, &mixerSettings, &desired, &adesired, dT);
+			status[ct] = ProcessMixer(ct, curve1, curve2, &mixerSettings, &desired, dT);
 			
 			// Motors have additional protection for when to be on
 			if(mixers[ct].type == MIXERSETTINGS_MIXER1TYPE_MOTOR) {					
@@ -268,8 +265,7 @@ static void actuatorTask(void* parameters)
  */
 
 float ProcessMixer(const int index, const float curve1, const float curve2,
-		   MixerSettingsData* mixerSettings, ActuatorDesiredData* desired,
-		   AccessoryDesiredData* adesired, const float period)
+		   MixerSettingsData* mixerSettings, ActuatorDesiredData* desired, const float period)
 {
 	Mixer_t * mixers = (Mixer_t *)&mixerSettings->Mixer1Type; //pointer to array of mixers in UAVObjects
 	Mixer_t * mixer = &mixers[index];
@@ -277,10 +273,7 @@ float ProcessMixer(const int index, const float curve1, const float curve2,
 	((mixer->matrix[MIXERSETTINGS_MIXER1VECTOR_THROTTLECURVE2] / 128.0f) * curve2) +
 	((mixer->matrix[MIXERSETTINGS_MIXER1VECTOR_ROLL] / 128.0f) * desired->Roll) +
 	((mixer->matrix[MIXERSETTINGS_MIXER1VECTOR_PITCH] / 128.0f) * desired->Pitch) +
-	((mixer->matrix[MIXERSETTINGS_MIXER1VECTOR_YAW] / 128.0f) * desired->Yaw) +
-	((mixer->matrix[MIXERSETTINGS_MIXER1VECTOR_ACCESSORY1] / 128.0f) * adesired->Accessory1) +
-	((mixer->matrix[MIXERSETTINGS_MIXER1VECTOR_ACCESSORY2] / 128.0f) * adesired->Accessory2) +
-	((mixer->matrix[MIXERSETTINGS_MIXER1VECTOR_ACCESSORY3] / 128.0f) * adesired->Accessory3);
+	((mixer->matrix[MIXERSETTINGS_MIXER1VECTOR_YAW] / 128.0f) * desired->Yaw);
 	if(mixer->type == MIXERSETTINGS_MIXER1TYPE_MOTOR)
 	{
 		if(result < 0) //idle throttle
