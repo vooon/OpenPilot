@@ -125,7 +125,7 @@ void ConfigGadgetWidget::onAutopilotConnect() {
     if (utilMngr) {
         int board = utilMngr->getBoardModel();
         qDebug() << "Board model: " << board;
-        if ((board & 0xff00) == 1024) {
+        if ((board & 0xff00) != 256) {
             // CopterControl family
             // Delete the INS panel, replace with CC Panel:
             ftw->setCurrentIndex(0);
