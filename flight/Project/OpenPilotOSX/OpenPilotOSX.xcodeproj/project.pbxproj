@@ -69,6 +69,8 @@
 		651CF9F3120B700D00EEFD70 /* usb_conf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = usb_conf.h; sourceTree = "<group>"; };
 		65209A1812208B0600453371 /* baroaltitude.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = baroaltitude.xml; sourceTree = "<group>"; };
 		65209A1912208B0600453371 /* gpsposition.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = gpsposition.xml; sourceTree = "<group>"; };
+		6523559713A78C8C0064F844 /* esc_fsm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = esc_fsm.c; path = ../../ESC/esc_fsm.c; sourceTree = SOURCE_ROOT; };
+		6523559813A78C970064F844 /* esc_fsm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = esc_fsm.h; sourceTree = "<group>"; };
 		6526645A122DF972006F9A3C /* pios_i2c_priv.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pios_i2c_priv.h; sourceTree = "<group>"; };
 		6526645B122DF972006F9A3C /* pios_wdg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pios_wdg.h; sourceTree = "<group>"; };
 		6526C2BB1349D595006FF712 /* esc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = esc.c; path = ../../ESC/esc.c; sourceTree = SOURCE_ROOT; };
@@ -3570,6 +3572,7 @@
 			children = (
 				6526C2CD1349D898006FF712 /* inc */,
 				6526C2BB1349D595006FF712 /* esc.c */,
+				6523559713A78C8C0064F844 /* esc_fsm.c */,
 				6526C2BC1349D595006FF712 /* Makefile */,
 				6526C2BD1349D595006FF712 /* pios_board.c */,
 			);
@@ -3580,6 +3583,7 @@
 			isa = PBXGroup;
 			children = (
 				6526C2CE1349D898006FF712 /* esc.h */,
+				6523559813A78C970064F844 /* esc_fsm.h */,
 				6526C2CF1349D898006FF712 /* pios_config.h */,
 			);
 			name = inc;
