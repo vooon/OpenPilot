@@ -1,0 +1,11 @@
+<xml>
+    <object name="FlightRecorderSettings" singleinstance="true" settings="true">
+        <description>Flight logging. Enable/Disable and current filename</description>
+	<field name="Enabled" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
+	<field name="Filename" units="" type="uint8" elements="1" defaultvalue="0"/>
+        <access gcs="readwrite" flight="readwrite"/>
+        <telemetrygcs acked="true" updatemode="onchange" period="0"/>
+        <telemetryflight acked="true" updatemode="onchange" period="0"/>
+        <logging updatemode="never" period="0"/>
+    </object>
+</xml>

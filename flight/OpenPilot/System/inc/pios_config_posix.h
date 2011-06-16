@@ -52,6 +52,7 @@
 
 #define TELEM_QUEUE_SIZE                20
 #define PIOS_TELEM_STACK_SIZE           2048
+#define PIOS_FLIGHTREC_STACK_SIZE           2048
 
 /* Stabilization options */
 #define PIOS_QUATERNION_STABILIZATION

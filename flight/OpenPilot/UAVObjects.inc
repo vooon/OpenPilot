@@ -40,6 +40,7 @@ UAVOBJSRCFILENAMES += flightbatterystate
 UAVOBJSRCFILENAMES += flightplancontrol
 UAVOBJSRCFILENAMES += flightplansettings
 UAVOBJSRCFILENAMES += flightplanstatus
+UAVOBJSRCFILENAMES += flightrecordersettings
 UAVOBJSRCFILENAMES += flighttelemetrystats
 UAVOBJSRCFILENAMES += gcstelemetrystats
 UAVOBJSRCFILENAMES += gpsposition

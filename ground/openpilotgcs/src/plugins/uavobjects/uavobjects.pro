@@ -35,6 +35,7 @@ HEADERS += $$UAVOBJECT_SYNTHETICS/accessorydesired.h \
     $$UAVOBJECT_SYNTHETICS/systemstats.h \
     $$UAVOBJECT_SYNTHETICS/systemalarms.h \
     $$UAVOBJECT_SYNTHETICS/objectpersistence.h \
+    $$UAVOBJECT_SYNTHETICS/flightrecordersettings.h \
     $$UAVOBJECT_SYNTHETICS/telemetrysettings.h \
     $$UAVOBJECT_SYNTHETICS/systemsettings.h \
     $$UAVOBJECT_SYNTHETICS/stabilizationsettings.h \
@@ -82,6 +83,7 @@ SOURCES += $$UAVOBJECT_SYNTHETICS/accessorydesired.cpp \
     $$UAVOBJECT_SYNTHETICS/systemstats.cpp \
     $$UAVOBJECT_SYNTHETICS/systemalarms.cpp \
     $$UAVOBJECT_SYNTHETICS/objectpersistence.cpp \
+    $$UAVOBJECT_SYNTHETICS/flightrecordersettings.cpp \
     $$UAVOBJECT_SYNTHETICS/telemetrysettings.cpp \
     $$UAVOBJECT_SYNTHETICS/systemsettings.cpp \
     $$UAVOBJECT_SYNTHETICS/stabilizationsettings.cpp \
