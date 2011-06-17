@@ -34,9 +34,17 @@
 
 #if defined(PIOS_INCLUDE_SDCARD)
 
+#if defined(PIOS_INCLUDE_FREERTOS)
+//#define USE_FREERTOS
+#endif
+
 /* Global Variables */
 VOLINFO PIOS_SDCARD_VolInfo;
 uint8_t PIOS_SDCARD_Sector[SECTOR_SIZE];
+
+#ifdef USE_FREERTOS
+xSemaphoreHandle sem_fileIO;
+#endif
 
 /* Local Definitions */
 #if !defined(SDCARD_MUTEX_TAKE)
@@ -110,6 +118,11 @@ int32_t PIOS_SDCARD_Init(uint32_t spi_id)
 
 	PIOS_SPI_TransferByte(PIOS_SDCARD_SPI, 0xFF);
 	SDCARD_MUTEX_GIVE;
+
+#ifdef USE_FREERTOS
+	/* initialize file IO mutex */
+	sem_fileIO = xSemaphoreCreateMutex();
+#endif
 
 	/* No error */
 	return 0;
@@ -999,6 +1012,76 @@ int32_t PIOS_SDCARD_FileDelete(char *Filename)
 	/* No errors */
 	return 0;
 }
+
+/**
+ * file IO wrapper functions
+ */
+int32_t PIOS_FOPEN_READ( char* filename, FILEINFO * file) {
+	uint32_t ret;
+	#ifdef USE_FREERTOS
+		xSemaphoreTake(sem_fileIO, portMAX_DELAY);
+	#endif
+	ret = ( DFS_OpenFile(&PIOS_SDCARD_VolInfo, (uint8_t *)filename, DFS_READ, PIOS_SDCARD_Sector, file) != DFS_OK );
+	#ifdef USE_FREERTOS
+		xSemaphoreGive(sem_fileIO);
+	#endif
+	return ret;
+}
+
+int32_t PIOS_FOPEN_WRITE( char* filename, FILEINFO * file) {
+	uint32_t ret;
+	#ifdef USE_FREERTOS
+		xSemaphoreTake(sem_fileIO, portMAX_DELAY);
+	#endif
+	ret = ( DFS_OpenFile(&PIOS_SDCARD_VolInfo, (uint8_t *)filename, DFS_WRITE, PIOS_SDCARD_Sector, file) != DFS_OK );
+	#ifdef USE_FREERTOS
+		xSemaphoreGive(sem_fileIO);
+	#endif
+	return ret;
+}
+
+int32_t PIOS_FREAD(FILEINFO * file, void* bufferadr, uint32_t length, uint32_t* count) {
+	uint32_t ret;
+	#ifdef USE_FREERTOS
+		xSemaphoreTake(sem_fileIO, portMAX_DELAY);
+	#endif
+	ret = ( DFS_ReadFile(file, PIOS_SDCARD_Sector, (uint8_t*)bufferadr, count, length) != DFS_OK );
+	#ifdef USE_FREERTOS
+		xSemaphoreGive(sem_fileIO);
+	#endif
+	return ret;
+}
+
+int32_t PIOS_FWRITE(FILEINFO * file, void* bufferadr, uint32_t length, uint32_t* count) {
+	uint32_t ret;
+	#ifdef USE_FREERTOS
+		xSemaphoreTake(sem_fileIO, portMAX_DELAY);
+	#endif
+	ret = ( DFS_WriteFile(file, PIOS_SDCARD_Sector, (uint8_t*)bufferadr, count, length) != DFS_OK );
+	#ifdef USE_FREERTOS
+		xSemaphoreGive(sem_fileIO);
+	#endif
+	return ret;
+}
+
+int32_t PIOS_FUNLINK(char* filename) {
+	uint32_t ret;
+	#ifdef USE_FREERTOS
+		xSemaphoreTake(sem_fileIO, portMAX_DELAY);
+	#endif
+	ret = DFS_UnlinkFile(&PIOS_SDCARD_VolInfo, (uint8_t *)filename, PIOS_SDCARD_Sector);
+	#ifdef USE_FREERTOS
+		xSemaphoreGive(sem_fileIO);
+	#endif
+	return ret;
+}
+
+int32_t PIOS_FCLOSE(FILEINFO * file) {
+	return DFS_Close(file);
+	return 0;
+}
+
+
 
 #endif
 

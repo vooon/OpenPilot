@@ -604,18 +604,18 @@ int32_t UAVObjSave(UAVObjHandle obj, uint16_t instId)
 	  objectFilename(objEntry, filename);
 
 	  // Open file
-	  if (PIOS_FOPEN_WRITE(filename, file)) {
+	  if (PIOS_FOPEN_WRITE((char*)filename, &file)) {
 		    xSemaphoreGiveRecursive(mutex);
 		    return -1;
 	  }
 	  // Append object
 	  if (UAVObjSaveToFile(obj, instId, &file) == -1) {
-		    PIOS_FCLOSE(file);
+		    PIOS_FCLOSE(&file);
 		    xSemaphoreGiveRecursive(mutex);
 		    return -1;
 	  }
 	  // Done, close file and unlock
-	  PIOS_FCLOSE(file);
+	  PIOS_FCLOSE(&file);
 	  xSemaphoreGiveRecursive(mutex);
 #endif /* PIOS_INCLUDE_SDCARD */
 	  return 0;
@@ -746,26 +746,26 @@ int32_t UAVObjLoad(UAVObjHandle obj, uint16_t instId)
 	  objectFilename(objEntry, filename);
 
 	  // Open file
-	  if (PIOS_FOPEN_READ(filename, file)) {
+	  if (PIOS_FOPEN_READ((char*)filename, &file)) {
 		    xSemaphoreGiveRecursive(mutex);
 		    return -1;
 	  }
 	  // Load object
 	  loadedObj = UAVObjLoadFromFile(&file);
 	  if (loadedObj == 0) {
-		    PIOS_FCLOSE(file);
+		    PIOS_FCLOSE(&file);
 		    xSemaphoreGiveRecursive(mutex);
 		    return -1;
 	  }
 	  // Check that the IDs match
 	  loadedObjEntry = (ObjectList *) loadedObj;
 	  if (loadedObjEntry->id != objEntry->id) {
-		    PIOS_FCLOSE(file);
+		    PIOS_FCLOSE(&file);
 		    xSemaphoreGiveRecursive(mutex);
 		    return -1;
 	  }
 	  // Done, close file and unlock
-	  PIOS_FCLOSE(file);
+	  PIOS_FCLOSE(&file);
 	  xSemaphoreGiveRecursive(mutex);
 #endif /* PIOS_INCLUDE_SDCARD */
 	  return 0;
@@ -800,7 +800,7 @@ int32_t UAVObjDelete(UAVObjHandle obj, uint16_t instId)
 	  objectFilename(objEntry, filename);
 
 	  // Delete file
-	  PIOS_FUNLINK(filename);
+	  PIOS_FUNLINK((char*)filename);
 
 	  // Done
 	  xSemaphoreGiveRecursive(mutex);

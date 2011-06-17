@@ -108,6 +108,13 @@ extern int32_t PIOS_SDCARD_GetFree(void);
 extern int32_t PIOS_SDCARD_FileCopy(char *Source, char *Destination);
 extern int32_t PIOS_SDCARD_FileDelete(char *Filename);
 
+extern int32_t PIOS_FOPEN_READ( char* filename, FILEINFO * file);
+extern int32_t PIOS_FOPEN_WRITE( char* filename, FILEINFO * file);
+extern int32_t PIOS_FREAD(FILEINFO * file, void* bufferadr, uint32_t length, uint32_t* count);
+extern int32_t PIOS_FWRITE(FILEINFO * file, void* bufferadr, uint32_t length, uint32_t* count);
+extern int32_t PIOS_FUNLINK(char* filename);
+extern int32_t PIOS_FCLOSE(FILEINFO * file);
+
 #endif
 
 #endif /* PIOS_SDCARD_H */

@@ -63,22 +63,4 @@
 #define PIOS_COM_DEBUG                          PIOS_COM_AUX
 #endif
 
-/**
- * glue macros for file IO
- * STM32 uses DOSFS for file IO
- */
-#define PIOS_FOPEN_READ(filename,file)	(file=fopen((char*)filename,"r"))==NULL
-
-#define PIOS_FOPEN_WRITE(filename,file)	(file=fopen((char*)filename,"w"))==NULL
-
-#define PIOS_FREAD(file,bufferadr,length,resultadr)	(*resultadr=fread((uint8_t*)bufferadr,1,length,*file)) != length
-
-#define PIOS_FWRITE(file,bufferadr,length,resultadr)	*resultadr=fwrite((uint8_t*)bufferadr,1,length,*file)
-
-
-
-#define PIOS_FCLOSE(file)		fclose(file)
-
-#define PIOS_FUNLINK(file)		unlink((char*)filename)
-
 #endif /* PIOS_BOARD_H */

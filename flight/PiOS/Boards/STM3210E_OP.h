@@ -325,24 +325,6 @@ extern uint32_t pios_com_spektrum_id;
 #define PIOS_USB_RX_BUFFER_SIZE                 512
 #define PIOS_USB_TX_BUFFER_SIZE                 512
 
-/**
- * glue macros for file IO
- * STM32 uses DOSFS for file IO
- */
-#define PIOS_FOPEN_READ(filename,file)  DFS_OpenFile(&PIOS_SDCARD_VolInfo, (uint8_t *)filename, DFS_READ, PIOS_SDCARD_Sector, &file) != DFS_OK
-
-#define PIOS_FOPEN_WRITE(filename,file) DFS_OpenFile(&PIOS_SDCARD_VolInfo, (uint8_t *)filename, DFS_WRITE, PIOS_SDCARD_Sector, &file) != DFS_OK
-
-#define PIOS_FREAD(file,bufferadr,length,resultadr)     DFS_ReadFile(file, PIOS_SDCARD_Sector, (uint8_t*)bufferadr, resultadr, length) != DFS_OK
-
-#define PIOS_FWRITE(file,bufferadr,length,resultadr)    DFS_WriteFile(file, PIOS_SDCARD_Sector, (uint8_t*)bufferadr, resultadr, length)
-
-#define PIOS_FCLOSE(file)               DFS_Close(&file)
-
-#define PIOS_FUNLINK(filename)          DFS_UnlinkFile(&PIOS_SDCARD_VolInfo, (uint8_t *)filename, PIOS_SDCARD_Sector)
-
-
-
 #endif /* STM3210E_OP_H_ */
 /**
  * @}

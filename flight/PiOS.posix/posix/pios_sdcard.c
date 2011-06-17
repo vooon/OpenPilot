@@ -271,6 +271,35 @@ int32_t PIOS_SDCARD_GetFree(void)
 //}
 
 /**
+ * file IO wrapper functions
+ */
+int32_t PIOS_FOPEN_READ( char* filename, FILEINFO * file) {
+	return  (*file=fopen(filename,"r"))==NULL;
+}
+
+int32_t PIOS_FOPEN_WRITE( char* filename, FILEINFO * file) {
+	return  (*file=fopen(filename,"w"))==NULL;
+}
+
+int32_t PIOS_FREAD(FILEINFO * file, void* bufferadr, uint32_t length, uint32_t* count) {
+	return (*count=fread(bufferadr,1,length,*file)) != length;
+}
+
+int32_t PIOS_FWRITE(FILEINFO * file, void* bufferadr, uint32_t length, uint32_t* count) {
+	return (*count=fwrite(bufferadr,1,length,*file)) != length;
+}
+
+int32_t PIOS_FUNLINK(char* filename) {
+	return unlink(filename);
+}
+
+int32_t PIOS_FCLOSE(FILEINFO * file) {
+	return fclose(*file);
+}
+
+
+
+/**
 * Copy a file
 * WARNING: This will overwrite the destination file even if it exists
 * param[in] *Source Path to file to copy
@@ -294,7 +323,11 @@ int32_t PIOS_SDCARD_FileCopy(char *Source, char *Destination)
 */
 int32_t PIOS_SDCARD_FileDelete(char *Filename)
 {
-	return -1;
+	return PIOS_FUNLINK(Filename);
 }
+
+
+
+
 
 #endif

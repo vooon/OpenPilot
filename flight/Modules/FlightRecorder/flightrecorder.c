@@ -208,8 +208,8 @@ static int32_t transmitData(uint8_t * data, int32_t length)
 	static uint8_t logfile = 0;
 	static uint8_t logging = 0;
 	static FILEINFO fileinfo;
+
 	char filename[]="logXXX.opl";
-	
 	uint32_t systemTime = xTaskGetTickCount()*portTICK_RATE_MS;
 	uint32_t saveTime;
 	uint64_t datalength = length;
@@ -225,7 +225,7 @@ static int32_t transmitData(uint8_t * data, int32_t length)
 			filename[4] = 48 + ((logfile%100)/10);
 			filename[5] = 48 + (logfile%10);
 			// create new file
-			if(PIOS_FOPEN_WRITE(filename, fileinfo)) {
+			if(PIOS_FOPEN_WRITE(filename, &fileinfo)) {
 				logging=0;
 			}
 			// store new filename
@@ -237,20 +237,23 @@ static int32_t transmitData(uint8_t * data, int32_t length)
 			//set start time
 			startTime = systemTime;
 		}
+		if (logging) {
 
-		FILEINFO * file=&fileinfo;
-
-		saveTime = systemTime - startTime;
-		PIOS_FWRITE(file, &saveTime, 4,
-		      &written);
-		PIOS_FWRITE(file, &datalength, 8,
-		      &written);
-		PIOS_FWRITE(file, data, length,
-		      &written);
+			saveTime = systemTime - startTime;
+			PIOS_FWRITE(&fileinfo, &saveTime, 4,
+				  &written);
+			PIOS_FWRITE(&fileinfo, &datalength, 8,
+				  &written);
+			PIOS_FWRITE(&fileinfo, data, length,
+				  &written);
+		}
 	} else {
 		if (logging) {
 			logging = 0;
-			PIOS_FCLOSE(fileinfo);
+			PIOS_FCLOSE(&fileinfo);
+
+			// save UAVObject to disk
+			UAVObjSave(FlightRecorderSettingsHandle(),0);
 		}
 	}
 
