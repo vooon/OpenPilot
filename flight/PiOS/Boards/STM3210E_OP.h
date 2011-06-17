@@ -87,7 +87,7 @@ TIM8  | Servo 5   | Servo 6   | Servo 7   | Servo 8
 //------------------------
 #define TELEM_QUEUE_SIZE         20
 #define PIOS_TELEM_STACK_SIZE    624
-#define PIOS_FLIGHTREC_STACK_SIZE    624
+#define PIOS_FLIGHTREC_STACK_SIZE    900
 
 //------------------------
 // PIOS_LED

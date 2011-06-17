@@ -60,7 +60,7 @@ FLASH_TOOL = OPENOCD
 
 # List of modules to include
 MODULES = Actuator Telemetry GPS ManualControl Altitude AHRSComms Stabilization Guidance FirmwareIAP FlightRecorder
-PYMODULES = FlightPlan
+#PYMODULES = FlightPlan
 #MODULES = Telemetry Example
 #MODULES = Telemetry MK/MKSerial
 #MODULES = Telemetry
