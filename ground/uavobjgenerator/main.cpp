@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
     bool do_matlab=(arguments_stringlist.removeAll("-matlab")>0);
     bool do_none=(arguments_stringlist.removeAll("-none")>0); //
 
-    bool do_all=((do_gcs||do_flight||do_java||do_python||do_matlab)==false);
+    bool do_all=((do_gcs||do_flight||do_java||do_python||do_matlab|do_pythonground)==false);
     bool do_allObjects=true;
 
     if (arguments_stringlist.length() >= 2) {
