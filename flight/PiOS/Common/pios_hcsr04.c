@@ -42,17 +42,48 @@ static TIM_ICInitTypeDef TIM_ICInitStructure;
 static uint8_t CaptureState;
 static uint16_t RiseValue;
 static uint16_t FallValue;
-static uint32_t CaptureValue;
-static uint32_t CapCounter;
+static uint16_t CaptureValue;
+static uint8_t CapCounter;
+static uint16_t TimerCounter;
 
+#ifndef USE_STM32103CB_CC_Rev1
 #define PIOS_HCSR04_TRIG_GPIO_PORT                  GPIOD
 #define PIOS_HCSR04_TRIG_PIN                        GPIO_Pin_2
-
+#define PIOS_HCSR04_TIMER	TIM3
+#define PIOS_HCSR04_CC		TIM_IT_CC2
+#define PIOS_HCSR04_CHANNEL	TIM_Channel_2
+#define PIOS_HCSR04_GETCAPTURE(x) 	TIM_GetCapture2(x)
+#define PIOS_HCSR04_INPUT_GPIO_PORT     GPIOB
+#define PIOS_HCSR04_INPUT_PIN            GPIO_Pin_5
+#define PIOS_HCSR04_IRQ					TIM3_IRQn
+#define PIOS_HCSR04_RCC		RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE)
+#define PIOS_HCSR04_REMAP	GPIO_PinRemapConfig(GPIO_PartialRemap_TIM3, ENABLE)
+#define PIOS_HCSR04_IRQ_FUNC void TIM3_IRQHandler(void)
+#else
+#define PIOS_HCSR04_TRIG_GPIO_PORT                  GPIOA
+#define PIOS_HCSR04_TRIG_PIN                        GPIO_Pin_0
+#define PIOS_HCSR04_TIMER		TIM2
+#define PIOS_HCSR04_CC			TIM_IT_CC2
+#define PIOS_HCSR04_CHANNEL		TIM_Channel_2
+#define PIOS_HCSR04_GETCAPTURE(x) 	TIM_GetCapture2(x)
+#define PIOS_HCSR04_INPUT_GPIO_PORT     GPIOA
+#define PIOS_HCSR04_INPUT_PIN            GPIO_Pin_1
+#define PIOS_HCSR04_IRQ					TIM2_IRQn
+#define PIOS_HCSR04_RCC		RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE)
+#define PIOS_HCSR04_REMAP	;;
+#define PIOS_HCSR04_IRQ_FUNC void TIM2_IRQHandler(void)
+#endif
 /**
 * Initialise the HC-SR04 sensor
 */
 void PIOS_HCSR04_Init(void)
 {
+	/* Flush counter variables */
+	CaptureState = 0;
+	RiseValue = 0;
+	FallValue = 0;
+	CaptureValue = 0;
+
 	/* Init triggerpin */
 	GPIO_InitTypeDef GPIO_InitStructure;
 	GPIO_StructInit(&GPIO_InitStructure);
@@ -62,57 +93,52 @@ void PIOS_HCSR04_Init(void)
 	GPIO_Init(PIOS_HCSR04_TRIG_GPIO_PORT, &GPIO_InitStructure);
 	PIOS_HCSR04_TRIG_GPIO_PORT->BSRR = PIOS_HCSR04_TRIG_PIN;
 
-	/* Flush counter variables */
-	CaptureState = 0;
-	RiseValue = 0;
-	FallValue = 0;
-	CaptureValue = 0;
-
 	/* Setup RCC */
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
+	PIOS_HCSR04_RCC;
 
 	/* Enable timer interrupts */
 	NVIC_InitTypeDef NVIC_InitStructure;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_MID;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannel = PIOS_HCSR04_IRQ;
 	NVIC_Init(&NVIC_InitStructure);
 
 	/* Partial pin remap for TIM3 (PB5) */
-	GPIO_PinRemapConfig(GPIO_PartialRemap_TIM3, ENABLE);
+	PIOS_HCSR04_REMAP;
 
 	/* Configure input pins */
 	GPIO_StructInit(&GPIO_InitStructure);
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPD;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;
-	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	GPIO_InitStructure.GPIO_Pin = PIOS_HCSR04_INPUT_PIN;
+	GPIO_Init(PIOS_HCSR04_INPUT_GPIO_PORT, &GPIO_InitStructure);
 
 	/* Configure timer for input capture */
 	TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;
 	TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;
 	TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
 	TIM_ICInitStructure.TIM_ICFilter = 0x0;
-	TIM_ICInitStructure.TIM_Channel = TIM_Channel_2;
-	TIM_ICInit(TIM3, &TIM_ICInitStructure);
+	TIM_ICInitStructure.TIM_Channel = PIOS_HCSR04_CHANNEL;
+	TIM_ICInit(PIOS_HCSR04_TIMER, &TIM_ICInitStructure);
 
-	/* Configure timer clocks */
+	/* Shared timer works */
+	/* Configure timer clocks *//*
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
 	TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
 	TIM_TimeBaseStructure.TIM_Period = 0xFFFF;
-	TIM_TimeBaseStructure.TIM_Prescaler = (PIOS_MASTER_CLOCK / 500000) - 1;
+	TIM_TimeBaseStructure.TIM_Prescaler = (PIOS_MASTER_CLOCK / 1000000) - 1;
 	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
-	TIM_InternalClockConfig(TIM3);
-	TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure);
+	TIM_InternalClockConfig(PIOS_HCSR04_TIMER);
+	TIM_TimeBaseInit(PIOS_HCSR04_TIMER, &TIM_TimeBaseStructure);*/
 
 	/* Enable the Capture Compare Interrupt Request */
 	//TIM_ITConfig(PIOS_PWM_CH8_TIM_PORT, PIOS_PWM_CH8_CCR, ENABLE);
-	TIM_ITConfig(TIM3, TIM_IT_CC2, DISABLE);
+	TIM_ITConfig(PIOS_HCSR04_TIMER, PIOS_HCSR04_CC | TIM_IT_Update, DISABLE);
 
 	/* Enable timers */
-	TIM_Cmd(TIM3, ENABLE);
+	TIM_Cmd(PIOS_HCSR04_TIMER, ENABLE);
 
 	/* Setup local variable which stays in this scope */
 	/* Doing this here and using a local variable saves doing it in the ISR */
@@ -125,7 +151,7 @@ void PIOS_HCSR04_Init(void)
 * Get the value of an sonar timer
 * \output >0 timer value
 */
-int32_t PIOS_HCSR04_Get(void)
+uint16_t PIOS_HCSR04_Get(void)
 {
 	return CaptureValue;
 }
@@ -134,7 +160,7 @@ int32_t PIOS_HCSR04_Get(void)
 * Get the value of an sonar timer
 * \output >0 timer value
 */
-int32_t PIOS_HCSR04_Completed(void)
+uint8_t PIOS_HCSR04_Completed(void)
 {
 	return CapCounter;
 }
@@ -147,7 +173,9 @@ void PIOS_HCSR04_Trigger(void)
 	PIOS_HCSR04_TRIG_GPIO_PORT->BSRR = PIOS_HCSR04_TRIG_PIN;
 	PIOS_DELAY_WaituS(15);
 	PIOS_HCSR04_TRIG_GPIO_PORT->BRR = PIOS_HCSR04_TRIG_PIN;
-	TIM_ITConfig(TIM3, TIM_IT_CC2, ENABLE);
+	TIM_ClearITPendingBit(PIOS_HCSR04_TIMER, PIOS_HCSR04_CC);
+	TIM_ClearITPendingBit(PIOS_HCSR04_TIMER, TIM_IT_Update);
+	TIM_ITConfig(PIOS_HCSR04_TIMER, PIOS_HCSR04_CC, ENABLE);
 }
 
 
@@ -155,23 +183,29 @@ void PIOS_HCSR04_Trigger(void)
 * Handle TIM3 global interrupt request
 */
 //void PIOS_PWM_irq_handler(TIM_TypeDef * timer)
-void TIM3_IRQHandler(void)
+PIOS_HCSR04_IRQ_FUNC
 {
-	/* Zero value always will be changed but this prevents compiler warning */
-	int32_t i = 0;
+	if (TIM_GetITStatus(PIOS_HCSR04_TIMER, TIM_IT_Update) != RESET) {
+		TimerCounter+=PIOS_HCSR04_TIMER->ARR;
+		TIM_ClearITPendingBit(PIOS_HCSR04_TIMER, TIM_IT_Update);
+		return;
+	}
 
 	/* Do this as it's more efficient */
-	if (TIM_GetITStatus(TIM3, TIM_IT_CC2) == SET) {
-		i = 7;
+	if (TIM_GetITStatus(PIOS_HCSR04_TIMER, PIOS_HCSR04_CC) == SET) {
 		if (CaptureState == 0) {
-			RiseValue = TIM_GetCapture2(TIM3);
+			RiseValue = PIOS_HCSR04_GETCAPTURE(PIOS_HCSR04_TIMER);
+			/* init overflow adder */
+			TimerCounter=0;
+			TIM_ClearITPendingBit(PIOS_HCSR04_TIMER, TIM_IT_Update);
+			TIM_ITConfig(PIOS_HCSR04_TIMER, TIM_IT_Update, ENABLE);
 		} else {
-			FallValue = TIM_GetCapture2(TIM3);
+			FallValue = TimerCounter+PIOS_HCSR04_GETCAPTURE(PIOS_HCSR04_TIMER);
 		}
 	}
 
-	/* Clear TIM3 Capture compare interrupt pending bit */
-	TIM_ClearITPendingBit(TIM3, TIM_IT_CC2);
+	/* Clear PIOS_HCSR04_TIMER Capture compare interrupt pending bit */
+	TIM_ClearITPendingBit(PIOS_HCSR04_TIMER, PIOS_HCSR04_CC);
 
 	/* Simple rise or fall state machine */
 	if (CaptureState == 0) {
@@ -180,8 +214,8 @@ void TIM3_IRQHandler(void)
 
 		/* Switch polarity of input capture */
 		TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Falling;
-		TIM_ICInitStructure.TIM_Channel = TIM_Channel_2;
-		TIM_ICInit(TIM3, &TIM_ICInitStructure);
+		TIM_ICInitStructure.TIM_Channel = PIOS_HCSR04_CHANNEL;
+		TIM_ICInit(PIOS_HCSR04_TIMER, &TIM_ICInitStructure);
 
 	} else {
 		/* Capture computation */
@@ -196,12 +230,12 @@ void TIM3_IRQHandler(void)
 
 		/* Increase supervisor counter */
 		CapCounter++;
-		TIM_ITConfig(TIM3, TIM_IT_CC2, DISABLE);
+		TIM_ITConfig(PIOS_HCSR04_TIMER, PIOS_HCSR04_CC | TIM_IT_Update, DISABLE);
 
 		/* Switch polarity of input capture */
 		TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;
-		TIM_ICInitStructure.TIM_Channel = TIM_Channel_2;
-		TIM_ICInit(TIM3, &TIM_ICInitStructure);
+		TIM_ICInitStructure.TIM_Channel = PIOS_HCSR04_CHANNEL;
+		TIM_ICInit(PIOS_HCSR04_TIMER, &TIM_ICInitStructure);
 
 	}
 }

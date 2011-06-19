@@ -623,13 +623,13 @@ const struct pios_servo_channel pios_servo_channels[] = {
 		.port = GPIOB,
 		.channel = TIM_Channel_1,
 		.pin = GPIO_Pin_4,
-	},  	
+	}, 
 	{
 		.timer = TIM2,
 		.port = GPIOA,
 		.channel = TIM_Channel_3,
 		.pin = GPIO_Pin_2,
-	},	
+	},
 };
 
 const struct pios_servo_cfg pios_servo_cfg = {
