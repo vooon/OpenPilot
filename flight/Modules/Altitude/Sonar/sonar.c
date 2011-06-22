@@ -105,7 +105,7 @@ static void sonarTask(void *parameters)
 			timeout=5;
 			PIOS_HCSR04_Trigger();
 		}
-		if(timeout--)
+		if(!(timeout--))
 		{
 			//retrigger
 			timeout=5;
