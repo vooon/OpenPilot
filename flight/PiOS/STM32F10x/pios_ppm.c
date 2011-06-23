@@ -42,10 +42,13 @@ static uint32_t PreviousValue;
 static uint32_t CurrentValue;
 static uint32_t CapturedValue;
 static uint32_t CaptureValue[PIOS_PPM_NUM_INPUTS];
-
-static uint8_t SupervisorState = 0;
 static uint32_t CapCounter[PIOS_PPM_NUM_INPUTS];
+static uint16_t TimerCounter;
+
+#if (PIOS_PPM_SUPV_ENABLED)
+static uint8_t SupervisorState = 0;
 static uint32_t CapCounterPrev[PIOS_PPM_NUM_INPUTS];
+#endif
 
 /**
 * Initialises all the LED's
@@ -59,6 +62,7 @@ void PIOS_PPM_Init(void)
 	PreviousValue = 0;
 	CurrentValue = 0;
 	CapturedValue = 0;
+	TimerCounter = 0;
 
 	for (i = 0; i < PIOS_PPM_NUM_INPUTS; i++) {
 		CaptureValue[i] = 0;
@@ -121,7 +125,7 @@ void PIOS_PPM_Init(void)
 	TIM_TimeBaseInit(pios_ppm_cfg.timer, &TIM_TimeBaseStructure);
 
 	/* Enable the Capture Compare Interrupt Request */
-	TIM_ITConfig(pios_ppm_cfg.timer, pios_ppm_cfg.ccr, ENABLE);
+	TIM_ITConfig(pios_ppm_cfg.timer, pios_ppm_cfg.ccr | TIM_IT_Update, ENABLE);
 
 	/* Enable timers */
 	TIM_Cmd(pios_ppm_cfg.timer, ENABLE);
@@ -224,6 +228,13 @@ int32_t PIOS_PPM_Get(int8_t Channel)
 */
 void PIOS_PPM_irq_handler(void)
 {
+	if (TIM_GetITStatus(pios_ppm_cfg.timer, TIM_IT_Update) != RESET) {
+		TimerCounter+=pios_ppm_cfg.timer->ARR;
+		TIM_ClearITPendingBit(pios_ppm_cfg.timer, TIM_IT_Update);
+		return;
+	}
+
+
 	/* Do this as it's more efficient */
 	if (TIM_GetITStatus(pios_ppm_cfg.timer, pios_ppm_cfg.ccr) == SET) {
 		PreviousValue = CurrentValue;
@@ -240,6 +251,10 @@ void PIOS_PPM_irq_handler(void)
 			case (int32_t)TIM_IT_CC4:
 				CurrentValue = TIM_GetCapture4(pios_ppm_cfg.timer);
 				break;
+		}
+		CurrentValue+=TimerCounter;
+		if(CurrentValue > 0xFFFF) {
+			CurrentValue-=0xFFFF;
 		}
 	}
 
@@ -265,6 +280,8 @@ void PIOS_PPM_irq_handler(void)
 		}
 	}
 }
+
+#if (PIOS_PPM_SUPV_ENABLED)
 
 /**
 * This function handles TIM3 global interrupt request.
@@ -297,6 +314,7 @@ void PIOS_PPMSV_irq_handler(void) {
 
 #endif
 
+#endif
 /**
   * @}
   * @}

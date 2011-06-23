@@ -45,8 +45,8 @@
 
 /* Receiver interfaces - only one allowed */
 #if !defined(USE_SPEKTRUM) && !defined(USE_SBUS)
-//#define PIOS_INCLUDE_PPM
-#define PIOS_INCLUDE_PWM
+#define PIOS_INCLUDE_PPM
+//#define PIOS_INCLUDE_PWM
 #endif
 
 /* USART-based PIOS modules */
@@ -76,7 +76,7 @@
 #define PIOS_INCLUDE_RTC
 #define PIOS_INCLUDE_WDG
 #define PIOS_INCLUDE_BL_HELPER
-#define PIOS_INCLUDE_HCSR04
+//#define PIOS_INCLUDE_HCSR04
 
 #define PIOS_INCLUDE_ADXL345
 #define PIOS_INCLUDE_FLASH

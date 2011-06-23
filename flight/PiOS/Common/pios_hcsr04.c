@@ -32,8 +32,8 @@
 #include "pios.h"
 
 #if defined(PIOS_INCLUDE_HCSR04)
-#if !(defined(PIOS_INCLUDE_SPEKTRUM) || defined(PIOS_INCLUDE_SBUS))
-#error Only supported with Spektrum or S.Bus interface!
+#if !(defined(PIOS_INCLUDE_SPEKTRUM) || defined(PIOS_INCLUDE_SBUS) || defined(PIOS_INCLUDE_PPM))
+#error Only supported with Spektrum, PPM or S.Bus interface!
 #endif
 
 /* Local Variables */
@@ -123,7 +123,8 @@ void PIOS_HCSR04_Init(void)
 	TIM_ICInit(PIOS_HCSR04_TIMER, &TIM_ICInitStructure);
 
 	/* Shared timer works */
-	/* Configure timer clocks *//*
+	/* Configure timer clocks */
+#ifndef USE_STM32103CB_CC_Rev1
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
 	TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
 	TIM_TimeBaseStructure.TIM_Period = 0xFFFF;
@@ -131,10 +132,10 @@ void PIOS_HCSR04_Init(void)
 	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
 	TIM_InternalClockConfig(PIOS_HCSR04_TIMER);
-	TIM_TimeBaseInit(PIOS_HCSR04_TIMER, &TIM_TimeBaseStructure);*/
+	TIM_TimeBaseInit(PIOS_HCSR04_TIMER, &TIM_TimeBaseStructure);
+#endif
 
 	/* Enable the Capture Compare Interrupt Request */
-	//TIM_ITConfig(PIOS_PWM_CH8_TIM_PORT, PIOS_PWM_CH8_CCR, ENABLE);
 	TIM_ITConfig(PIOS_HCSR04_TIMER, PIOS_HCSR04_CC | TIM_IT_Update, DISABLE);
 
 	/* Enable timers */

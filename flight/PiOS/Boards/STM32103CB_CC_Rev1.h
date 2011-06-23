@@ -231,6 +231,11 @@ extern uint32_t pios_com_sbus_id;
 #define PIOS_PWM_MAX_INPUTS                     6
 
 //-------------------------
+// Receiver PPM input
+//-------------------------
+#define PIOS_PPM_NUM_INPUTS                     8  //Could be more if needed
+
+//-------------------------
 // Servo outputs
 //-------------------------
 #define PIOS_SERVO_UPDATE_HZ                    50
