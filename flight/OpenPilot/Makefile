@@ -45,6 +45,7 @@ ENABLE_AUX_UART ?= NO
 
 USE_SPEKTRUM ?= NO
 USE_SBUS ?= NO
+USE_PPM ?= NO
 
 
 # Set to YES when using Code Sourcery toolchain
@@ -372,6 +373,9 @@ ifeq ($(USE_SBUS), YES)
 CDEFS += -DUSE_SBUS
 endif
 
+ifeq ($(USE_PPM), YES)
+CDEFS += -DUSE_PPM
+endif
 
 # Place project-specific -D and/or -U options for
 # Assembler with preprocessor here.

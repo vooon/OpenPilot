@@ -45,8 +45,11 @@
 
 /* Receiver interfaces - only one allowed */
 #if !defined(USE_SPEKTRUM) && !defined(USE_SBUS)
+#if defined(USE_PPM)
 #define PIOS_INCLUDE_PPM
-//#define PIOS_INCLUDE_PWM
+#else
+#define PIOS_INCLUDE_PWM
+#endif
 #endif
 
 /* USART-based PIOS modules */

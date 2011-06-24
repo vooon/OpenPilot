@@ -49,6 +49,7 @@ USE_TELEMETRY ?= YES
 USE_GPS ?= NO
 USE_SPEKTRUM ?= NO
 USE_SBUS ?= NO
+USE_PPM ?= NO
 
 USE_I2C ?= NO
 
@@ -415,6 +416,10 @@ CDEFS += -DUSE_SBUS
 ifneq ($(USE_SBUS), YES)
 CDEFS += -DPIOS_PORT_SBUS=$(USE_SBUS)
 endif
+endif
+
+ifeq ($(USE_PPM), YES)
+CDEFS += -DUSE_PPM
 endif
 
 ifeq ($(USE_I2C), YES)
