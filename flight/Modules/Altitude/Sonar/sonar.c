@@ -89,7 +89,7 @@ static void sonarTask(void *parameters)
 	lastSysTime = xTaskGetTickCount();
 	while (1)
 	{
-		// Compute the current altitude (all pressures in kPa)
+		// Compute the current altitude
 		if(PIOS_HCSR04_Completed())
 		{
 			value = PIOS_HCSR04_Get();

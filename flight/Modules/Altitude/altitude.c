@@ -90,8 +90,10 @@ static void altitudeTask(void *parameters)
 
 #if defined(PIOS_INCLUDE_HCSR04)
 	SonarAltitudeData sonardata;
-	int32_t value=0,timeout=5;
-	float coeff=0.25,height_out=0,height_in=0;
+	uint16_t value=0;
+	uint8_t timeout=5;
+#define COEFF 0.25
+	float height_out=0,height_in=0;
 	PIOS_HCSR04_Init();
 	PIOS_HCSR04_Trigger();
 #endif
@@ -102,29 +104,30 @@ static void altitudeTask(void *parameters)
 	while (1)
 	{
 #if defined(PIOS_INCLUDE_HCSR04)
-		// Compute the current altitude (all pressures in kPa)
+		// Compute the current altitude
 		if(PIOS_HCSR04_Completed())
 		{
 			value = PIOS_HCSR04_Get();
-			if((value>100) && (value < 15000)) //from 3.4cm to 5.1m
+			if((value>200) && (value < 30000)) //from 3.4cm to 5.1m
 			{
-				height_in = value*0.00034;
-				height_out = (height_out * (1 - coeff)) + (height_in * coeff);
+				height_in = value*340/2.0/1000000;
+				height_out = (height_out * (1 - COEFF)) + (height_in * COEFF);
 				sonardata.Altitude = height_out; // m/us
 			}
 
-			// Update the AltitudeActual UAVObject
+			// Update the SonarAltitude UAVObject
 			SonarAltitudeSet(&sonardata);
 			timeout=5;
 			PIOS_HCSR04_Trigger();
 		}
-		if(timeout--)
+		if(!(timeout--))
 		{
 			//retrigger
 			timeout=5;
 			PIOS_HCSR04_Trigger();
 		}
 #endif
+		// Compute the current altitude (all pressures in kPa)
 		// Update the temperature data
 		PIOS_BMP085_StartADC(TemperatureConv);
 		xSemaphoreTake(PIOS_BMP085_EOC, portMAX_DELAY);
