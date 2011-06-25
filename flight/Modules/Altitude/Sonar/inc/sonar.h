@@ -3,7 +3,7 @@
  * @addtogroup OpenPilotModules OpenPilot Modules
  * @{ 
  * @addtogroup SonarModule Sonar Module
- * @brief Communicate with BMP085 and update @ref AltitudeActual "AltitudeActual UAV Object"
+ * @brief Communicate with HCSR04 and update @ref SonarAltitude "SonarAltitude UAV Object"
  * @{ 
  *
  * @file       sonar.h

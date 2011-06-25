@@ -2,7 +2,7 @@
  ******************************************************************************
  * @addtogroup OpenPilotModules OpenPilot Modules
  * @{ 
- * @addtogroup SonatModule Sonar Module
+ * @addtogroup SonarModule Sonar Module
  * @brief Communicate with HCSR04 and update @ref SonarAltitude "SonarAltitude UAV Object"
  * @{ 
  *
@@ -100,7 +100,7 @@ static void sonarTask(void *parameters)
 				sonardata.Altitude = height_out; // m/us
 			}
 
-			// Update the AltitudeActual UAVObject
+			// Update the SonarAltitude UAVObject
 			SonarAltitudeSet(&sonardata);
 			timeout=5;
 			PIOS_HCSR04_Trigger();
