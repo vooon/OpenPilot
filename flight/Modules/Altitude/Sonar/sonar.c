@@ -2,8 +2,8 @@
  ******************************************************************************
  * @addtogroup OpenPilotModules OpenPilot Modules
  * @{ 
- * @addtogroup AltitudeModule Altitude Module
- * @brief Communicate with BMP085 and update @ref BaroAltitude "BaroAltitude UAV Object"
+ * @addtogroup SonatModule Sonar Module
+ * @brief Communicate with HCSR04 and update @ref SonarAltitude "SonarAltitude UAV Object"
  * @{ 
  *
  * @file       sonar.c
@@ -95,7 +95,7 @@ static void sonarTask(void *parameters)
 			value = PIOS_HCSR04_Get();
 			if((value>200) && (value < 30000)) //from 3.4cm to 5.1m
 			{
-				height_in = value*0.00017;
+				height_in = value*340/2.0/1000000;
 				height_out = (height_out * (1 - COEFF)) + (height_in * COEFF);
 				sonardata.Altitude = height_out; // m/us
 			}

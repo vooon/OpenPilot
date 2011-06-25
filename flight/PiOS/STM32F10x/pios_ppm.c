@@ -228,10 +228,12 @@ int32_t PIOS_PPM_Get(int8_t Channel)
 */
 void PIOS_PPM_irq_handler(void)
 {
-	if (TIM_GetITStatus(pios_ppm_cfg.timer, TIM_IT_Update) != RESET) {
+	if (TIM_GetITStatus(pios_ppm_cfg.timer, TIM_IT_Update) == SET) {
 		TimerCounter+=pios_ppm_cfg.timer->ARR;
 		TIM_ClearITPendingBit(pios_ppm_cfg.timer, TIM_IT_Update);
-		return;
+		if (TIM_GetITStatus(pios_ppm_cfg.timer, pios_ppm_cfg.ccr) != SET) {
+			return;
+		}
 	}
 
 
@@ -256,27 +258,27 @@ void PIOS_PPM_irq_handler(void)
 		if(CurrentValue > 0xFFFF) {
 			CurrentValue-=0xFFFF;
 		}
-	}
 
-	/* Clear TIMx Capture compare interrupt pending bit */
-	TIM_ClearITPendingBit(pios_ppm_cfg.timer, pios_ppm_cfg.ccr);
+		/* Clear TIMx Capture compare interrupt pending bit */
+		TIM_ClearITPendingBit(pios_ppm_cfg.timer, pios_ppm_cfg.ccr);
 
-	/* Capture computation */
-	if (CurrentValue > PreviousValue) {
-		CapturedValue = (CurrentValue - PreviousValue);
-	} else {
-		CapturedValue = ((0xFFFF - PreviousValue) + CurrentValue);
-	}
+		/* Capture computation */
+		if (CurrentValue > PreviousValue) {
+			CapturedValue = (CurrentValue - PreviousValue);
+		} else {
+			CapturedValue = ((0xFFFF - PreviousValue) + CurrentValue);
+		}
 
-	/* sync pulse */
-	if (CapturedValue > 8000) {
-		PulseIndex = 0;
-		/* trying to detect bad pulses, not sure this is working correctly yet. I need a scope :P */
-	} else if (CapturedValue > 750 && CapturedValue < 2500) {
-		if (PulseIndex < PIOS_PPM_NUM_INPUTS) {
-			CaptureValue[PulseIndex] = CapturedValue;
-			CapCounter[PulseIndex]++;
-			PulseIndex++;
+		/* sync pulse */
+		if (CapturedValue > 8000) {
+			PulseIndex = 0;
+			/* trying to detect bad pulses, not sure this is working correctly yet. I need a scope :P */
+		} else if (CapturedValue > 750 && CapturedValue < 2500) {
+			if (PulseIndex < PIOS_PPM_NUM_INPUTS) {
+				CaptureValue[PulseIndex] = CapturedValue;
+				CapCounter[PulseIndex]++;
+				PulseIndex++;
+			}
 		}
 	}
 }

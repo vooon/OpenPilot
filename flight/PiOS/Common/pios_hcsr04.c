@@ -3,7 +3,7 @@
   * @addtogroup PIOS PIOS Core hardware abstraction layer
   * @{
   * @addtogroup PIOS_HCSR04 HCSR04 Functions
-  * @brief Hardware functions to deal with the altitude pressure sensor
+  * @brief Hardware functions to deal with the altitude sonar sensor
   * @{
   *
   * @file       pios_hcsr04.c
@@ -83,7 +83,9 @@ void PIOS_HCSR04_Init(void)
 	RiseValue = 0;
 	FallValue = 0;
 	CaptureValue = 0;
+	TimerCounter = 0;
 
+	TIM_Cmd(PIOS_HCSR04_TIMER, DISABLE);
 	/* Init triggerpin */
 	GPIO_InitTypeDef GPIO_InitStructure;
 	GPIO_StructInit(&GPIO_InitStructure);
@@ -136,7 +138,8 @@ void PIOS_HCSR04_Init(void)
 #endif
 
 	/* Enable the Capture Compare Interrupt Request */
-	TIM_ITConfig(PIOS_HCSR04_TIMER, PIOS_HCSR04_CC | TIM_IT_Update, DISABLE);
+	TIM_ITConfig(PIOS_HCSR04_TIMER, PIOS_HCSR04_CC, DISABLE);
+	TIM_ITConfig(PIOS_HCSR04_TIMER, TIM_IT_Update, ENABLE);
 
 	/* Enable timers */
 	TIM_Cmd(PIOS_HCSR04_TIMER, ENABLE);
@@ -175,7 +178,7 @@ void PIOS_HCSR04_Trigger(void)
 	PIOS_DELAY_WaituS(15);
 	PIOS_HCSR04_TRIG_GPIO_PORT->BRR = PIOS_HCSR04_TRIG_PIN;
 	TIM_ClearITPendingBit(PIOS_HCSR04_TIMER, PIOS_HCSR04_CC);
-	TIM_ClearITPendingBit(PIOS_HCSR04_TIMER, TIM_IT_Update);
+	//TIM_ClearITPendingBit(PIOS_HCSR04_TIMER, TIM_IT_Update);
 	TIM_ITConfig(PIOS_HCSR04_TIMER, PIOS_HCSR04_CC, ENABLE);
 }
 
@@ -186,58 +189,56 @@ void PIOS_HCSR04_Trigger(void)
 //void PIOS_PWM_irq_handler(TIM_TypeDef * timer)
 PIOS_HCSR04_IRQ_FUNC
 {
-	if (TIM_GetITStatus(PIOS_HCSR04_TIMER, TIM_IT_Update) != RESET) {
+
+	if (TIM_GetITStatus(PIOS_HCSR04_TIMER, TIM_IT_Update) == SET) {
 		TimerCounter+=PIOS_HCSR04_TIMER->ARR;
 		TIM_ClearITPendingBit(PIOS_HCSR04_TIMER, TIM_IT_Update);
-		return;
+		if(TIM_GetITStatus(PIOS_HCSR04_TIMER, PIOS_HCSR04_CC) != SET) {
+			return;
+		}
 	}
 
 	/* Do this as it's more efficient */
 	if (TIM_GetITStatus(PIOS_HCSR04_TIMER, PIOS_HCSR04_CC) == SET) {
 		if (CaptureState == 0) {
-			RiseValue = PIOS_HCSR04_GETCAPTURE(PIOS_HCSR04_TIMER);
-			/* init overflow adder */
-			TimerCounter=0;
-			TIM_ClearITPendingBit(PIOS_HCSR04_TIMER, TIM_IT_Update);
-			TIM_ITConfig(PIOS_HCSR04_TIMER, TIM_IT_Update, ENABLE);
+			RiseValue = TimerCounter+PIOS_HCSR04_GETCAPTURE(PIOS_HCSR04_TIMER);
 		} else {
 			FallValue = TimerCounter+PIOS_HCSR04_GETCAPTURE(PIOS_HCSR04_TIMER);
 		}
-	}
 
-	/* Clear PIOS_HCSR04_TIMER Capture compare interrupt pending bit */
-	TIM_ClearITPendingBit(PIOS_HCSR04_TIMER, PIOS_HCSR04_CC);
+		/* Clear PIOS_HCSR04_TIMER Capture compare interrupt pending bit */
+		TIM_ClearITPendingBit(PIOS_HCSR04_TIMER, PIOS_HCSR04_CC);
 
-	/* Simple rise or fall state machine */
-	if (CaptureState == 0) {
-		/* Switch states */
-		CaptureState = 1;
+		/* Simple rise or fall state machine */
+		if (CaptureState == 0) {
+			/* Switch states */
+			CaptureState = 1;
 
-		/* Switch polarity of input capture */
-		TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Falling;
-		TIM_ICInitStructure.TIM_Channel = PIOS_HCSR04_CHANNEL;
-		TIM_ICInit(PIOS_HCSR04_TIMER, &TIM_ICInitStructure);
+			/* Switch polarity of input capture */
+			TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Falling;
+			TIM_ICInitStructure.TIM_Channel = PIOS_HCSR04_CHANNEL;
+			TIM_ICInit(PIOS_HCSR04_TIMER, &TIM_ICInitStructure);
 
-	} else {
-		/* Capture computation */
-		if (FallValue > RiseValue) {
-			CaptureValue = (FallValue - RiseValue);
 		} else {
-			CaptureValue = ((0xFFFF - RiseValue) + FallValue);
+			/* Capture computation */
+			if (FallValue > RiseValue) {
+				CaptureValue = (FallValue - RiseValue);
+			} else {
+				CaptureValue = ((0xFFFF - RiseValue) + FallValue);
+			}
+
+			/* Switch states */
+			CaptureState = 0;
+
+			/* Increase supervisor counter */
+			CapCounter++;
+			TIM_ITConfig(PIOS_HCSR04_TIMER, PIOS_HCSR04_CC, DISABLE);
+
+			/* Switch polarity of input capture */
+			TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;
+			TIM_ICInitStructure.TIM_Channel = PIOS_HCSR04_CHANNEL;
+			TIM_ICInit(PIOS_HCSR04_TIMER, &TIM_ICInitStructure);
 		}
-
-		/* Switch states */
-		CaptureState = 0;
-
-		/* Increase supervisor counter */
-		CapCounter++;
-		TIM_ITConfig(PIOS_HCSR04_TIMER, PIOS_HCSR04_CC | TIM_IT_Update, DISABLE);
-
-		/* Switch polarity of input capture */
-		TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;
-		TIM_ICInitStructure.TIM_Channel = PIOS_HCSR04_CHANNEL;
-		TIM_ICInit(PIOS_HCSR04_TIMER, &TIM_ICInitStructure);
-
 	}
 }
 
