@@ -43,32 +43,55 @@ const struct pios_rcvr_driver pios_ppm_rcvr_driver = {
 
 /* Local Variables */
 static TIM_ICInitTypeDef TIM_ICInitStructure;
-static uint8_t PulseIndex;
-static uint32_t PreviousValue;
-static uint32_t CurrentValue;
-static uint32_t CapturedValue;
 static uint32_t CaptureValue[PIOS_PPM_NUM_INPUTS];
-static uint32_t CapCounter[PIOS_PPM_NUM_INPUTS];
-static uint16_t TimerCounter;
 
-static uint8_t supv_timer = 0;
-static uint8_t SupervisorState = 0;
-static uint32_t CapCounterPrev[PIOS_PPM_NUM_INPUTS];
+// *************************************************************
 
-static void PIOS_PPM_Supervisor(uint32_t ppm_id);
+#define PPM_IN_MIN_SYNC_PULSE_US         7000                       // microseconds .. Pip's 6-chan TX goes down to 8.8ms
+#define PPM_IN_MIN_CHANNEL_PULSE_US      750                        // microseconds
+#define PPM_IN_MAX_CHANNEL_PULSE_US      2400                       // microseconds
+
+// *************************************************************
+
+
+volatile bool ppm_initialising = true;
+
+volatile uint32_t ppm_In_PrevFrames = 0;
+volatile uint32_t ppm_In_LastValidFrameTimer = 0;
+volatile uint32_t ppm_In_Frames = 0;
+volatile uint32_t ppm_In_ErrorFrames = 0;
+volatile uint8_t ppm_In_NoisyChannelCounter = 0;
+volatile int8_t ppm_In_ChannelsDetected = 0;
+volatile int8_t ppm_In_ChannelPulseIndex = -1;
+volatile int32_t ppm_In_PreviousValue = -1;
+volatile uint32_t ppm_In_PulseWidth = 0;
+volatile uint32_t ppm_In_ChannelPulseWidthNew[PIOS_PPM_NUM_INPUTS];
+//volatile uint32_t ppm_In_ChannelPulseWidth[PIOS_PPM_NUM_INPUTS];
+
+
+// *************************************************************
+
+
 
 void PIOS_PPM_Init(void)
 {
 	/* Flush counter variables */
-	int32_t i;
 
-	PulseIndex = 0;
-	PreviousValue = 0;
-	CurrentValue = 0;
-	CapturedValue = 0;
-	TimerCounter = 0;
+	ppm_initialising = true;
 
-	for (i = 0; i < PIOS_PPM_NUM_INPUTS; i++) {
+	ppm_In_PrevFrames = 0;
+	ppm_In_NoisyChannelCounter = 0;
+	ppm_In_LastValidFrameTimer = 0;
+	ppm_In_Frames = 0;
+	ppm_In_ErrorFrames = 0;
+	ppm_In_ChannelsDetected = 0;
+	ppm_In_ChannelPulseIndex = -1;
+	ppm_In_PreviousValue = -1;
+	ppm_In_PulseWidth = 0;
+
+	for (int i = 0; i < PIOS_PPM_NUM_INPUTS; i++)
+	{
+		ppm_In_ChannelPulseWidthNew[i] = 0;
 		CaptureValue[i] = 0;
 	}
 
@@ -134,24 +157,13 @@ void PIOS_PPM_Init(void)
 	/* Enable timers */
 	TIM_Cmd(pios_ppm_cfg.timer, ENABLE);
 
-	/* Supervisor Setup */
-	/* Flush counter variables */
-	for (i = 0; i < PIOS_PPM_NUM_INPUTS; i++) {
-		CapCounter[i] = 0;
-	}
-	for (i = 0; i < PIOS_PPM_NUM_INPUTS; i++) {
-		CapCounterPrev[i] = 0;
-	}
-
 	/* Setup local variable which stays in this scope */
 	/* Doing this here and using a local variable saves doing it in the ISR */
 	TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;
 	TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
 	TIM_ICInitStructure.TIM_ICFilter = 0x0;
 
-	if (!PIOS_RTC_RegisterTickCallback(PIOS_PPM_Supervisor, 0)) {
-		PIOS_DEBUG_Assert(0);
-	}
+	ppm_initialising = false;
 }
 
 /**
@@ -176,90 +188,146 @@ static int32_t PIOS_PPM_Get(uint32_t chan_id)
 */
 void PIOS_PPM_irq_handler(void)
 {
-	if (TIM_GetITStatus(pios_ppm_cfg.timer, TIM_IT_Update) == SET) {
-		TimerCounter+=pios_ppm_cfg.timer->ARR;
-		TIM_ClearITPendingBit(pios_ppm_cfg.timer, TIM_IT_Update);
-		if (TIM_GetITStatus(pios_ppm_cfg.timer, pios_ppm_cfg.ccr) != SET) {
-			return;
-		}
-	}
+	uint16_t new_value = 0;
+	uint32_t period = (uint32_t)pios_ppm_cfg.timer->ARR + 1;
 
-
-	/* Do this as it's more efficient */
-	if (TIM_GetITStatus(pios_ppm_cfg.timer, pios_ppm_cfg.ccr) == SET) {
-		PreviousValue = CurrentValue;
-		switch((int32_t) pios_ppm_cfg.ccr) {
-			case (int32_t)TIM_IT_CC1:
-				CurrentValue = TIM_GetCapture1(pios_ppm_cfg.timer);
-				break;
-			case (int32_t)TIM_IT_CC2:
-				CurrentValue = TIM_GetCapture2(pios_ppm_cfg.timer);
-				break;
-			case (int32_t)TIM_IT_CC3:
-				CurrentValue = TIM_GetCapture3(pios_ppm_cfg.timer);
-				break;
-			case (int32_t)TIM_IT_CC4:
-				CurrentValue = TIM_GetCapture4(pios_ppm_cfg.timer);
-				break;
-		}
-		CurrentValue+=TimerCounter;
-		if(CurrentValue > 0xFFFF) {
-			CurrentValue-=0xFFFF;
-		}
-
-		/* Clear TIMx Capture compare interrupt pending bit */
-		TIM_ClearITPendingBit(pios_ppm_cfg.timer, pios_ppm_cfg.ccr);
-
-		/* Capture computation */
-		if (CurrentValue > PreviousValue) {
-			CapturedValue = (CurrentValue - PreviousValue);
-		} else {
-			CapturedValue = ((0xFFFF - PreviousValue) + CurrentValue);
-		}
-
-		/* sync pulse */
-		if (CapturedValue > 8000) {
-			PulseIndex = 0;
-			/* trying to detect bad pulses, not sure this is working correctly yet. I need a scope :P */
-		} else if (CapturedValue > 750 && CapturedValue < 2500) {
-			if (PulseIndex < PIOS_PPM_NUM_INPUTS) {
-				CaptureValue[PulseIndex] = CapturedValue;
-				CapCounter[PulseIndex]++;
-				PulseIndex++;
-			}
-		}
-	}
-}
-
-static void PIOS_PPM_Supervisor(uint32_t ppm_id) {
-	/* 
-	 * RTC runs at 625Hz so divide down the base rate so
-	 * that this loop runs at 25Hz.
-	 */
-	if(++supv_timer < 25) {
+	if (ppm_initialising) {
+		// clear the interrupts
+		TIM_ClearITPendingBit(pios_ppm_cfg.timer, pios_ppm_cfg.ccr | TIM_IT_Update);
 		return;
 	}
-	supv_timer = 0;
 
-	/* Simple state machine */
-	if (SupervisorState == 0) {
-		/* Save this states values */
-		for (int32_t i = 0; i < PIOS_PPM_NUM_INPUTS; i++) {
-			CapCounterPrev[i] = CapCounter[i];
+	// determine the interrupt source(s)
+	bool update_int = TIM_GetITStatus(pios_ppm_cfg.timer, TIM_IT_Update) == SET;          // timer/counter overflow occured
+	bool capture_int = TIM_GetITStatus(pios_ppm_cfg.timer, pios_ppm_cfg.ccr) == SET;   // PPM input capture
+
+	if (capture_int) {
+		switch((int32_t) pios_ppm_cfg.ccr) {
+			case (int32_t)TIM_IT_CC1:
+				new_value = TIM_GetCapture1(pios_ppm_cfg.timer);
+				break;
+			case (int32_t)TIM_IT_CC2:
+				new_value = TIM_GetCapture2(pios_ppm_cfg.timer);
+				break;
+			case (int32_t)TIM_IT_CC3:
+				new_value = TIM_GetCapture3(pios_ppm_cfg.timer);
+				break;
+			case (int32_t)TIM_IT_CC4:
+				new_value = TIM_GetCapture4(pios_ppm_cfg.timer);
+				break;
+		}
+	}
+
+	// clear the interrupts
+	TIM_ClearITPendingBit(pios_ppm_cfg.timer, pios_ppm_cfg.ccr | TIM_IT_Update);
+
+	// ********
+
+	uint32_t ticks = 0;
+	if (update_int) {
+		// timer/counter overflowed
+		if (ppm_In_PreviousValue >= 0) {
+			ticks = (period - ppm_In_PreviousValue) + new_value;
+		} else {
+			ticks = period;
+			if (capture_int) ticks += new_value;
+		}
+		ppm_In_PreviousValue = -1;
+	} else if (capture_int) {
+		if (ppm_In_PreviousValue >= 0) {
+			ticks = new_value - ppm_In_PreviousValue;
+		} else {
+			ticks += new_value;
+		}
+	}
+
+	ppm_In_PulseWidth += ticks;
+	if (ppm_In_PulseWidth > 0x7fffffff) {
+		ppm_In_PulseWidth = 0x7fffffff;                    // prevent overflows
+	}
+
+	ppm_In_LastValidFrameTimer += ticks;
+	if (ppm_In_LastValidFrameTimer > 0x7fffffff) {
+		ppm_In_LastValidFrameTimer = 0x7fffffff;           // prevent overflows
+	}
+
+	if (capture_int) {
+		ppm_In_PreviousValue = new_value;
+	}
+
+	if (ppm_In_LastValidFrameTimer >= 200000 && ppm_In_Frames > 0) {
+		// we haven't seen a valid PPM frame for at least 200ms
+		for (int i = 0; i < PIOS_PPM_NUM_INPUTS; i++) {
+			CaptureValue[i] = 0;
+		}
+		ppm_In_Frames = 0;
+		ppm_In_ErrorFrames = 0;
+	}
+
+	if (ppm_In_ChannelPulseIndex < 0 || ppm_In_PulseWidth > PPM_IN_MAX_CHANNEL_PULSE_US) {
+		// we are looking for a SYNC pulse, or we are receiving one
+		if (ppm_In_ChannelPulseIndex >= 0) {
+			// it's either the start of a sync pulse or a noisy channel .. assume it's the end of a PPM frame
+			if (ppm_In_ChannelPulseIndex > 0) {
+				if (ppm_In_Frames < 0xffffffff) {
+					ppm_In_Frames++;                            // update frame counter
+				}
+
+				if (ppm_In_ChannelsDetected > 0 && ppm_In_ChannelsDetected == ppm_In_ChannelPulseIndex && ppm_In_NoisyChannelCounter <= 2) {
+					// detected same number of channels as in previous PPM frame .. save the new channel PWM values
+					for (int i = 0; i < PIOS_PPM_NUM_INPUTS; i++) {
+						CaptureValue[i] = ppm_In_ChannelPulseWidthNew[i];
+					}
+
+					ppm_In_LastValidFrameTimer = 0;                 // reset timer
+				} else {
+					if ((ppm_In_ChannelsDetected > 0 && ppm_In_ChannelsDetected != ppm_In_ChannelPulseIndex) ||
+							ppm_In_NoisyChannelCounter >= 2)
+					{
+						if (ppm_In_ErrorFrames < 0xffffffff)
+							ppm_In_ErrorFrames++;
+					}
+				}
+				ppm_In_ChannelsDetected = ppm_In_ChannelPulseIndex;     // the number of channels we found in this frame
+			}
+
+			ppm_In_ChannelPulseIndex = -1;                              // back to looking for a SYNC pulse
 		}
 
-		/* Move to next state */
-		SupervisorState = 1;
-	} else {
-		/* See what channels have been updated */
-		for (int32_t i = 0; i < PIOS_PPM_NUM_INPUTS; i++) {
-			if (CapCounter[i] == CapCounterPrev[i]) {
-				CaptureValue[i] = 0;
+		if (ppm_In_PulseWidth >= PPM_IN_MIN_SYNC_PULSE_US) {
+			// SYNC pulse found
+			ppm_In_NoisyChannelCounter = 0;                             // reset noisy channel detector
+			ppm_In_ChannelPulseIndex = 0;                               // start of PPM frame
+		}
+	} else if (capture_int) {
+		// CHANNEL pulse
+
+		if (ppm_In_PulseWidth < PPM_IN_MIN_CHANNEL_PULSE_US) {
+			// bad/noisy channel pulse .. reset state to wait for next SYNC pulse
+			ppm_In_ChannelPulseIndex = -1;
+
+			if (ppm_In_ErrorFrames < 0xffffffff)
+				ppm_In_ErrorFrames++;
+		} else {
+			// pulse width is within the accepted tolerance range for a channel
+			if (ppm_In_ChannelPulseIndex < PIOS_PPM_NUM_INPUTS) {
+				if (ppm_In_ChannelPulseWidthNew[ppm_In_ChannelPulseIndex] > 0) {
+					int32_t difference = (int32_t)ppm_In_PulseWidth - ppm_In_ChannelPulseWidthNew[ppm_In_ChannelPulseIndex];
+					if (abs(difference) >= 600) {
+						ppm_In_NoisyChannelCounter++;                       // possibly a noisy channel - or an RC switch was moved
+					}
+				}
+				ppm_In_ChannelPulseWidthNew[ppm_In_ChannelPulseIndex] = ppm_In_PulseWidth;    // save it
+			}
+
+			if (ppm_In_ChannelPulseIndex < 127) {
+				ppm_In_ChannelPulseIndex++;                             // next channel
 			}
 		}
+	}
 
-		/* Move to next state */
-		SupervisorState = 0;
+	if (capture_int) {
+		ppm_In_PulseWidth = 0;
 	}
 }
 

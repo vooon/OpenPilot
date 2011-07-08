@@ -657,7 +657,7 @@ const struct pios_ppm_cfg pios_ppm_cfg = {
 		.TIM_ICPolarity = TIM_ICPolarity_Rising,
 		.TIM_ICSelection = TIM_ICSelection_DirectTI,
 		.TIM_ICPrescaler = TIM_ICPSC_DIV1,
-		.TIM_ICFilter = 0x0,
+		.TIM_ICFilter = 15,
 	},
 	.gpio_init = {
 		.GPIO_Pin = GPIO_Pin_6,
