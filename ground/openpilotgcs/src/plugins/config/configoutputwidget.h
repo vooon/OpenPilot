@@ -32,6 +32,7 @@
 #include "extensionsystem/pluginmanager.h"
 #include "uavobjectmanager.h"
 #include "uavobject.h"
+#include "uavobjectutilmanager.h"
 #include <QtGui/QWidget>
 #include <QList>
 
@@ -44,12 +45,6 @@ class ConfigOutputWidget: public ConfigTaskWidget
 public:
         ConfigOutputWidget(QWidget *parent = 0);
         ~ConfigOutputWidget();
-
-public slots:
-	void onTelemetryStart();
-	void onTelemetryStop();
-	void onTelemetryConnect();
-	void onTelemetryDisconnect();
 
 private:
         Ui_OutputWidget *m_config;
@@ -74,10 +69,10 @@ private:
 
 	bool firstUpdate;
 
-	void enableControls(bool enable);
+        virtual void enableControls(bool enable);
 
 private slots:
-	void requestRCOutputUpdate();
+        virtual void refreshValues();
 	void sendRCOutputUpdate();
 	void saveRCOutputObject();
 	void runChannelTests(bool state);
@@ -85,6 +80,8 @@ private slots:
 	void setChOutRange();
 	void reverseChannel(bool state);
 	void linkToggled(bool state);
+        void setSpinningArmed(bool val);
+        void openHelp();
 };
 
 #endif

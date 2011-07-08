@@ -90,11 +90,13 @@ ConfigGadgetWidget::ConfigGadgetWidget(QWidget *parent) : QWidget(parent)
     ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
     TelemetryManager* telMngr = pm->getObject<TelemetryManager>();
     connect(telMngr, SIGNAL(connected()), this, SLOT(onAutopilotConnect()));
+    connect(telMngr, SIGNAL(disconnected()), this, SLOT(onAutopilotDisconnect()));
 
     // And check whether by any chance we are not already connected
     if (telMngr->isConnected())
-        onAutopilotConnect();
+        onAutopilotConnect();    
 
+    help = 0;
 }
 
 ConfigGadgetWidget::~ConfigGadgetWidget()
@@ -108,6 +110,10 @@ void ConfigGadgetWidget::resizeEvent(QResizeEvent *event)
 {
 
     QWidget::resizeEvent(event);
+}
+
+void ConfigGadgetWidget::onAutopilotDisconnect() {
+    emit autopilotDisconnected();
 }
 
 void ConfigGadgetWidget::onAutopilotConnect() {
@@ -134,8 +140,8 @@ void ConfigGadgetWidget::onAutopilotConnect() {
             ftw->insertTab(3, qwd, QIcon(":/configgadget/images/AHRS-v1.3.png"), QString("INS"));
         }
     }
-
-
     emit autopilotConnected();
 }
+
+
 

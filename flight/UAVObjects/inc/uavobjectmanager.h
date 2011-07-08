@@ -63,10 +63,10 @@ typedef struct {
 	uint8_t gcsAccess; /** Defines the access level for the local GCS transactions (readonly and readwrite), not used in the flight s/w */
 	uint8_t telemetryAcked; /** Defines if an ack is required for the transactions of this object (1:acked, 0:not acked) */
 	uint8_t telemetryUpdateMode; /** Update mode used by the telemetry module (UAVObjUpdateMode) */
-	int32_t telemetryUpdatePeriod; /** Update period used by the telemetry module (only if telemetry mode is PERIODIC) */
+	uint32_t telemetryUpdatePeriod; /** Update period used by the telemetry module (only if telemetry mode is PERIODIC) */
 	uint8_t gcsTelemetryAcked; /** Defines if an ack is required for the transactions of this object (1:acked, 0:not acked) */
 	uint8_t gcsTelemetryUpdateMode; /** Update mode used by the GCS (UAVObjUpdateMode) */
-	int32_t gcsTelemetryUpdatePeriod; /** Update period used by the GCS (only if telemetry mode is PERIODIC) */
+	uint32_t gcsTelemetryUpdatePeriod; /** Update period used by the GCS (only if telemetry mode is PERIODIC) */
 	uint8_t loggingUpdateMode; /** Update mode used by the logging module (UAVObjUpdateMode) */
 	uint32_t loggingUpdatePeriod; /** Update period used by the logging module (only if logging mode is PERIODIC) */
 } __attribute__((packed)) UAVObjMetadata;
@@ -153,9 +153,13 @@ int32_t UAVObjSaveMetaobjects();
 int32_t UAVObjLoadMetaobjects();
 int32_t UAVObjDeleteMetaobjects();
 int32_t UAVObjSetData(UAVObjHandle obj, const void* dataIn);
+int32_t UAVObjSetDataField(UAVObjHandle obj, const void* dataIn, uint32_t offset, uint32_t size);
 int32_t UAVObjGetData(UAVObjHandle obj, void* dataOut);
+int32_t UAVObjGetDataField(UAVObjHandle obj, void* dataOut, uint32_t offset, uint32_t size);
 int32_t UAVObjSetInstanceData(UAVObjHandle obj, uint16_t instId, const void* dataIn);
+int32_t UAVObjSetInstanceDataField(UAVObjHandle obj, uint16_t instId, const void* dataIn, uint32_t offset, uint32_t size);
 int32_t UAVObjGetInstanceData(UAVObjHandle obj, uint16_t instId, void* dataOut);
+int32_t UAVObjGetInstanceDataField(UAVObjHandle obj, uint16_t instId, void* dataOut, uint32_t offset, uint32_t size);
 int32_t UAVObjSetMetadata(UAVObjHandle obj, const UAVObjMetadata* dataIn);
 int32_t UAVObjGetMetadata(UAVObjHandle obj, UAVObjMetadata* dataOut);
 int8_t UAVObjReadOnly(UAVObjHandle obj);

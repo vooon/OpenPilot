@@ -34,6 +34,9 @@
 #include "objectpersistence.h"
 #include <QtGui/QWidget>
 #include <QList>
+//#include <QtWebKit/QWebView>
+#include <QTextBrowser>
+#include "utils/pathutils.h"
 
 #include "fancytabwidget.h"
 
@@ -41,6 +44,7 @@
 class ConfigGadgetWidget: public QWidget
 {
     Q_OBJECT
+    QTextBrowser* help;
 
 public:
     ConfigGadgetWidget(QWidget *parent = 0);
@@ -48,9 +52,11 @@ public:
 
 public slots:
     void onAutopilotConnect();
+    void onAutopilotDisconnect();
 
 signals:
     void autopilotConnected();
+    void autopilotDisconnected();
 
 protected:
         void resizeEvent(QResizeEvent * event);

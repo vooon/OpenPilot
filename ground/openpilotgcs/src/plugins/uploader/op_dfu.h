@@ -12,6 +12,7 @@
 #include <QMetaType>
 #include <QCryptographicHash>
 #include <QList>
+#include <QVariant>
 #include <iostream>
 #include "delay.h"
 #include <qextserialport/src/qextserialport.h>
@@ -107,7 +108,7 @@ namespace OP_DFU {
         Q_OBJECT;
 
         public:
-
+        static quint32 CRCFromQBArray(QByteArray array, quint32 Size);
         //DFUObject(bool debug);
         DFUObject(bool debug,bool use_serial,QString port);
 
@@ -124,12 +125,13 @@ namespace OP_DFU {
         bool ready() { return mready; }
 
         // Upload (send to device) commands
-        OP_DFU::Status UploadDescription(QString description);
+        OP_DFU::Status UploadDescription(QVariant description);
         bool UploadFirmware(const QString &sfile, const bool &verify,int device);
 
         // Download (get from device) commands:
         // DownloadDescription is synchronous
         QString DownloadDescription(int const & numberOfChars);
+        QByteArray DownloadDescriptionAsBA(int const & numberOfChars);
         // Asynchronous firmware download: initiates fw download,
         // and a downloadFinished signal is emitted when download
         // if finished:
@@ -150,7 +152,7 @@ namespace OP_DFU {
 
         // Helper functions:
         QString StatusToString(OP_DFU::Status  const & status);
-        quint32 CRC32WideFast(quint32 Crc, quint32 Size, quint32 *Buffer);
+        static quint32 CRC32WideFast(quint32 Crc, quint32 Size, quint32 *Buffer);
 
 
 
@@ -177,7 +179,7 @@ namespace OP_DFU {
         // USB Bootloader:
         pjrc_rawhid hidHandle;
         int setStartBit(int command){ return command|0x20; }
-        quint32 CRCFromQBArray(QByteArray array, quint32 Size);
+
         void CopyWords(char * source, char* destination, int count);
         void printProgBar( int const & percent,QString const& label);
         bool StartUpload(qint32  const &numberOfBytes, TransferTypes const & type,quint32 crc);

@@ -132,7 +132,7 @@ QWidget* ScopeGadgetOptionsPage::createPage(QWidget *parent)
 
 void ScopeGadgetOptionsPage::on_btnColor_clicked()
  {
-     QColor color = QColorDialog::getColor( QColor(options_page->btnColor->text()), options_page->widget);
+     QColor color = QColorDialog::getColor( QColor(options_page->btnColor->text()));
      if (color.isValid()) {
          setButtonColor(color);
      }
@@ -182,6 +182,9 @@ void ScopeGadgetOptionsPage::on_cmbUAVObjects_currentIndexChanged(QString val)
     ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
     UAVObjectManager *objManager = pm->getObject<UAVObjectManager>();
     UAVDataObject* obj = dynamic_cast<UAVDataObject*>( objManager->getObject(val) );
+
+    if (obj == NULL)
+        return; // Rare case: the config contained a UAVObject name which does not exist anymore.
 
     QList<UAVObjectField*> fieldList = obj->getFields();
     foreach (UAVObjectField* field, fieldList) {

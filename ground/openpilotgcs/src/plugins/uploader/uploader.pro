@@ -6,6 +6,7 @@ include(../../plugins/coreplugin/coreplugin.pri)
 include(../../plugins/uavobjects/uavobjects.pri)
 include(../../plugins/uavtalk/uavtalk.pri)
 include(../../plugins/rawhid/rawhid.pri)
+include(../../plugins/uavobjectutil/uavobjectutil.pri)
 INCLUDEPATH += ../../libs/qextserialport/src
 
 HEADERS += uploadergadget.h \
@@ -20,7 +21,9 @@ HEADERS += uploadergadget.h \
     SSP/port.h \
     SSP/qssp.h \
     SSP/qsspt.h \
-    SSP/common.h
+    SSP/common.h \
+    runningdevicewidget.h \
+    devicedescriptorstruct.h
 SOURCES += uploadergadget.cpp \
     uploadergadgetconfiguration.cpp \
     uploadergadgetfactory.cpp \
@@ -32,12 +35,15 @@ SOURCES += uploadergadget.cpp \
     devicewidget.cpp \
     SSP/port.cpp \
     SSP/qssp.cpp \
-    SSP/qsspt.cpp
+    SSP/qsspt.cpp \
+    runningdevicewidget.cpp \
+    devicedescriptorstruct.cpp
 OTHER_FILES += Uploader.pluginspec
 
 FORMS += \
     uploader.ui \
-    devicewidget.ui
+    devicewidget.ui \
+    runningdevicewidget.ui
 
 RESOURCES += \
     uploader.qrc

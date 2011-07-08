@@ -30,10 +30,8 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-
 #ifndef PIOS_CONFIG_H
 #define PIOS_CONFIG_H
-
 
 /* Enable/Disable PiOS Modules */
 #define PIOS_INCLUDE_ADC
@@ -45,14 +43,17 @@
 #define PIOS_INCLUDE_IRQ
 #define PIOS_INCLUDE_LED
 
-#if defined(USE_SPEKTRUM)
+#define PIOS_INCLUDE_RCVR
+
+/* Supported receiver interfaces */
 #define PIOS_INCLUDE_SPEKTRUM
-#else
-#define PIOS_INCLUDE_GPS
+#define PIOS_INCLUDE_SBUS
 //#define PIOS_INCLUDE_PPM
 #define PIOS_INCLUDE_PWM
-#endif
 
+/* Supported USART-based PIOS modules */
+#define PIOS_INCLUDE_TELEMETRY_RF
+//#define PIOS_INCLUDE_GPS
 
 #define PIOS_INCLUDE_SERVO
 #define PIOS_INCLUDE_SPI
@@ -64,7 +65,9 @@
 #define PIOS_INCLUDE_FREERTOS
 #define PIOS_INCLUDE_GPIO
 #define PIOS_INCLUDE_EXTI
+#define PIOS_INCLUDE_RTC
 #define PIOS_INCLUDE_WDG
+#define PIOS_INCLUDE_BL_HELPER
 
 #define PIOS_INCLUDE_ADXL345
 #define PIOS_INCLUDE_FLASH
@@ -83,18 +86,19 @@
 #define AUXUART_BAUDRATE		19200
 
 /* Alarm Thresholds */
-#define HEAP_LIMIT_WARNING		450
-#define HEAP_LIMIT_CRITICAL		350
-#define CPULOAD_LIMIT_WARNING		80
+#define HEAP_LIMIT_WARNING             220
+#define HEAP_LIMIT_CRITICAL             40
+#define CPULOAD_LIMIT_WARNING		85
 #define CPULOAD_LIMIT_CRITICAL		95
 
 /* Task stack sizes */
 #define PIOS_ACTUATOR_STACK_SIZE       1020
-#define PIOS_MANUAL_STACK_SIZE          644
-#define PIOS_SYSTEM_STACK_SIZE          644
-#define PIOS_STABILIZATION_STACK_SIZE   624
+#define PIOS_MANUAL_STACK_SIZE          724
+#define PIOS_SYSTEM_STACK_SIZE          560
+#define PIOS_STABILIZATION_STACK_SIZE   524
 #define PIOS_TELEM_STACK_SIZE           500
 
+#define IDLE_COUNTS_PER_SEC_AT_NO_LOAD 1995998
 //#define PIOS_QUATERNION_STABILIZATION
 
 #endif /* PIOS_CONFIG_H */

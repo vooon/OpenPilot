@@ -60,25 +60,8 @@ TIM4  |  RC In 1  |  Servo 3  |  Servo 2  |  Servo 1
 //------------------------
 // BOOTLOADER_SETTINGS
 //------------------------
-//#define FUNC_ID				2
-//#define HW_VERSION			69
-
-#define BOOTLOADER_VERSION	0
-#define BOARD_TYPE		0x04
-#define BOARD_REVISION		0x01
-//#define HW_VERSION	(BOARD_TYPE << 8) | BOARD_REVISION
-
-#define MEM_SIZE			0x20000 //128K
-#define SIZE_OF_DESCRIPTION	100
-#define START_OF_USER_CODE	(uint32_t)0x08003000
-#define SIZE_OF_CODE		(uint32_t)(MEM_SIZE-(START_OF_USER_CODE-0x08000000)-SIZE_OF_DESCRIPTION)
-#ifdef STM32F10X_HD
-		#define HW_TYPE			0 //0=high_density 1=medium_density;
-#elif STM32F10X_MD
-		#define HW_TYPE			1 //0=high_density 1=medium_density;
-#endif
 #define BOARD_READABLE	TRUE
-#define BOARD_WRITABLA	TRUE
+#define BOARD_WRITABLE	TRUE
 #define MAX_DEL_RETRYS	3
 
 
@@ -119,11 +102,6 @@ TIM4  |  RC In 1  |  Servo 3  |  Servo 2  |  Servo 1
 //-------------------------
 #define PIOS_MASTER_CLOCK			72000000
 #define PIOS_PERIPHERAL_CLOCK			(PIOS_MASTER_CLOCK / 2)
-#if defined(USE_BOOTLOADER)
-#define PIOS_NVIC_VECTTAB_FLASH			(START_OF_USER_CODE)
-#else
-#define PIOS_NVIC_VECTTAB_FLASH			((uint32_t)0x08000000)
-#endif
 
 //-------------------------
 // Interrupt Priorities
@@ -163,13 +141,11 @@ extern uint32_t pios_i2c_main_adapter_id;
 //-------------------------
 #define PIOS_COM_MAX_DEVS			4
 
-#define PIOS_COM_TELEM_BAUDRATE         57600
 extern uint32_t pios_com_telem_rf_id;
 #define PIOS_COM_TELEM_RF               (pios_com_telem_rf_id)
 #define PIOS_COM_DEBUG                  PIOS_COM_TELEM_RF
 
 #if defined(PIOS_INCLUDE_GPS)
-#define PIOS_COM_GPS_BAUDRATE           57600
 extern uint32_t pios_com_gps_id;
 #define PIOS_COM_GPS                    (pios_com_gps_id)
 #endif	/* PIOS_INCLUDE_GPS */
@@ -178,9 +154,13 @@ extern uint32_t pios_com_telem_usb_id;
 #define PIOS_COM_TELEM_USB              (pios_com_telem_usb_id)
 
 #ifdef PIOS_INCLUDE_SPEKTRUM
-#define PIOS_COM_SPEKTRUM_BAUDRATE      115200
 extern uint32_t pios_com_spektrum_id;
 #define PIOS_COM_SPEKTRUM               (pios_com_spektrum_id)
+#endif
+
+#ifdef PIOS_INCLUDE_SBUS
+extern uint32_t pios_com_sbus_id;
+#define PIOS_COM_SBUS                   (pios_com_sbus_id)
 #endif
 
 //-------------------------
@@ -241,10 +221,26 @@ extern uint32_t pios_com_spektrum_id;
 #define PIOS_ADC_RATE		(72.0e6 / 1.0 / 8.0 / 252.0 / (PIOS_ADC_NUM_CHANNELS >> PIOS_ADC_USE_ADC2))
 #define PIOS_ADC_MAX_OVERSAMPLING               36
 
+//------------------------
+// PIOS_RCVR
+// See also pios_board.c
+//------------------------
+#define PIOS_RCVR_MAX_DEVS                      12
+
 //-------------------------
-// Receiver PWM inputs
+// Receiver PPM input
 //-------------------------
-#define PIOS_PWM_MAX_INPUTS                     6
+#define PIOS_PPM_NUM_INPUTS                     6  //Could be more if needed
+
+//-------------------------
+// Receiver PWM input
+//-------------------------
+#define PIOS_PWM_NUM_INPUTS                     6
+
+//-------------------------
+// Receiver SPEKTRUM input
+//-------------------------
+#define PIOS_SPEKTRUM_NUM_INPUTS                12
 
 //-------------------------
 // Servo outputs

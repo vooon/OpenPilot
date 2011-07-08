@@ -140,6 +140,27 @@ uint32_t PIOS_SYS_getCPUFlashSize(void)
 * (24 digits returned for STM32)
 * return < 0 if feature not supported
 */
+int32_t PIOS_SYS_SerialNumberGetBinary(uint8_t *array)
+{
+	int i;
+
+	/* Stored in the so called "electronic signature" */
+	for (i = 0; i < 12; ++i) {
+		uint8_t b = MEM8(0x1ffff7e8 + i);
+
+		array[i] = b;
+	}
+
+	/* No error */
+	return 0;
+}
+
+/**
+* Returns the serial number as a string
+* param[out] str pointer to a string which can store at least 32 digits + zero terminator!
+* (24 digits returned for STM32)
+* return < 0 if feature not supported
+*/
 int32_t PIOS_SYS_SerialNumberGet(char *str)
 {
 	int i;
@@ -165,7 +186,8 @@ int32_t PIOS_SYS_SerialNumberGet(char *str)
 void NVIC_Configuration(void)
 {
 	/* Set the Vector Table base address as specified in .ld file */
-	NVIC_SetVectorTable(PIOS_NVIC_VECTTAB_FLASH, 0x0);
+	extern void *pios_isr_vector_table_base;
+	NVIC_SetVectorTable((uint32_t)&pios_isr_vector_table_base, 0x0);
 
 	/* 4 bits for Interrupt priorities so no sub priorities */
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);

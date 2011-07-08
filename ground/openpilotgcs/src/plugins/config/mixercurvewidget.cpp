@@ -60,6 +60,8 @@ MixerCurveWidget::MixerCurveWidget(QWidget *parent) : QGraphicsView(parent)
     curveMax=1.0;
 
 
+    setFrameStyle(QFrame::NoFrame);
+    setStyleSheet("background:transparent");
 
     QGraphicsScene *scene = new QGraphicsScene(this);
     QSvgRenderer *renderer = new QSvgRenderer();
@@ -145,7 +147,17 @@ QList<double> MixerCurveWidget::getCurve() {
 
     return list;
 }
-
+/**
+  Sets a linear graph
+  */
+void MixerCurveWidget::initLinearCurve(quint32 numPoints, double maxValue)
+{
+    QList<double> points;
+    for (double i=0; i<numPoints;i++) {
+        points.append(maxValue*(i/(numPoints-1)));
+    }
+    initCurve(points);
+}
 /**
   Setd the current curve settings
   */

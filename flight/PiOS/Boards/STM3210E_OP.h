@@ -68,27 +68,8 @@ TIM8  | Servo 5   | Servo 6   | Servo 7   | Servo 8
 //------------------------
 // BOOTLOADER_SETTINGS
 //------------------------
-
-//#define FUNC_ID				1
-//#define HW_VERSION			01
-
-#define BOOTLOADER_VERSION	0
-#define BOARD_TYPE		0x01  // OpenPilot board
-#define BOARD_REVISION		0x01  // Beta version
-//#define HW_VERSION	(BOARD_TYPE << 8) | BOARD_REVISION
-
-#define MEM_SIZE			524288 //512K
-#define SIZE_OF_DESCRIPTION	(uint8_t) 100
-#define START_OF_USER_CODE	(uint32_t)0x08005000//REMEMBER SET ALSO IN link_stm32f10x_HD_BL.ld
-#define SIZE_OF_CODE		(uint32_t) (MEM_SIZE-(START_OF_USER_CODE-0x08000000)-SIZE_OF_DESCRIPTION)
-
-#ifdef STM32F10X_HD
-		#define HW_TYPE			0 //0=high_density 1=medium_density;
-#elif STM32F10X_MD
-		#define HW_TYPE			1 //0=high_density 1=medium_density;
-#endif
 #define BOARD_READABLE	TRUE
-#define BOARD_WRITABLA	TRUE
+#define BOARD_WRITABLE	TRUE
 #define MAX_DEL_RETRYS	3
 
 //------------------------
@@ -168,11 +149,9 @@ extern uint32_t pios_i2c_main_adapter_id;
 //-------------------------
 #define PIOS_COM_MAX_DEVS               4
 
-#define PIOS_COM_TELEM_BAUDRATE         57600
 extern uint32_t pios_com_telem_rf_id;
 #define PIOS_COM_TELEM_RF               (pios_com_telem_rf_id)
 
-#define PIOS_COM_GPS_BAUDRATE           57600
 extern uint32_t pios_com_gps_id;
 #define PIOS_COM_GPS                    (pios_com_gps_id)
 
@@ -180,16 +159,19 @@ extern uint32_t pios_com_telem_usb_id;
 #define PIOS_COM_TELEM_USB              (pios_com_telem_usb_id)
 
 #ifdef PIOS_ENABLE_AUX_UART
-#define PIOS_COM_AUX_BAUDRATE           57600
 extern uint32_t pios_com_aux_id;
 #define PIOS_COM_AUX                    (pios_com_aux_id)
 #define PIOS_COM_DEBUG                  PIOS_COM_AUX
 #endif
 
 #ifdef PIOS_INCLUDE_SPEKTRUM
-#define PIOS_COM_SPEKTRUM_BAUDRATE      115200
 extern uint32_t pios_com_spektrum_id;
 #define PIOS_COM_SPEKTRUM               (pios_com_spektrum_id)
+#endif
+
+#ifdef PIOS_INCLUDE_SBUS
+extern uint32_t pios_com_sbus_id;
+#define PIOS_COM_SBUS                   (pios_com_sbus_id)
 #endif
 
 //-------------------------
@@ -203,11 +185,6 @@ extern uint32_t pios_com_spektrum_id;
 //-------------------------
 #define PIOS_MASTER_CLOCK                       72000000
 #define PIOS_PERIPHERAL_CLOCK                   (PIOS_MASTER_CLOCK / 2)
-#if defined(USE_BOOTLOADER)
-#define PIOS_NVIC_VECTTAB_FLASH                 (START_OF_USER_CODE)
-#else
-#define PIOS_NVIC_VECTTAB_FLASH                 ((uint32_t)0x08000000)
-#endif
 
 //-------------------------
 // Interrupt Priorities
@@ -217,37 +194,33 @@ extern uint32_t pios_com_spektrum_id;
 #define PIOS_IRQ_PRIO_HIGH                      5               // for SPI, ADC, I2C etc...
 #define PIOS_IRQ_PRIO_HIGHEST                   4               // for USART etc...
 
-//-------------------------
-// Receiver PWM inputs
-//-------------------------
-/*#define PIOS_PWM_SUPV_ENABLED                   1
-#define PIOS_PWM_SUPV_TIMER                     TIM6
-#define PIOS_PWM_SUPV_TIMER_RCC_FUNC            RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, ENABLE)
-#define PIOS_PWM_SUPV_HZ                        25
-#define PIOS_PWM_SUPV_IRQ_CHANNEL               TIM6_IRQn
-#define PIOS_PWM_SUPV_IRQ_FUNC                  void TIM6_IRQHandler(void)*/
+//------------------------
+// PIOS_RCVR
+// See also pios_board.c
+//------------------------
+#define PIOS_RCVR_MAX_DEVS                      12
 
 //-------------------------
 // Receiver PPM input
 //-------------------------
 #define PIOS_PPM_NUM_INPUTS                     8  //Could be more if needed
 #define PIOS_PPM_SUPV_ENABLED                   1
+
 //-------------------------
-// SPEKTRUM input
+// Receiver PWM input
 //-------------------------
-//#define PIOS_SPEKTRUM_SUPV_ENABLED                   1
-//#define PIOS_SPEKTRUM_SUPV_TIMER                     TIM6
-//#define PIOS_SPEKTRUM_SUPV_TIMER_RCC_FUNC            RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, ENABLE)
-//#define PIOS_SPEKTRUM_SUPV_HZ                        60 // 1/22ms
-//#define PIOS_SPEKTRUM_SUPV_IRQ_CHANNEL               TIM6_IRQn
-//#define PIOS_SPEKTRUM_SUPV_IRQ_FUNC                  void TIM6_IRQHandler(void)
+#define PIOS_PWM_NUM_INPUTS                     8
+
+//-------------------------
+// Receiver SPEKTRUM input
+//-------------------------
+#define PIOS_SPEKTRUM_NUM_INPUTS                12
 
 //-------------------------
 // Servo outputs
 //-------------------------
 #define PIOS_SERVO_UPDATE_HZ                    50
 #define PIOS_SERVOS_INITIAL_POSITION            0 /* dont want to start motors, have no pulse till settings loaded */
-#define PIOS_PWM_MAX_INPUTS                     8
 
 //-------------------------
 // ADC

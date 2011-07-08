@@ -31,25 +31,27 @@
 /* Project Includes */
 #include "pios.h"
 #if defined(PIOS_INCLUDE_BL_HELPER)
+#include <pios_board_info.h>
 #include "stm32f10x_flash.h"
 
-uint8_t *FLASH_If_Read(uint32_t SectorAddress)
+uint8_t *PIOS_BL_HELPER_FLASH_If_Read(uint32_t SectorAddress)
 {
 	return (uint8_t *) (SectorAddress);
 }
 
-uint8_t FLASH_Ini()
+#if defined(PIOS_INCLUDE_BL_HELPER_WRITE_SUPPORT)
+uint8_t PIOS_BL_HELPER_FLASH_Ini()
 {
 	FLASH_Unlock();
 	return 1;
 }
 
-uint8_t FLASH_Start()
+uint8_t PIOS_BL_HELPER_FLASH_Start()
 {
-	uint32_t pageAdress;
-	pageAdress = START_OF_USER_CODE;
+	const struct pios_board_info * bdinfo = &pios_board_info_blob;
+	uint32_t pageAdress = bdinfo->fw_base;
 	uint8_t fail = FALSE;
-	while ((pageAdress < START_OF_USER_CODE + SIZE_OF_CODE + SIZE_OF_DESCRIPTION)
+	while ((pageAdress < (bdinfo->fw_base + bdinfo->fw_size + bdinfo->desc_size))
 	       || (fail == TRUE)) {
 		for (int retry = 0; retry < MAX_DEL_RETRYS; ++retry) {
 			if (FLASH_ErasePage(pageAdress) == FLASH_COMPLETE) {
@@ -70,24 +72,30 @@ uint8_t FLASH_Start()
 
 	return (fail == TRUE) ? 0 : 1;
 }
+#endif
 
-uint32_t crc_memory_calc()
+uint32_t PIOS_BL_HELPER_CRC_Memory_Calc()
 {
+	const struct pios_board_info * bdinfo = &pios_board_info_blob;
+
+	PIOS_BL_HELPER_CRC_Ini();
 	CRC_ResetDR();
-	CRC_CalcBlockCRC((uint32_t *) START_OF_USER_CODE, (SIZE_OF_CODE) >> 2);
+	CRC_CalcBlockCRC((uint32_t *) bdinfo->fw_base, (bdinfo->fw_size) >> 2);
 	return CRC_GetCRC();
 }
 
-void read_description(uint8_t * array)
+void PIOS_BL_HELPER_FLASH_Read_Description(uint8_t * array, uint8_t size)
 {
+	const struct pios_board_info * bdinfo = &pios_board_info_blob;
 	uint8_t x = 0;
-	for (uint32_t i = START_OF_USER_CODE + SIZE_OF_CODE; i < START_OF_USER_CODE + SIZE_OF_CODE + SIZE_OF_DESCRIPTION; ++i) {
-		array[x] = *FLASH_If_Read(i);
+	if (size > bdinfo->desc_size) size = bdinfo->desc_size;
+	for (uint32_t i = bdinfo->fw_base + bdinfo->fw_size; i < bdinfo->fw_base + bdinfo->fw_size + size; ++i) {
+		array[x] = *PIOS_BL_HELPER_FLASH_If_Read(i);
 		++x;
 	}
 }
 
-void CRC_Ini()
+void PIOS_BL_HELPER_CRC_Ini()
 {
 	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_CRC, ENABLE);
 }
