@@ -73,6 +73,11 @@ $(FIELDSINIT)
 	return $(ISSETTINGSTF);
     }
 
+    public boolean isSingleInstance() {
+	return $(ISSINGLEINSTTF);
+    }
+
+
     public boolean isMetaData() {
 	return false;
     }

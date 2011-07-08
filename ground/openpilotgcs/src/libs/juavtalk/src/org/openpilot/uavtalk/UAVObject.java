@@ -40,6 +40,7 @@ public abstract class UAVObject {
     abstract public void setGeneratedMetaData();
 
     abstract public boolean isSetting();
+    abstract public boolean isSingleInstance();
     abstract public boolean isMetaData();
     
     abstract public UAVObjectFieldDescription[] getFieldDescriptions(); 

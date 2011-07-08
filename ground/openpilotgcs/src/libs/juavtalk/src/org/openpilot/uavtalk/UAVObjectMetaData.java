@@ -303,6 +303,10 @@ public class UAVObjectMetaData extends UAVObject {
         return false;
     }
 
+    public boolean isSingleInstance() {
+        return false;
+    }
+
     public boolean isMetaData() {
         return true;
     }
