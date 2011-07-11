@@ -395,7 +395,16 @@ void PFDGadgetWidget::setDialFile(QString dfn)
          m_world->setParentItem(m_background);
          m_world->setSharedRenderer(m_renderer);
          m_world->setElementId("world");
+         m_world->setVisible(false);
          l_scene->addItem(m_world);
+
+
+         cvwidget = new QOpenCVGraphicsItem();
+         cvwidget->setParentItem(m_background);
+         l_scene->addItem(cvwidget);
+         connect(&camTimer, SIGNAL(timeout()),(QOpenCVGraphicsItem *)cvwidget, SLOT(camupdate()));
+         camTimer.start(100);
+
 
          // red Roll scale: rollscale
          m_rollscale = new QGraphicsSvgItem();

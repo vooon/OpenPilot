@@ -35,7 +35,9 @@
 #include <QGraphicsView>
 #include <QtSvg/QSvgRenderer>
 #include <QtSvg/QGraphicsSvgItem>
-
+#include "QOpenCVGraphicsItem.h"
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
 #include <QFile>
 #include <QTimer>
 
@@ -74,6 +76,9 @@ private slots:
    void moveSky();
 
 private:
+   QOpenCVGraphicsItem *cvwidget;
+   CvCapture *camera;
+
    QSvgRenderer *m_renderer;
 
    // Background: background
@@ -137,6 +142,7 @@ private:
    // Rotation timer
    QTimer dialTimer;
    QTimer skyDialTimer;
+   QTimer camTimer;
 
    QString satString;
    QString batString;
