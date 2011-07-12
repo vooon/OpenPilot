@@ -33,6 +33,7 @@
 #include "uavdataobject.h"
 
 
+
 #include <QFileDialog>
 #include <QtAlgorithms>
 #include <QStringList>
@@ -63,6 +64,9 @@ QWidget *PFDGadgetOptionsPage::createPage(QWidget *parent)
     options_page->useOpenGL->setChecked(m_config->useOpenGL());
     options_page->hqText->setChecked(m_config->getHqFonts());
     options_page->smoothUpdates->setChecked(m_config->getBeSmooth());
+    options_page->cameraOver->setChecked(m_config->getUseCamera());
+    options_page->camNumber->setText(QString::number(m_config->getCamera()));
+    options_page->camRefresh->setText(QString::number(m_config->getCamRefresh()));
 
     return optionsPageWidget;
 }
@@ -79,6 +83,11 @@ void PFDGadgetOptionsPage::apply()
     m_config->setUseOpenGL(options_page->useOpenGL->checkState());
     m_config->setHqFonts(options_page->hqText->checkState());
     m_config->setBeSmooth(options_page->smoothUpdates->checkState());
+    m_config->setCamRefresh(options_page->camRefresh->text().toInt());
+    m_config->setCamera(options_page->camNumber->text().toInt());
+    m_config->setUseCamera(options_page->cameraOver->checkState());
+
+
 }
 
 

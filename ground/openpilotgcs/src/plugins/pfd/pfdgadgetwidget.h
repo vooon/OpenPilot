@@ -48,7 +48,7 @@ class PFDGadgetWidget : public QGraphicsView
 public:
     PFDGadgetWidget(QWidget *parent = 0);
    ~PFDGadgetWidget();
-   void setDialFile(QString dfn);
+   void setDialFile(QString dfn, bool useCam, int camNumber, int camRefresh);
    void paint();
    // Sets up needle/UAVObject connections:
    void connectNeedles();

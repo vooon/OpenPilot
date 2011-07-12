@@ -354,7 +354,7 @@ void PFDGadgetWidget::updateBattery(UAVObject *object1) {
 
   Initializes the display, and does all the one-time calculations.
   */
-void PFDGadgetWidget::setDialFile(QString dfn)
+void PFDGadgetWidget::setDialFile(QString dfn, bool useCam, int camNumber, int camRefresh)
 {
    QGraphicsScene *l_scene = scene();
    setBackgroundBrush(QBrush(Utils::StyleHelper::baseColor()));
@@ -391,20 +391,23 @@ void PFDGadgetWidget::setDialFile(QString dfn)
          m_background->setElementId("background");
          l_scene->addItem(m_background);
 
+         if(useCam)
+         {
+             cvwidget = new QOpenCVGraphicsItem(0,camNumber);
+             cvwidget->setParentItem(m_background);
+             l_scene->addItem(cvwidget);
+             connect(&camTimer, SIGNAL(timeout()),(QOpenCVGraphicsItem *)cvwidget, SLOT(camupdate()));
+             camTimer.start(camRefresh);
+         }
+
          m_world = new QGraphicsSvgItem();
          m_world->setParentItem(m_background);
          m_world->setSharedRenderer(m_renderer);
-         m_world->setElementId("world");
-         m_world->setVisible(false);
+         if(useCam)
+             m_world->setElementId("centralscale");
+         else
+             m_world->setElementId("world");
          l_scene->addItem(m_world);
-
-
-         cvwidget = new QOpenCVGraphicsItem();
-         cvwidget->setParentItem(m_background);
-         l_scene->addItem(cvwidget);
-         connect(&camTimer, SIGNAL(timeout()),(QOpenCVGraphicsItem *)cvwidget, SLOT(camupdate()));
-         camTimer.start(100);
-
 
          // red Roll scale: rollscale
          m_rollscale = new QGraphicsSvgItem();

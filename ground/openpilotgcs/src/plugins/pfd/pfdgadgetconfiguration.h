@@ -43,13 +43,18 @@ public:
     void setUseOpenGL(bool flag) { useOpenGLFlag = flag; }
     void setHqFonts(bool flag) { hqFonts = flag; }
     void setBeSmooth(bool flag) { beSmooth = flag;}
+    void setUseCamera(bool flag) { useCamera = flag;}
+    void setCamera(int number) { camNumber = number;}
+    void setCamRefresh(int refresh) { camRefresh = refresh;}
 
     //get dial configuration functions
     QString dialFile() {return m_defaultDial;}
     bool useOpenGL() { return useOpenGLFlag; }
     bool getHqFonts() { return hqFonts; }
     bool getBeSmooth() { return beSmooth; }
-
+    bool getUseCamera() { return useCamera;}
+    int getCamera() { return camNumber;}
+    int getCamRefresh() { return camRefresh;}
     void saveConfig(QSettings* settings) const;
     IUAVGadgetConfiguration *clone();
 
@@ -58,6 +63,9 @@ private:
     bool useOpenGLFlag;
     bool hqFonts;
     bool beSmooth;
+    bool useCamera;
+    int camNumber;
+    int camRefresh;
 };
 
 #endif // PFDGADGETCONFIGURATION_H

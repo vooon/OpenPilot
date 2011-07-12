@@ -35,7 +35,10 @@
 PFDGadgetConfiguration::PFDGadgetConfiguration(QString classId, QSettings* qSettings, QObject *parent) :
     IUAVGadgetConfiguration(classId, parent),
     m_defaultDial("Unknown"),
-    beSmooth(true)
+    beSmooth(true),
+    useCamera(false),
+    camNumber(0),
+    camRefresh(100)
 {
     //if a saved configuration exists load it
     if(qSettings != 0) {
@@ -43,6 +46,9 @@ PFDGadgetConfiguration::PFDGadgetConfiguration(QString classId, QSettings* qSett
         useOpenGLFlag = qSettings->value("useOpenGLFlag").toBool();
         hqFonts = qSettings->value("hqFonts").toBool();
         beSmooth = qSettings->value("beSmooth").toBool();
+        useCamera = qSettings->value("useCamera").toBool();
+        camNumber = qSettings->value("camNumber").toInt();
+        camRefresh = qSettings->value("camRefresh").toInt();
         m_defaultDial=Utils::PathUtils().InsertDataPath(dialFile);
     }
 }
@@ -58,6 +64,9 @@ IUAVGadgetConfiguration *PFDGadgetConfiguration::clone()
     m->useOpenGLFlag = useOpenGLFlag;
     m->hqFonts = hqFonts;
     m->beSmooth = beSmooth;
+    m->useCamera = useCamera;
+    m->camNumber = camNumber;
+    m->camRefresh = camRefresh;
     return m;
 }
 
@@ -71,4 +80,9 @@ void PFDGadgetConfiguration::saveConfig(QSettings* qSettings) const {
     qSettings->setValue("useOpenGLFlag", useOpenGLFlag);
     qSettings->setValue("hqFonts", hqFonts);
     qSettings->setValue("beSmooth", beSmooth);
+    qSettings->setValue("useCamera", useCamera);
+    qSettings->setValue("camNumber", camNumber);
+    qSettings->setValue("camRefresh", camRefresh);
+
+
 }
