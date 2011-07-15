@@ -33,7 +33,8 @@
 #include <QtOpenGL/QGLWidget>
 #include <cmath>
 
-PFDGadgetWidget::PFDGadgetWidget(QWidget *parent) : QGraphicsView(parent)
+
+PFDGadgetWidget::PFDGadgetWidget(QWidget *parent) : QGraphicsView(parent),showOverlay(true)
 {
 
     setMinimumSize(64,64);
@@ -394,7 +395,7 @@ void PFDGadgetWidget::setDialFile(QString dfn, bool useCam, int camNumber, int c
          if(useCam)
          {
              cvwidget = new QOpenCVGraphicsItem(0,camNumber);
-             cvwidget->setParentItem(m_background);
+             cvwidget->setZValue(-1);
              l_scene->addItem(cvwidget);
              connect(&camTimer, SIGNAL(timeout()),(QOpenCVGraphicsItem *)cvwidget, SLOT(camupdate()));
              camTimer.start(camRefresh);
@@ -1018,6 +1019,36 @@ void PFDGadgetWidget::moveNeedles()
        dialTimer.stop();
    else
        scene()->update(sceneRect());
+}
+void PFDGadgetWidget::contextMenuEvent(QContextMenuEvent *event)
+{
+        QMenu menu;
+        QAction *showOverlayAction = new QAction("Show Overlay",this);
+        showOverlayAction->setCheckable(true);
+        showOverlayAction->setChecked(showOverlay);
+        menu.addAction(showOverlayAction);
+        QAction *selectedAction = menu.exec(event->globalPos());
+        if(true)
+        {
+
+            if(selectedAction->isChecked())
+            {
+                foreach(QGraphicsItem * item,scene()->items())
+                {
+                    item->setVisible(true);
+                }
+                showOverlay=true;
+            }
+            else
+            {
+                foreach(QGraphicsItem * item,scene()->items())
+                {
+                    if(item!=cvwidget)
+                        item->setVisible(false);
+                }
+                showOverlay=false;
+            }
+        }
 }
 
 /**

@@ -40,6 +40,9 @@
 #include <opencv/highgui.h>
 #include <QFile>
 #include <QTimer>
+#include <QAction>
+#include <QMenu>
+#include <QContextMenuEvent>
 
 class PFDGadgetWidget : public QGraphicsView
 {
@@ -68,7 +71,7 @@ public slots:
 protected:
    void paintEvent(QPaintEvent *event);
    void resizeEvent(QResizeEvent *event);
-
+   void contextMenuEvent(QContextMenuEvent *event);
 
 private slots:
    void moveNeedles();
@@ -152,6 +155,8 @@ private:
    // Flag to enable better rendering of fonts in OpenGL
    bool hqFonts;
    bool beSmooth;
+
+   bool showOverlay;
 
 };
 #endif /* PFDGADGETWIDGET_H_ */
