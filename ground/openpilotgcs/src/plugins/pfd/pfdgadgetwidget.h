@@ -81,7 +81,7 @@ private slots:
 private:
    QOpenCVGraphicsItem *cvwidget;
    CvCapture *camera;
-
+   bool useCamera;
    QSvgRenderer *m_renderer;
 
    // Background: background

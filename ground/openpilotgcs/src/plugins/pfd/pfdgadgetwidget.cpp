@@ -357,6 +357,7 @@ void PFDGadgetWidget::updateBattery(UAVObject *object1) {
   */
 void PFDGadgetWidget::setDialFile(QString dfn, bool useCam, int camNumber, int camRefresh)
 {
+   useCamera=useCam;
    QGraphicsScene *l_scene = scene();
    setBackgroundBrush(QBrush(Utils::StyleHelper::baseColor()));
    if (QFile::exists(dfn) && m_renderer->load(dfn) && m_renderer->isValid())
@@ -1022,33 +1023,35 @@ void PFDGadgetWidget::moveNeedles()
 }
 void PFDGadgetWidget::contextMenuEvent(QContextMenuEvent *event)
 {
-        QMenu menu;
-        QAction *showOverlayAction = new QAction("Show Overlay",this);
-        showOverlayAction->setCheckable(true);
-        showOverlayAction->setChecked(showOverlay);
-        menu.addAction(showOverlayAction);
-        QAction *selectedAction = menu.exec(event->globalPos());
-        if(true)
-        {
+    if(!useCamera)
+        return;
+    QMenu menu;
+    QAction *showOverlayAction = new QAction("Show Overlay",this);
+    showOverlayAction->setCheckable(true);
+    showOverlayAction->setChecked(showOverlay);
+    menu.addAction(showOverlayAction);
+    QAction *selectedAction = menu.exec(event->globalPos());
+    if(selectedAction)
+    {
 
-            if(selectedAction->isChecked())
+        if(selectedAction->isChecked())
+        {
+            foreach(QGraphicsItem * item,scene()->items())
             {
-                foreach(QGraphicsItem * item,scene()->items())
-                {
-                    item->setVisible(true);
-                }
-                showOverlay=true;
+                item->setVisible(true);
             }
-            else
-            {
-                foreach(QGraphicsItem * item,scene()->items())
-                {
-                    if(item!=cvwidget)
-                        item->setVisible(false);
-                }
-                showOverlay=false;
-            }
+            showOverlay=true;
         }
+        else
+        {
+            foreach(QGraphicsItem * item,scene()->items())
+            {
+                if(item!=cvwidget)
+                    item->setVisible(false);
+            }
+            showOverlay=false;
+        }
+    }
 }
 
 /**
