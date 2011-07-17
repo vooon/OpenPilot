@@ -29,6 +29,8 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
+#include <string.h>
+
 #include "openpilot.h"
 
 // Private constants
@@ -48,6 +50,7 @@
 
 #define MAX_PAYLOAD_LENGTH	256
 
+#define MIN_PACKET_LENGTH	(MIN_HEADER_LENGTH + CHECKSUM_LENGTH)
 #define MAX_PACKET_LENGTH	(MAX_HEADER_LENGTH + MAX_PAYLOAD_LENGTH + CHECKSUM_LENGTH)
 
 
@@ -61,9 +64,10 @@ static xSemaphoreHandle transLock;
 static xSemaphoreHandle respSema;
 static UAVObjHandle respObj;
 static uint16_t respInstId;
-static uint8_t rxBuffer[MAX_PACKET_LENGTH];
-static uint8_t txBuffer[MAX_PACKET_LENGTH];
 static UAVTalkStats stats;
+//static uint8_t rxBuffer[MAX_PACKET_LENGTH];
+static uint8_t rxPacketBuffer[MAX_PACKET_LENGTH] __attribute__ ((aligned(4))); // big enough to hold an entire packet (header and all)
+static uint8_t txBuffer[MAX_PACKET_LENGTH];
 
 // Private functions
 static int32_t objectTransaction(UAVObjHandle objectId, uint16_t instId, uint8_t type, int32_t timeout);
@@ -223,6 +227,133 @@ static int32_t objectTransaction(UAVObjHandle obj, uint16_t instId, uint8_t type
  */
 int32_t UAVTalkProcessInputStream(uint8_t rxbyte)
 {
+	static uint16_t rxPacketBuffer_wr = 0;
+
+    // add the new byte into the receive buffer
+	rxPacketBuffer[rxPacketBuffer_wr++] = rxbyte;
+
+    // scan the buffer for valid packets
+    uint16_t i = 0;
+    while (true)
+    {
+        if ((rxPacketBuffer_wr - i) < MIN_PACKET_LENGTH)
+        {   // not enough bytes for a packet
+
+            // remove used/useless bytes from buffer
+            memmove(rxPacketBuffer, rxPacketBuffer + i, rxPacketBuffer_wr - i);
+            rxPacketBuffer_wr -= i;
+            i = 0;
+
+            break;
+        }
+
+        // scan the buffer for the start of a possible packet
+        while (i < rxPacketBuffer_wr && rxPacketBuffer[i] != SYNC_VAL)
+            i++;
+
+        // remove any used/useless bytes before the start of the packet
+        memmove(rxPacketBuffer, rxPacketBuffer + i, rxPacketBuffer_wr - i);
+        rxPacketBuffer_wr -= i;
+        i = 0;
+
+        if (rxPacketBuffer_wr < MIN_PACKET_LENGTH)
+            break;  // incomplete packet - wait till we get more bytes
+
+        // retrieve the header details
+        uint8_t sync_val = rxPacketBuffer[0];
+        uint8_t message_type = rxPacketBuffer[1];
+        uint16_t length = (uint16_t)rxPacketBuffer[2] | ((uint16_t)rxPacketBuffer[3] << 8);
+        uint32_t object_id = (uint32_t)rxPacketBuffer[4] | ((uint32_t)rxPacketBuffer[5] << 8) | ((uint32_t)rxPacketBuffer[6] << 16) | ((uint32_t)rxPacketBuffer[7] << 24);
+        uint16_t instance_id = (uint16_t)rxPacketBuffer[8] | ((uint16_t)rxPacketBuffer[9] << 8);
+
+        if (sync_val != SYNC_VAL)
+        {   // not found the start of a packet - remove all bytes from the buffer (they are all junk)
+            rxPacketBuffer_wr = 0;
+            break;
+        }
+
+        if ((message_type & TYPE_MASK) != TYPE_VER)
+        {   // invalid message type
+            i++;
+            stats.rxErrors++;
+            continue;
+        }
+
+        if (length < MIN_HEADER_LENGTH || length > MAX_HEADER_LENGTH + MAX_PAYLOAD_LENGTH)
+        {   // incorrect packet size
+            i++;
+            stats.rxErrors++;
+            continue;
+        }
+
+        // check to see if we have the entire packet
+        if (rxPacketBuffer_wr < length + CHECKSUM_LENGTH)
+            break;    // we don't yet have an entire packet
+
+        // check the packet CRC
+        uint8_t crc = 0;
+        for (int j = 0; j < length; j++)
+        	crc = PIOS_CRC_updateByte(crc, rxPacketBuffer[j]);
+        if (crc != rxPacketBuffer[length])
+        {   // incorrect crc
+            i++;
+            stats.rxErrors++;
+            continue;
+        }
+
+		UAVObjHandle object = UAVObjGetByID(object_id);
+        if (!object && message_type != TYPE_OBJ_REQ)
+        {   // unknown object
+            i++;
+            stats.rxErrors++;
+            continue;
+        }
+
+        bool object_is_single_instance = true;
+        if (object)
+            object_is_single_instance = UAVObjIsSingleInstance(object);
+
+        if (object_is_single_instance)
+            instance_id = 0;
+
+        // determine data length
+        uint16_t data_length = 0;
+        if (object && message_type != TYPE_OBJ_REQ && message_type != TYPE_ACK && message_type != TYPE_NACK)
+            data_length = UAVObjGetNumBytes(object);
+
+        uint16_t header_size = (object_is_single_instance ? MIN_HEADER_LENGTH : MAX_HEADER_LENGTH);
+        uint16_t total_packet_size = header_size + data_length + CHECKSUM_LENGTH;
+
+        if (data_length >= MAX_PAYLOAD_LENGTH)
+        {   // invalid packet - invalid data length
+            i++;
+            stats.rxErrors++;
+            continue;
+        }
+
+        // Check the lengths match
+        if (total_packet_size != length + CHECKSUM_LENGTH)
+        {   // invalid packet - mismatched packet sizes
+            i++;
+            stats.rxErrors++;
+            continue;
+        }
+
+        // pass the packet onto the next stage
+		xSemaphoreTakeRecursive(lock, portMAX_DELAY);
+			receiveObject(message_type, object_id, instance_id, rxPacketBuffer + header_size, data_length);
+			stats.rxObjectBytes += data_length;
+			stats.rxObjects++;
+		xSemaphoreGiveRecursive(lock);
+
+        i += total_packet_size;
+    }
+
+
+
+
+	// *******************************
+/*
 	static UAVObjHandle obj;
 	static uint8_t type;
 	static uint16_t packet_size;
@@ -434,6 +565,8 @@ int32_t UAVTalkProcessInputStream(uint8_t rxbyte)
 			stats.rxErrors++;
 			state = STATE_SYNC;
 	}
+*/
+	// *******************************
 	
 	// Done
 	return 0;
