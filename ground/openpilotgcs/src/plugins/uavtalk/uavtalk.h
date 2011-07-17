@@ -81,6 +81,7 @@ private:
 
     static const int MAX_PAYLOAD_LENGTH = 256;
 
+    static const int MIN_PACKET_LENGTH = (MIN_HEADER_LENGTH + CHECKSUM_LENGTH);
     static const int MAX_PACKET_LENGTH = (MAX_HEADER_LENGTH + MAX_PAYLOAD_LENGTH + CHECKSUM_LENGTH);
 
     static const quint16 ALL_INSTANCES = 0xFFFF;
@@ -98,25 +99,15 @@ private:
     QMutex* mutex;
     UAVObject* respObj;
     bool respAllInstances;
-    quint8 rxBuffer[MAX_PACKET_LENGTH];
     quint8 txBuffer[MAX_PACKET_LENGTH];
-    // Variables used by the receive state machine
-    quint8 rxTmpBuffer[4];
-    quint8 rxType;
-    quint32 rxObjId;
-    quint16 rxInstId;
-    quint16 rxLength;
-    quint16 rxPacketLength;
 
-    quint8 rxCSPacket, rxCS;
-    qint32 rxCount;
-    qint32 packetSize;
-    RxStateType rxState;
+    quint8 rxPacketBuffer[MAX_PACKET_LENGTH]; // big enough to hold an entire packet (header and all)
+    uint16_t rxPacketBuffer_wr;
+
     ComStats stats;
 
     // Methods
     bool objectTransaction(UAVObject* obj, quint8 type, bool allInstances);
-    bool processInputByte(quint8 rxbyte);
     bool receiveObject(quint8 type, quint32 objId, quint16 instId, quint8* data, qint32 length);
     UAVObject* updateObject(quint32 objId, quint16 instId, quint8* data);
     void updateAck(UAVObject* obj);

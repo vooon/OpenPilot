@@ -59,8 +59,7 @@ UAVTalk::UAVTalk(QIODevice* iodev, UAVObjectManager* objMngr)
 
     this->objMngr = objMngr;
 
-    rxState = STATE_SYNC;
-    rxPacketLength = 0;
+    rxPacketBuffer_wr = 0;
 
     mutex = new QMutex(QMutex::Recursive);
 
@@ -76,6 +75,15 @@ UAVTalk::~UAVTalk()
     // According to Qt, it is not necessary to disconnect upon
     // object deletion.
     //disconnect(io, SIGNAL(readyRead()), this, SLOT(processInputStream()));
+
+    io = NULL;
+    objMngr = NULL;
+
+    if (mutex)
+    {
+        delete mutex;
+        mutex = NULL;
+    }
 }
 
 
@@ -102,12 +110,141 @@ UAVTalk::ComStats UAVTalk::getStats()
  */
 void UAVTalk::processInputStream()
 {
-    quint8 tmp;
+    // http://wiki.openpilot.org/display/Doc/UAVTalk
 
-    while (io->bytesAvailable() > 0)
+    while (true)
     {
-        io->read((char*)&tmp, 1);
-        processInputByte(tmp);
+        if (!io)
+            break;
+
+        qint64 num_bytes = io->bytesAvailable();
+        if (num_bytes > sizeof(rxPacketBuffer) - rxPacketBuffer_wr)
+            num_bytes = sizeof(rxPacketBuffer) - rxPacketBuffer_wr;
+        if (num_bytes <= 0)
+            break;
+
+        // add the new bytes into the receive buffer
+        num_bytes = io->read((char*)(rxPacketBuffer + rxPacketBuffer_wr), num_bytes);
+        if (num_bytes <= 0)
+            break;
+        rxPacketBuffer_wr += num_bytes;
+
+        // scan the buffer for valid packets
+        int i = 0;
+        while (true)
+        {
+            if (rxPacketBuffer_wr - i < MIN_PACKET_LENGTH)
+            {   // not enough bytes for a packet
+
+                // remove used/useless bytes from buffer
+                memmove(rxPacketBuffer, rxPacketBuffer + i, rxPacketBuffer_wr - i);
+                rxPacketBuffer_wr -= i;
+
+                break;
+            }
+
+            // scan the buffer for the start of a possible packet
+            while (i < rxPacketBuffer_wr && rxPacketBuffer[i] != SYNC_VAL)
+                i++;
+
+            // remove any useless bytes before the start of the packet
+            memmove(rxPacketBuffer, rxPacketBuffer + i, rxPacketBuffer_wr - i);
+            rxPacketBuffer_wr -= i;
+            i = 0;
+
+            if (rxPacketBuffer_wr < MIN_PACKET_LENGTH)
+                break;  // incomplete packet - wait till we get more bytes
+
+            // retrieve the header details
+            uint8_t sync_val = rxPacketBuffer[0];
+            uint8_t message_type = rxPacketBuffer[1];
+            uint16_t length = (uint16_t)qFromLittleEndian<uint16_t>(rxPacketBuffer + 2);
+            uint32_t object_id = (uint32_t)qFromLittleEndian<uint32_t>(rxPacketBuffer + 4);
+            uint16_t instance_id = (uint16_t)qFromLittleEndian<uint16_t>(rxPacketBuffer + 8);
+
+            if (sync_val != SYNC_VAL)
+            {   // not found the start of a packet - remove all bytes from the buffer (they are all junk)
+                rxPacketBuffer_wr = 0;
+                break;
+            }
+
+            if ((message_type & TYPE_MASK) != TYPE_VER)
+            {   // invalid message type
+                i = 1;
+                stats.rxErrors++;
+                continue;
+            }
+
+            if (length < MIN_HEADER_LENGTH || length > MAX_HEADER_LENGTH + MAX_PAYLOAD_LENGTH)
+            {   // incorrect packet size
+                i = 1;
+                stats.rxErrors++;
+                continue;
+            }
+
+            // check to see if we have the entire packet
+            if (rxPacketBuffer_wr < length + CHECKSUM_LENGTH)
+                break;    // we don't yet have an entire packet
+
+            // check the packet CRC
+            uint8_t crc = 0;
+            for (int j = 0; j < length; j++)
+                crc = updateCRC(crc, rxPacketBuffer[j]);
+            if (crc != rxPacketBuffer[length])
+            {   // incorrect crc
+                i = 1;
+                stats.rxErrors++;
+                continue;
+            }
+
+            UAVObject *object = NULL;
+            if (objMngr) object = objMngr->getObject(object_id);
+            if (!object && message_type != TYPE_OBJ_REQ)
+            {   // unknown object
+                i = 1;
+                stats.rxErrors++;
+                continue;
+            }
+
+            bool object_is_single_instance = true;
+            if (object)
+                object_is_single_instance = object->isSingleInstance();
+
+            if (object_is_single_instance)
+                instance_id = 0;
+
+            // determine data length
+            uint16_t data_length = 0;
+            if (object && message_type != TYPE_OBJ_REQ && message_type != TYPE_ACK && message_type != TYPE_NACK)
+                data_length = object->getNumBytes();
+
+            uint16_t header_size = (object_is_single_instance ? MIN_HEADER_LENGTH : MAX_HEADER_LENGTH);
+            uint16_t total_packet_size = header_size + data_length + CHECKSUM_LENGTH;
+
+            if (data_length >= MAX_PAYLOAD_LENGTH)
+            {   // invalid packet - invalid data length
+                i = 1;
+                stats.rxErrors++;
+                continue;
+            }
+
+            // Check the lengths match
+            if (total_packet_size != length + CHECKSUM_LENGTH)
+            {   // invalid packet - mismatched packet sizes
+                i = 1;
+                stats.rxErrors++;
+                continue;
+            }
+
+            // pass the packet onto the next stage
+            if (mutex) mutex->lock();
+                receiveObject(message_type, object_id, instance_id, rxPacketBuffer + header_size, data_length);
+                stats.rxObjectBytes += data_length;
+                stats.rxObjects++;
+            if (mutex) mutex->unlock();
+
+            i = total_packet_size;
+        }
     }
 }
 
@@ -187,218 +324,6 @@ bool UAVTalk::objectTransaction(UAVObject* obj, quint8 type, bool allInstances)
     {
         return false;
     }
-}
-
-/**
- * Process an byte from the telemetry stream.
- * \param[in] rxbyte Received byte
- * \return Success (true), Failure (false)
- */
-bool UAVTalk::processInputByte(quint8 rxbyte)
-{
-    // Update stats
-    stats.rxBytes++;
-
-    rxPacketLength++;   // update packet byte count
-
-    // Receive state machine
-    switch (rxState)
-    {
-        case STATE_SYNC:
-
-            if (rxbyte != SYNC_VAL)
-                break;
-
-            // Initialize and update CRC
-            rxCS = updateCRC(0, rxbyte);
-
-            rxPacketLength = 1;
-
-            rxState = STATE_TYPE;
-            break;
-
-        case STATE_TYPE:
-
-            // Update CRC
-            rxCS = updateCRC(rxCS, rxbyte);
-
-            if ((rxbyte & TYPE_MASK) != TYPE_VER)
-            {
-                rxState = STATE_SYNC;
-                break;
-            }
-
-            rxType = rxbyte;
-
-            packetSize = 0;
-
-            rxState = STATE_SIZE;
-            rxCount = 0;
-            break;
-
-        case STATE_SIZE:
-
-            // Update CRC
-            rxCS = updateCRC(rxCS, rxbyte);
-
-            if (rxCount == 0)
-            {
-                packetSize += rxbyte;
-                rxCount++;
-                break;
-            }
-
-            packetSize += (quint32)rxbyte << 8;
-
-            if (packetSize < MIN_HEADER_LENGTH || packetSize > MAX_HEADER_LENGTH + MAX_PAYLOAD_LENGTH)
-            {   // incorrect packet size
-                rxState = STATE_SYNC;
-                break;
-            }
-
-            rxCount = 0;
-            rxState = STATE_OBJID;
-            break;
-
-        case STATE_OBJID:
-
-            // Update CRC
-            rxCS = updateCRC(rxCS, rxbyte);
-
-            rxTmpBuffer[rxCount++] = rxbyte;
-            if (rxCount < 4)
-                break;
-
-            // Search for object, if not found reset state machine
-            rxObjId = (qint32)qFromLittleEndian<quint32>(rxTmpBuffer);
-            {
-                UAVObject *rxObj = objMngr->getObject(rxObjId);
-                if (rxObj == NULL && rxType != TYPE_OBJ_REQ)
-                {
-                    stats.rxErrors++;
-                    rxState = STATE_SYNC;
-                    break;
-                }
-
-                // Determine data length
-                if (rxType == TYPE_OBJ_REQ || rxType == TYPE_ACK || rxType == TYPE_NACK)
-                    rxLength = 0;
-                else
-                    rxLength = rxObj->getNumBytes();
-
-                // Check length and determine next state
-                if (rxLength >= MAX_PAYLOAD_LENGTH)
-                {
-                    stats.rxErrors++;
-                    rxState = STATE_SYNC;
-                    break;
-                }
-
-                // Check the lengths match
-                if ((rxPacketLength + rxLength + (rxObj->isSingleInstance() ? 0 : 2)) != packetSize)
-                {   // packet error - mismatched packet size
-                    stats.rxErrors++;
-                    rxState = STATE_SYNC;
-                    break;
-                }
-
-                // Check if this is a single instance object (i.e. if the instance ID field is coming next)
-                if (rxObj == NULL)
-                {
-                   // This is a non-existing object, just skip to checksum
-                   // and we'll send a NACK next.
-                   rxState   = STATE_CS;
-                   rxInstId = 0;
-                   rxCount = 0;
-                }
-                else if (rxObj->isSingleInstance())
-                {
-                    // If there is a payload get it, otherwise receive checksum
-                    if (rxLength > 0)
-                        rxState = STATE_DATA;
-                    else
-                        rxState = STATE_CS;
-                    rxInstId = 0;
-                    rxCount = 0;
-                }
-                else
-                {
-                    rxState = STATE_INSTID;
-                    rxCount = 0;
-                }
-            }
-
-            break;
-
-        case STATE_INSTID:
-
-            // Update CRC
-            rxCS = updateCRC(rxCS, rxbyte);
-
-            rxTmpBuffer[rxCount++] = rxbyte;
-            if (rxCount < 2)
-                break;
-
-            rxInstId = (qint16)qFromLittleEndian<quint16>(rxTmpBuffer);
-
-            rxCount = 0;
-
-            // If there is a payload get it, otherwise receive checksum
-            if (rxLength > 0)
-                rxState = STATE_DATA;
-            else
-                rxState = STATE_CS;
-
-            break;
-
-        case STATE_DATA:
-
-            // Update CRC
-            rxCS = updateCRC(rxCS, rxbyte);
-
-            rxBuffer[rxCount++] = rxbyte;
-            if (rxCount < rxLength)
-                break;
-
-            rxState = STATE_CS;
-            rxCount = 0;
-            break;
-
-        case STATE_CS:
-
-            // The CRC byte
-            rxCSPacket = rxbyte;
-
-            if (rxCS != rxCSPacket)
-            {   // packet error - faulty CRC
-                stats.rxErrors++;
-                rxState = STATE_SYNC;
-                break;
-            }
-
-            if (rxPacketLength != packetSize + 1)
-            {   // packet error - mismatched packet size
-                stats.rxErrors++;
-                rxState = STATE_SYNC;
-                break;
-            }
-
-            mutex->lock();
-                receiveObject(rxType, rxObjId, rxInstId, rxBuffer, rxLength);
-                stats.rxObjectBytes += rxLength;
-                stats.rxObjects++;
-            mutex->unlock();
-
-            rxState = STATE_SYNC;
-            break;
-
-        default:
-            rxState = STATE_SYNC;
-            stats.rxErrors++;
-    }
-
-    // Done
-    return true;
 }
 
 /**
