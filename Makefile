@@ -114,8 +114,10 @@ help:
 	@echo
 	@echo "   [Simulation]"
 	@echo "     sim_posix            - Build OpenPilot simulation firmware for"
-	@echo "                            a POSIX compatible system (Linux, Mac OS X, ...)"
+	@echo "                            a Linux system"
 	@echo "     sim_posix_clean      - Delete all build output for the POSIX simulation"
+	@echo "     sim_osx              - Build OpenPilot simulation firmware for OSX"
+	@echo "     sim_osx_clean        - Delete all build output for the OSX simulation"
 	@echo "     sim_win32            - Build OpenPilot simulation firmware for"
 	@echo "                            Windows using mingw and msys"
 	@echo "     sim_win32_clean      - Delete all build output for the win32 simulation"
@@ -491,6 +493,14 @@ sim_posix_%: uavobjects_flight
 	$(V1) mkdir -p $(BUILD_DIR)/sitl_posix
 	$(V1) $(MAKE) --no-print-directory \
 		-C $(ROOT_DIR)/flight/OpenPilot --file=$(ROOT_DIR)/flight/OpenPilot/Makefile.posix $*
+
+.PHONY: sim_osx
+sim_osx: sim_osx_elf
+
+sim_osx_%: uavobjects_flight
+	$(V1) mkdir -p $(BUILD_DIR)/sitl_osx
+	$(V1) $(MAKE) --no-print-directory \
+		-C $(ROOT_DIR)/flight/OpenPilot --file=$(ROOT_DIR)/flight/OpenPilot/Makefile.osx $*
 
 .PHONY: sim_win32
 sim_win32: sim_win32_exe
