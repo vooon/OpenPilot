@@ -1,0 +1,14 @@
+Setting up the link from our FreeRTOS simulation to a Matlab model is not
+straightforward.
+
+1. Create model in matlab however desired (in this case using control toolbox).
+Compile to a shared library.  However, this library will communicate with mx
+primitves which we don't want to place as a dependency on the simulator.
+
+2. Create a driver layer.  This will be another shared library, however it will
+have a simple interface to the FreeRTOS simulator that uses a common structure
+to pass the simulation state between the FreeRTOS code and the matlab code.
+
+3. Compile driver and matlab libraries and place in build directory.  Need to
+add DYLIB path to loading the Matlab MCR system.
+
