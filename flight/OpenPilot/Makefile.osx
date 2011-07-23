@@ -337,7 +337,8 @@ LDFLAGS += $(patsubst %,-l%,$(EXTRA_LIBS))
 LDFLAGS += $(MATH_LIB)
 LDFLAGS += -lc -lgcc
 
-
+# To include simulation model
+LDFLAGS += -L$(OUTDIR) -lsimmodel
 
 
 # Define programs and commands.
