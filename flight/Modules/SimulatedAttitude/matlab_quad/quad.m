@@ -1,4 +1,4 @@
-function cur_state = quad_model_step(dT, cur_state, actuator)
+function cur_state = quad_model_step(dT, cur_state)
 % Advance one step in time the quadcopter model
 %
 % JC 2011-07-22
