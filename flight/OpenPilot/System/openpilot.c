@@ -38,9 +38,14 @@
 #include "systemmod.h"
 
 /* Task Priorities */
-#define PRIORITY_TASK_HOOKS             (tskIDLE_PRIORITY + 3)
+#define PRIORITY_TASK_HOOKS     (tskIDLE_PRIORITY + 3)
+#define INIT_TASK_PRIORITY		(tskIDLE_PRIORITY + configMAX_PRIORITIES - 1) // max priority
+
 
 /* Global Variables */
+
+/* bounds of the init stack courtesy of the linker script */
+extern char	_init_stack_top, _init_stack_end;
 
 /* Local Variables */
 #define INCLUDE_TEST_TASKS 0
@@ -67,6 +72,9 @@ extern void PIOS_Board_Init(void);
 extern void Stack_Change(void);
 static void Stack_Change_Weak () __attribute__ ((weakref ("Stack_Change")));
 
+static xTaskHandle mainTaskHandle;
+static void mainTask(void *parameters);
+
 /**
 * OpenPilot Main function:
 *
@@ -78,11 +86,48 @@ static void Stack_Change_Weak () __attribute__ ((weakref ("Stack_Change")));
 */
 int main()
 {
-	/* NOTE: Do NOT modify the following start-up sequence */
-	/* Any new initialization functions should be added in OpenPilotInit() */
-
+	int	result;
+	
 	/* Brings up System using CMSIS functions, enables the LEDs. */
 	PIOS_SYS_Init();
+	
+	/* initialise the heap */
+	vPortInitialiseBlocks();
+	
+	/*
+	 * Swap to the interrupt stack so that when xTaskGenericCreate clears the init stack
+	 * we aren't clobbered. (does nothing in sim mode)
+	 */
+	Stack_Change_Weak();
+	 
+	/* create the init task */
+	result = xTaskGenericCreate(mainTask,
+								(const signed char *)"main",
+								(&_init_stack_top - &_init_stack_end) / sizeof(portSTACK_TYPE),
+								NULL,
+								INIT_TASK_PRIORITY,
+								&mainTaskHandle,
+								(void *)&_init_stack_end,
+								NULL);
+	PIOS_Assert(result == pdPASS);
+	
+	/* Start the FreeRTOS scheduler */
+	vTaskStartScheduler();
+
+	/* If all is well we will never reach here as the scheduler will now be running. */
+
+	/* Do some indication to user that something bad just happened */
+	PIOS_LED_Off(LED1);
+	for(;;) {
+		PIOS_LED_Toggle(LED1);
+		PIOS_DELAY_WaitmS(100);
+	};
+
+    return 0;
+}
+
+static void mainTask(void *parameters)
+{
 	
 	/* Architecture dependant Hardware and
 	 * core subsystem initialisation
@@ -101,22 +146,8 @@ int main()
 	xTaskCreate(TaskSDCard, (signed portCHAR *)"SDCard", configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 2), NULL);
 #endif
 
-	/* swap the stack to use the IRQ stack (does nothing in sim mode) */
-	Stack_Change_Weak();
-
-	/* Start the FreeRTOS scheduler which should never returns.*/
-	vTaskStartScheduler();
-
-	/* If all is well we will never reach here as the scheduler will now be running. */
-
-	/* Do some indication to user that something bad just happened */
-	PIOS_LED_Off(LED1); \
-	for(;;) { \
-		PIOS_LED_Toggle(LED1); \
-		PIOS_DELAY_WaitmS(100); \
-	};
-
-	return 0;
+	/* terminate this task & free its resources */
+	vTaskDelete(NULL);
 }
 
 

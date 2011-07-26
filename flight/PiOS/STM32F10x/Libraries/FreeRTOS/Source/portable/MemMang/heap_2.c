@@ -98,10 +98,15 @@ static const unsigned short  heapSTRUCT_SIZE	= ( sizeof( xBlockLink ) + portBYTE
 /* Create a couple of list links to mark the start and end of the list. */
 static xBlockLink xStart, xEnd;
 
+/* Markers in the heap segment */
+extern char _sheap, _eheap;
+extern char	_init_stack_top, _init_stack_end;
+
+static size_t currentTOTAL_HEAP_SIZE;
+
 /* Keeps track of the number of free bytes remaining, but says nothing about
 fragmentation. */
-static size_t xFreeBytesRemaining = configTOTAL_HEAP_SIZE;
-static size_t currentTOTAL_HEAP_SIZE = configTOTAL_HEAP_SIZE;
+static size_t xFreeBytesRemaining;
 
 /* STATIC FUNCTIONS ARE DEFINED AS MACROS TO MINIMIZE THE FUNCTION CALL DEPTH. */
 
@@ -134,6 +139,9 @@ size_t xBlockSize;																	\
 #define prvHeapInit()																\
 {																					\
 xBlockLink *pxFirstFreeBlock;														\
+																					\
+	currentTOTAL_HEAP_SIZE = &_eheap - &_sheap;										\
+	xFreeBytesRemaining = currentTOTAL_HEAP_SIZE;									\
 																					\
 	/* xStart is used to hold a pointer to the first item in the list of free */	\
 	/* blocks.  The void cast is used to prevent compiler warnings. */				\
@@ -242,10 +250,19 @@ void *pvReturn = NULL;
 }
 /*-----------------------------------------------------------*/
 
+void xPortIncreaseHeapSize( size_t bytes );
+
 void vPortFree( void *pv )
 {
 unsigned char *puc = ( unsigned char * ) pv;
 xBlockLink *pxLink;
+extern char _init_stack_top, _init_stack_end;
+
+	if( ( pv == (void *)&_init_stack_end ) && ( pv == &xHeap.ucHeap[currentTOTAL_HEAP_SIZE] ) )
+	{
+		xPortIncreaseHeapSize( &_init_stack_top - &_init_stack_end );
+		return;
+	}
 
 	if( pv )
 	{
@@ -282,11 +299,11 @@ void xPortIncreaseHeapSize( size_t bytes )
 {
 	xBlockLink *pxNewBlockLink;
 	vTaskSuspendAll();
-	currentTOTAL_HEAP_SIZE = configTOTAL_HEAP_SIZE + bytes;
+	currentTOTAL_HEAP_SIZE += + bytes;
 	xEnd.xBlockSize = currentTOTAL_HEAP_SIZE;
 	xFreeBytesRemaining += bytes;
 	/* Insert the new block into the list of free blocks. */
-	pxNewBlockLink = ( void * ) &xHeap.ucHeap[ configTOTAL_HEAP_SIZE ];
+	pxNewBlockLink = ( void * ) &xHeap.ucHeap[ currentTOTAL_HEAP_SIZE ];
 	pxNewBlockLink->xBlockSize = bytes;
 	prvInsertBlockIntoFreeList( ( pxNewBlockLink ) );
 	xTaskResumeAll();

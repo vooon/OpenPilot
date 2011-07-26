@@ -84,7 +84,12 @@ static union xRTOS_HEAP
 } xHeap __attribute__ ((section (".heap")));
 
 static size_t xNextFreeByte = ( size_t ) 0;
-static size_t currentTOTAL_HEAP_SIZE = configTOTAL_HEAP_SIZE;
+
+/* Markers in the heap segment */
+extern char _sheap, _eheap;
+extern char	_init_stack_top, _init_stack_end;
+
+static size_t currentTOTAL_HEAP_SIZE;
 
 /*-----------------------------------------------------------*/
 
@@ -103,6 +108,12 @@ void *pvReturn = NULL;
 
 	vTaskSuspendAll();
 	{
+		/* if the heap has not been sized, do it now */
+		if( currentTOTAL_HEAP_SIZE == 0 )
+		{
+			currentTOTAL_HEAP_SIZE = &_eheap - &_sheap;
+		}
+		
 		/* Check there is enough room left for the allocation. */
 		if( ( ( xNextFreeByte + xWantedSize ) < currentTOTAL_HEAP_SIZE ) &&
 			( ( xNextFreeByte + xWantedSize ) > xNextFreeByte )	)/* Check for overflow. */
@@ -129,8 +140,16 @@ void *pvReturn = NULL;
 }
 /*-----------------------------------------------------------*/
 
+void xPortIncreaseHeapSize( size_t bytes );
+
 void vPortFree( void *pv )
 {
+	if( ( pv == (void *)&_init_stack_end ) && ( pv == &xHeap.ucHeap[currentTOTAL_HEAP_SIZE] ) )
+	{
+		xPortIncreaseHeapSize(&_init_stack_top - &_init_stack_end);
+		return;
+	}
+
 	/* Memory cannot be freed using this scheme.  See heap_2.c and heap_3.c
 	for alternative implementations, and the memory management pages of
 	http://www.FreeRTOS.org for more information. */
@@ -154,7 +173,7 @@ size_t xPortGetFreeHeapSize( void )
 void xPortIncreaseHeapSize( size_t bytes )
 {
 	vTaskSuspendAll();
-	currentTOTAL_HEAP_SIZE = configTOTAL_HEAP_SIZE + bytes;
+	currentTOTAL_HEAP_SIZE += bytes;
 	xTaskResumeAll();
 }
 /*-----------------------------------------------------------*/

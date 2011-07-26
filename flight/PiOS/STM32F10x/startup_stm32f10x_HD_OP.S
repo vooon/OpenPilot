@@ -36,7 +36,6 @@
 .global  g_pfnVectors
 .global  SystemInit_ExtMemCtl_Dummy
 .global  Default_Handler
-.global  xPortIncreaseHeapSize
 .global  Stack_Change
 
 /* start address for the initialization values of the .data section. 
@@ -137,7 +136,6 @@ LoopFillZerobss:
 
 /**
  * @brief  This is the code that swaps stack (from end of heap to irq_stack).
- *         Also reclaim the heap that was used as a stack.
  * @param  None
  * @retval : None
 */
@@ -149,16 +147,6 @@ Stack_Change:
 /* Switches stack back momentarily to MSP */
   movs r0, #0
   msr control, r0
-Heap_Reclaim:
-/* add heap_post_rtos to the heap (if the capability/function exist) */
-/* Also claim the unused memory (between end of heap to end of memory */
-/* CAREFULL: the heap section must be the last section in RAM in order this to work */
-  ldr r0, = _init_stack_size
-  ldr r1, = _eheap_post_rtos
-  ldr r2, = _eram
-  subs r2, r2, r1
-  adds r0, r0, r2
-  bl xPortIncreaseHeapSize
   bx r4
   .size  Stack_Change, .-Stack_Change
 

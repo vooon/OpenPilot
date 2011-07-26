@@ -1,6 +1,6 @@
 /* This is the size of the stack for all FreeRTOS IRQs */
 _irq_stack_size = 0x180;
-/* This is the size of the stack for early init: life span is until scheduler starts */
+/* This is the size of the stack for early init: life span is until initialisation is complete */
 _init_stack_size = 0x100;
 
 /* Stub out these functions since we don't use them anyway */
@@ -89,33 +89,32 @@ SECTIONS
         _sbss = . ;
         *(.bss .bss.*)
         *(COMMON)
+        _ebss = . ;
     } > SRAM
 
+	_heap = . ;
     .heap (NOLOAD) :
     {
         . = ALIGN(4);
         _sheap = . ;
-        _sheap_pre_rtos = . ;
         *(.heap)
-        . = ALIGN(4);
-        _eheap = . ;
-        _eheap_pre_rtos = . ;
-        _init_stack_end = . ;
-        _sheap_post_rtos = . ;
-        . = . + _init_stack_size ;
-        . = ALIGN(4);
-        _eheap_post_rtos = . ;
+        
+        /* fill to the end of SRAM */
+        . = ORIGIN(SRAM) + LENGTH(SRAM) - _heap ;
+        . = ALIGN(4) ;
+        
+        /* place the init stack at the end of SRAM */
         _init_stack_top = . - 4 ;
+        _init_stack_end = . - _init_stack_size ;
+        
+        /* extend the heap up to the base of the init stack */
+        _eheap = _init_stack_end ;
     } > SRAM
 
     
-    _free_ram = . ;
     .free_ram (NOLOAD) :
     {
-	. = ORIGIN(SRAM) + LENGTH(SRAM) - _free_ram ;
-        /* This is used by the startup in order to initialize the .bss section */
-	_ebss = . ;
-	_eram = . ;
+		_eram = . ;
     } > SRAM
 
     /* keep the heap section at the end of the SRAM

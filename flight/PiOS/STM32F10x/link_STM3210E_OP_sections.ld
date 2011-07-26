@@ -1,6 +1,6 @@
 /* This is the size of the stack for early init and for all FreeRTOS IRQs */
 _irq_stack_size = 0x400;
-/* This is the size of the stack for early init: life span is until scheduler starts */
+/* This is the size of the stack for early init: life span is until initialisation is complete */
 _init_stack_size = 0x400;
 
 /* Check valid alignment for VTOR */
@@ -267,32 +267,31 @@ SECTIONS
         
         *(.bss)
         *(COMMON)
+        _ebss = . ;
     } >RAM
     
+    _heap = . ;
     .heap (NOLOAD) :
     {
         . = ALIGN(4);
         _sheap = . ;
-        _sheap_pre_rtos = . ;
         *(.heap)
-        . = ALIGN(4);
-        _eheap = . ;
-        _eheap_pre_rtos = . ;
-        _init_stack_end = . ; 
-        _sheap_post_rtos = . ;
-        . = . + _init_stack_size ;
-        . = ALIGN(4);
-        _eheap_post_rtos = . ;
+        
+        /* fill to the end of SRAM */
+        . = ORIGIN(RAM) + LENGTH(RAM) - _heap ;
+        . = ALIGN(4) ;
+        
+        /* place the init stack at the end of RAM */
         _init_stack_top = . - 4 ;
+        _init_stack_end = . - _init_stack_size ;
+        
+        /* extend the heap up to the base of the init stack */
+        _eheap = _init_stack_end ;
     } > RAM
 
-    _free_ram = . ;
     .free_ram (NOLOAD) :
     {
-	. = ORIGIN(RAM) + LENGTH(RAM) - _free_ram ;
-        /* This is used by the startup in order to initialize the .bss section */
-	_ebss = . ;
-	_eram = . ;
+		_eram = . ;
     } > RAM
 
     /* keep the heap section at the end of the SRAM
