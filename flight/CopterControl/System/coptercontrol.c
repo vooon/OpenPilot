@@ -50,7 +50,6 @@ extern char	_init_stack_top, _init_stack_end;
 extern void PIOS_Board_Init(void);
 extern void Stack_Change(void);
 
-static xTaskHandle mainTaskHandle;
 static void mainTask(void *parameters);
 
 /**
@@ -65,6 +64,7 @@ static void mainTask(void *parameters);
 int main()
 {
 	int result;
+	xTaskHandle mainTaskHandle;
 	
 	/* Brings up System using CMSIS functions, enables the LEDs. */
 	PIOS_SYS_Init();
