@@ -1,7 +1,7 @@
 /* This is the size of the stack for all FreeRTOS IRQs */
 _irq_stack_size = 0x180;
 /* This is the size of the stack for early init: life span is until scheduler starts */
-_init_stack_size = 0x100;
+_init_stack_size = 0x300;
 
 /* Stub out these functions since we don't use them anyway */
 PROVIDE (   vPortSVCHandler = 0 ) ;
@@ -99,6 +99,7 @@ SECTIONS
         *(.heap)
         . = ALIGN(4);
         _eheap = . ;
+    	_ebss = . ;
         _eheap_pre_rtos = . ;
         _init_stack_end = . ;
         _sheap_post_rtos = . ;
@@ -114,7 +115,6 @@ SECTIONS
     {
 	. = ORIGIN(SRAM) + LENGTH(SRAM) - _free_ram ;
         /* This is used by the startup in order to initialize the .bss section */
-	_ebss = . ;
 	_eram = . ;
     } > SRAM
 

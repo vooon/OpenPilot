@@ -74,6 +74,7 @@ static uint32_t idleCounter;
 static uint32_t idleCounterClear;
 static xTaskHandle systemTaskHandle;
 static int32_t stackOverflow;
+static uint16_t InitStackRemaining;
 
 // Private functions
 static void objectUpdatedCb(UAVObjEvent * ev);
@@ -316,6 +317,34 @@ uint32_t *ptr = &_irq_stack_end;
 }
 
 /**
+ * Called one before scheduler starts to update the system stats
+ * This is to give indication how much the init stack is used during init.
+ */
+void GetFreeInitStackSize(void)
+{
+	uint32_t i = 0x200;
+
+#if !defined(ARCH_POSIX) && !defined(ARCH_WIN32) && defined(CHECK_IRQ_STACK)
+extern uint32_t _init_stack_top;
+extern uint32_t _init_stack_end;
+	uint32_t pattern = 0x0000A5A5;
+	uint32_t *ptr = &_init_stack_end;
+
+	uint32_t stack_size = (((uint32_t)&_init_stack_top - (uint32_t)&_init_stack_end) & ~3 ) / 4;
+
+	for (i=0; i< stack_size; i++)
+	{
+		if (ptr[i] != pattern)
+		{
+			i=i*4;
+			break;
+		}
+	}
+#endif
+	InitStackRemaining = i;
+}
+
+/**
  * Called periodically to update the system stats
  */
 static void updateStats()
@@ -335,6 +364,9 @@ static void updateStats()
 
 	// Get Irq stack status
 	stats.IRQStackRemaining = GetFreeIrqStackSize();
+
+	// Get Irq stack status
+	stats.InitStackRemaining = InitStackRemaining;
 
 	// When idleCounterClear was not reset by the idle-task, it means the idle-task did not run
 	if (idleCounterClear) {

@@ -47,6 +47,8 @@ defined in linker script */
 .word  _sbss
 /* end address for the .bss section. defined in linker script */
 .word  _ebss
+/* start address somewhere in the .heap section (for pre_retos_stack). defined in linker script */
+.word _init_stack_end
 
 .equ  BootRAM, 0xF108F85F
 /**
@@ -90,6 +92,20 @@ Reset_Handler:
   movs r0, #2
   MSR control, r0
   ISB
+
+/* Fill Init stack for watermark monitoring */
+  ldr  r2, =_init_stack_end
+  b  LoopFillInitStack
+
+FillInitStack:
+  movw  r3, #0xA5A5
+  str  r3, [r2], #4
+
+LoopFillInitStack:
+  ldr  r3, = _init_stack_top
+  cmp  r2, r3
+  bcc  FillInitStack
+
 /* Fill IRQ stack for watermark monitoring */
   ldr  r2, =_irq_stack_end
   b  LoopFillIRQStack
