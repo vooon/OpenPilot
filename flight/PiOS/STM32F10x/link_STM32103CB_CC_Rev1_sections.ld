@@ -92,10 +92,10 @@ SECTIONS
         _ebss = . ;
     } > SRAM
 
-	_heap = . ;
     .heap (NOLOAD) :
     {
         . = ALIGN(4);
+	_heap = ABSOLUTE(.);
         _sheap = . ;
         *(.heap)
         

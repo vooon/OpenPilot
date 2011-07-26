@@ -270,10 +270,10 @@ SECTIONS
         _ebss = . ;
     } >RAM
     
-    _heap = . ;
     .heap (NOLOAD) :
     {
         . = ALIGN(4);
+	_heap = ABSOLUTE(.) ;
         _sheap = . ;
         *(.heap)
         
