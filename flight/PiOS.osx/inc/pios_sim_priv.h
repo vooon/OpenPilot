@@ -9,10 +9,10 @@ struct pios_sim_state {
 	float accels[3];
 	float gyros[3];
 	float mag[3];
-	float baro;
+	float baro[1];
 	float q[4];
 	float position[3];
-	int actuator[8];
+	float actuator[8];
 };
 
 #endif /* PIOS_SIM_PRIV */
