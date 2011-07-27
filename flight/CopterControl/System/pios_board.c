@@ -603,6 +603,20 @@ static const struct pios_servo_channel pios_servo_channels[] = {
 		.channel = TIM_Channel_3,
 		.pin = GPIO_Pin_2,
 	},	
+#if defined(PIOS_INCLUDE_PPM)
+	{
+		.timer = TIM3,
+		.port = GPIOB,
+		.channel = TIM_Channel_2,
+		.pin = GPIO_Pin_5,
+	},
+	{
+		.timer = TIM3,
+		.port = GPIOB,
+		.channel = TIM_Channel_3,
+		.pin = GPIO_Pin_0
+	},
+#endif
 };
 
 const struct pios_servo_cfg pios_servo_cfg = {
