@@ -53,6 +53,10 @@
 #include "simulatedattitude.h"
 #include "pios.h"
 
+#include "attituderaw.h"
+#include "attitudeactual.h"
+#include "actuatorcommand.h"
+
 // Private constants
 #define STACK_SIZE configMINIMAL_STACK_SIZE-128
 #define TASK_PRIORITY (tskIDLE_PRIORITY+4)
@@ -98,18 +102,44 @@ MODULE_INITCALL(SimulatedAttitudeInitialize, SimulatedAttitudeStart)
 static void SimulatedAttitudeTask(void *parameters)
 {
 	portTickType lastSysTime;
-	float q[4];
 
 	AlarmsSet(SYSTEMALARMS_ALARM_AHRSCOMMS, SYSTEMALARMS_ALARM_CRITICAL);
+
+	AttitudeRawData attitudeRaw;
+	AttitudeActualData attitudeActual;
+	ActuatorCommandData actuatorCommand;
 
 	lastSysTime = xTaskGetTickCount();
 	while (1) {
 		//PIOS_WDG_UpdateFlag(PIOS_WDG_AHRS);
 		
-	        PIOS_SIM_Step(1);
-		PIOS_SIM_GetAttitude(q);
+		AttitudeRawGet(&attitudeRaw);
+		AttitudeActualGet(&attitudeActual);
+		ActuatorCommandGet(&actuatorCommand);
+		
+		// Store the actuator channels in the pios system
+		PIOS_SIM_SetActuator(actuatorCommand.Channel);
+
+		// Run model forward a step
+	        PIOS_SIM_Step(0.001);
+
+		// TODO: Run data through a parallel EKF
+
+		// Get data out of simulation into UAVObjects
+		PIOS_SIM_GetAccels(attitudeRaw.accels);
+		PIOS_SIM_GetGyros(attitudeRaw.gyros);
+		PIOS_SIM_GetAttitude(&attitudeActual.q1);
+
+		// Convert into eueler degrees (makes assumptions about RPY
+		// order)
+		Quaternion2RPY(&attitudeActual.q1,&attitudeActual.Roll);
         
-		fprintf( stderr, "%f %f %f %f\n", q[0], q[1], q[2], q[3]);
+		printf( "%f %f %f %f\n", attitudeActual.q1, attitudeActual.q2, 
+				attitudeActual.q3, attitudeActual.q4);
+
+		// Store updates UAVOs
+		AttitudeRawSet(&attitudeRaw);
+		AttitudeActualSet(&attitudeActual);
 
 		/* Wait for the next update interval */
 		vTaskDelayUntil(&lastSysTime, 1 / portTICK_RATE_MS);

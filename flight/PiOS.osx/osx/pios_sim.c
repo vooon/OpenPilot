@@ -3,7 +3,16 @@
 #include "pios_sim_priv.h"
 #include "sim_model.h"
 
-struct pios_sim_state pios_sim_state;
+struct pios_sim_state pios_sim_state = {
+	.accels = {0, 0, 0},
+	.gyros = {0, 0, 0},
+	.mag = {0, 0, 0},
+	.baro = {0},
+	.q = {1, 0, 0, 0},
+	.velocity = {0, 0, 0},
+	.position = {0, 0, 0},	
+	.actuator = {0, 0, 0, 0, 0, 0, 0, 0}
+};
 
 /**
  * Initialize the model in the external library
@@ -58,7 +67,7 @@ void PIOS_SIM_GetAccels(float * accels)
  * Get the gyro data from the simulation model
  * @param[out] pointer to store the gyro data in
  */
-void PIOS_SIM_GetGyro(float * gyros)
+void PIOS_SIM_GetGyros(float * gyros)
 {
 	for (int i = 0; i < NELEMENTS(pios_sim_state.accels); i++)
 		gyros[i] = pios_sim_state.gyros[i];
@@ -72,6 +81,17 @@ void PIOS_SIM_GetAttitude(float * q)
 {
 	for (int i = 0; i < NELEMENTS(pios_sim_state.q); i++)
 		q[i] = pios_sim_state.q[i];
+}
+
+/**
+ * Get the current positiom from the simulation model
+ * @param[out] position pointer to store the current position in (cm in NED
+ * frame)
+ */
+void PIOS_SIM_GetVelocity(float * velocity)
+{
+	for (int i = 0; i < NELEMENTS(pios_sim_state.velocity); i++)
+		velocity[i] = pios_sim_state.velocity[i];
 }
 
 /**

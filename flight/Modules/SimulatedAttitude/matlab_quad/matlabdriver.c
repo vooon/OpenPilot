@@ -7,7 +7,7 @@ static mxArray * sim_state;
 
 const mwSize state_ndim = 1;
 const mwSize state_dims[1] = {1};
-const char *state_fieldnames[] = {"Accels", "Gyros", "Mag", "Baro", "q", "Position", "Actuator"};
+const char *state_fieldnames[] = {"Accels", "Gyros", "Mag", "Baro", "q", "Velocity", "Position", "Actuator"};
 
 /**
  * Initialize the aircraft state in a deterministic state
@@ -32,6 +32,7 @@ int sim_model_init()
 	mxSetField(sim_state, 0, "Mag", mxCreateDoubleMatrix(3,1,mxREAL));
 	mxSetField(sim_state, 0, "Baro", mxCreateDoubleMatrix(1,1,mxREAL));
 	mxSetField(sim_state, 0, "q", mxCreateDoubleMatrix(4,1,mxREAL));
+	mxSetField(sim_state, 0, "Velocity", mxCreateDoubleMatrix(3,1,mxREAL));
 	mxSetField(sim_state, 0, "Position", mxCreateDoubleMatrix(3,1,mxREAL));
 	mxSetField(sim_state, 0, "Actuator", mxCreateDoubleMatrix(8,1,mxREAL));
 
@@ -118,6 +119,7 @@ int sim_model_step(float dT, struct pios_sim_state * state)
 	copy_field_to_mx(mxGetField(sim_state, 0, "Mag"), state->mag, sizeof(state->mag) / sizeof(*state->mag));
 	copy_field_to_mx(mxGetField(sim_state, 0, "Baro"), state->baro, sizeof(state->baro) / sizeof(*state->baro));
 	copy_field_to_mx(mxGetField(sim_state, 0, "q"), state->q, sizeof(state->q) / sizeof(*state->q));
+	copy_field_to_mx(mxGetField(sim_state, 0, "Velocity"), state->velocity, sizeof(state->velocity) / sizeof(*state->velocity));
 	copy_field_to_mx(mxGetField(sim_state, 0, "Position"), state->position, sizeof(state->position) / sizeof(*state->position));
 	copy_field_to_mx(mxGetField(sim_state, 0, "Actuator"), state->actuator, sizeof(state->actuator) / sizeof(*state->actuator));
 
@@ -130,6 +132,7 @@ int sim_model_step(float dT, struct pios_sim_state * state)
 	copy_mx_to_field(state->mag, sizeof(state->mag) / sizeof(*state->mag), mxGetField(plhs, 0, "Mag"));
 	copy_mx_to_field(state->baro, sizeof(state->baro) / sizeof(*state->baro), mxGetField(plhs, 0, "Baro"));
 	copy_mx_to_field(state->q, sizeof(state->q) / sizeof(*state->q), mxGetField(plhs, 0, "q"));
+	copy_mx_to_field(state->velocity, sizeof(state->velocity) / sizeof(*state->velocity), mxGetField(plhs, 0, "Velocity"));
 	copy_mx_to_field(state->position, sizeof(state->position) / sizeof(*state->position), mxGetField(plhs, 0, "Position"));
 	copy_mx_to_field(state->actuator, sizeof(state->actuator) / sizeof(*state->actuator), mxGetField(plhs, 0, "Actuator"));
 

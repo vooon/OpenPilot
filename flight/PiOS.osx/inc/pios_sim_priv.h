@@ -11,6 +11,7 @@ struct pios_sim_state {
 	float mag[3];
 	float baro[1];
 	float q[4];
+	float velocity[3];
 	float position[3];
 	float actuator[8];
 };
