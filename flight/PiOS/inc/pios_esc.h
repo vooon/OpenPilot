@@ -63,6 +63,7 @@ enum pios_esc_mode PIOS_ESC_GetMode();
 void PIOS_ESC_SetDutyCycle(float duty_cycle);
 void PIOS_ESC_SetState(uint8_t new_state);
 void PIOS_ESC_TestGate(enum pios_esc_phase phase);
+void PIOS_ESC_UpdatePwmFreq(int esc_pwm_freq);
 
 #endif /* PIOS_DELAY_H */
 

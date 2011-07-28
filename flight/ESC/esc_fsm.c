@@ -1,3 +1,18 @@
+/**
+ ******************************************************************************
+ * @addtogroup ESC 
+ * @{
+ * @addtogroup 
+ * @brief Describes ESC Finite State Machine
+ * @{
+ *
+ * @file       esc_fsm.c
+ * @author     David "Buzz" Carlson (buzz@chebuzz.com)
+ * 				The OpenPilot Team, http://www.openpilot.org Copyright (C) 2011.
+ * @brief      Defines board specific static initializers for hardware for the INS board.
+ * @see        The GNU Public License (GPL) Version 3
+ *
+ *****************************************************************************/
 /*
  *  esc_fsm.c
  *  OpenPilotOSX
@@ -21,29 +36,35 @@
 // 5. In case of soft current limit, go into current limiting mode
 // 6. Freehweeling mode for when a ZCD is missed
 
-#define RPM_TO_US(x) (1e6 * 60 / (x * COMMUTATIONS_PER_ROT) )
-#define US_TO_RPM(x) RPM_TO_US(x)
-#define COMMUTATIONS_PER_ROT (7*6)
+
+#define NUM_POLE_PAIRS 7 //THIS NEEDS TO BE DEFINED ELSEWHERE, IF DEFINED AT ALL!
+
+#define EM_RPM_TO_US(x) (1e6 * 60 / (x * COMMUTATIONS_PER_EM_ROT) )	//Convert from electromagnetic rpm to period in [ms]
+#define US_TO_EM_RPM(x) ((x * COMMUTATIONS_PER_ROT) / (1e6 * 60))	//Convert from period in [ms] to EM rpm
+#define COMMUTATIONS_PER_EM_ROT 6	//A BLDC motor has six commutations per electromagnetic rotation
+#define COMMUTATIONS_PER_ROT (NUM_POLE_PAIRS*6)
 #define ESC_CONFIG_MAGIC 0x763fedc
 
+//Establish a basic set of tuning parameters. This will need to be done via software, instead of only at compile-time.
 struct esc_config config = {
-	.kp = 0.0005,
-	.ki = 0.0001,
-	.kff = 1.3e-4,
-	.kff2 = -0.05,
-	.ilim = 0.5,
-	.max_dc_change = 2,
-	.min_dc = 0.01,
-	.max_dc = 0.99,
-	.initial_startup_speed = 400,
-	.final_startup_speed = 1200,
-	.commutation_phase = 0.65,
-	.soft_current_limit = 750,
-	.hard_current_limit = 1800,
-	.magic = ESC_CONFIG_MAGIC,
+	.kp = 0.0005,					//Kp for PID controller
+	.ki = 0.0001,					//Ki for PID controller
+	.kff = 1.3e-4,					//Kff for feed-forward controller
+	.kff2 = -0.05,					//Kff2 for feed-forward controller
+	.ilim = 0.5,					//Integral saturation limit for PID controller
+	.max_dc_change = 2,				//???
+	.min_dc = 0.01,					//???
+	.max_dc = 0.99,					//???
+	.initial_em_startup_speed = 70,	//Initial open-loop electromagnetic rotational velocity, in [???] // CURRENTLY UNUSED
+	.final_em_startup_speed = 200,  //Final open-loop  electromagnetic rotational velocity, in [???]
+	.commutation_phase = 0.65,		//???
+	.soft_current_limit = 750,		//Try to limit current to this amount, in [???]
+	.hard_current_limit = 1800,		//Never let current exceed this amount, in [???]
+	.magic = ESC_CONFIG_MAGIC,		//???
 };
 
 static void go_esc_nothing(uint16_t time) {};
+
 // Fault and stopping transitions
 static void go_esc_fault(uint16_t);
 static void go_esc_stopping(uint16_t);
@@ -70,6 +91,7 @@ static void esc_fsm_schedule_event(enum esc_event event, uint16_t time);
 static void commutate();
 static void zcd(uint16_t time);
 
+// Define the state structure
 const static struct esc_transition esc_transition[ESC_FSM_NUM_STATES] = {
 	[ESC_STATE_FSM_FAULT] = {
 		.entry_fn = go_esc_fault,
@@ -181,6 +203,7 @@ const static struct esc_transition esc_transition[ESC_FSM_NUM_STATES] = {
 
 static struct esc_fsm_data esc_data;
 
+//
 void esc_process_static_fsm_rxn() {
 
 	if(esc_data.current > config.hard_current_limit)
@@ -330,7 +353,7 @@ static void go_esc_startup_grab(uint16_t time)
 static void go_esc_startup_wait(uint16_t time)
 {
 	commutate();
-	esc_fsm_schedule_event(ESC_EVENT_COMMUTATED, PIOS_DELAY_GetuS() + RPM_TO_US(esc_data.current_speed));
+	esc_fsm_schedule_event(ESC_EVENT_COMMUTATED, PIOS_DELAY_GetuS() + EM_RPM_TO_US(esc_data.current_speed));
 }
 
 /**
@@ -344,11 +367,11 @@ static void go_esc_startup_zcd(uint16_t time)
 	zcd(time);
 
 	// Since we aren't getting ZCD keep accelerating
-	if(esc_data.current_speed < config.final_startup_speed)
+	if(esc_data.current_speed < config.final_em_startup_speed)
 		esc_data.current_speed+=0;
 
 	// Schedule next commutation
-	esc_fsm_schedule_event(ESC_EVENT_COMMUTATED, time + RPM_TO_US(esc_data.current_speed) / 2);
+	esc_fsm_schedule_event(ESC_EVENT_COMMUTATED, time + EM_RPM_TO_US(esc_data.current_speed) / 2);
 
 	if(esc_data.consecutive_detected > 20) {
 		esc_fsm_inject_event(ESC_EVENT_CLOSED, time);
@@ -369,11 +392,11 @@ static void go_esc_startup_nozcd(uint16_t time)
 		commutate();
 
 		// Since we aren't getting ZCD keep accelerating
-		if(esc_data.current_speed < config.final_startup_speed)
+		if(esc_data.current_speed < config.final_em_startup_speed)
 			esc_data.current_speed+=10;
 
 		// Schedule next commutation
-		esc_fsm_schedule_event(ESC_EVENT_COMMUTATED, PIOS_DELAY_GetuS() + RPM_TO_US(esc_data.current_speed));
+		esc_fsm_schedule_event(ESC_EVENT_COMMUTATED, PIOS_DELAY_GetuS() + EM_RPM_TO_US(esc_data.current_speed));
 	}
 }
 
@@ -392,7 +415,7 @@ static void go_esc_cl_start(uint16_t time)
 static void go_esc_cl_commutated(uint16_t time)
 {
 	commutate();
-	esc_fsm_schedule_event(ESC_EVENT_TIMEOUT, time + RPM_TO_US(esc_data.current_speed) * 1);
+	esc_fsm_schedule_event(ESC_EVENT_TIMEOUT, time + EM_RPM_TO_US(esc_data.current_speed) * 1);
 	esc_data.Kv += (esc_data.current_speed / (12 * esc_data.duty_cycle) - esc_data.Kv) * 0.001;
 
 //	if(esc_data.Kv < 15)
@@ -414,9 +437,9 @@ static void go_esc_cl_zcd(uint16_t time)
 	for (uint8_t i = 0; i < NUM_STORED_SWAP_INTERVALS; i++)
 		interval += esc_data.swap_intervals[i];
 	interval /= NUM_STORED_SWAP_INTERVALS;
-	esc_data.current_speed = US_TO_RPM(interval);
+	esc_data.current_speed = US_TO_EM_RPM(interval);
 
-	uint16_t zcd_delay = RPM_TO_US(esc_data.current_speed) * (1 - config.commutation_phase);
+	uint16_t zcd_delay = EM_RPM_TO_US(esc_data.current_speed) * (1 - config.commutation_phase);
 	int32_t future = time + zcd_delay - PIOS_DELAY_GetuS();
 	if(future < 1)
 		esc_fsm_inject_event(ESC_EVENT_LATE_COMMUTATION, PIOS_DELAY_GetuS());
@@ -436,7 +459,7 @@ static void go_esc_cl_zcd(uint16_t time)
 		PIOS_ESC_SetDutyCycle(esc_data.duty_cycle);
 	} else {
 
-		int16_t error = esc_data.speed_setpoint - US_TO_RPM(interval);
+		int16_t error = esc_data.speed_setpoint - US_TO_EM_RPM(interval);
 
 		esc_data.error_accum += config.ki * error * esc_data.dT;
 		if(esc_data.error_accum > config.ilim)
@@ -605,7 +628,7 @@ static void commutate()
 
 	esc_data.detected = false;
 
-	PIOS_ESC_NextState();
+	PIOS_ESC_NextState(); //Commute the state values
 }
 
 /**

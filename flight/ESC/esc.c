@@ -38,6 +38,10 @@
 //TODO: Look into using TIM1
 //know the exact time of each sample and the PWM phase
 
+// TODO: Write digital input/output
+// TODO: Configure variable PWM chopping rate.
+
+
 //#define BACKBUFFER
 //#define BACKBUFFER_ZCD
 
@@ -124,7 +128,9 @@ int main()
 	PIOS_LED_On(LED_GO);
 	PIOS_LED_On(LED_MSG);
 
+	//Perform power-on test of ESC and motor
 	test_esc();
+	
 	esc_data = esc_fsm_init();
 	esc_data->speed_setpoint = 2500;
 
@@ -258,7 +264,7 @@ void DMA1_Channel1_IRQHandler(void)
 		this_current -= zero_current;
 		if(this_current < 0)
 			this_current = 0;
-		esc_data->current += (this_current - esc_data->current) * 0.01;
+		esc_data->current += (int16_t) ((this_current - esc_data->current + 50) * 0.01 ); //Fixed integer rounding [KDS]
 	}
 
 	uint16_t enter_time = PIOS_DELAY_GetuS();
@@ -347,12 +353,16 @@ void panic(int diagnostic_code)
 	}
 }
 
+
 //TODO: Abstract out constants.  Need to know battery voltage too
 void test_esc() {
 	int32_t voltages[6][3];
 
 	PIOS_DELAY_WaitmS(150);
 
+	//===============================================//
+	// Test that all MOSFETs are properly functional //
+	//===============================================//
 	zero_current = PIOS_ADC_PinGet(0);
 
 	PIOS_ESC_Arm();
@@ -361,55 +371,55 @@ void test_esc() {
 	low_voltages[1] = PIOS_ADC_PinGet(2);
 	low_voltages[2] = PIOS_ADC_PinGet(3);
 
-	PIOS_ESC_SetDutyCycle(0.5);
+	PIOS_ESC_SetDutyCycle(0.5);  //Set half duty cycle
 	PIOS_ESC_TestGate(ESC_A_LOW);
 	PIOS_DELAY_WaituS(250);
-	PIOS_ESC_SetDutyCycle(1);
+	PIOS_ESC_SetDutyCycle(1.0); //Set full duty cycle
 	PIOS_DELAY_WaituS(100);
 	voltages[1][0] = PIOS_ADC_PinGet(1);
 	voltages[1][1] = PIOS_ADC_PinGet(2);
 	voltages[1][2] = PIOS_ADC_PinGet(3);
 
-	PIOS_ESC_SetDutyCycle(0.5);
+	PIOS_ESC_SetDutyCycle(0.5);  //Set half duty cycle
 	PIOS_ESC_TestGate(ESC_A_HIGH);
 	PIOS_DELAY_WaituS(250);
-	PIOS_ESC_SetDutyCycle(1);
+	PIOS_ESC_SetDutyCycle(1.0);  //Set full duty cycle
 	PIOS_DELAY_WaituS(100);
 	voltages[0][0] = PIOS_ADC_PinGet(1);
 	voltages[0][1] = PIOS_ADC_PinGet(2);
 	voltages[0][2] = PIOS_ADC_PinGet(3);
 
-	PIOS_ESC_SetDutyCycle(0.5);
+	PIOS_ESC_SetDutyCycle(0.5);  //Set half duty cycle
 	PIOS_ESC_TestGate(ESC_B_LOW);
 	PIOS_DELAY_WaituS(250);
-	PIOS_ESC_SetDutyCycle(1);
+	PIOS_ESC_SetDutyCycle(1.0);  //Set full duty cycle
 	PIOS_DELAY_WaituS(100);
 	voltages[3][0] = PIOS_ADC_PinGet(1);
 	voltages[3][1] = PIOS_ADC_PinGet(2);
 	voltages[3][2] = PIOS_ADC_PinGet(3);
 
-	PIOS_ESC_SetDutyCycle(0.5);
+	PIOS_ESC_SetDutyCycle(0.5);  //Set half duty cycle
 	PIOS_ESC_TestGate(ESC_B_HIGH);
 	PIOS_DELAY_WaituS(250);
-	PIOS_ESC_SetDutyCycle(1);
+	PIOS_ESC_SetDutyCycle(1.0);  //Set full duty cycle
 	PIOS_DELAY_WaituS(100);
 	voltages[2][0] = PIOS_ADC_PinGet(1);
 	voltages[2][1] = PIOS_ADC_PinGet(2);
 	voltages[2][2] = PIOS_ADC_PinGet(3);
 
-	PIOS_ESC_SetDutyCycle(0.5);
+	PIOS_ESC_SetDutyCycle(0.5);  //Set half duty cycle
 	PIOS_ESC_TestGate(ESC_C_LOW);
 	PIOS_DELAY_WaituS(250);
-	PIOS_ESC_SetDutyCycle(1);
+	PIOS_ESC_SetDutyCycle(1.0);  //Set full duty cycle
 	PIOS_DELAY_WaituS(100);
 	voltages[5][0] = PIOS_ADC_PinGet(1);
 	voltages[5][1] = PIOS_ADC_PinGet(2);
 	voltages[5][2] = PIOS_ADC_PinGet(3);
 
-	PIOS_ESC_SetDutyCycle(0.5);
+	PIOS_ESC_SetDutyCycle(0.5);  //Set half duty cycle
 	PIOS_ESC_TestGate(ESC_C_HIGH);
 	PIOS_DELAY_WaituS(250);
-	PIOS_ESC_SetDutyCycle(1);
+	PIOS_ESC_SetDutyCycle(1.0);  //Set full duty cycle
 	PIOS_DELAY_WaituS(100);
 	voltages[4][0] = PIOS_ADC_PinGet(1);
 	voltages[4][1] = PIOS_ADC_PinGet(2);
@@ -430,7 +440,94 @@ void test_esc() {
 	if(voltages[5][2] > 700)
 		panic(5);
 
-	// TODO: If other channels don't follow then motor lead bad
+	
+
+	//=========================================================//
+	// Test that there are no open circuits in the motor coils //
+	//=========================================================//
+	//Check that voltages are sane. They should be very close to each other. `50` is an arbitrary value.
+	if(abs(voltages[0][0] - voltages[2][1]) > 50 ||  abs(voltages[0][0] - voltages[4][2]) > 50 || abs(voltages[2][1] - voltages[4][2]) > 50)
+		panic(6);
+	if(abs(voltages[1][0] - voltages[3][1]) > 50 ||  abs(voltages[1][0] - voltages[5][2]) > 50 || abs(voltages[3][1] - voltages[5][2]) > 50)
+		panic(7);
+	
+	//==================================================//
+	// Test that there are no shorts in the motor coils //
+	//==================================================//
+	//Check that currents are sane. They should be very close to each other.
+	float test_current[3];
+
+	PIOS_ESC_Arm();
+	PIOS_ESC_SetDutyCycle(0.1);  //Set 10% duty cycle. This should be all we really need in order to make a bit of current flow.
+	
+	PIOS_ESC_SetState(ESC_STATE_AB); //Have current flow through coils AB.
+	PIOS_DELAY_WaituS(500);
+	test_current[0]=esc_data->current;
+
+	PIOS_ESC_SetState(ESC_STATE_AC); //Have current flow through coils AC.
+	PIOS_DELAY_WaituS(500);
+	test_current[1]=esc_data->current;
+
+	
+	PIOS_ESC_SetState(ESC_STATE_BC); //Have current flow through coils BC.
+	PIOS_DELAY_WaituS(500);
+	test_current[2]=esc_data->current;
+
+	//`10` is an arbitrary value
+	if(abs(test_current[0] - test_current[1]) > 10 ||  abs(test_current[0] - test_current[2]) > 10 || abs(test_current[1] - test_current[2]) > 10)
+		panic(8);
+
+	PIOS_ESC_Off();
+
+	//==========//
+	// Success? // 	// Great! Beep a little pattern to let the user know we're happy.
+	//==========//
+	PIOS_ESC_Arm();
+	PIOS_ESC_SetState(ESC_STATE_AB); //Doesn't really matter which one we choose. This is just so that current can flow through the motor.
+	
+	PIOS_ESC_UpdatePwmFreq(2000);
+	PIOS_ESC_SetDutyCycle(1.0);  //Set full duty cycle
+	PIOS_DELAY_WaitmS(200);
+	PIOS_ESC_SetDutyCycle(0.0);  //Set duty cycle off
+	PIOS_DELAY_WaitmS(500);
+	
+	
+	PIOS_ESC_UpdatePwmFreq(2300);
+	PIOS_ESC_SetDutyCycle(1.0);  //Set full duty cycle
+	PIOS_DELAY_WaitmS(200);
+	PIOS_ESC_SetDutyCycle(0.0);  //Set duty cycle off
+	PIOS_DELAY_WaitmS(500);
+	
+	PIOS_ESC_UpdatePwmFreq(2800);
+	PIOS_ESC_SetDutyCycle(1.0);  //Set full duty cycle
+	PIOS_DELAY_WaitmS(200);
+	PIOS_ESC_SetDutyCycle(0.0);  //Set duty cycle off
+	PIOS_DELAY_WaitmS(500);
+	
+	// Determine the number of cells in series
+	uint8_t numBatteries=(uint8_t) (voltages[1][0]/3.65 + 0.5); //3.65 is a smidgen under LiPo nominal voltage. It seems to be a good value for distinguishing between 
+	
+	// Beep the number of LiPo in the battery pack
+	PIOS_ESC_UpdatePwmFreq(2000);
+	for (int i=0; i < numBatteries; i++){
+		PIOS_ESC_SetDutyCycle(1.0);  //Set full duty cycle
+		PIOS_DELAY_WaitmS(200);
+		PIOS_ESC_SetDutyCycle(0.0);  //Set duty cycle off
+		PIOS_DELAY_WaitmS(500);
+	}
+
+	
+	PIOS_ESC_UpdatePwmFreq(2000);
+	PIOS_DELAY_WaitmS(500);	
+	PIOS_ESC_SetDutyCycle(1.0);  //Set full duty cycle
+	PIOS_DELAY_WaitmS(750);
+	PIOS_ESC_SetDutyCycle(0.0);  //Set duty cycle off
+	
+	
+	PIOS_ESC_UpdatePwmFreq(40000);
+	PIOS_ESC_Off();
+
+
 }
 
 /*

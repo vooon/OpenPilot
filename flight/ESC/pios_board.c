@@ -35,13 +35,12 @@ void PIOS_TIM4_irq_handler() {
 #endif
 
 
-#define ESC_DEFAULT_PWM_RATE 40000
+#define ESC_DEFAULT_PWM_RATE			40000 // in [Hz]
 #include "pios_esc_priv.h"
 const struct pios_esc_cfg pios_esc_cfg = {
 	.tim_base_init = {
-		// Note not the same prescalar as servo
-		// This is 72e6 or 24e6 / 10e6 to give a 0.1 us resolution
-		.TIM_Prescaler = (PIOS_MASTER_CLOCK / 72e6) - 1,
+		// Note not the same prescalar as servo. This prescaler sets the PWM chopping rate for the MOSFETs
+		.TIM_Prescaler = (PIOS_MASTER_CLOCK / ESC_DEFAULT_PWM_RATE > 0xFFFF) ? 1:0, //There's no reason for this to be anything else but, since we want 1us resolution, which will for the next several years not require pre-scaling
 		.TIM_ClockDivision = TIM_CKD_DIV1,
 		.TIM_CounterMode = TIM_CounterMode_Up,
 		.TIM_Period = ((72e6 / ESC_DEFAULT_PWM_RATE) - 1),

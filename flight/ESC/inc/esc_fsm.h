@@ -104,8 +104,8 @@ struct esc_config {
 	float max_dc_change;
 	float min_dc;
 	float max_dc;
-	uint16_t initial_startup_speed;
-	uint16_t final_startup_speed;
+	uint16_t initial_em_startup_speed;
+	uint16_t final_em_startup_speed;
 	float commutation_phase;
 	float soft_current_limit;
 	float hard_current_limit;

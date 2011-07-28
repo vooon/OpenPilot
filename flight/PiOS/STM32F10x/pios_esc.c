@@ -38,9 +38,10 @@
 
 //! Private functions
 static void PIOS_ESC_UpdateOutputs();
-static void PIOS_ESC_UpdateChannel(const struct pios_gate_channel * gate, uint8_t gate_mode);
+static void PIOS_ESC_UpdateChannel(const struct pios_gate_channel * gate, uint8_t gate_mode, uint8_t gate_type);
 
 struct pios_esc_dev pios_esc_dev;
+struct pios_esc_cfg pios_esc_cfg;
 
 #define LAST_STATE ESC_STATE_CB
 #define LAST_MODE  ESC_MODE_HIGH_ON_PWM_BOTH
@@ -388,17 +389,18 @@ void PIOS_ESC_SetState(uint8_t new_state)
 /**
  * @brief Update a single gate output
  */
-static void PIOS_ESC_UpdateChannel(const struct pios_gate_channel * gate, uint8_t gate_mode) 
+static void PIOS_ESC_UpdateChannel(const struct pios_gate_channel * gate, uint8_t gate_mode, uint8_t gate_type) 
 {
 	
 	uint16_t duration = pios_esc_dev.duty_cycle;
 	uint8_t invert = false;
+	
 	switch(gate_mode) {
 		case ESC_GATE_MODE_OFF:
-			duration = 0;
+			duration = gate_type? 0:0xffff; //If type-N, then requires 0 to turn off. If type-P, then requires 1.
 			break;
 		case ESC_GATE_MODE_ON:
-			duration = 0xffff;
+			duration = gate_type? 0xffff:0; //If type-N, then requires 1 to turn on. If type-P, then requires 0.
 			break;
 		case ESC_GATE_MODE_PWM_INVERT:
 			invert = true;
@@ -441,12 +443,14 @@ static void PIOS_ESC_UpdateChannel(const struct pios_gate_channel * gate, uint8_
  */
 static void PIOS_ESC_UpdateOutputs()
 {
-	PIOS_ESC_UpdateChannel(&pios_esc_dev.cfg->phase_a_minus, pios_esc_dev.phase_a_minus);
-	PIOS_ESC_UpdateChannel(&pios_esc_dev.cfg->phase_a_plus, pios_esc_dev.phase_a_plus);
-	PIOS_ESC_UpdateChannel(&pios_esc_dev.cfg->phase_b_minus, pios_esc_dev.phase_b_minus);
-	PIOS_ESC_UpdateChannel(&pios_esc_dev.cfg->phase_b_plus, pios_esc_dev.phase_b_plus);
-	PIOS_ESC_UpdateChannel(&pios_esc_dev.cfg->phase_c_minus, pios_esc_dev.phase_c_minus);
-	PIOS_ESC_UpdateChannel(&pios_esc_dev.cfg->phase_c_plus, pios_esc_dev.phase_c_plus);	
+	int gate_type=0; //SHOULD BE EITHER TYPE-N OR TYPE-P, AND AS SUCH BE 0 OR 1. SET UP AN ENUM SOMEWHERE.
+
+	PIOS_ESC_UpdateChannel(&pios_esc_dev.cfg->phase_a_minus, pios_esc_dev.phase_a_minus, gate_type);
+	PIOS_ESC_UpdateChannel(&pios_esc_dev.cfg->phase_a_plus, pios_esc_dev.phase_a_plus, gate_type);
+	PIOS_ESC_UpdateChannel(&pios_esc_dev.cfg->phase_b_minus, pios_esc_dev.phase_b_minus, gate_type);
+	PIOS_ESC_UpdateChannel(&pios_esc_dev.cfg->phase_b_plus, pios_esc_dev.phase_b_plus, gate_type);
+	PIOS_ESC_UpdateChannel(&pios_esc_dev.cfg->phase_c_minus, pios_esc_dev.phase_c_minus, gate_type);
+	PIOS_ESC_UpdateChannel(&pios_esc_dev.cfg->phase_c_plus, pios_esc_dev.phase_c_plus, gate_type);	
 }
 
 /**
@@ -485,6 +489,19 @@ void PIOS_ESC_TestGate(enum pios_esc_phase phase)
 	PIOS_ESC_SetDutyCycle(0.5);
 	PIOS_ESC_UpdateOutputs();	
 }
+
+/**
+ * @brief Update the ESC PWM chopping frequency. This is the frequency at which the MOSFETs are cycled.
+ */
+void PIOS_ESC_UpdatePwmFreq(int esc_pwm_freq){
+	
+	pios_esc_cfg.pwm_base_rate=esc_pwm_freq;
+	
+	//Shouldn't be hard-coded to the timers, but I'm not sure how to make it generic without calling the function six times, one for each channel
+	TIM_SetAutoreload(TIM2, pios_esc_cfg.pwm_base_rate);
+	TIM_SetAutoreload(TIM3, pios_esc_cfg.pwm_base_rate);
+}
+
 
 
 #endif
