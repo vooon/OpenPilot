@@ -47,7 +47,7 @@ int PIOS_SIM_Step(int dT)
  * @param[in] actuator pointer to an array of actuators to set
  * @param[in] nchannels number of channels that are valid coming in
  */
-void PIOS_SIM_SetActuator(int * actuator, int nchannels)
+void PIOS_SIM_SetActuator(float * actuator, int nchannels)
 {
 	for (int i = 0; i < NELEMENTS(pios_sim_state.actuator) && i < nchannels; i++)
 		pios_sim_state.actuator[i] = actuator[i];

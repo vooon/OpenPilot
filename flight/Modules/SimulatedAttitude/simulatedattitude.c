@@ -52,7 +52,7 @@
 
 #include "simulatedattitude.h"
 #include "pios.h"
-
+#include "CoordinateConversions.h"
 #include "attituderaw.h"
 #include "attitudeactual.h"
 #include "actuatorcommand.h"
@@ -117,9 +117,13 @@ static void SimulatedAttitudeTask(void *parameters)
 		AttitudeActualGet(&attitudeActual);
 		ActuatorCommandGet(&actuatorCommand);
 		
-		// Store the actuator channels in the pios system
-		PIOS_SIM_SetActuator(actuatorCommand.Channel);
-
+		// Store the actuator channels in the pios system.  Some gymnastics
+        // to keep simulation using floats
+        float Actuator[NELEMENTS(actuatorCommand.Channel)];
+		PIOS_SIM_SetActuator(Actuator, NELEMENTS(actuatorCommand.Channel));
+        for (uint8_t i = 0; i < NELEMENTS(actuatorCommand.Channel); i++)
+            actuatorCommand.Channel[i] = Actuator[i];
+        
 		// Run model forward a step
 	        PIOS_SIM_Step(0.001);
 
