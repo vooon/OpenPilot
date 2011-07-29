@@ -45,6 +45,7 @@ void EXTI15_10_IRQHandler(void)
 #endif
 
 #if defined(PIOS_INCLUDE_BMP085)
+#ifndef USE_STM32103CB_CC_Rev1
 	if (EXTI_GetITStatus(PIOS_BMP085_EOC_EXTI_LINE) != RESET) {
 		/* Read the ADC Value */
 #if defined(PIOS_INCLUDE_FREERTOS)
@@ -56,6 +57,7 @@ void EXTI15_10_IRQHandler(void)
 		/* Clear the EXTI line pending bit */
 		EXTI_ClearITPendingBit(PIOS_BMP085_EOC_EXTI_LINE);
 	}
+#endif
 #endif
 
 #if defined(PIOS_INCLUDE_FREERTOS)

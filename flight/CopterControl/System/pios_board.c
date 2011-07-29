@@ -806,7 +806,7 @@ static const struct pios_i2c_adapter_cfg pios_i2c_main_adapter_cfg = {
     .I2C_Ack                 = I2C_Ack_Enable,
     .I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit,
     .I2C_DutyCycle           = I2C_DutyCycle_2,
-    .I2C_ClockSpeed          = 400000,	/* bits/s */
+    .I2C_ClockSpeed          = 200000,	/* bits/s */
   },
   .transfer_timeout_ms = 50,
   .scl = {
@@ -830,8 +830,8 @@ static const struct pios_i2c_adapter_cfg pios_i2c_main_adapter_cfg = {
     .flags   = 0,		/* FIXME: check this */
     .init = {
       .NVIC_IRQChannel                   = I2C2_EV_IRQn,
-      .NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGHEST,
-      .NVIC_IRQChannelSubPriority        = 0,
+      .NVIC_IRQChannelPreemptionPriority = 1,
+      .NVIC_IRQChannelSubPriority        = 4,
       .NVIC_IRQChannelCmd                = ENABLE,
     },
   },
@@ -840,8 +840,8 @@ static const struct pios_i2c_adapter_cfg pios_i2c_main_adapter_cfg = {
     .flags   = 0,		/* FIXME: check this */
     .init = {
       .NVIC_IRQChannel                   = I2C2_ER_IRQn,
-      .NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGHEST,
-      .NVIC_IRQChannelSubPriority        = 0,
+      .NVIC_IRQChannelPreemptionPriority = 1,
+      .NVIC_IRQChannelSubPriority        = 3,
       .NVIC_IRQChannelCmd                = ENABLE,
     },
   },
@@ -911,9 +911,19 @@ void PIOS_Board_Init(void) {
 	/* Initialize the task monitor library */
 	TaskMonitorInitialize();
 
+	if (PIOS_I2C_Init(&pios_i2c_main_adapter_id, &pios_i2c_main_adapter_cfg)) {
+		PIOS_Assert(0);
+	}
+	#if defined (PIOS_INCLUDE_BMP085)
+		PIOS_BMP085_Init();
+	#endif /* PIOS_INCLUDE_BMP085 */
+	#if defined (PIOS_INCLUDE_HMC5883)
+       PIOS_HMC5883_Init();
+	#endif /* PIOS_INCLUDE_HMC5883 */
+
 	/* Configure the main IO port */
 	uint8_t hwsettings_cc_mainport;
-	HwSettingsCC_MainPortGet(&hwsettings_cc_mainport);
+	//HwSettingsCC_MainPortGet(&hwsettings_cc_mainport);
 
 	switch (hwsettings_cc_mainport) {
 	case HWSETTINGS_CC_MAINPORT_DISABLED:
@@ -1027,6 +1037,13 @@ void PIOS_Board_Init(void) {
 			if (PIOS_I2C_Init(&pios_i2c_main_adapter_id, &pios_i2c_main_adapter_cfg)) {
 				PIOS_Assert(0);
 			}
+			#if defined (PIOS_INCLUDE_BMP085)
+				PIOS_BMP085_Init();
+			#endif /* PIOS_INCLUDE_BMP085 */
+			#if defined (PIOS_INCLUDE_HMC5883)
+		       PIOS_HMC5883_Init();
+			#endif /* PIOS_INCLUDE_HMC5883 */
+
 		}
 #endif	/* PIOS_INCLUDE_I2C */
 		break;
@@ -1107,7 +1124,7 @@ void PIOS_Board_Init(void) {
 	}
 
 	/* Remap AFIO pin */
-	GPIO_PinRemapConfig( GPIO_Remap_SWJ_NoJTRST, ENABLE);
+	//GPIO_PinRemapConfig( GPIO_Remap_SWJ_NoJTRST, ENABLE);
 	PIOS_Servo_Init();
 	
 	PIOS_ADC_Init();
@@ -1123,7 +1140,7 @@ void PIOS_Board_Init(void) {
 #endif	/* PIOS_INCLUDE_USB_HID */
 
 	PIOS_IAP_Init();
-	PIOS_WDG_Init();
+	//PIOS_WDG_Init();
 }
 
 /**

@@ -38,7 +38,9 @@
 #define PIOS_INCLUDE_DELAY
 #if defined(USE_I2C)
 #define PIOS_INCLUDE_I2C
-#define PIOS_INCLUDE_I2C_ESC
+#define PIOS_INCLUDE_BMP085
+#define PIOS_INCLUDE_HMC5883
+//#define PIOS_INCLUDE_I2C_ESC
 #endif
 #define PIOS_INCLUDE_IRQ
 #define PIOS_INCLUDE_LED
@@ -46,13 +48,13 @@
 #define PIOS_INCLUDE_RCVR
 
 /* Supported receiver interfaces */
-#define PIOS_INCLUDE_SPEKTRUM
-#define PIOS_INCLUDE_SBUS
-//#define PIOS_INCLUDE_PPM
-#define PIOS_INCLUDE_PWM
+//#define PIOS_INCLUDE_SPEKTRUM
+//#define PIOS_INCLUDE_SBUS
+#define PIOS_INCLUDE_PPM
+//#define PIOS_INCLUDE_PWM
 
 /* Supported USART-based PIOS modules */
-#define PIOS_INCLUDE_TELEMETRY_RF
+//#define PIOS_INCLUDE_TELEMETRY_RF
 //#define PIOS_INCLUDE_GPS
 
 #define PIOS_INCLUDE_SERVO
@@ -66,7 +68,7 @@
 #define PIOS_INCLUDE_GPIO
 #define PIOS_INCLUDE_EXTI
 #define PIOS_INCLUDE_RTC
-#define PIOS_INCLUDE_WDG
+//#define PIOS_INCLUDE_WDG
 #define PIOS_INCLUDE_BL_HELPER
 
 #define PIOS_INCLUDE_ADXL345

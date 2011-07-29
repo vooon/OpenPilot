@@ -242,7 +242,7 @@ extern uint32_t pios_com_sbus_id;
 // Receiver SPEKTRUM input
 //-------------------------
 #define PIOS_SPEKTRUM_NUM_INPUTS                12
-
+#define PIOS_BMP085_OVERSAMPLING                3
 //-------------------------
 // Servo outputs
 //-------------------------

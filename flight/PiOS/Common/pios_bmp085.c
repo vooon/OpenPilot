@@ -60,10 +60,11 @@ static volatile uint16_t Temperature;
 */
 void PIOS_BMP085_Init(void)
 {
+#ifndef USE_STM32103CB_CC_Rev1
 	GPIO_InitTypeDef GPIO_InitStructure;
 	EXTI_InitTypeDef EXTI_InitStructure;
 	NVIC_InitTypeDef NVIC_InitStructure;
-
+#endif
 #if defined(PIOS_INCLUDE_FREERTOS)
 	/* Semaphore used by ISR to signal End-Of-Conversion */
 	vSemaphoreCreateBinary(PIOS_BMP085_EOC);
@@ -73,6 +74,7 @@ void PIOS_BMP085_Init(void)
 	PIOS_BMP085_EOC = 0;
 #endif
 
+#ifndef USE_STM32103CB_CC_Rev1
 	/* Enable EOC GPIO clock */
 	RCC_APB2PeriphClockCmd(PIOS_BMP085_EOC_CLK | RCC_APB2Periph_AFIO, ENABLE);
 
@@ -100,6 +102,7 @@ void PIOS_BMP085_Init(void)
 	GPIO_InitStructure.GPIO_Pin = PIOS_BMP085_XCLR_GPIO_PIN;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
 	GPIO_Init(PIOS_BMP085_XCLR_GPIO_PORT, &GPIO_InitStructure);
+#endif
 
 	/* Read all 22 bytes of calibration data in one transfer, this is a very optimized way of doing things */
 	uint8_t Data[BMP085_CALIB_LEN];

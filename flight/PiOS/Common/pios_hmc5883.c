@@ -58,6 +58,7 @@ static bool PIOS_HMC5883_Write(uint8_t address, uint8_t buffer);
  */
 void PIOS_HMC5883_Init(void)
 {
+#ifndef USE_STM32103CB_CC_Rev1
 	GPIO_InitTypeDef GPIO_InitStructure;
 	EXTI_InitTypeDef EXTI_InitStructure;
 	NVIC_InitTypeDef NVIC_InitStructure;
@@ -84,7 +85,7 @@ void PIOS_HMC5883_Init(void)
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
-
+#endif
 	/* Configure the HMC5883 Sensor */
 	PIOS_HMC5883_ConfigTypeDef HMC5883_InitStructure;
 	HMC5883_InitStructure.M_ODR = PIOS_HMC5883_ODR_15;
@@ -157,9 +158,9 @@ void PIOS_HMC5883_Init(void)
 */
 static void PIOS_HMC5883_Config(PIOS_HMC5883_ConfigTypeDef * HMC5883_Config_Struct)
 {
-	uint8_t CTRLA = 0x00;
-	uint8_t CTRLB = 0x00;
-	uint8_t MODE = 0x00;
+	uint8_t CTRLA = 0;
+	uint8_t CTRLB = 0;
+	uint8_t MODE = 0;
 
 	CTRLA |= (uint8_t) (HMC5883_Config_Struct->M_ODR | HMC5883_Config_Struct->Meas_Conf);
 	CTRLB |= (uint8_t) (HMC5883_Config_Struct->Gain);
@@ -184,53 +185,58 @@ void PIOS_HMC5883_ReadMag(int16_t out[3])
 {
 	uint8_t buffer[6];
 	uint8_t ctrlB;
+	uint8_t status;
 
 	pios_hmc5883_data_ready = false;
 
 	while (!PIOS_HMC5883_Read(PIOS_HMC5883_CONFIG_REG_B, &ctrlB, 1)) ;
-	while (!PIOS_HMC5883_Read(PIOS_HMC5883_DATAOUT_XMSB_REG, buffer, 6)) ;
+	while (!PIOS_HMC5883_Read(PIOS_HMC5883_DATAOUT_STATUS_REG, &status, 1)) ;
+	if(status&0x01)
+	{
+		while (!PIOS_HMC5883_Read(PIOS_HMC5883_DATAOUT_XMSB_REG, buffer, 6)) ;
 
-	switch (ctrlB & 0xE0) {
-	case 0x00:
-		for (int i = 0; i < 3; i++)
-			out[i] = ((int16_t) ((uint16_t) buffer[2 * i] << 8)
-				  + buffer[2 * i + 1]) * 1000 / PIOS_HMC5883_Sensitivity_0_88Ga;
-		break;
-	case 0x20:
-		for (int i = 0; i < 3; i++)
-			out[i] = ((int16_t) ((uint16_t) buffer[2 * i] << 8)
-				  + buffer[2 * i + 1]) * 1000 / PIOS_HMC5883_Sensitivity_1_3Ga;
-		break;
-	case 0x40:
-		for (int i = 0; i < 3; i++)
-			out[i] = (int16_t) (((uint16_t) buffer[2 * i] << 8)
-					    + buffer[2 * i + 1]) * 1000 / PIOS_HMC5883_Sensitivity_1_9Ga;
-		break;
-	case 0x60:
-		for (int i = 0; i < 3; i++)
-			out[i] = (int16_t) (((uint16_t) buffer[2 * i] << 8)
-					    + buffer[2 * i + 1]) * 1000 / PIOS_HMC5883_Sensitivity_2_5Ga;
-		break;
-	case 0x80:
-		for (int i = 0; i < 3; i++)
-			out[i] = (int16_t) (((uint16_t) buffer[2 * i] << 8)
-					    + buffer[2 * i + 1]) * 1000 / PIOS_HMC5883_Sensitivity_4_0Ga;
-		break;
-	case 0xA0:
-		for (int i = 0; i < 3; i++)
-			out[i] = (int16_t) (((uint16_t) buffer[2 * i] << 8)
-					    + buffer[2 * i + 1]) * 1000 / PIOS_HMC5883_Sensitivity_4_7Ga;
-		break;
-	case 0xC0:
-		for (int i = 0; i < 3; i++)
-			out[i] = (int16_t) (((uint16_t) buffer[2 * i] << 8)
-					    + buffer[2 * i + 1]) * 1000 / PIOS_HMC5883_Sensitivity_5_6Ga;
-		break;
-	case 0xE0:
-		for (int i = 0; i < 3; i++)
-			out[i] = (int16_t) (((uint16_t) buffer[2 * i] << 8)
-					    + buffer[2 * i + 1]) * 1000 / PIOS_HMC5883_Sensitivity_8_1Ga;
-		break;
+		switch (ctrlB & 0xE0) {
+		case 0x00:
+			for (int i = 0; i < 3; i++)
+				out[i] = ((int16_t) ((uint16_t) buffer[2 * i] << 8)
+					  + buffer[2 * i + 1]) * 1000 / PIOS_HMC5883_Sensitivity_0_88Ga;
+			break;
+		case 0x20:
+			for (int i = 0; i < 3; i++)
+				out[i] = ((int16_t) ((uint16_t) buffer[2 * i] << 8)
+					  + buffer[2 * i + 1]) * 1000 / PIOS_HMC5883_Sensitivity_1_3Ga;
+			break;
+		case 0x40:
+			for (int i = 0; i < 3; i++)
+				out[i] = (int16_t) (((uint16_t) buffer[2 * i] << 8)
+							+ buffer[2 * i + 1]) * 1000 / PIOS_HMC5883_Sensitivity_1_9Ga;
+			break;
+		case 0x60:
+			for (int i = 0; i < 3; i++)
+				out[i] = (int16_t) (((uint16_t) buffer[2 * i] << 8)
+							+ buffer[2 * i + 1]) * 1000 / PIOS_HMC5883_Sensitivity_2_5Ga;
+			break;
+		case 0x80:
+			for (int i = 0; i < 3; i++)
+				out[i] = (int16_t) (((uint16_t) buffer[2 * i] << 8)
+							+ buffer[2 * i + 1]) * 1000 / PIOS_HMC5883_Sensitivity_4_0Ga;
+			break;
+		case 0xA0:
+			for (int i = 0; i < 3; i++)
+				out[i] = (int16_t) (((uint16_t) buffer[2 * i] << 8)
+							+ buffer[2 * i + 1]) * 1000 / PIOS_HMC5883_Sensitivity_4_7Ga;
+			break;
+		case 0xC0:
+			for (int i = 0; i < 3; i++)
+				out[i] = (int16_t) (((uint16_t) buffer[2 * i] << 8)
+							+ buffer[2 * i + 1]) * 1000 / PIOS_HMC5883_Sensitivity_5_6Ga;
+			break;
+		case 0xE0:
+			for (int i = 0; i < 3; i++)
+				out[i] = (int16_t) (((uint16_t) buffer[2 * i] << 8)
+							+ buffer[2 * i + 1]) * 1000 / PIOS_HMC5883_Sensitivity_8_1Ga;
+			break;
+		}
 	}
 }
 
@@ -240,7 +246,7 @@ void PIOS_HMC5883_ReadMag(int16_t out[3])
  * \param[out] uint8_t array of size 4 to store HMC5883 ID.
  * \return none
 */
-void PIOS_HMC5883_ReadID(uint8_t out[4])
+void PIOS_HMC5883_ReadID(uint8_t * out)
 {
 	while (!PIOS_HMC5883_Read(PIOS_HMC5883_DATAOUT_IDA_REG, out, 3)) ;
 	out[3] = '\0';
@@ -330,7 +336,7 @@ int32_t PIOS_HMC5883_Test(void)
 	/* Verify that ID matches (HMC5883 ID is null-terminated ASCII string "H43") */
 	char id[4];
 	PIOS_HMC5883_ReadID((uint8_t *)id);
-	if(!strncmp("H43\0",id,4))
+	if(strncmp("H43\0",id,4))
 		return 0;
 	else
 		return 1;

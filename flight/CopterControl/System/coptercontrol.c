@@ -55,6 +55,42 @@ extern void Stack_Change(void);
 * If something goes wrong, blink LED1 and LED2 every 100ms
 *
 */
+/* test functions */
+void blink(int led, int times)
+{
+	for(int i=0; i<times; i++)
+	{
+		PIOS_LED_Toggle(led);
+		PIOS_DELAY_WaitmS(250);
+		PIOS_LED_Toggle(led);
+		PIOS_DELAY_WaitmS(250);
+	}
+}
+
+
+#if defined (PIOS_INCLUDE_HMC5883)
+void test_mag()
+{
+	int16_t mags[3];
+	if(PIOS_HMC5883_Test())	{
+		PIOS_HMC5883_ReadMag(mags);
+		blink(LED1, 2);
+	} else {
+		blink(LED1, 4);
+	}
+}
+#endif
+
+#if defined (PIOS_INCLUDE_BMP085)
+void test_pressure()
+{
+	if(PIOS_BMP085_Test())
+		blink(LED1, 3);
+	else
+		blink(LED1, 6);
+}
+#endif
+
 int main()
 {
 	/* NOTE: Do NOT modify the following start-up sequence */
@@ -68,7 +104,12 @@ int main()
 	 * (see pios_board.c for your arch)
 	 * */
 	PIOS_Board_Init();
-
+	for(;;) {
+	test_mag();
+	PIOS_DELAY_WaitmS(100);
+	test_pressure();
+	PIOS_DELAY_WaitmS(100);
+}
 	/* Initialize modules */
 	MODULE_INITIALISE_ALL
 
