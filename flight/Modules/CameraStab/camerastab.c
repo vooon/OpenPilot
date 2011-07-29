@@ -67,7 +67,7 @@ static void attitudeUpdated(UAVObjEvent* ev);
  * Initialise the module, called on startup
  * \returns 0 on success or -1 if initialisation failed
  */
-int32_t CameraStabInitialize(void)
+int32_t CameraStabStart(void)
 {
 	static UAVObjEvent ev;
 	ev.obj = AttitudeActualHandle();
@@ -80,6 +80,13 @@ int32_t CameraStabInitialize(void)
 
 	return 0;
 }
+
+int32_t CameraStabInitialize(void)
+{
+	return 0;
+}
+
+MODULE_INITCALL(CameraStabInitialize, CameraStabStart)
 
 static void attitudeUpdated(UAVObjEvent* ev)
 {
