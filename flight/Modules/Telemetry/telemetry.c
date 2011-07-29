@@ -112,6 +112,10 @@ int32_t TelemetryInitialize(void)
 {
 	UAVObjEvent ev;
 
+	FlightTelemetryStatsInitialize();
+	GCSTelemetryStatsInitialize();
+	TelemetrySettingsInitialize();
+
 	// Initialize vars
 	timeOfLastObjectUpdate = 0;
 

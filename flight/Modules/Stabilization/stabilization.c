@@ -40,8 +40,6 @@
 #include "attitudeactual.h"
 #include "attituderaw.h"
 #include "flightstatus.h"
-#include "systemsettings.h"
-#include "ahrssettings.h"
 #include "manualcontrol.h" // Just to get a macro
 #include "CoordinateConversions.h"
 
@@ -146,7 +144,6 @@ static void stabilizationTask(void* parameters)
 	RateDesiredData rateDesired;
 	AttitudeActualData attitudeActual;
 	AttitudeRawData attitudeRaw;
-	SystemSettingsData systemSettings;
 	FlightStatusData flightStatus;
 
 	SettingsUpdatedCb((UAVObjEvent *) NULL);
@@ -174,8 +171,10 @@ static void stabilizationTask(void* parameters)
 		StabilizationDesiredGet(&stabDesired);
 		AttitudeActualGet(&attitudeActual);
 		AttitudeRawGet(&attitudeRaw);
+
+#if defined(DIAGNOSTICS)
 		RateDesiredGet(&rateDesired);
-		SystemSettingsGet(&systemSettings);
+#endif
 
 #if defined(PIOS_QUATERNION_STABILIZATION)
 		// Quaternion calculation of error in each axis.  Uses more memory.
@@ -272,7 +271,9 @@ static void stabilizationTask(void* parameters)
 		}
 
 		uint8_t shouldUpdate = 1;
+#if defined(DIAGNOSTICS)
 		RateDesiredSet(&rateDesired);
+#endif
 		ActuatorDesiredGet(&actuatorDesired);
 		//Calculate desired command
 		for(int8_t ct=0; ct< MAX_AXES; ct++)
