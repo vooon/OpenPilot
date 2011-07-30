@@ -65,9 +65,7 @@ endif
 FLASH_TOOL = OPENOCD
 
 # List of modules to include
-MODULES = Attitude Stabilization Actuator ManualControl FirmwareIAP CameraStab
-# Telemetry must be last to grab the optional modules
-MODULES += Telemetry
+MODULES = Telemetry Attitude Stabilization Actuator ManualControl FirmwareIAP CameraStab 
 
 # Paths
 OPSYSTEM = ./System
@@ -167,7 +165,7 @@ SRC += $(OPUAVSYNTHDIR)/firmwareiapobj.c
 SRC += $(OPUAVSYNTHDIR)/attitudesettings.c
 SRC += $(OPUAVSYNTHDIR)/camerastabsettings.c
 
-ifeq ($(DIAGNOISTCS),YES)
+ifeq ($(DIAGNOSTICS),YES)
 SRC += $(OPUAVSYNTHDIR)/taskinfo.c
 SRC += $(OPUAVSYNTHDIR)/mixerstatus.c
 SRC += $(OPUAVSYNTHDIR)/ratedesired.c

@@ -27,14 +27,14 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-#ifndef BATTERY_H
-#define BATTERY_H
+#ifndef CAMSTAB_H
+#define CAMSTAB_H
 
 #include "openpilot.h"
 
-int32_t CameraStabInitialize(void);
+int32_t CameraStabInitialize();
 
-#endif // BATTERY_H
+#endif // CAMSTAB_H
 
 /**
   * @}

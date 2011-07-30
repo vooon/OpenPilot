@@ -91,9 +91,6 @@ static void resetTask(UAVObjEvent *);
 MODULE_INITCALL(FirmwareIAPInitialize, 0)
 int32_t FirmwareIAPInitialize()
 {
-	
-	FirmwareIAPObjInitialize();
-	
 	const struct pios_board_info * bdinfo = &pios_board_info_blob;
 
 	data.BoardType= bdinfo->board_type;
