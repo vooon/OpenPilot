@@ -108,13 +108,6 @@ int32_t ActuatorInitialize()
 	// Create object queue
 	queue = xQueueCreate(MAX_QUEUE_SIZE, sizeof(UAVObjEvent));
 
-	ActuatorSettingsInitialize();
-	ActuatorDesiredInitialize();
-	MixerSettingsInitialize();
-#if defined(DIAGNOSTICS)
-	MixerStatusInitialize();
-#endif
-
 	// Listen for ExampleObject1 updates
 	ActuatorDesiredConnectQueue(queue);
 

@@ -47,6 +47,7 @@
 
 #include "openpilot.h"
 
+#include "camerastab.h"
 #include "accessorydesired.h"
 #include "attitudeactual.h"
 #include "camerastabsettings.h"
@@ -67,26 +68,21 @@ static void attitudeUpdated(UAVObjEvent* ev);
  * Initialise the module, called on startup
  * \returns 0 on success or -1 if initialisation failed
  */
-int32_t CameraStabStart(void)
+
+MODULE_INITCALL(CameraStabInitialize, 0)
+
+int32_t CameraStabInitialize()
 {
 	static UAVObjEvent ev;
+
 	ev.obj = AttitudeActualHandle();
 	ev.instId = 0;
 	ev.event = 0;
-
-	CameraStabSettingsInitialize();
 
 	EventPeriodicCallbackCreate(&ev, attitudeUpdated, SAMPLE_PERIOD_MS / portTICK_RATE_MS);
 
 	return 0;
 }
-
-int32_t CameraStabInitialize(void)
-{
-	return 0;
-}
-
-MODULE_INITCALL(CameraStabInitialize, CameraStabStart)
 
 static void attitudeUpdated(UAVObjEvent* ev)
 {

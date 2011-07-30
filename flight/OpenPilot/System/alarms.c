@@ -45,7 +45,6 @@ static int32_t hasSeverity(SystemAlarmsAlarmOptions severity);
  */
 int32_t AlarmsInitialize(void)
 {
-	SystemAlarmsInitialize();
 	lock = xSemaphoreCreateRecursiveMutex();
 	return 0;
 }

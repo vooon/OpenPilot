@@ -79,9 +79,6 @@ MODULE_INITCALL(BatteryInitialize, 0)
 
 int32_t BatteryInitialize(void)
 {
-	BatteryStateInitialze();
-	BatterySettingsInitialize();
-	
 	static UAVObjEvent ev;
 
 	memset(&ev,0,sizeof(UAVObjEvent));
