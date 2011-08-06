@@ -353,6 +353,82 @@ static const struct pios_usart_cfg pios_usart_gps_flexi_cfg = {
 };
 #endif	/* PIOS_INCLUDE_GPS */
 
+#include "OsdHk.h"
+/*
+ * HK OSD
+ */
+static const struct pios_usart_cfg pios_usart_hkosd_main_cfg = {
+  .regs = USART1,
+  .init = {
+    .USART_BaudRate            = 9600,
+    .USART_WordLength          = USART_WordLength_8b,
+    .USART_Parity              = USART_Parity_No,
+    .USART_StopBits            = USART_StopBits_1,
+    .USART_HardwareFlowControl = USART_HardwareFlowControl_None,
+    .USART_Mode                = USART_Mode_Rx | USART_Mode_Tx,
+  },
+  .irq = {
+    .init    = {
+      .NVIC_IRQChannel                   = USART1_IRQn,
+      .NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_MID,
+      .NVIC_IRQChannelSubPriority        = 0,
+      .NVIC_IRQChannelCmd                = ENABLE,
+    },
+  },
+  .rx   = {
+    .gpio = GPIOA,
+    .init = {
+      .GPIO_Pin   = GPIO_Pin_10,
+      .GPIO_Speed = GPIO_Speed_2MHz,
+      .GPIO_Mode  = GPIO_Mode_IPU,
+    },
+  },
+  .tx   = {
+    .gpio = GPIOA,
+    .init = {
+      .GPIO_Pin   = GPIO_Pin_9,
+      .GPIO_Speed = GPIO_Speed_2MHz,
+      .GPIO_Mode  = GPIO_Mode_AF_PP,
+    },
+  },
+};
+
+static const struct pios_usart_cfg pios_usart_hkosd_flexi_cfg = {
+  .regs = USART3,
+  .init = {
+    .USART_BaudRate            = 9600,
+    .USART_WordLength          = USART_WordLength_8b,
+    .USART_Parity              = USART_Parity_No,
+    .USART_StopBits            = USART_StopBits_1,
+    .USART_HardwareFlowControl = USART_HardwareFlowControl_None,
+    .USART_Mode                = USART_Mode_Rx | USART_Mode_Tx,
+  },
+  .irq = {
+    .init    = {
+      .NVIC_IRQChannel                   = USART3_IRQn,
+      .NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_MID,
+      .NVIC_IRQChannelSubPriority        = 0,
+      .NVIC_IRQChannelCmd                = ENABLE,
+    },
+  },
+  .rx   = {
+    .gpio = GPIOB,
+    .init = {
+      .GPIO_Pin   = GPIO_Pin_11,
+      .GPIO_Speed = GPIO_Speed_2MHz,
+      .GPIO_Mode  = GPIO_Mode_IPU,
+    },
+  },
+  .tx   = {
+    .gpio = GPIOB,
+    .init = {
+      .GPIO_Pin   = GPIO_Pin_10,
+      .GPIO_Speed = GPIO_Speed_2MHz,
+      .GPIO_Mode  = GPIO_Mode_AF_PP,
+    },
+  },
+};
+
 #if defined(PIOS_INCLUDE_SPEKTRUM)
 /*
  * SPEKTRUM USART
@@ -526,6 +602,8 @@ static const struct pios_sbus_cfg pios_sbus_cfg = {
 #define PIOS_COM_TELEM_RF_TX_BUF_LEN 192
 
 #define PIOS_COM_GPS_RX_BUF_LEN 96
+
+#define PIOS_COM_HKOSD_TX_BUF_LEN 11
 
 #define PIOS_COM_TELEM_USB_RX_BUF_LEN 192
 #define PIOS_COM_TELEM_USB_TX_BUF_LEN 192
@@ -997,6 +1075,25 @@ void PIOS_Board_Init(void) {
 		break;
 	case HWSETTINGS_CC_MAINPORT_COMAUX:
 		break;
+	case HWSETTINGS_CC_MAINPORT_HKOSD:
+		{
+			uint32_t pios_usart_hkosd_id;
+			if (PIOS_USART_Init(&pios_usart_hkosd_id, &pios_usart_hkosd_main_cfg)) {
+				PIOS_Assert(0);
+			}
+
+			uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_HKOSD_TX_BUF_LEN);
+			PIOS_Assert(tx_buffer);
+			uint32_t pios_com_hkosd_id;
+			if (PIOS_COM_Init(&pios_com_hkosd_id, &pios_usart_com_driver, pios_usart_hkosd_id,
+						NULL, 0,
+						tx_buffer, PIOS_COM_HKOSD_TX_BUF_LEN)) {
+				PIOS_Assert(0);
+			}
+
+			OsdHkConnect(pios_com_hkosd_id);
+		}
+		break;
 	}
 
 	/* Configure the flexi port */
@@ -1067,6 +1164,25 @@ void PIOS_Board_Init(void) {
 			}
 		}
 #endif	/* PIOS_INCLUDE_I2C */
+		break;
+	case HWSETTINGS_CC_FLEXIPORT_HKOSD:
+		{
+			uint32_t pios_usart_hkosd_id;
+			if (PIOS_USART_Init(&pios_usart_hkosd_id, &pios_usart_hkosd_flexi_cfg)) {
+				PIOS_Assert(0);
+			}
+
+			uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_HKOSD_TX_BUF_LEN);
+			PIOS_Assert(tx_buffer);
+			uint32_t pios_com_hkosd_id;
+			if (PIOS_COM_Init(&pios_com_hkosd_id, &pios_usart_com_driver, pios_usart_hkosd_id,
+						NULL, 0,
+						tx_buffer, PIOS_COM_HKOSD_TX_BUF_LEN)) {
+				PIOS_Assert(0);
+			}
+
+			OsdHkConnect(pios_com_hkosd_id);
+		}
 		break;
 	}
 
