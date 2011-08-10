@@ -114,21 +114,19 @@ void GCSControlGadgetWidget::toggleControl(int state)
     UAVObjectManager *objManager = pm->getObject<UAVObjectManager>();
     UAVDataObject* obj = dynamic_cast<UAVDataObject*>( objManager->getObject(QString("ManualControlCommand")) );
 
-    UAVObject::Metadata mdata = obj->getMetadata();
-    if (state)
-    {
-        mccInitialData = mdata;
+    UAVObject::Metadata mdata = obj->getDefaultMetadata();
+    if (state) {
+//        mccInitialData = mdata;
         mdata.flightAccess = UAVObject::ACCESS_READONLY;
         mdata.flightTelemetryUpdateMode = UAVObject::UPDATEMODE_ONCHANGE;
         mdata.gcsTelemetryAcked = false;
         mdata.gcsTelemetryUpdateMode = UAVObject::UPDATEMODE_ONCHANGE;
         mdata.gcsTelemetryUpdatePeriod = 100;
-
     }
-    else
-    {
-        mdata = mccInitialData;
-    }
+//    else
+//    {
+//        mdata = mccInitialData;
+//    }
     obj->setMetadata(mdata);
 }
 

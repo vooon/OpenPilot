@@ -62,7 +62,7 @@ protected slots:
 
 private:
     Ui_GCSControl *m_gcscontrol;
-    UAVObject::Metadata mccInitialData;
+//    UAVObject::Metadata mccInitialData;
     double leftX,leftY,rightX,rightY;
 };
 

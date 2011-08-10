@@ -62,7 +62,7 @@ private:
     QTime joystickTime;
     QWidget *m_widget;
     QList<int> m_context;
-    UAVObject::Metadata mccInitialData;
+//    UAVObject::Metadata mccInitialData;
     int rollChannel;
     int pitchChannel;
     int yawChannel;

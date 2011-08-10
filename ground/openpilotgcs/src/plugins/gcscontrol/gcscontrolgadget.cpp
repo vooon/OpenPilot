@@ -293,7 +293,7 @@ void GCSControlGadget::axesValues(QListInt16 values)
     double pValue = (pitchChannel > -1) ? values[pitchChannel] : 0;
     double yValue = (yawChannel > -1) ? values[yawChannel] : 0;
     double tValue = (throttleChannel > -1) ? values[throttleChannel] : 0;
-    double max = 32767;
+    double max = 32768;
 
     if (rollChannel > -1) if(channelReverse[rollChannel]==true)rValue = -rValue;
     if (pitchChannel > -1) if(channelReverse[pitchChannel]==true)pValue = -pValue;
