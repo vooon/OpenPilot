@@ -215,6 +215,9 @@ static void updateSensors(AttitudeRawData * attitudeRaw)
 		return;
 	}
 
+        // for simulation
+        if (AttitudeRawReadOnly(&attitudeRaw))
+            return;
 
 	// First sample is temperature
 	attitudeRaw->gyros[ATTITUDERAW_GYROS_X] = -(gyro[1] - GYRO_NEUTRAL) * gyroGain;
@@ -274,6 +277,13 @@ static void updateSensors(AttitudeRawData * attitudeRaw)
 
 static void updateAttitude(AttitudeRawData * attitudeRaw)
 {
+
+        AttitudeActualData attitudeActual;
+        AttitudeActualGet(&attitudeActual);
+        // for simulation
+        if (AttitudeActualReadOnly(&attitudeActual))
+            return;
+
 	float dT;
 	portTickType thisSysTime = xTaskGetTickCount();
 	static portTickType lastSysTime = 0;
@@ -346,9 +356,6 @@ static void updateAttitude(AttitudeRawData * attitudeRaw)
 		q[2] = 0;
 		q[3] = 0;
 	}
-
-	AttitudeActualData attitudeActual;
-	AttitudeActualGet(&attitudeActual);
 
 	quat_copy(q, &attitudeActual.q1);
 
