@@ -32,21 +32,20 @@
 #include <coreplugin/iuavgadget.h>
 
 HITLFactory::HITLFactory(QObject *parent)
-	: IUAVGadgetFactory(QString("HITL"), tr("HITL Simulation"), parent)
+    : IUAVGadgetFactory(QString("HITL"), tr("HITL Simulation"), parent)
 {
 
 }
 
 HITLFactory::~HITLFactory()
 {
+
 }
 
 Core::IUAVGadget* HITLFactory::createGadget(QWidget *parent)
 {
-
-
-   HITLWidget* gadgetWidget = new HITLWidget(parent);
-   return new HITLGadget(QString("HITL"), gadgetWidget, parent);
+    HITLWidget* gadgetWidget = new HITLWidget(parent);
+    return new HITLGadget(QString("HITL"), gadgetWidget, parent);
 }
 
 IUAVGadgetConfiguration *HITLFactory::createConfiguration(QSettings* qSettings)

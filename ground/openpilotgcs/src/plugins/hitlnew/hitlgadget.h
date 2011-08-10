@@ -41,20 +41,19 @@ using namespace Core;
 class HITLGadget : public Core::IUAVGadget
 {
     Q_OBJECT
-public:
-	HITLGadget(QString classId, HITLWidget *widget, QWidget *parent = 0);
-	~HITLGadget();
 
+public:
+    HITLGadget(QString classId, HITLWidget *widget, QWidget *parent = 0);
+    ~HITLGadget();
     QWidget *widget() { return m_widget; }
     void loadConfiguration(IUAVGadgetConfiguration* config);
 
 signals:
-	void changeConfiguration();
+    void changeConfiguration();
 
 private:
-	HITLWidget* m_widget;
-	Simulator* simulator;
+    HITLWidget* m_widget;
+    Simulator* simulator;
 };
-
 
 #endif // HITL_H

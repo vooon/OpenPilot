@@ -30,10 +30,10 @@
 #include "simulator.h"
 
 HITLGadget::HITLGadget(QString classId, HITLWidget *widget, QWidget *parent) :
-        IUAVGadget(classId, parent),
-        m_widget(widget)
+    IUAVGadget(classId, parent),
+    m_widget(widget)
 {
-	connect(this,SIGNAL(changeConfiguration(void)),m_widget,SLOT(stopButtonClicked(void)));
+    connect(this,SIGNAL(changeConfiguration(void)),m_widget,SLOT(stopButtonClicked(void)));
 }
 
 HITLGadget::~HITLGadget()
@@ -44,24 +44,7 @@ HITLGadget::~HITLGadget()
 void HITLGadget::loadConfiguration(IUAVGadgetConfiguration* config)
 {
     HITLConfiguration *m = qobject_cast<HITLConfiguration*>(config);
-	// FG
-//	simulator->setFGPathBin( m->fgPathBin() );
-//	simulator->setFGPathData( m->fgPathData() );
-//	simulator->setFGManualControl( m->fgManualControl() );
-//	// IL2
-	emit changeConfiguration();
-	m_widget->setSettingParameters(m->Settings());
-
-//	m_widget->setSimulatorId(m->SimulatorId());
-//	m_widget->setPathBin(m->PathBin());
-//	m_widget->setPathData(m->PathData());
-//	m_widget->setHostName(m->HostName());
-//	m_widget->setLatitude(m->Latitude());
-//	m_widget->setLongitude(m->Longitude());
-//	m_widget->setOutPort(m->OutPort());
-//	m_widget->setInPort(m->InPort());
-//	m_widget->setManualControl(m->ManualControl());
-
-
+    emit changeConfiguration();
+    m_widget->setSettingParameters(m->Settings());
 }
 

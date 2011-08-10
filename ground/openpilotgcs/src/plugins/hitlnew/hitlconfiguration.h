@@ -38,25 +38,20 @@ using namespace Core;
 
 class HITLConfiguration : public IUAVGadgetConfiguration
 {
-
-	Q_OBJECT
-
-	Q_PROPERTY(SimulatorSettings settings READ Settings WRITE setSimulatorSettings)
+    Q_OBJECT
+    Q_PROPERTY(SimulatorSettings settings READ Settings WRITE setSimulatorSettings)
 
 public:
     explicit HITLConfiguration(QString classId, QSettings* qSettings = 0, QObject *parent = 0);
-
     void saveConfig(QSettings* settings) const;
     IUAVGadgetConfiguration *clone();
-
-	SimulatorSettings Settings() const { return settings; }
+    SimulatorSettings Settings() const { return settings; }
 
 public slots:
-	void setSimulatorSettings (const SimulatorSettings& params ) { settings = params; }
-
+    void setSimulatorSettings (const SimulatorSettings& params ) { settings = params; }
 
 private:
-	SimulatorSettings settings;
+    SimulatorSettings settings;
 };
 
 #endif // HITLCONFIGURATION_H

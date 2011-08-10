@@ -31,7 +31,7 @@
 #include "coreplugin/dialogs/ioptionspage.h"
 
 namespace Core {
-class IUAVGadgetConfiguration;
+    class IUAVGadgetConfiguration;
 }
 
 class HITLConfiguration;
@@ -44,22 +44,23 @@ namespace Ui {
 
 class HITLOptionsPage : public IOptionsPage
 {
-Q_OBJECT
-public:
-	explicit HITLOptionsPage(HITLConfiguration *conf, QObject *parent = 0);
+    Q_OBJECT
 
-	QWidget *createPage(QWidget *parent);
+public:
+    explicit HITLOptionsPage(HITLConfiguration *conf, QObject *parent = 0);
+
+    QWidget *createPage(QWidget *parent);
     void apply();
     void finish();
-	bool isDecorated() const { return true;}
+    bool isDecorated() const { return true;}
+
 signals:
 
 private slots:
 
 private:
-	HITLConfiguration* config;
+    HITLConfiguration* config;
     Ui::HITLOptionsPage* m_optionsPage;
-
 };
 
 #endif // HITLOPTIONSPAGE_H
