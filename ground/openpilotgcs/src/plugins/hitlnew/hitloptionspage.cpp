@@ -78,35 +78,35 @@ QWidget *HITLOptionsPage::createPage(QWidget *parent)
     m_optionsPage->manualControl->setChecked(config->Settings().manual);
     m_optionsPage->inputGroupBox->setDisabled(config->Settings().manual);
     {
-        m_optionsPage->AttitudeActualSpin->setEnabled(config->Settings().isAttAct);
+//        m_optionsPage->AttitudeActualSpin->setEnabled(config->Settings().isAttAct);
         m_optionsPage->AttitudeActualCheck->setChecked(config->Settings().isAttAct);
         m_optionsPage->AttitudeActualSpin->setValue(config->Settings().attActRate);
 
-        m_optionsPage->AttitudeRawSpin->setEnabled(config->Settings().isAttRaw);
+//        m_optionsPage->AttitudeRawSpin->setEnabled(config->Settings().isAttRaw);
         m_optionsPage->AttitudeRawCheck->setChecked(config->Settings().isAttRaw);
         m_optionsPage->AttitudeRawSpin->setValue(config->Settings().attRawRate);
 
-        m_optionsPage->BaroAltitudeSpin->setEnabled(config->Settings().isBaroAlt);
+//        m_optionsPage->BaroAltitudeSpin->setEnabled(config->Settings().isBaroAlt);
         m_optionsPage->BaroAltitudeCheck->setChecked(config->Settings().isBaroAlt);
         m_optionsPage->BaroAltitudeSpin->setValue(config->Settings().baroAltRate);
 
-        m_optionsPage->GPSPositionSpin->setEnabled(config->Settings().isGPSPos);
+//        m_optionsPage->GPSPositionSpin->setEnabled(config->Settings().isGPSPos);
         m_optionsPage->GPSPositionCheck->setChecked(config->Settings().isGPSPos);
         m_optionsPage->GPSPositionSpin->setValue(config->Settings().GPSPosRate);
 
-        m_optionsPage->PositionActualSpin->setEnabled(config->Settings().isPosAct);
+//        m_optionsPage->PositionActualSpin->setEnabled(config->Settings().isPosAct);
         m_optionsPage->PositionActualCheck->setChecked(config->Settings().isPosAct);
         m_optionsPage->PositionActualSpin->setValue(config->Settings().posActRate);
 
-        m_optionsPage->VelocityActualSpin->setEnabled(config->Settings().isVelAct);
+//        m_optionsPage->VelocityActualSpin->setEnabled(config->Settings().isVelAct);
         m_optionsPage->VelocityActualCheck->setChecked(config->Settings().isVelAct);
         m_optionsPage->VelocityActualSpin->setValue(config->Settings().velActRate);
 
-        m_optionsPage->HomeLocationSpin->setEnabled(config->Settings().isHomeLoc);
+//        m_optionsPage->HomeLocationSpin->setEnabled(config->Settings().isHomeLoc);
         m_optionsPage->HomeLocationCheck->setChecked(config->Settings().isHomeLoc);
         m_optionsPage->HomeLocationSpin->setValue(config->Settings().homeLocRate);
     }
-    m_optionsPage->ActuatorDesiredSpin->setEnabled(config->Settings().isActDes);
+//    m_optionsPage->ActuatorDesiredSpin->setEnabled(config->Settings().isActDes);
     m_optionsPage->ActuatorDesiredCheck->setChecked(config->Settings().isActDes);
     m_optionsPage->ActuatorDesiredSpin->setValue(config->Settings().actDesRate);
 

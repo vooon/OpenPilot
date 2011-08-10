@@ -333,7 +333,7 @@ void XplaneSimulator::processUpdate(const QByteArray& dataBuf)
 		altActualData.Altitude = altitude;
                 altActualData.Temperature = temperature;
 		altActualData.Pressure = pressure;
-		altActual->setData(altActualData);
+		baroAlt->setData(altActualData);
 
 		// Update attActual object
 		AttitudeActual::DataFields attActualData;

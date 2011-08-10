@@ -297,12 +297,12 @@ void IL2Simulator::processUpdate(const QByteArray& inp)
         HomeLocation::DataFields homeData;
         memset(&homeData, 0, sizeof(HomeLocation::DataFields));
         homeData = posHome->getData();
-        homeData.Latitude = settings.latitude.toFloat() * 10e6;
-        homeData.Longitude = settings.longitude.toFloat() * 10e6;
+        homeData.Latitude = settings.latitude * 10e6;
+        homeData.Longitude = settings.longitude * 10e6;
         homeData.Altitude = 0;
         double LLA[3];
-        LLA[0]=settings.latitude.toFloat();
-        LLA[1]=settings.longitude.toFloat();
+        LLA[0]=settings.latitude;
+        LLA[1]=settings.longitude;
         LLA[2]=0;
         double ECEF[3];
 	double RNE[9];
@@ -345,7 +345,7 @@ void IL2Simulator::processUpdate(const QByteArray& inp)
 	//velActual->updated();
 	posActual->setData(posData);
 	//posActual->updated();
-	altActual->setData(altActualData);
+	baroAlt->setData(altActualData);
 	//altActual->updated();
 	gpsPos->setData(gpsData);
 	//gpsPos->updated();

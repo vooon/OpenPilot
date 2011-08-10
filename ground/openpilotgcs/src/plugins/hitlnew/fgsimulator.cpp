@@ -344,7 +344,7 @@ void FGSimulator::processUpdate(const QByteArray& inp)
         altActualData.Altitude = altitudeAGL;
 	altActualData.Temperature = temperature;
 	altActualData.Pressure = pressure;
-	altActual->setData(altActualData);
+	baroAlt->setData(altActualData);
 
 	// Update attActual object
 	AttitudeActual::DataFields attActualData;
