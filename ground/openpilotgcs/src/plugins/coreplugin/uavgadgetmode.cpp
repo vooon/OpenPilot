@@ -32,7 +32,7 @@
 #include "modemanager.h"
 #include "uniqueidmanager.h"
 #include "minisplitter.h"
-#include "outputpane.h"
+//#include "outputpane.h"
 #include "rightpane.h"
 #include "iuavgadget.h"
 

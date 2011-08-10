@@ -75,12 +75,12 @@ private:
     void fillLanguageBox() const;
     QString language() const;
     void setLanguage(const QString&);
+    QPointer<QWidget> m_dialog;
     Ui::GeneralSettings *m_page;
     QString m_language;
     bool m_saveSettingsOnExit;
     bool m_autoConnect;
     bool m_autoSelect;
-    QPointer<QWidget> m_dialog;
     QList<QTextCodec *> m_codecs;
 
 };
