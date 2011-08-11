@@ -97,14 +97,50 @@ bool XplaneSimulator::setupProcess()
  */
 void XplaneSimulator::transmitUpdate()
 {
-	//Read ActuatorDesired from autopilot
-	ActuatorDesired::DataFields actData = actDesired->getData();
-	float ailerons = actData.Roll;
-	float elevator = actData.Pitch;
-	float rudder = actData.Yaw;
-	float throttle = actData.Throttle*2-1.0;
+//	//Read ActuatorDesired from autopilot
+//	ActuatorDesired::DataFields actData = actDesired->getData();
+//	float ailerons = actData.Roll;
+//	float elevator = actData.Pitch;
+//	float rudder = actData.Yaw;
+//	float throttle = actData.Throttle*2-1.0;
         float none = -999;
         //quint32 none = *((quint32*)&tmp); // get float as 4 bytes
+
+        float ailerons = 0;
+        float elevator = 0;
+        float rudder = 0;
+        float throttle = -1;
+        FlightStatus::DataFields flightStatusData;
+        flightStatusData = flightStatus->getData();
+        if (flightStatusData.FlightMode == FlightStatus::FLIGHTMODE_MANUAL) {
+            // Read joystick input
+            ManualControlCommand::DataFields manCtrlData;
+            manCtrlData= manCtrlCommand->getData();
+            ailerons = manCtrlData.Roll;
+            elevator = manCtrlData.Pitch;
+            rudder = manCtrlData.Yaw;
+            throttle = manCtrlData.Throttle;
+            throttle = throttle * 0.5 + 0.5;
+        } else {
+            // Read ActuatorDesired from autopilot
+            ActuatorDesired::DataFields actData;
+            actData = actDesired->getData();
+            ailerons = actData.Roll;
+            elevator = actData.Pitch;
+            rudder = actData.Yaw;
+            throttle = qBound(0.f, actData.Throttle, 1.f);
+            throttle = throttle * 2 - 1;
+
+            // protection against NaN in some cases
+            if ((ailerons != ailerons) || (elevator != elevator)
+             || (rudder != rudder) || (throttle != throttle)) {
+                qDebug("NaN detected!!!");
+                if (ailerons != ailerons)   ailerons = 0;
+                if (elevator != elevator)   elevator = 0;
+                if (rudder != rudder)       rudder = 0;
+                if (throttle != throttle)   throttle = -1;
+            }
+        }
 
         quint32 code;
 	QByteArray buf;
@@ -142,7 +178,7 @@ void XplaneSimulator::transmitUpdate()
         buf.append(reinterpret_cast<const char*>(&none), sizeof(none));
         buf.append(reinterpret_cast<const char*>(&none), sizeof(none));
         buf.append(reinterpret_cast<const char*>(&none), sizeof(none));
-        TraceBuf(buf.data(),41);
+//        TraceBuf(buf.data(),41);
 
         if(outSocket->writeDatagram(buf, QHostAddress(settings.remoteHostAddress), settings.outPort) == -1)
         {
