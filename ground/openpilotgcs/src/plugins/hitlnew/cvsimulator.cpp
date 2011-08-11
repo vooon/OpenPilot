@@ -273,6 +273,7 @@ void CVSimulator::processUpdate(const QByteArray& inp)
         speedOld = speed;
 
         QVector3D a = (dv / dt);
+        a *= -1;
         a.setY(dv.y() - GEE);
 
         // rotate world to model
