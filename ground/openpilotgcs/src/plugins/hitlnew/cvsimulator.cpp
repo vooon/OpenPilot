@@ -242,8 +242,8 @@ void CVSimulator::processUpdate(const QByteArray& inp)
     control[1] = in.at(28).toFloat();
     control[2] = in.at(29).toFloat();
     control[3] = in.at(30).toFloat();
-    control[4] = in.at(30).toFloat();   //
-    control[5] = in.at(30).toFloat();
+    control[4] = in.at(31).toFloat();   //
+    control[5] = in.at(32).toFloat();
 
     cr = in.at(33);
     if (cr != "\n") {
@@ -275,6 +275,7 @@ void CVSimulator::processUpdate(const QByteArray& inp)
         QVector3D a = (dv / dt);
         a.setY(dv.y() - GEE);
 
+        // rotate world to model
         QQuaternion Qinv = Q.conjugate();
         QQuaternion A = QQuaternion(0, a);
         a = (Qinv * A * Q).vector();
@@ -298,7 +299,7 @@ void CVSimulator::processUpdate(const QByteArray& inp)
         // find rpy
         QVector3D rpy;
         cvMatrix2rpy(m4D, rpy);
-        rpy *= -1;
+        rpy *= -1;  // mirror the vector
         attActualData.Roll = rpy.x();
         attActualData.Pitch = rpy.y();
         attActualData.Yaw = rpy.z();
@@ -310,9 +311,9 @@ void CVSimulator::processUpdate(const QByteArray& inp)
         // Update PositionActual {Nort, East, Down}
         PositionActual::DataFields positionActualData;
         memset(&positionActualData, 0, sizeof(PositionActual::DataFields));
-        positionActualData.North = m4D(0,3) * 100;  // m -> sm
-        positionActualData.East = m4D(1,3) * 100;
-        positionActualData.Down = m4D(2,3) * 100;
+        positionActualData.North = m4D(0,3) * -100;  // m -> sm
+        positionActualData.East = m4D(2,3) * -100;
+        positionActualData.Down = m4D(1,3) * -100;
         posActual->setData(positionActualData);
     }
 
@@ -320,9 +321,9 @@ void CVSimulator::processUpdate(const QByteArray& inp)
         // Update VelocityActual {Nort, East, Down}
         VelocityActual::DataFields velocityActualData;
         memset(&velocityActualData, 0, sizeof(VelocityActual::DataFields));
-        velocityActualData.North = speed.x() * 100;
-        velocityActualData.East = speed.z() * 100;
-        velocityActualData.Down = speed.y() * 100;
+        velocityActualData.North = speed.x() * -100; // m/s -> cm/s
+        velocityActualData.East = speed.z() * -100;
+        velocityActualData.Down = speed.y() * -100;
         velActual->setData(velocityActualData);
     }
 
@@ -363,6 +364,7 @@ void CVSimulator::cvMatrix2quaternion(const QMatrix4x4 &M, QQuaternion &Q)
 {
     qreal w, x, y, z;
 
+    // w always >= 0
     w = qSqrt(qMax(0.0d,   1.0d + M(0, 0)  + M(1, 1)  + M(2, 2))) / 2.0d;
     x = qSqrt(qMax(0.0d,  (1.0d + M(0, 0)) - M(1, 1)  - M(2, 2))) / 2.0d;
     y = qSqrt(qMax(0.0d, ((1.0d - M(0, 0)) + M(1, 1)) - M(2, 2))) / 2.0d;
