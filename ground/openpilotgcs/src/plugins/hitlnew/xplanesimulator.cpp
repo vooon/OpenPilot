@@ -306,9 +306,9 @@ void XplaneSimulator::processUpdate(const QByteArray& dataBuf)
                             break;
 
                         case XplaneSimulator::AngularVelocities:
-                            pitchRate = *((float*)(buf.data()+4*1));
-                            rollRate = *((float*)(buf.data()+4*2));
-                            yawRate = *((float*)(buf.data()+4*3));
+                            pitchRate = *((float*)(buf.data()+4*1)) * RAD2DEG;
+                            rollRate = *((float*)(buf.data()+4*2)) * RAD2DEG;
+                            yawRate = *((float*)(buf.data()+4*3)) * RAD2DEG;
                             break;
 
                         case XplaneSimulator::Gload:
