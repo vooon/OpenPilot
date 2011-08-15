@@ -1,16 +1,13 @@
 /**
  ******************************************************************************
- * @addtogroup PIOS PIOS Core hardware abstraction layer
- * @{
- * @addtogroup PIOS_COM COM layer functions
- * @brief Hardware communication layer
- * @{
  *
- * @file       pios_com_priv.h
+ * @file       mytabwidget.h
  * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2010.
- * 	       Parts by Thorsten Klose (tk@midibox.org)
- * @brief      COM private definitions.
+ *             Parts by Nokia Corporation (qt-info@nokia.com) Copyright (C) 2009.
+ * @brief
  * @see        The GNU Public License (GPL) Version 3
+ * @defgroup
+ * @{
  *
  *****************************************************************************/
 /*
@@ -28,17 +25,31 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
+#ifndef MYTABWIDGET_H
+#define MYTABWIDGET_H
 
-#ifndef PIOS_COM_PRIV_H
-#define PIOS_COM_PRIV_H
+#include "utils_global.h"
 
-#include <pios.h>
+#include <QtGui/QTabWidget>
 
-extern int32_t PIOS_COM_ReceiveHandler(uint32_t com_id);
+/*
+ * MyTabWidget is a plain QTabWidget with the addition of the signal
+ * tabMoved(int, int) which QTabBar has but for some reason is
+ * not made available from QTabWidget.
+ */
+class QTCREATOR_UTILS_EXPORT MyTabWidget : public QTabWidget
+{
+    Q_OBJECT
 
-#endif /* PIOS_COM_PRIV_H */
+public:
+    MyTabWidget(QWidget *parent = 0);
+    void moveTab(int from, int to);
 
-/**
-  * @}
-  * @}
-  */
+private slots:
+    void myTabMoved(int from, int to);
+
+signals:
+    void tabMoved(int from, int to);
+};
+
+#endif // MYTABWIDGET_H

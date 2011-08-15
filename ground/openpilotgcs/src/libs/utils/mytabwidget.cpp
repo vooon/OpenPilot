@@ -1,16 +1,13 @@
 /**
  ******************************************************************************
- * @addtogroup PIOS PIOS Core hardware abstraction layer
- * @{
- * @addtogroup PIOS_COM COM layer functions
- * @brief Hardware communication layer
- * @{
  *
- * @file       pios_com_priv.h
+ * @file       mytabwidget.cpp
  * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2010.
- * 	       Parts by Thorsten Klose (tk@midibox.org)
- * @brief      COM private definitions.
+ *             Parts by Nokia Corporation (qt-info@nokia.com) Copyright (C) 2009.
+ * @brief
  * @see        The GNU Public License (GPL) Version 3
+ * @defgroup
+ * @{
  *
  *****************************************************************************/
 /*
@@ -28,17 +25,24 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
+#include "mytabwidget.h"
+#include <QtGui/QTabBar>
 
-#ifndef PIOS_COM_PRIV_H
-#define PIOS_COM_PRIV_H
+MyTabWidget::MyTabWidget(QWidget *parent)
+    : QTabWidget(parent)
+{
+    QTabBar *tabBar = QTabWidget::tabBar();
+    connect(tabBar, SIGNAL(tabMoved(int, int)), this, SLOT(myTabMoved(int,int)));
+}
 
-#include <pios.h>
+void MyTabWidget::moveTab(int from, int to)
+{
+    QTabBar *tabBar = QTabWidget::tabBar();
+    tabBar->moveTab(from, to);
+}
 
-extern int32_t PIOS_COM_ReceiveHandler(uint32_t com_id);
 
-#endif /* PIOS_COM_PRIV_H */
-
-/**
-  * @}
-  * @}
-  */
+void MyTabWidget::myTabMoved(int from, int to)
+{
+    emit tabMoved(from, to);
+}

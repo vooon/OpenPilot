@@ -1,16 +1,13 @@
 /**
  ******************************************************************************
- * @addtogroup PIOS PIOS Core hardware abstraction layer
- * @{
- * @addtogroup PIOS_COM COM layer functions
- * @brief Hardware communication layer
- * @{
  *
- * @file       pios_com_priv.h
+ * @file       mylistwidget.h
  * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2010.
- * 	       Parts by Thorsten Klose (tk@midibox.org)
- * @brief      COM private definitions.
+ *             Parts by Nokia Corporation (qt-info@nokia.com) Copyright (C) 2009.
+ * @brief
  * @see        The GNU Public License (GPL) Version 3
+ * @defgroup
+ * @{
  *
  *****************************************************************************/
 /*
@@ -29,16 +26,28 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef PIOS_COM_PRIV_H
-#define PIOS_COM_PRIV_H
+#ifndef MYLISTWIDGET_H
+#define MYLISTWIDGET_H
 
-#include <pios.h>
+#include "utils_global.h"
 
-extern int32_t PIOS_COM_ReceiveHandler(uint32_t com_id);
+#include <QtGui/QListWidget>
 
-#endif /* PIOS_COM_PRIV_H */
+/*
+ * MyListWidget is a plain QListWidget but with the added option
+ * to place the icon above the label in ListMode. This is achieved
+ * the easiest by subclassing QListWidget and overriding viewOptions().
+ */
+class QTCREATOR_UTILS_EXPORT MyListWidget : public QListWidget
+{
+    Q_OBJECT
+public:
+    MyListWidget(QWidget *parent) : QListWidget(parent), m_iconAbove(false) { }
+    void setIconAbove(bool iconAbove) { m_iconAbove = iconAbove; }
+protected:
+    QStyleOptionViewItem viewOptions() const;
+private:
+    bool m_iconAbove;
+};
 
-/**
-  * @}
-  * @}
-  */
+#endif // MYLISTWIDGET_H
