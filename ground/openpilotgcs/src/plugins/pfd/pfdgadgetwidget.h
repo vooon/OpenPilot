@@ -72,6 +72,8 @@ protected:
    void paintEvent(QPaintEvent *event);
    void resizeEvent(QResizeEvent *event);
    void contextMenuEvent(QContextMenuEvent *event);
+   void showEvent(QShowEvent *event);
+   void hideEvent(QHideEvent *event);
 
 private slots:
    void moveNeedles();
@@ -80,7 +82,6 @@ private slots:
 
 private:
    QOpenCVGraphicsItem *cvwidget;
-   CvCapture *camera;
    bool useCamera;
    QSvgRenderer *m_renderer;
 

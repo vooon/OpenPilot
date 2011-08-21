@@ -398,8 +398,6 @@ void PFDGadgetWidget::setDialFile(QString dfn, bool useCam, int camNumber, int c
              cvwidget = new QOpenCVGraphicsItem(0,camNumber);
              cvwidget->setZValue(-1);
              l_scene->addItem(cvwidget);
-             connect(&camTimer, SIGNAL(timeout()),(QOpenCVGraphicsItem *)cvwidget, SLOT(camupdate()));
-             camTimer.start(camRefresh);
          }
 
          m_world = new QGraphicsSvgItem();
@@ -1052,6 +1050,22 @@ void PFDGadgetWidget::contextMenuEvent(QContextMenuEvent *event)
             showOverlay=false;
         }
     }
+}
+
+void PFDGadgetWidget::showEvent(QShowEvent *event)
+{
+    if (useCamera)
+        cvwidget->start();
+
+    QGraphicsView::showEvent(event);
+}
+
+void PFDGadgetWidget::hideEvent(QHideEvent *event)
+{
+    if (useCamera)
+        cvwidget->stop();
+
+    QGraphicsView::hideEvent(event);
 }
 
 /**
