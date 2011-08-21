@@ -22,14 +22,19 @@ SOURCES += QOpenCVGraphicsItem.cpp
 OTHER_FILES += PFDGadget.pluginspec
 FORMS += pfdgadgetoptionspage.ui
 RESOURCES += pfd.qrc
-CONFIG(release,debug|release){
-    LIBS += -lopencv_core230 \
-            -lopencv_highgui230
 
-}
+unix {
+    LIBS += -lcv \
+            -lhighgui
+} else {
+    CONFIG(release,debug|release){
+        LIBS += -lopencv_core230 \
+                -lopencv_highgui230
 
-CONFIG(debug,debug|release){
-    LIBS += -lopencv_core230d \
-            -lopencv_highgui230d
+    }
 
+    CONFIG(debug,debug|release){
+        LIBS += -lopencv_core230d \
+                -lopencv_highgui230d
+    }
 }
