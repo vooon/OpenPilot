@@ -61,5 +61,5 @@ void ModelViewQt3DPlugin::shutdown()
 {
     // Do nothing
 }
-Q_EXPORT_PLUGIN(ModelViewQt3DPlugin)
 
+Q_EXPORT_PLUGIN(ModelViewQt3DPlugin)

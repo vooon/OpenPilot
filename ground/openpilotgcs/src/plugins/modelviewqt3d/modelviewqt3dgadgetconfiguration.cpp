@@ -28,21 +28,25 @@
 #include "modelviewqt3dgadgetconfiguration.h"
 #include "utils/pathutils.h"
 
-ModelViewQt3DGadgetConfiguration::ModelViewQt3DGadgetConfiguration(QString classId,
-                                                                   QSettings* qSettings,
-                                                                   QObject *parent) :
-    IUAVGadgetConfiguration(classId, parent),
-    m_acFilename(":/modelview/models/warning_sign.obj"),
-    m_bgFilename(":/modelview/models/black.jpg"),
-    m_enableVbo(false)
+ModelViewQt3DGadgetConfiguration::ModelViewQt3DGadgetConfiguration(QString classId
+                                                                   , QSettings* qSettings
+                                                                   , QObject *parent)
+    : IUAVGadgetConfiguration(classId, parent)
+    , m_acFilename(":/modelview/models/warning_sign.obj")
+    , m_bgFilename(":/modelview/models/black.jpg")
+    , m_refreshRate(100)
+    , m_perspective(1)
+    , m_typeOfZoom(1)
 {
     //if a saved configuration exists load it
     if(qSettings != 0) {
         QString modelFile = qSettings->value("acFilename").toString();
         QString bgFile = qSettings->value("bgFilename").toString();
-        m_enableVbo = qSettings->value("enableVbo").toBool();
         m_acFilename = Utils::PathUtils().InsertDataPath(modelFile);
         m_bgFilename = Utils::PathUtils().InsertDataPath(bgFile);
+        m_refreshRate = qSettings->value("refreshRate").toInt();
+        m_perspective = qSettings->value("perspective").toBool();
+        m_typeOfZoom = qSettings->value("typeOfZoom").toBool();
     }
 }
 
@@ -51,7 +55,9 @@ IUAVGadgetConfiguration *ModelViewQt3DGadgetConfiguration::clone()
     ModelViewQt3DGadgetConfiguration *mv = new ModelViewQt3DGadgetConfiguration(this->classId());
     mv->m_acFilename = m_acFilename;
     mv->m_bgFilename = m_bgFilename;
-    mv->m_enableVbo = m_enableVbo;
+    mv->m_refreshRate = m_refreshRate;
+    mv->m_perspective = m_perspective;
+    mv->m_typeOfZoom = m_typeOfZoom;
     return mv;
 }
 
@@ -62,5 +68,7 @@ IUAVGadgetConfiguration *ModelViewQt3DGadgetConfiguration::clone()
 void ModelViewQt3DGadgetConfiguration::saveConfig(QSettings* qSettings) const {
     qSettings->setValue("acFilename", Utils::PathUtils().RemoveDataPath(m_acFilename));
     qSettings->setValue("bgFilename", Utils::PathUtils().RemoveDataPath(m_bgFilename));
-    qSettings->setValue("enableVbo", m_enableVbo);
+    qSettings->setValue("refreshRate", m_refreshRate);
+    qSettings->setValue("perspective", m_perspective);
+    qSettings->setValue("typeOfZoom", m_typeOfZoom);
 }

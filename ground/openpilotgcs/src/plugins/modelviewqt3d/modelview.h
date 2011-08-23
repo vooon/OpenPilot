@@ -2,8 +2,11 @@
 #define MODELVIEW_H
 
 #include <qglview.h>
-#include <qglbuilder.h>
-#include <qglteapot.h>
+#include <qglabstractscene.h>
+#include <qgraphicsscale3d.h>
+
+class QGLAbstractScene;
+class QGLSceneNode;
 
 class ModelView : public QGLView
 {
@@ -12,15 +15,31 @@ class ModelView : public QGLView
 public:
     ModelView(QWidget *parent = 0);
     ~ModelView();
+    void setModelFile(QString filename) { modelFilename = filename; }
+    void setBackground(QString bg) { worldBgFilename = bg; }
+    void setProjection(bool proj) { projection = proj; }
+    void setTypeOfZoom(bool zoom) { typeOfZoom = zoom; }
+    void setAttitude(QQuaternion att) { m_pose = att; }
+    void updateAttitude() { updateGL(); }
+    void reloadModel();
 
 protected:
-    void timerEvent (QTimerEvent *);
+    void initializeGL(QGLPainter *painter);
     void paintGL(QGLPainter *painter);
 
+private slots:
+    void onProjectionChanged();
+    void onViewChanged();
+
 private:
-    QGLSceneNode *model;
-    QGLTexture2D tex;
-    qreal angle;
+    QGLAbstractScene *m_scene;
+    QGLSceneNode *m_main;
+    bool projection;
+    bool typeOfZoom;
+    bool isGLInit;
+    QString modelFilename;
+    QString worldBgFilename;
+    QQuaternion m_pose;
 };
 
 #endif // MODELVIEW_H

@@ -44,15 +44,19 @@ public:
     ~ModelViewQt3DGadgetWidget();
     void setAcFilename(QString acf);
     void setBgFilename(QString bgf);
+    void setRefreshRate(quint16 rate);
+    void setProjection(bool perspective);
+    void setTypeOfZoom(bool zoom);
+    void reloadModel();
 
 private slots:
 
 private:
+    int refreshTimer;
     ModelView* m_model;     // qt3d
-    QString acFilename;     // model
-    QString bgFilename;     // background
 
     AttitudeActual* attActual;
+    void timerEvent(QTimerEvent *);
     void updateAttitude();
 };
 

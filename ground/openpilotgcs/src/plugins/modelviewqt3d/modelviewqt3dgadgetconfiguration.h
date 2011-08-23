@@ -35,18 +35,27 @@ using namespace Core;
 class ModelViewQt3DGadgetConfiguration : public IUAVGadgetConfiguration
 {
     Q_OBJECT
+
 public:
-    explicit ModelViewQt3DGadgetConfiguration(QString classId, QSettings* qSettings = 0,
-                                              QObject *parent = 0);
+    explicit ModelViewQt3DGadgetConfiguration(QString classId
+                                              , QSettings* qSettings = 0
+                                              , QObject *parent = 0);
 
     void saveConfig(QSettings* settings) const;
     IUAVGadgetConfiguration *clone();
+
     QString acFilename() { return m_acFilename; }
-    void setAcFilename(QString acFile) { m_acFilename = acFile; }
     QString bgFilename() { return m_bgFilename; }
+    quint16 refreshRate() { return m_refreshRate; }
+    bool perspective() { return m_perspective; }
+    bool typeOfZoom() { return m_typeOfZoom; }
+
+    void setAcFilename(QString acFile) { m_acFilename = acFile; }
     void setBgFilename(QString bgFile) { m_bgFilename = bgFile; }
-    bool vboEnabled() { return m_enableVbo; }
-    void setVboEnabled(bool vboEnable) { m_enableVbo = vboEnable; }
+    void setRefreshRate(quint16 ref) { m_refreshRate = ref; }
+    void setProjection(bool proj) { m_perspective = proj; }
+    void setTypeOfZoom(bool zoom) { m_typeOfZoom = zoom; }
+
 signals:
 
 public slots:
@@ -54,7 +63,9 @@ public slots:
 private:
     QString m_acFilename;
     QString m_bgFilename;
-    bool m_enableVbo;  // Vertex buffer objects, a few GPUs crash if enabled
+    quint16 m_refreshRate;
+    bool m_perspective;     // 1 - perspective, 0 - orthographic
+    bool m_typeOfZoom;      // 1 - FOV zoom, 0 - camera move
 };
 
 #endif // MODELVIEWQT3DGADGETCONFIGURATION_H

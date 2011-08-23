@@ -32,13 +32,17 @@
 #include <coreplugin/uavgadgetoptionspagedecorator.h>
 #include <coreplugin/iuavgadget.h>
 
-ModelViewQt3DGadgetFactory::ModelViewQt3DGadgetFactory(QObject *parent) :
-    IUAVGadgetFactory(QString("ModelViewQt3DGadget"), tr("ModelView Qt3D"), parent)
+ModelViewQt3DGadgetFactory::ModelViewQt3DGadgetFactory(QObject *parent)
+    : IUAVGadgetFactory(QString("ModelViewQt3DGadget")
+                        , tr("ModelView Qt3D")
+                        , parent)
 {
+    //
 }
 
 ModelViewQt3DGadgetFactory::~ModelViewQt3DGadgetFactory()
 {
+    //
 }
 
 Core::IUAVGadget* ModelViewQt3DGadgetFactory::createGadget(QWidget *parent)

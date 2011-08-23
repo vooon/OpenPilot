@@ -30,6 +30,10 @@
 ModelViewQt3DGadgetWidget::ModelViewQt3DGadgetWidget(QWidget *parent)
     : QWidget(parent)
 {
+    qDebug() << "ModelViewQt3DGadgetWidget";
+
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
 //  add modelview in layout
     {
         m_model = new ModelView(this);
@@ -43,49 +47,62 @@ ModelViewQt3DGadgetWidget::ModelViewQt3DGadgetWidget(QWidget *parent)
     UAVObjectManager* objManager = pm->getObject<UAVObjectManager>();
     attActual = AttitudeActual::GetInstance(objManager);
 
+    refreshTimer = startTimer(500);
 }
 
 ModelViewQt3DGadgetWidget::~ModelViewQt3DGadgetWidget()
 {
-    //
+    qDebug() << "~ModelViewQt3DGadgetWidget";
 }
 
 void ModelViewQt3DGadgetWidget::setAcFilename(QString acf)
 {
-    if(QFile::exists(acf)) {
-        acFilename = acf;
-    } else {
-        acFilename = ":/modelview/models/warning_sign.obj";
-    }
+    if(!QFile::exists(acf))
+        acf = ":/modelview/models/warning_sign.obj";
+    m_model->setModelFile(acf);
 }
 
 void ModelViewQt3DGadgetWidget::setBgFilename(QString bgf)
 {
-    if (QFile::exists(bgFilename)) {
-        bgFilename = bgf;
-    } else {
-        bgFilename = ":/modelview/models/black.jpg";
-    }
+    if (!QFile::exists(bgf))
+        bgf = ":/modelview/models/black.jpg";
+    m_model->setBackground(bgf);
 }
 
-//// Public funcitons
+void ModelViewQt3DGadgetWidget::setRefreshRate(quint16 rate)
+{
+    killTimer(refreshTimer);
+    refreshTimer = startTimer(rate);
+}
 
-//// Private functions
+void ModelViewQt3DGadgetWidget::setProjection(bool perspective)
+{
+    m_model->setProjection(perspective);
+}
 
-//// Private slots Functions
+void ModelViewQt3DGadgetWidget::setTypeOfZoom(bool zoom)
+{
+    m_model->setTypeOfZoom(zoom);
+}
+
+void ModelViewQt3DGadgetWidget::reloadModel()
+{
+    m_model->reloadModel();
+}
+
+void ModelViewQt3DGadgetWidget::timerEvent(QTimerEvent *)
+{
+    updateAttitude();
+}
 
 void ModelViewQt3DGadgetWidget::updateAttitude()
 {
     AttitudeActual::DataFields data = attActual->getData();
 
     double w= data.q1;
-    double x= data.q2;
-    double y= data.q3;
-    double z= data.q4;
     if (w == 0.0)
         w = 1.0;
-    Q_UNUSED(w);
-    Q_UNUSED(x);
-    Q_UNUSED(y);
-    Q_UNUSED(z);
+    QQuaternion att = QQuaternion(w, -data.q3, -data.q4, data.q2);
+    m_model->setAttitude(att);
+    m_model->updateAttitude();
 }

@@ -41,6 +41,7 @@ public:
     void extensionsInitialized();
     bool initialize(const QStringList & arguments, QString * errorString);
     void shutdown();
+
 private:
     ModelViewQt3DGadgetFactory *mvf;
 };

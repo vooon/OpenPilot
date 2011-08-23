@@ -41,6 +41,7 @@ using namespace Core;
 class ModelViewQt3DGadget : public Core::IUAVGadget
 {
     Q_OBJECT
+
 public:
     ModelViewQt3DGadget(QString classId, ModelViewQt3DGadgetWidget *widget, QWidget *parent = 0);
     ~ModelViewQt3DGadget();

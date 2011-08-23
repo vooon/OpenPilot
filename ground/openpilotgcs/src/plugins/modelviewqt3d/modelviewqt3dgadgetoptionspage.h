@@ -33,9 +33,11 @@
 
 class ModelViewQt3DGadgetConfiguration;
 class QFileDialog;
+
 namespace Core {
     class IUAVGadgetConfiguration;
 }
+
 namespace Ui {
     class ModelViewQt3DOptionsPage;
 }
@@ -47,7 +49,8 @@ class ModelViewQt3DGadgetOptionsPage : public IOptionsPage
     Q_OBJECT
 
 public:
-    explicit ModelViewQt3DGadgetOptionsPage(ModelViewQt3DGadgetConfiguration *config, QObject *parent = 0);
+    explicit ModelViewQt3DGadgetOptionsPage(ModelViewQt3DGadgetConfiguration *config
+                                            , QObject *parent = 0);
     QString id() const { return ""; }
     QString trName() const { return ""; }
     QString category() const { return ""; }
@@ -56,7 +59,6 @@ public:
     QWidget *createPage(QWidget *parent);
     void apply();
     void finish();
-private:
 
 signals:
 

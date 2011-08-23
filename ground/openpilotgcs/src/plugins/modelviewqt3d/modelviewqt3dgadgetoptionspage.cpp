@@ -30,10 +30,12 @@
 #include "ui_modelviewqt3doptionspage.h"
 
 ModelViewQt3DGadgetOptionsPage::ModelViewQt3DGadgetOptionsPage(
-        ModelViewQt3DGadgetConfiguration *config, QObject *parent) :
-    IOptionsPage(parent),
-    m_config(config)
+        ModelViewQt3DGadgetConfiguration *config
+        , QObject *parent)
+    : IOptionsPage(parent)
+    , m_config(config)
 {
+    //
 }
 
 QWidget *ModelViewQt3DGadgetOptionsPage::createPage(QWidget *parent)
@@ -42,17 +44,30 @@ QWidget *ModelViewQt3DGadgetOptionsPage::createPage(QWidget *parent)
     QWidget *w = new QWidget(parent);
     m_page->setupUi(w);
 
-    QString filter = tr("3D Models (%1)").arg(QGLAbstractScene::supportedFormats().join(" "));
+    // all supported formats
+    QString filter = tr("3D Models (%1)")
+                     .arg(QGLAbstractScene::supportedFormats()
+                          .join(" "));
 
     m_page->modelPathChooser->setExpectedKind(Utils::PathChooser::File);
     m_page->modelPathChooser->setPromptDialogFilter(filter);
     m_page->modelPathChooser->setPromptDialogTitle(tr("Choose 3D model"));
+
     m_page->backgroundPathChooser->setExpectedKind(Utils::PathChooser::File);
     m_page->backgroundPathChooser->setPromptDialogFilter(tr("Images (*.png *.jpg *.bmp *.xpm)"));
     m_page->backgroundPathChooser->setPromptDialogTitle(tr("Choose background image"));
 
     m_page->modelPathChooser->setPath(m_config->acFilename());
     m_page->backgroundPathChooser->setPath(m_config->bgFilename());
+
+    m_page->refreshRate->setValue(m_config->refreshRate());
+
+    m_page->perspective->setChecked(m_config->perspective());
+    m_page->orthographic->setChecked(!m_config->perspective());
+    m_page->zoomGroup->setEnabled(m_config->perspective());
+
+    m_page->fovZoom->setChecked(m_config->typeOfZoom());
+    m_page->cameraMove->setChecked(!m_config->typeOfZoom());
 
     return w;
 }
@@ -61,6 +76,9 @@ void ModelViewQt3DGadgetOptionsPage::apply()
 {
     m_config->setAcFilename(m_page->modelPathChooser->path());
     m_config->setBgFilename(m_page->backgroundPathChooser->path());
+    m_config->setRefreshRate(m_page->refreshRate->value());
+    m_config->setProjection(m_page->perspective->isChecked());
+    m_config->setTypeOfZoom(m_page->fovZoom->isChecked());
 }
 
 void ModelViewQt3DGadgetOptionsPage::finish()

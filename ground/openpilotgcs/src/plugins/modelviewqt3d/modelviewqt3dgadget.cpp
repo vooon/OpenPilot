@@ -28,11 +28,13 @@
 #include "modelviewqt3dgadgetwidget.h"
 #include "modelviewqt3dgadgetconfiguration.h"
 
-ModelViewQt3DGadget::ModelViewQt3DGadget(QString classId, ModelViewQt3DGadgetWidget *widget,
-                                         QWidget *parent) :
-    IUAVGadget(classId, parent),
-    m_widget(widget)
+ModelViewQt3DGadget::ModelViewQt3DGadget(QString classId
+                                         , ModelViewQt3DGadgetWidget *widget
+                                         , QWidget *parent)
+    : IUAVGadget(classId, parent)
+    , m_widget(widget)
 {
+    //
 }
 
 ModelViewQt3DGadget::~ModelViewQt3DGadget()
@@ -45,5 +47,8 @@ void ModelViewQt3DGadget::loadConfiguration(IUAVGadgetConfiguration* config)
     ModelViewQt3DGadgetConfiguration *m = qobject_cast<ModelViewQt3DGadgetConfiguration*>(config);
     m_widget->setAcFilename(m->acFilename());
     m_widget->setBgFilename(m->bgFilename());
+    m_widget->setRefreshRate(m->refreshRate());
+    m_widget->setProjection(m->perspective());
+    m_widget->setTypeOfZoom(m->typeOfZoom());
+    m_widget->reloadModel();
 }
-

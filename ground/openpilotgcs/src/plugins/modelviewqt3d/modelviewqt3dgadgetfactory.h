@@ -40,6 +40,7 @@ using namespace Core;
 class ModelViewQt3DGadgetFactory : public Core::IUAVGadgetFactory
 {
     Q_OBJECT
+
 public:
     ModelViewQt3DGadgetFactory(QObject *parent = 0);
     ~ModelViewQt3DGadgetFactory();

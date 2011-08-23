@@ -17,19 +17,6 @@
    <property name="margin">
     <number>0</number>
    </property>
-   <item row="4" column="0">
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
    <item row="3" column="0">
     <layout class="QFormLayout" name="formLayout">
      <property name="fieldGrowthPolicy">
@@ -66,7 +53,130 @@
        </property>
       </widget>
      </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Refresh rate:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QSpinBox" name="refreshRate">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>10-500 ms (100-2 Hz)</string>
+       </property>
+       <property name="suffix">
+        <string>ms</string>
+       </property>
+       <property name="minimum">
+        <number>10</number>
+       </property>
+       <property name="maximum">
+        <number>500</number>
+       </property>
+       <property name="value">
+        <number>100</number>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Projection:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Zoom:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QWidget" name="projectionGroup" native="true">
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <property name="margin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QRadioButton" name="perspective">
+          <property name="text">
+           <string>Perspective</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="orthographic">
+          <property name="toolTip">
+           <string>This projection support only FOV zoom</string>
+          </property>
+          <property name="text">
+           <string>Orthographic</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QWidget" name="zoomGroup" native="true">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <property name="margin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QRadioButton" name="fovZoom">
+          <property name="toolTip">
+           <string>Use field-of view as zoom (much like a traditional camera)</string>
+          </property>
+          <property name="text">
+           <string>FOV zoom</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="cameraMove">
+          <property name="toolTip">
+           <string>Moving the camera back or forward</string>
+          </property>
+          <property name="text">
+           <string>Camera move</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
     </layout>
+   </item>
+   <item row="5" column="0">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Expanding</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>
@@ -79,5 +189,38 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>orthographic</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>zoomGroup</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>278</x>
+     <y>71</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>237</x>
+     <y>103</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>orthographic</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>fovZoom</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>322</x>
+     <y>75</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>141</x>
+     <y>101</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
