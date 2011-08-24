@@ -4,6 +4,9 @@
 #include <qglview.h>
 #include <qglabstractscene.h>
 #include <qgraphicsscale3d.h>
+#include <QBitArray>
+#include <QColor>
+#include <QDebug>
 
 class QGLAbstractScene;
 class QGLSceneNode;
@@ -19,6 +22,7 @@ public:
     void setBackground(QString bg) { worldBgFilename = bg; }
     void setProjection(bool proj) { projection = proj; }
     void setTypeOfZoom(bool zoom) { typeOfZoom = zoom; }
+    void setPostprocess(QBitArray opt) { ppOptions = opt; }
     void setAttitude(QQuaternion att) { m_pose = att; }
     void updateAttitude() { updateGL(); }
     void reloadModel();
@@ -34,8 +38,10 @@ private slots:
 private:
     QGLAbstractScene *m_scene;
     QGLSceneNode *m_main;
+    QGLLightParameters *m_light;
     bool projection;
     bool typeOfZoom;
+    QBitArray ppOptions;
     bool isGLInit;
     QString modelFilename;
     QString worldBgFilename;

@@ -1,8 +1,7 @@
 <RCC>
-    <qresource prefix="/modelview">
-        <file>models/warning_sign.mtl</file>
-        <file>models/warning_sign.obj</file>
-        <file>models/tex_1.jpg</file>
+    <qresource prefix="/modelviewqt3d">
         <file>models/black.jpg</file>
+        <file>models/warning_sign.obj</file>
+        <file>models/warning_sign.mtl</file>
     </qresource>
 </RCC>

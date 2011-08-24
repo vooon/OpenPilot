@@ -32,11 +32,12 @@ ModelViewQt3DGadgetConfiguration::ModelViewQt3DGadgetConfiguration(QString class
                                                                    , QSettings* qSettings
                                                                    , QObject *parent)
     : IUAVGadgetConfiguration(classId, parent)
-    , m_acFilename(":/modelview/models/warning_sign.obj")
-    , m_bgFilename(":/modelview/models/black.jpg")
+    , m_acFilename(":/modelviewqt3d/models/warning_sign.obj")
+    , m_bgFilename(":/modelviewqt3d/models/black.jpg")
     , m_refreshRate(100)
     , m_perspective(1)
     , m_typeOfZoom(1)
+    , m_ppOptions(8)
 {
     //if a saved configuration exists load it
     if(qSettings != 0) {
@@ -47,6 +48,7 @@ ModelViewQt3DGadgetConfiguration::ModelViewQt3DGadgetConfiguration(QString class
         m_refreshRate = qSettings->value("refreshRate").toInt();
         m_perspective = qSettings->value("perspective").toBool();
         m_typeOfZoom = qSettings->value("typeOfZoom").toBool();
+        m_ppOptions = qSettings->value("postProcess").toBitArray();
     }
 }
 
@@ -58,6 +60,7 @@ IUAVGadgetConfiguration *ModelViewQt3DGadgetConfiguration::clone()
     mv->m_refreshRate = m_refreshRate;
     mv->m_perspective = m_perspective;
     mv->m_typeOfZoom = m_typeOfZoom;
+    mv->m_ppOptions = m_ppOptions;
     return mv;
 }
 
@@ -71,4 +74,5 @@ void ModelViewQt3DGadgetConfiguration::saveConfig(QSettings* qSettings) const {
     qSettings->setValue("refreshRate", m_refreshRate);
     qSettings->setValue("perspective", m_perspective);
     qSettings->setValue("typeOfZoom", m_typeOfZoom);
+    qSettings->setValue("postProcess", m_ppOptions);
 }

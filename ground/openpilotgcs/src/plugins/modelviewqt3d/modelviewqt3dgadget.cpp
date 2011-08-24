@@ -45,10 +45,6 @@ ModelViewQt3DGadget::~ModelViewQt3DGadget()
 void ModelViewQt3DGadget::loadConfiguration(IUAVGadgetConfiguration* config)
 {
     ModelViewQt3DGadgetConfiguration *m = qobject_cast<ModelViewQt3DGadgetConfiguration*>(config);
-    m_widget->setAcFilename(m->acFilename());
-    m_widget->setBgFilename(m->bgFilename());
-    m_widget->setRefreshRate(m->refreshRate());
-    m_widget->setProjection(m->perspective());
-    m_widget->setTypeOfZoom(m->typeOfZoom());
-    m_widget->reloadModel();
+    m_widget->setLoadedConfig(m->acFilename(), m->bgFilename(), m->refreshRate()
+                              , m->perspective(), m->typeOfZoom(), m->ppOptions());
 }

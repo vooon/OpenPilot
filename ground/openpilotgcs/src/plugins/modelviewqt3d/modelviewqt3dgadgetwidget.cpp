@@ -30,9 +30,9 @@
 ModelViewQt3DGadgetWidget::ModelViewQt3DGadgetWidget(QWidget *parent)
     : QWidget(parent)
 {
-    qDebug() << "ModelViewQt3DGadgetWidget";
-
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+//    qDebug() << "ModelViewQt3DGadgetWidget";
+    setMinimumSize(128,128);
+    setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 
 //  add modelview in layout
     {
@@ -52,41 +52,26 @@ ModelViewQt3DGadgetWidget::ModelViewQt3DGadgetWidget(QWidget *parent)
 
 ModelViewQt3DGadgetWidget::~ModelViewQt3DGadgetWidget()
 {
-    qDebug() << "~ModelViewQt3DGadgetWidget";
+//    qDebug() << "~ModelViewQt3DGadgetWidget";
 }
 
-void ModelViewQt3DGadgetWidget::setAcFilename(QString acf)
+void ModelViewQt3DGadgetWidget::setLoadedConfig(QString acf, QString bgf, quint16 rate
+                                                , bool persp, bool zoom, QBitArray ppOpt)
 {
     if(!QFile::exists(acf))
-        acf = ":/modelview/models/warning_sign.obj";
+        acf = ":/modelviewqt3d/models/warning_sign.obj";
     m_model->setModelFile(acf);
-}
 
-void ModelViewQt3DGadgetWidget::setBgFilename(QString bgf)
-{
     if (!QFile::exists(bgf))
-        bgf = ":/modelview/models/black.jpg";
+        bgf = ":/modelviewqt3d/models/black.jpg";
     m_model->setBackground(bgf);
-}
 
-void ModelViewQt3DGadgetWidget::setRefreshRate(quint16 rate)
-{
     killTimer(refreshTimer);
     refreshTimer = startTimer(rate);
-}
 
-void ModelViewQt3DGadgetWidget::setProjection(bool perspective)
-{
-    m_model->setProjection(perspective);
-}
-
-void ModelViewQt3DGadgetWidget::setTypeOfZoom(bool zoom)
-{
+    m_model->setProjection(persp);
     m_model->setTypeOfZoom(zoom);
-}
-
-void ModelViewQt3DGadgetWidget::reloadModel()
-{
+    m_model->setPostprocess(ppOpt);
     m_model->reloadModel();
 }
 

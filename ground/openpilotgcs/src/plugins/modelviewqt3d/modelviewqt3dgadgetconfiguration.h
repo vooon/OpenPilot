@@ -29,6 +29,7 @@
 #define MODELVIEWQT3DGADGETCONFIGURATION_H
 
 #include <coreplugin/iuavgadgetconfiguration.h>
+#include <QBitArray>
 
 using namespace Core;
 
@@ -49,12 +50,14 @@ public:
     quint16 refreshRate() { return m_refreshRate; }
     bool perspective() { return m_perspective; }
     bool typeOfZoom() { return m_typeOfZoom; }
+    QBitArray ppOptions() { return m_ppOptions; }
 
     void setAcFilename(QString acFile) { m_acFilename = acFile; }
     void setBgFilename(QString bgFile) { m_bgFilename = bgFile; }
     void setRefreshRate(quint16 ref) { m_refreshRate = ref; }
     void setProjection(bool proj) { m_perspective = proj; }
     void setTypeOfZoom(bool zoom) { m_typeOfZoom = zoom; }
+    void setPostProcess(QBitArray opt) { m_ppOptions = opt; }
 
 signals:
 
@@ -66,6 +69,7 @@ private:
     quint16 m_refreshRate;
     bool m_perspective;     // 1 - perspective, 0 - orthographic
     bool m_typeOfZoom;      // 1 - FOV zoom, 0 - camera move
+    QBitArray m_ppOptions;
 };
 
 #endif // MODELVIEWQT3DGADGETCONFIGURATION_H

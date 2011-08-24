@@ -69,6 +69,16 @@ QWidget *ModelViewQt3DGadgetOptionsPage::createPage(QWidget *parent)
     m_page->fovZoom->setChecked(m_config->typeOfZoom());
     m_page->cameraMove->setChecked(!m_config->typeOfZoom());
 
+    QBitArray opt = m_config->ppOptions();
+    m_page->op_optimize->setChecked(opt.testBit(0));
+    m_page->op_optimize2->setChecked(opt.testBit(1));
+    m_page->op_nothing->setChecked(opt.testBit(2));
+    m_page->op_calculatenormals->setChecked(opt.testBit(3));
+    m_page->op_forcefaceted->setChecked(opt.testBit(4));
+    m_page->op_fixnormals->setChecked(opt.testBit(5));
+    m_page->op_fix1->setChecked(opt.testBit(6));
+    m_page->op_fix2->setChecked(opt.testBit(7));
+
     return w;
 }
 
@@ -79,6 +89,17 @@ void ModelViewQt3DGadgetOptionsPage::apply()
     m_config->setRefreshRate(m_page->refreshRate->value());
     m_config->setProjection(m_page->perspective->isChecked());
     m_config->setTypeOfZoom(m_page->fovZoom->isChecked());
+
+    QBitArray opt(8);
+    opt.setBit(0, m_page->op_optimize->isChecked());
+    opt.setBit(1, m_page->op_optimize2->isChecked());
+    opt.setBit(2, m_page->op_nothing->isChecked());
+    opt.setBit(3, m_page->op_calculatenormals->isChecked());
+    opt.setBit(4, m_page->op_forcefaceted->isChecked());
+    opt.setBit(5, m_page->op_fixnormals->isChecked());
+    opt.setBit(6, m_page->op_fix1->isChecked());
+    opt.setBit(7, m_page->op_fix2->isChecked());
+    m_config->setPostProcess(opt);
 }
 
 void ModelViewQt3DGadgetOptionsPage::finish()

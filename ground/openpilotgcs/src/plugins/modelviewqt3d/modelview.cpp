@@ -4,8 +4,10 @@ ModelView::ModelView(QWidget *parent)
     : QGLView(parent)
     , m_scene(0)
     , m_main(0)
+    , m_light(0)
     , projection(1)
     , typeOfZoom(1)
+    , ppOptions(8)
     , isGLInit(0)
 {
     qDebug() << "ModelView::ModelView";
@@ -28,10 +30,49 @@ void ModelView::reloadModel()
     qDebug() << "ModelView::reloadModel";
 
     // 1. load model
-    m_scene = QGLAbstractScene::loadScene(modelFilename);
+/*    options:
+ *           NoOptions,
+ *           ShowWarnings,        // show any warnings while loading the file
+ *           CalculateNormals,    // replace normals from the file with smooth generated ones
+ *           ForceFaceted,        // generate non-smooth normals (implies CalculateNormals)
+ *           ForceSmooth,         // deprecated - retained only for backward compatibility
+ *           IncludeAllMaterials, // include even redundant (unused) materials
+ *           IncludeLinesPoints,  // include even collapsed triangles (lines or points)
+ *           FixNormals,          // try to fix incorrect (in facing) normals
+ *           DeDupMeshes,         // replace copied meshes with refs to a single instance
+ *           Optimize,            // collapse meshes, nodes & scene heierarchies
+ *           FlipUVs,             // flips UV's on the y-axis (for upside-down textures)
+ *           FlipWinding,         // makes faces CW instead of CCW
+ *           UseVertexColors,     // use vertex colors that are in a model
+ *           VertexSplitLimitx2,  // double the vertex count which will split a large mesh
+ *           TriangleSplitLimitx2 // double the triangle count which will split a large mesh
+ ********************************************************************************************/
+    QString op = "";
+    if (ppOptions.testBit(0))
+        op.append("Optimize ");     // leave a space at end!
+    if (ppOptions.testBit(1))
+        op.append("Optimize2 ");
+    if (ppOptions.testBit(2))
+        op.append("");
+    if (ppOptions.testBit(3))
+        op.append("CalculateNormals ");
+    if (ppOptions.testBit(4))
+        op.append("ForceFaceted ");
+    if (ppOptions.testBit(5))
+        op.append("FixNormals ");
+    if (ppOptions.testBit(6))
+        op.append("");
+    if (ppOptions.testBit(7))
+        op.append("");
+
+    m_scene = QGLAbstractScene::loadScene(modelFilename, QString(), op);
     if (!m_scene) {
-        qDebug() << "QGLAbstractScene::loadScene failed";
-        return;
+        qWarning() << "QGLAbstractScene::loadScene failed, use buitin model";
+        m_scene = QGLAbstractScene::loadScene(":/modelviewqt3d/models/warning_sign.obj");
+        if (!m_scene) {
+            qCritical() << "QGLAbstractScene::loadScene failed twice, alarm, alarm!";
+            return;
+        }
     }
     m_main = m_scene->mainNode();
 
@@ -64,9 +105,13 @@ void ModelView::reloadModel()
         camera()->setMinViewSize(QSizeF(2.0, 2.0));
     }
     camera()->setProjectionType(proj);
-    camera()->setEye(QVector3D(0.0, 2.0, 10.0));
+    camera()->setEye(QVector3D(0.0, 0.0, -10.0));
     setOption(QGLView::FOVZoom, typeOfZoom);
 
+    // 7. world light
+    m_light = new QGLLightParameters(this);
+    m_light->setPosition(QVector3D(0.0f, 20.0f, -10.0f));
+    m_light->setAmbientColor(Qt::darkGray);
 }
 
 // protected
@@ -74,16 +119,19 @@ void ModelView::reloadModel()
 void ModelView::initializeGL(QGLPainter *painter)
 {
     qDebug() << "ModelView::initializeGL";
-    Q_UNUSED(painter);
+//    Q_UNUSED(painter);
 
-    // flag added because reloadModel() called from plugin constructor many times
+    // flag added because reloadModel() called from plugins constructor many times
     isGLInit = TRUE;
     reloadModel();
+    painter->setMainLight(m_light);
 }
 
 void ModelView::paintGL(QGLPainter *painter)
 {
     painter->modelViewMatrix().rotate(m_pose);
+//    m_light->setPosition(camera()->eye());
+//    painter->setMainLight(m_light);
     if (m_main)
         m_main->draw(painter);
 }
@@ -92,9 +140,7 @@ void ModelView::paintGL(QGLPainter *painter)
 
 void ModelView::onProjectionChanged()
 {
-//    qDebug() << "onProjectionChanged()";
-//    qDebug() << camera()->viewSize() << camera()->fieldOfView() << camera()->eye();
-
+//    qDebug() << "proj changed" << camera()->viewSize();
     qreal limit;
     if (projection) {
         // perspective
@@ -103,15 +149,14 @@ void ModelView::onProjectionChanged()
         // orthographic
         limit = 10.0;
     }
-    if (camera()->viewSize().width() > limit || camera()->viewSize().height() > limit)
+    QSizeF view = camera()->viewSize();
+    if (view.width() > limit || view.height() > limit)
         camera()->setViewSize(QSizeF(limit, limit));
 }
 
 void ModelView::onViewChanged()
 {
-//    qDebug() << "onViewChanged()";
-//    qDebug() << camera()->viewSize() << camera()->fieldOfView() << camera()->eye();
-
+//    qDebug() << "view changed" << camera()->eye();
     QVector3D viewVector = camera()->eye() - camera()->center();
     qreal length = viewVector.length();
     if (length < 8.0) {

@@ -29,10 +29,8 @@
 #define MODELVIEWQT3DGADGETWIDGET_H_
 
 #include <QHBoxLayout>
-
 #include "uavobjectmanager.h"
 #include "attitudeactual.h"
-
 #include "modelview.h"  //qt3d
 
 class ModelViewQt3DGadgetWidget : public QWidget
@@ -42,22 +40,18 @@ class ModelViewQt3DGadgetWidget : public QWidget
 public:
     ModelViewQt3DGadgetWidget(QWidget *parent = 0);
     ~ModelViewQt3DGadgetWidget();
-    void setAcFilename(QString acf);
-    void setBgFilename(QString bgf);
-    void setRefreshRate(quint16 rate);
-    void setProjection(bool perspective);
-    void setTypeOfZoom(bool zoom);
-    void reloadModel();
+    void setLoadedConfig(QString acf, QString bgf, quint16 rate
+                         , bool persp, bool zoom, QBitArray ppOpt);
 
 private slots:
 
 private:
-    int refreshTimer;
     ModelView* m_model;     // qt3d
+    int refreshTimer;
 
-    AttitudeActual* attActual;
     void timerEvent(QTimerEvent *);
     void updateAttitude();
+    AttitudeActual* attActual;
 };
 
 #endif /* MODELVIEWQT3DGADGETWIDGET_H_ */
