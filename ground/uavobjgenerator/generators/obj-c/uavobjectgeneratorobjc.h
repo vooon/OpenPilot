@@ -1,9 +1,9 @@
 /**
  ******************************************************************************
  *
- * @file       generator_common.h
+ * @file       UAVObjectGeneratorObjC.h
  * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2010.
- * @brief      common functions for generating uavobjects code
+ * @brief      produce gcs code for uavobjects
  *
  * @see        The GNU Public License (GPL) Version 3
  *
@@ -24,19 +24,27 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef UAVOBJECTGENERATORCOMMON_H
-#define UAVOBJECTGENERATORCOMMON_H
+#ifndef UAVObjectGeneratorObjC_H
+#define UAVObjectGeneratorObjC_H
 
-#include "../uavobjectparser.h"
-#include "generator_io.h"
+#define OBJC_TEMPLATE_DIR "ground/openpilotgcs/src/libs/objcuavobjects/templates/"
+//#define GCS_CODE_DIR "ground/openpilotgcs/src/plugins/uavobjects"
 
-// These special chars (regexp) will be removed from C/java identifiers
-#define ENUM_SPECIAL_CHARS "[\\.\\-\\s/]"
+#include "../generator_common.h"
 
-void replaceCommonTags(QString& out, ObjectInfo* info);
-void replaceCommonTags(QString& out);
-QString boolTo01String(bool value);
-QString boolToTRUEFALSEString(bool value);
-QString boolToYESNOString(bool value);
+class UAVObjectGeneratorObjC
+{
+public:
+    bool generate(UAVObjectParser* gen,QString templatepath,QString outputpath);
+
+private:
+    bool process_object(ObjectInfo* info);
+
+    QString objcCodeTemplate,objcIncludeTemplate;
+    QStringList fieldTypeStrCPP,fieldTypeStrCPPClass;
+    QDir objcCodePath;
+    QDir objcOutputPath;
+
+};
 
 #endif
