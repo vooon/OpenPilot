@@ -174,13 +174,17 @@ static void manualControlTask(void *parameters)
 				}
 				scaledChannel[n] = scaleChannel(cmd.Channel[n], settings.ChannelMax[n],	settings.ChannelMin[n], settings.ChannelNeutral[n]);
 			}
-
+			
+			int16_t accelBias[3];
+			AttitudeSettingsAccelBiasGet(accelBias);
+			
 			// Check settings, if error raise alarm
 			if (settings.Roll >= MANUALCONTROLSETTINGS_ROLL_NONE ||
 			    settings.Pitch >= MANUALCONTROLSETTINGS_PITCH_NONE ||
 			    settings.Yaw >= MANUALCONTROLSETTINGS_YAW_NONE ||
 			    settings.Throttle >= MANUALCONTROLSETTINGS_THROTTLE_NONE ||
-			    settings.FlightMode >= MANUALCONTROLSETTINGS_FLIGHTMODE_NONE) {
+			    settings.FlightMode >= MANUALCONTROLSETTINGS_FLIGHTMODE_NONE ||
+			    accelBias[0] == 0xFFFF || accelBias[1] == 0xFFFF || accelBias[2] == 0xFFFF) {
 				AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_CRITICAL);
 				cmd.Connected = MANUALCONTROLCOMMAND_CONNECTED_FALSE;
 				ManualControlCommandSet(&cmd);
