@@ -218,6 +218,10 @@ static void manualControlTask(void *parameters)
 				cmd.Roll = 0;
 				cmd.Yaw = 0;
 				cmd.Pitch = 0;
+
+				// This will follow the low throttle path to disarming. Needed for recievers that disconnect when TX is off. Once MANUALCONTROLCOMMAND_FLIGHTMODE_AUTO is implemented this will probably have to change a bit
+				processArm(&cmd, &settings);
+
 				//cmd.FlightMode = MANUALCONTROLCOMMAND_FLIGHTMODE_AUTO; // don't do until AUTO implemented and functioning
 				// Important: Throttle < 0 will reset Stabilization coefficients among other things. Either change this,
 				// or leave throttle at IDLE speed or above when going into AUTO-failsafe.
@@ -447,12 +451,8 @@ static void processArm(ManualControlCommandData * cmd, ManualControlSettingsData
 		// In this configuration we always disarm
 		setArmedIfChanged(FLIGHTSTATUS_ARMED_DISARMED);
 	} else {
-		// Not really needed since this function not called when disconnected
-		if (cmd->Connected == MANUALCONTROLCOMMAND_CONNECTED_FALSE)
-			return;
-
 		// The throttle is not low, in case we where arming or disarming, abort
-		if (!lowThrottle) {
+	 	if (!lowThrottle) {
 			switch(armState) {
 				case ARM_STATE_DISARMING_MANUAL:
 				case ARM_STATE_DISARMING_TIMEOUT:
