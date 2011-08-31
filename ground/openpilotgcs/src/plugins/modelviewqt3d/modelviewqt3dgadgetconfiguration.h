@@ -45,30 +45,23 @@ public:
     void saveConfig(QSettings* settings) const;
     IUAVGadgetConfiguration *clone();
 
-    QString acFilename() { return m_acFilename; }
-    QString bgFilename() { return m_bgFilename; }
-    quint16 refreshRate() { return m_refreshRate; }
-    bool perspective() { return m_perspective; }
-    bool typeOfZoom() { return m_typeOfZoom; }
-    QBitArray ppOptions() { return m_ppOptions; }
+    QString modelFilename()             { return m_modelFilename; }
+    QString worldFilename()             { return m_worldFilename; }
+    quint8 aaSamples()                  { return m_aaSamples; }
+    quint8 fpsLimiter()                 { return m_fpsLimiter; }
+    QBitArray ppOptions()               { return m_ppOptions; }
 
-    void setAcFilename(QString acFile) { m_acFilename = acFile; }
-    void setBgFilename(QString bgFile) { m_bgFilename = bgFile; }
-    void setRefreshRate(quint16 ref) { m_refreshRate = ref; }
-    void setProjection(bool proj) { m_perspective = proj; }
-    void setTypeOfZoom(bool zoom) { m_typeOfZoom = zoom; }
-    void setPostProcess(QBitArray opt) { m_ppOptions = opt; }
-
-signals:
-
-public slots:
+    void setModelFile(QString mFile)    { m_modelFilename = mFile; }
+    void setWorldFile(QString wFile)    { m_worldFilename = wFile; }
+    void setAASamples(quint8 aa)        { m_aaSamples = aa; }
+    void setFPSLimiter(quint8 fps)      { m_fpsLimiter = fps; }
+    void setPostProcess(QBitArray opt)  { m_ppOptions = opt; }
 
 private:
-    QString m_acFilename;
-    QString m_bgFilename;
-    quint16 m_refreshRate;
-    bool m_perspective;     // 1 - perspective, 0 - orthographic
-    bool m_typeOfZoom;      // 1 - FOV zoom, 0 - camera move
+    QString m_modelFilename;
+    QString m_worldFilename;
+    quint8 m_aaSamples;
+    quint8 m_fpsLimiter;
     QBitArray m_ppOptions;
 };
 

@@ -45,6 +45,10 @@ ModelViewQt3DGadget::~ModelViewQt3DGadget()
 void ModelViewQt3DGadget::loadConfiguration(IUAVGadgetConfiguration* config)
 {
     ModelViewQt3DGadgetConfiguration *m = qobject_cast<ModelViewQt3DGadgetConfiguration*>(config);
-    m_widget->setLoadedConfig(m->acFilename(), m->bgFilename(), m->refreshRate()
-                              , m->perspective(), m->typeOfZoom(), m->ppOptions());
+    m_widget->setLoadedConfig(m->modelFilename()
+                              , m->worldFilename()
+                              , m->aaSamples()
+                              , m->fpsLimiter()
+                              , m->ppOptions()
+                              );
 }

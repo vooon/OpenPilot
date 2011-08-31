@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>318</height>
+    <height>300</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -25,6 +25,12 @@
    </property>
    <item>
     <layout class="QGridLayout" name="gridLayout_2">
+     <property name="topMargin">
+      <number>3</number>
+     </property>
+     <property name="bottomMargin">
+      <number>3</number>
+     </property>
      <item row="0" column="0">
       <widget class="QLabel" name="label">
        <property name="sizePolicy">
@@ -47,12 +53,12 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>Background image:</string>
+        <string>World model</string>
        </property>
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="Utils::PathChooser" name="backgroundPathChooser" native="true">
+      <widget class="Utils::PathChooser" name="worldPathChooser" native="true">
        <property name="toolTip">
         <string>Select the image that is shown in the background.</string>
        </property>
@@ -68,16 +74,19 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
-      <widget class="QLabel" name="label_3">
+    <layout class="QFormLayout" name="formLayout">
+     <property name="fieldGrowthPolicy">
+      <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+     </property>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_4">
        <property name="text">
-        <string>Refresh rate:</string>
+        <string>Antialiasing</string>
        </property>
       </widget>
      </item>
-     <item>
-      <widget class="QSpinBox" name="refreshRate">
+     <item row="0" column="1">
+      <widget class="QSpinBox" name="aaSamples">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -85,141 +94,47 @@
         </sizepolicy>
        </property>
        <property name="toolTip">
-        <string>10-500 ms (100-2 Hz)</string>
-       </property>
-       <property name="suffix">
-        <string>ms</string>
-       </property>
-       <property name="minimum">
-        <number>10</number>
+        <string>0 - disable antialiasing</string>
        </property>
        <property name="maximum">
-        <number>500</number>
+        <number>16</number>
+       </property>
+       <property name="singleStep">
+        <number>2</number>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>FPS limiter</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QSpinBox" name="fpsLimiter">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string/>
+       </property>
+       <property name="suffix">
+        <string>fps</string>
+       </property>
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>60</number>
        </property>
        <property name="value">
-        <number>100</number>
+        <number>10</number>
        </property>
       </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <item>
-      <widget class="QLabel" name="label_4">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Projection:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QWidget" name="projectionGroup" native="true">
-       <layout class="QVBoxLayout" name="verticalLayout_3">
-        <property name="margin">
-         <number>0</number>
-        </property>
-        <item>
-         <widget class="QRadioButton" name="perspective">
-          <property name="text">
-           <string>Perspective</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QRadioButton" name="orthographic">
-          <property name="toolTip">
-           <string>This projection support only FOV zoom</string>
-          </property>
-          <property name="text">
-           <string>Orthographic</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="label_5">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Zoom:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QWidget" name="zoomGroup" native="true">
-       <layout class="QVBoxLayout" name="verticalLayout_4">
-        <property name="margin">
-         <number>0</number>
-        </property>
-        <item>
-         <widget class="QRadioButton" name="fovZoom">
-          <property name="toolTip">
-           <string>Use field-of view as zoom (much like a traditional camera)</string>
-          </property>
-          <property name="text">
-           <string>FOV zoom</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QRadioButton" name="cameraMove">
-          <property name="toolTip">
-           <string>Moving the camera back or forward</string>
-          </property>
-          <property name="text">
-           <string>Camera move</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
      </item>
     </layout>
    </item>
@@ -245,9 +160,9 @@
        <number>3</number>
       </property>
       <item>
-       <widget class="QRadioButton" name="op_nothing">
+       <widget class="QRadioButton" name="bit0">
         <property name="text">
-         <string>use original normals</string>
+         <string>use original normals (default)</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -255,57 +170,33 @@
        </widget>
       </item>
       <item>
-       <widget class="QRadioButton" name="op_calculatenormals">
+       <widget class="QRadioButton" name="bit1">
         <property name="text">
-         <string>replace normals from the file with smooth generated ones</string>
+         <string>generate smooth normals</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QRadioButton" name="op_forcefaceted">
+       <widget class="QRadioButton" name="bit2">
         <property name="text">
-         <string>generate non-smooth normals</string>
+         <string>generate hard normals (more memory)</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="op_optimize2">
+       <widget class="QCheckBox" name="bit3">
         <property name="text">
-         <string>removes the node graph and pre-transforms all vertices</string>
+         <string>try to fix &quot;flying&quot; parts</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="op_fixnormals">
-        <property name="text">
-         <string>try to fix incorrect (in facing) normals</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="op_optimize">
-        <property name="text">
-         <string>collapse meshes, nodes and scene heierarchies (may change main node!)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="op_fix1">
-        <property name="enabled">
-         <bool>false</bool>
+       <widget class="QCheckBox" name="bit7">
+        <property name="toolTip">
+         <string>see Assimp.log</string>
         </property>
         <property name="text">
-         <string>reserved</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="op_fix2">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>reserved</string>
+         <string>Debug output</string>
         </property>
        </widget>
       </item>
@@ -336,38 +227,5 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections>
-  <connection>
-   <sender>orthographic</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>zoomGroup</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>278</x>
-     <y>71</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>237</x>
-     <y>103</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>orthographic</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>fovZoom</receiver>
-   <slot>setChecked(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>322</x>
-     <y>75</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>141</x>
-     <y>101</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

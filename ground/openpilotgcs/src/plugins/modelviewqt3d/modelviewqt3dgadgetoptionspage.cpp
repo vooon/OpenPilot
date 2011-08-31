@@ -53,52 +53,45 @@ QWidget *ModelViewQt3DGadgetOptionsPage::createPage(QWidget *parent)
     m_page->modelPathChooser->setPromptDialogFilter(filter);
     m_page->modelPathChooser->setPromptDialogTitle(tr("Choose 3D model"));
 
-    m_page->backgroundPathChooser->setExpectedKind(Utils::PathChooser::File);
-    m_page->backgroundPathChooser->setPromptDialogFilter(tr("Images (*.png *.jpg *.bmp *.xpm)"));
-    m_page->backgroundPathChooser->setPromptDialogTitle(tr("Choose background image"));
+    m_page->worldPathChooser->setExpectedKind(Utils::PathChooser::File);
+    m_page->worldPathChooser->setPromptDialogFilter(filter);
+    m_page->worldPathChooser->setPromptDialogTitle(tr("Choose world model"));
 
-    m_page->modelPathChooser->setPath(m_config->acFilename());
-    m_page->backgroundPathChooser->setPath(m_config->bgFilename());
+    m_page->modelPathChooser->setPath(m_config->modelFilename());
+    m_page->worldPathChooser->setPath(m_config->worldFilename());
 
-    m_page->refreshRate->setValue(m_config->refreshRate());
-
-    m_page->perspective->setChecked(m_config->perspective());
-    m_page->orthographic->setChecked(!m_config->perspective());
-    m_page->zoomGroup->setEnabled(m_config->perspective());
-
-    m_page->fovZoom->setChecked(m_config->typeOfZoom());
-    m_page->cameraMove->setChecked(!m_config->typeOfZoom());
+    m_page->aaSamples->setValue(m_config->aaSamples());
+    m_page->fpsLimiter->setValue(m_config->fpsLimiter());
 
     QBitArray opt = m_config->ppOptions();
-    m_page->op_optimize->setChecked(opt.testBit(0));
-    m_page->op_optimize2->setChecked(opt.testBit(1));
-    m_page->op_nothing->setChecked(opt.testBit(2));
-    m_page->op_calculatenormals->setChecked(opt.testBit(3));
-    m_page->op_forcefaceted->setChecked(opt.testBit(4));
-    m_page->op_fixnormals->setChecked(opt.testBit(5));
-    m_page->op_fix1->setChecked(opt.testBit(6));
-    m_page->op_fix2->setChecked(opt.testBit(7));
+    m_page->bit0->setChecked(opt.testBit(0));
+    m_page->bit1->setChecked(opt.testBit(1));
+    m_page->bit2->setChecked(opt.testBit(2));
+    m_page->bit3->setChecked(opt.testBit(3));
+//    m_page->bit4->setChecked(opt.testBit(4));
+//    m_page->bit5->setChecked(opt.testBit(5));
+//    m_page->bit6->setChecked(opt.testBit(6));
+    m_page->bit7->setChecked(opt.testBit(7));
 
     return w;
 }
 
 void ModelViewQt3DGadgetOptionsPage::apply()
 {
-    m_config->setAcFilename(m_page->modelPathChooser->path());
-    m_config->setBgFilename(m_page->backgroundPathChooser->path());
-    m_config->setRefreshRate(m_page->refreshRate->value());
-    m_config->setProjection(m_page->perspective->isChecked());
-    m_config->setTypeOfZoom(m_page->fovZoom->isChecked());
+    m_config->setModelFile(m_page->modelPathChooser->path());
+    m_config->setWorldFile(m_page->worldPathChooser->path());
+    m_config->setAASamples(m_page->aaSamples->value());
+    m_config->setFPSLimiter(m_page->fpsLimiter->value());
 
     QBitArray opt(8);
-    opt.setBit(0, m_page->op_optimize->isChecked());
-    opt.setBit(1, m_page->op_optimize2->isChecked());
-    opt.setBit(2, m_page->op_nothing->isChecked());
-    opt.setBit(3, m_page->op_calculatenormals->isChecked());
-    opt.setBit(4, m_page->op_forcefaceted->isChecked());
-    opt.setBit(5, m_page->op_fixnormals->isChecked());
-    opt.setBit(6, m_page->op_fix1->isChecked());
-    opt.setBit(7, m_page->op_fix2->isChecked());
+    opt.setBit(0, m_page->bit0->isChecked());
+    opt.setBit(1, m_page->bit1->isChecked());
+    opt.setBit(2, m_page->bit2->isChecked());
+    opt.setBit(3, m_page->bit3->isChecked());
+    opt.setBit(4, false);
+    opt.setBit(5, false);
+    opt.setBit(6, false);
+    opt.setBit(7, m_page->bit7->isChecked());
     m_config->setPostProcess(opt);
 }
 

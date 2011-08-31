@@ -1,169 +1,252 @@
-#include "modelview.h"
+#include "modelviewqt3d.h"
 
-ModelView::ModelView(QWidget *parent)
-    : QGLView(parent)
+ModelViewQt3D::ModelViewQt3D(const QGLFormat& format, QWidget *parent)
+    : QGLView(format, parent)
     , m_scene(0)
+    , m_world(0)
     , m_main(0)
     , m_light(0)
-    , projection(1)
-    , typeOfZoom(1)
+    , typeOfZoom(0)
     , ppOptions(8)
     , isGLInit(0)
 {
-    qDebug() << "ModelView::ModelView";
+    qDebug() << this << "constructed";
+    ppOptions.setBit(0, TRUE);
+    anim.setCamera(camera());
 
     connect(camera(), SIGNAL(projectionChanged()), this, SLOT(onProjectionChanged()));
     connect(camera(), SIGNAL(viewChanged()), this, SLOT(onViewChanged()));
 }
 
-ModelView::~ModelView()
+ModelViewQt3D::~ModelViewQt3D()
 {
-    qDebug() << "ModelView::~ModelView";
+    qDebug() << this << "deconstructed";
     delete m_scene;
 }
 
-void ModelView::reloadModel()
+// protected ///////////////////////////////////////////////////////////////////////////////////////
+
+void ModelViewQt3D::initializeGL(QGLPainter *painter)
+{
+    qDebug() << this << "initializeGL";
+    isGLInit = TRUE;
+    initWorld();
+    initModel();
+
+    // camera config
+    camera()->setProjectionType(getProjection());
+    setOption(QGLView::FOVZoom, typeOfZoom);
+
+    m_light = new QGLLightParameters(this);
+    if (ppOptions.testBit(4))
+        m_light->setDirection(-m_light->direction());
+    m_light->setDirection(QVector3D(-25,25,25));
+    m_light->setAmbientColor(Qt::lightGray);
+
+    painter->setClearColor(Qt::lightGray);
+}
+
+void ModelViewQt3D::paintGL(QGLPainter *painter)
+{
+    if (m_world && m_main) {
+        m_world->setPosition(camera()->eye());
+        m_world->draw(painter);
+
+        painter->setMainLight(m_light);
+        painter->modelViewMatrix().rotate(m_pose);
+        m_main->draw(painter);
+    }
+}
+
+void ModelViewQt3D::mouseDoubleClickEvent(QMouseEvent *e)
+{
+    Q_UNUSED(e);
+    rotateCamera();
+}
+
+void ModelViewQt3D::keyPressEvent(QKeyEvent *e)
+{
+//    qDebug() << this << e->key();
+    QVector3D rot = QVector3D();
+    switch (e->key()) {
+        case Qt::Key_0:             // change zoom
+            typeOfZoom = !typeOfZoom;
+            setOption(QGLView::FOVZoom, typeOfZoom);
+            break;
+        case Qt::Key_2:             // back
+            rot = QVector3D(0,-1,-2.5);
+            break;
+        case Qt::Key_4:             // left
+            rot = QVector3D(2.5,-1,0);
+            break;
+        case Qt::Key_8:             // forward
+            rot = QVector3D(0,-1,2.5);
+            break;
+        case Qt::Key_6:             // right
+            rot = QVector3D(-2.5,-1,0);
+            break;
+        default:
+            break;
+    }
+    if (rot != QVector3D())
+        rotateCamera(rot);
+
+    QGLView::keyPressEvent(e);
+}
+
+// private slots ///////////////////////////////////////////////////////////////////////////////////
+
+void ModelViewQt3D::onProjectionChanged()
+{
+//    qDebug() << this << "proj changed"
+//             << camera()->eye().length() << "\t" << camera()->fieldOfView();
+    camera()->setUpVector(QVector3D(0,1,0));
+    emit fovIsChanged(camera()->fieldOfView());
+    emit distanceIsChanged(camera()->eye().length());
+}
+
+void ModelViewQt3D::onViewChanged()
+{
+    QVector3D center = camera()->center();
+    QVector3D viewVector = camera()->eye() - center;
+    qreal length = viewVector.length();
+    QVector3D normal = viewVector.normalized();
+    QRay3D viewLine(center, normal);
+    length = qBound(1.74, length, 10.0);
+    camera()->setEye(viewLine.point(length));
+//    qDebug() << this << "view changed"
+//             << camera()->eye().length() << "\t" << camera()->fieldOfView();
+    camera()->setUpVector(QVector3D(0,1,0));
+    emit fovIsChanged(camera()->fieldOfView());
+    emit distanceIsChanged(camera()->eye().length());
+}
+
+// private /////////////////////////////////////////////////////////////////////////////////////////
+
+void ModelViewQt3D::initWorld()
 {
     if (!isGLInit)
         return;
+    qDebug() << this << "initWorld";
 
-    qDebug() << "ModelView::reloadModel";
+    m_scene = QGLAbstractScene::loadScene(":/modelviewqt3d/models/world.dae");
+    if (!m_scene) {
+        qCritical() << this << "loadWorld failed, alarm, alarm!";
+        return;
+    }
+    m_world = m_scene->mainNode();
 
-    // 1. load model
-/*    options:
- *           NoOptions,
- *           ShowWarnings,        // show any warnings while loading the file
- *           CalculateNormals,    // replace normals from the file with smooth generated ones
- *           ForceFaceted,        // generate non-smooth normals (implies CalculateNormals)
- *           ForceSmooth,         // deprecated - retained only for backward compatibility
- *           IncludeAllMaterials, // include even redundant (unused) materials
- *           IncludeLinesPoints,  // include even collapsed triangles (lines or points)
- *           FixNormals,          // try to fix incorrect (in facing) normals
- *           DeDupMeshes,         // replace copied meshes with refs to a single instance
- *           Optimize,            // collapse meshes, nodes & scene heierarchies
- *           FlipUVs,             // flips UV's on the y-axis (for upside-down textures)
- *           FlipWinding,         // makes faces CW instead of CCW
- *           UseVertexColors,     // use vertex colors that are in a model
- *           VertexSplitLimitx2,  // double the vertex count which will split a large mesh
- *           TriangleSplitLimitx2 // double the triangle count which will split a large mesh
- ********************************************************************************************/
-    QString op = "";
-    if (ppOptions.testBit(0))
-        op.append("Optimize ");     // leave a space at end!
-    if (ppOptions.testBit(1))
-        op.append("Optimize2 ");
-    if (ppOptions.testBit(2))
-        op.append("");
-    if (ppOptions.testBit(3))
-        op.append("CalculateNormals ");
-    if (ppOptions.testBit(4))
-        op.append("ForceFaceted ");
-    if (ppOptions.testBit(5))
-        op.append("FixNormals ");
-    if (ppOptions.testBit(6))
-        op.append("");
-    if (ppOptions.testBit(7))
-        op.append("");
+    QVector3D size = m_world->boundingBox().size();
+    qreal max = qMax(qMax(size.x(), size.y()), size.z());
+    qreal ratio = 50.0 / max;
+    QVector3D scale = QVector3D(ratio, ratio, ratio);
+    QGraphicsScale3D *s = new QGraphicsScale3D(m_world);
+    s->setScale(scale);
 
+    m_world->addTransform(s);
+    QVector3D center = m_world->boundingBox().center();
+    QVector3D trans = QVector3D(center.x(), center.y(), center.z());
+    QGraphicsTranslation3D *t = new QGraphicsTranslation3D(m_world);
+    t->setTranslate(-trans);
+
+    m_world->addTransform(t);
+    m_world->setEffect(QGL::FlatReplaceTexture2D);
+}
+
+void ModelViewQt3D::initModel()
+{
+    if (!isGLInit)
+        return;
+    qDebug() << this << "initModel";
+
+/*
+ * 1. load model
+ */
+    QString op = parseOptions();
     m_scene = QGLAbstractScene::loadScene(modelFilename, QString(), op);
     if (!m_scene) {
-        qWarning() << "QGLAbstractScene::loadScene failed, use buitin model";
-        m_scene = QGLAbstractScene::loadScene(":/modelviewqt3d/models/warning_sign.obj");
+        qWarning() << this << "loadScene failed, use buit-in model";
+        m_scene = QGLAbstractScene::loadScene(":/modelviewqt3d/models/cube.dae");
         if (!m_scene) {
-            qCritical() << "QGLAbstractScene::loadScene failed twice, alarm, alarm!";
+            qCritical() << this << "loadScene failed twice, alarm, alarm!";
             return;
         }
     }
     m_main = m_scene->mainNode();
 
-    // 2. take bounding box of model
+/*
+ * 2. take bounding box of model, calculate ratio to fit model in (2,2,2) box
+ */
     QVector3D size = m_main->boundingBox().size();
-
-    // 3. find maximum value
     qreal max = qMax(qMax(size.x(), size.y()), size.z());
-
-    // 4. calculate ratio
-    qreal ratio = 5.0 / max;
+    qreal ratio = 2.0 / max;
     QVector3D scale = QVector3D(ratio, ratio, ratio);
 
-    // 5. scale model to (5, 5, 5) box
+/*
+ * 3. scale model to (2, 2, 2) box
+ */
     QGraphicsScale3D *s = new QGraphicsScale3D(m_main);
     s->setScale(scale);
     m_main->addTransform(s);
 
-    // 6. camera config
+/*
+ * 4. translate center of model to origin
+ */
+    QVector3D center = m_main->boundingBox().center();
+    QVector3D trans = QVector3D(center.x(), center.y(), center.z());
+    QGraphicsTranslation3D *t = new QGraphicsTranslation3D(m_main);
+    t->setTranslate(-trans);
+    m_main->addTransform(t);
+
+/*
+ * 5. additional steps
+ */
+//    m_main->setEffect(QGL::LitModulateTexture2D);
+
+}
+
+void ModelViewQt3D::rotateCamera(QVector3D endPoint)
+{
+    if (qFuzzyCompare(camera()->eye(), endPoint))
+        return;
+    if (camera()->center() == QVector3D())
+        camera()->setCenter(QVector3D(0,0,0.001));
+
+    anim.setStartCenter(camera()->center());
+    anim.setStartEye(camera()->eye());
+    anim.setStartUpVector(camera()->upVector());
+    anim.setEndEye(endPoint);
+    anim.setDuration(1000);
+    anim.setEasingCurve(QEasingCurve::InOutCubic);
+
+    anim.start();
+}
+
+QGLCamera::ProjectionType ModelViewQt3D::getProjection()
+{
     QGLCamera::ProjectionType proj;
-    if (projection) {
-        // perspective
-        proj = QGLCamera::Perspective;
-        // camera()->setViewSize(QSizeF(2.0, 2.0)); // this is default value
-        camera()->setMinViewSize(QSizeF(1.0, 1.0));
-    } else {
-        // orthographic
-        proj = QGLCamera::Orthographic;
-        camera()->setViewSize(QSizeF(4.0, 4.0));
-        camera()->setMinViewSize(QSizeF(2.0, 2.0));
+    proj = QGLCamera::Perspective;
+    camera()->setFieldOfView(60.0);
+    camera()->setNearPlane(0.1);
+    return proj;
+}
+
+QString ModelViewQt3D::parseOptions()
+{
+    QStringList options;
+    options << "NoOptions "
+            << "CalculateNormals "
+            << "ForceFaceted "
+            << "Optimize2 "
+            << ""               // reserved
+            << ""               // reserved
+            << ""               // reserved
+            << "ShowWarnings ";
+    QString op = "";
+    for (int i=0; i<8; i++) {
+        if (ppOptions.testBit(i))
+            op.append(options.at(i));
     }
-    camera()->setProjectionType(proj);
-    camera()->setEye(QVector3D(0.0, 0.0, -10.0));
-    setOption(QGLView::FOVZoom, typeOfZoom);
-
-    // 7. world light
-    m_light = new QGLLightParameters(this);
-    m_light->setPosition(QVector3D(0.0f, 20.0f, -10.0f));
-    m_light->setAmbientColor(Qt::darkGray);
-}
-
-// protected
-
-void ModelView::initializeGL(QGLPainter *painter)
-{
-    qDebug() << "ModelView::initializeGL";
-//    Q_UNUSED(painter);
-
-    // flag added because reloadModel() called from plugins constructor many times
-    isGLInit = TRUE;
-    reloadModel();
-    painter->setMainLight(m_light);
-}
-
-void ModelView::paintGL(QGLPainter *painter)
-{
-    painter->modelViewMatrix().rotate(m_pose);
-//    m_light->setPosition(camera()->eye());
-//    painter->setMainLight(m_light);
-    if (m_main)
-        m_main->draw(painter);
-}
-
-// private slots
-
-void ModelView::onProjectionChanged()
-{
-//    qDebug() << "proj changed" << camera()->viewSize();
-    qreal limit;
-    if (projection) {
-        // perspective
-        limit = 5.0;
-    } else {
-        // orthographic
-        limit = 10.0;
-    }
-    QSizeF view = camera()->viewSize();
-    if (view.width() > limit || view.height() > limit)
-        camera()->setViewSize(QSizeF(limit, limit));
-}
-
-void ModelView::onViewChanged()
-{
-//    qDebug() << "view changed" << camera()->eye();
-    QVector3D viewVector = camera()->eye() - camera()->center();
-    qreal length = viewVector.length();
-    if (length < 8.0) {
-        QRay3D viewLine(camera()->center(), viewVector.normalized());
-        camera()->setEye(viewLine.point(8.0));
-    } else if (length > 20.0) {
-        QRay3D viewLine(camera()->center(), viewVector.normalized());
-        camera()->setEye(viewLine.point(20.0));
-    }
+//    qDebug() << this << "options for AssImp" << op;
+    return op;
 }

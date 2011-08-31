@@ -32,47 +32,40 @@ ModelViewQt3DGadgetConfiguration::ModelViewQt3DGadgetConfiguration(QString class
                                                                    , QSettings* qSettings
                                                                    , QObject *parent)
     : IUAVGadgetConfiguration(classId, parent)
-    , m_acFilename(":/modelviewqt3d/models/warning_sign.obj")
-    , m_bgFilename(":/modelviewqt3d/models/black.jpg")
-    , m_refreshRate(100)
-    , m_perspective(1)
-    , m_typeOfZoom(1)
+    , m_modelFilename("")
+    , m_worldFilename("")
+    , m_aaSamples(0)
+    , m_fpsLimiter(10)
     , m_ppOptions(8)
 {
     //if a saved configuration exists load it
     if(qSettings != 0) {
-        QString modelFile = qSettings->value("acFilename").toString();
-        QString bgFile = qSettings->value("bgFilename").toString();
-        m_acFilename = Utils::PathUtils().InsertDataPath(modelFile);
-        m_bgFilename = Utils::PathUtils().InsertDataPath(bgFile);
-        m_refreshRate = qSettings->value("refreshRate").toInt();
-        m_perspective = qSettings->value("perspective").toBool();
-        m_typeOfZoom = qSettings->value("typeOfZoom").toBool();
-        m_ppOptions = qSettings->value("postProcess").toBitArray();
+        QString modelFile = qSettings->value("modelFilename").toString();
+        QString worldFile = qSettings->value("worldFilename").toString();
+        m_modelFilename = Utils::PathUtils().InsertDataPath(modelFile);
+        m_worldFilename = Utils::PathUtils().InsertDataPath(worldFile);
+        m_aaSamples = qSettings->value("aaSamples").toInt();
+        m_fpsLimiter = qSettings->value("fpsLimiter").toInt();
+        m_ppOptions = qSettings->value("ppOptions").toBitArray();
     }
 }
 
 IUAVGadgetConfiguration *ModelViewQt3DGadgetConfiguration::clone()
 {
     ModelViewQt3DGadgetConfiguration *mv = new ModelViewQt3DGadgetConfiguration(this->classId());
-    mv->m_acFilename = m_acFilename;
-    mv->m_bgFilename = m_bgFilename;
-    mv->m_refreshRate = m_refreshRate;
-    mv->m_perspective = m_perspective;
-    mv->m_typeOfZoom = m_typeOfZoom;
+    mv->m_modelFilename = m_modelFilename;
+    mv->m_worldFilename = m_worldFilename;
+    mv->m_fpsLimiter = m_fpsLimiter;
+    mv->m_aaSamples = m_aaSamples;
     mv->m_ppOptions = m_ppOptions;
     return mv;
 }
 
-/**
- * Saves a configuration.
- *
- */
-void ModelViewQt3DGadgetConfiguration::saveConfig(QSettings* qSettings) const {
-    qSettings->setValue("acFilename", Utils::PathUtils().RemoveDataPath(m_acFilename));
-    qSettings->setValue("bgFilename", Utils::PathUtils().RemoveDataPath(m_bgFilename));
-    qSettings->setValue("refreshRate", m_refreshRate);
-    qSettings->setValue("perspective", m_perspective);
-    qSettings->setValue("typeOfZoom", m_typeOfZoom);
-    qSettings->setValue("postProcess", m_ppOptions);
+void ModelViewQt3DGadgetConfiguration::saveConfig(QSettings* qSettings) const
+{
+    qSettings->setValue("modelFilename", Utils::PathUtils().RemoveDataPath(m_modelFilename));
+    qSettings->setValue("worldFilename", Utils::PathUtils().RemoveDataPath(m_worldFilename));
+    qSettings->setValue("aaSamples", m_aaSamples);
+    qSettings->setValue("fpsLimiter", m_fpsLimiter);
+    qSettings->setValue("ppOptions", m_ppOptions);
 }

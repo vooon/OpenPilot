@@ -31,7 +31,7 @@
 #include <QHBoxLayout>
 #include "uavobjectmanager.h"
 #include "attitudeactual.h"
-#include "modelview.h"  //qt3d
+#include "modelviewqt3d.h"
 
 class ModelViewQt3DGadgetWidget : public QWidget
 {
@@ -40,17 +40,22 @@ class ModelViewQt3DGadgetWidget : public QWidget
 public:
     ModelViewQt3DGadgetWidget(QWidget *parent = 0);
     ~ModelViewQt3DGadgetWidget();
-    void setLoadedConfig(QString acf, QString bgf, quint16 rate
-                         , bool persp, bool zoom, QBitArray ppOpt);
-
+    void setLoadedConfig(QString mfn
+                         , QString wfn
+                         , int aas
+                         , int fps
+                         , QBitArray opt);
 private slots:
+    void onModelViewFocused(bool focus);
 
 private:
-    ModelView* m_model;     // qt3d
-    int refreshTimer;
-
+    int timer;
     void timerEvent(QTimerEvent *);
+    QHBoxLayout *modelviewLayout;
+    ModelViewQt3D* m_model;
+    void setQGLFormat(int samples = 0, int fpsLimit = 3);
     void updateAttitude();
+
     AttitudeActual* attActual;
 };
 
