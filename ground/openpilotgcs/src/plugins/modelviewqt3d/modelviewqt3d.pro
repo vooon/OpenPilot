@@ -13,7 +13,7 @@ HEADERS += modelviewqt3dplugin.h \
     modelviewqt3dgadgetwidget.h \
     modelviewqt3dgadgetfactory.h \
     modelviewqt3dgadgetoptionspage.h \
-    modelview.h
+    modelviewqt3d.h
 
 SOURCES += modelviewqt3dplugin.cpp \
     modelviewqt3dgadgetconfiguration.cpp \
@@ -21,10 +21,14 @@ SOURCES += modelviewqt3dplugin.cpp \
     modelviewqt3dgadgetfactory.cpp \
     modelviewqt3dgadgetwidget.cpp \
     modelviewqt3dgadgetoptionspage.cpp \
-    modelview.cpp
+    modelviewqt3d.cpp
 
 OTHER_FILES += ModelViewQt3DGadget.pluginspec
 
 FORMS += modelviewqt3doptionspage.ui
 
 RESOURCES += modelviewqt3d.qrc
+
+
+
+
