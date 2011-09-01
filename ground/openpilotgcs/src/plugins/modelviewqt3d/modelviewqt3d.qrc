@@ -3,12 +3,6 @@
         <file>models/cube.dae</file>
         <file>models/alert_bg.png</file>
         <file>models/alert_fg.png</file>
-        <file>models/world.dae</file>
-        <file>models/texture0.jpg</file>
-        <file>models/texture1.jpg</file>
-        <file>models/texture2.jpg</file>
-        <file>models/texture3.jpg</file>
-        <file>models/texture4.jpg</file>
-        <file>models/texture5.jpg</file>
+        <file>models/sky.jpg</file>
     </qresource>
 </RCC>
