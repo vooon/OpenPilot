@@ -2,8 +2,11 @@
 #define MODELVIEW_H
 
 #include <qglview.h>
+#include <qglbuilder.h>
+#include <qglsphere.h>
 #include <qglabstractscene.h>
 #include <qgraphicsscale3d.h>
+#include <qgraphicsrotation3d.h>
 #include <qgraphicstranslation3d.h>
 #include <qglcameraanimation.h>
 #include <QBitArray>
@@ -43,10 +46,9 @@ public:
     void setCameraUp(QVector3D up)      { camera()->setUpVector(up); }
     QVector3D getCameraUp()             { return camera()->upVector(); }
 
-    void updateAttitude()               { updateGL(); }
+    void updateAttitude()               { update(); }
 
 signals:
-    void readyForUpdate();
     void focusIsChanged(bool focused);
     void fovIsChanged(qreal fov);
     void distanceIsChanged(qreal dist);

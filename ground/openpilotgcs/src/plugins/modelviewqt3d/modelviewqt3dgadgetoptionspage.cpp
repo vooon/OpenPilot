@@ -45,16 +45,17 @@ QWidget *ModelViewQt3DGadgetOptionsPage::createPage(QWidget *parent)
     m_page->setupUi(w);
 
     // all supported formats
-    QString filter = tr("3D Models (%1)")
-                     .arg(QGLAbstractScene::supportedFormats()
-                          .join(" "));
+    QString modelFilter = tr("3D Models (%1)")
+                     .arg(QGLAbstractScene::supportedFormats().join(" "));
+    QString textureFilter = tr("Textures (%1)")
+                            .arg("*.jpg *.png *.tif *.tga");
 
     m_page->modelPathChooser->setExpectedKind(Utils::PathChooser::File);
-    m_page->modelPathChooser->setPromptDialogFilter(filter);
+    m_page->modelPathChooser->setPromptDialogFilter(modelFilter);
     m_page->modelPathChooser->setPromptDialogTitle(tr("Choose 3D model"));
 
     m_page->worldPathChooser->setExpectedKind(Utils::PathChooser::File);
-    m_page->worldPathChooser->setPromptDialogFilter(filter);
+    m_page->worldPathChooser->setPromptDialogFilter(textureFilter);
     m_page->worldPathChooser->setPromptDialogTitle(tr("Choose world model"));
 
     m_page->modelPathChooser->setPath(m_config->modelFilename());

@@ -53,7 +53,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>World model</string>
+        <string>Background</string>
        </property>
       </widget>
      </item>

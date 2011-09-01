@@ -38,8 +38,6 @@ void ModelViewQt3D::initializeGL(QGLPainter *painter)
     setOption(QGLView::FOVZoom, typeOfZoom);
 
     m_light = new QGLLightParameters(this);
-    if (ppOptions.testBit(4))
-        m_light->setDirection(-m_light->direction());
     m_light->setDirection(QVector3D(-25,25,25));
     m_light->setAmbientColor(Qt::lightGray);
 
@@ -52,8 +50,8 @@ void ModelViewQt3D::paintGL(QGLPainter *painter)
         m_world->setPosition(camera()->eye());
         m_world->draw(painter);
 
-        painter->setMainLight(m_light);
         painter->modelViewMatrix().rotate(m_pose);
+        painter->setMainLight(m_light);
         m_main->draw(painter);
     }
 }
@@ -100,24 +98,37 @@ void ModelViewQt3D::onProjectionChanged()
 {
 //    qDebug() << this << "proj changed"
 //             << camera()->eye().length() << "\t" << camera()->fieldOfView();
+
     camera()->setUpVector(QVector3D(0,1,0));
+
+    qreal fov = camera()->fieldOfView();
+    if (fov > 120.0) {
+        camera()->setFieldOfView(120.0);
+    } else if (fov < 20.0) {
+        camera()->setFieldOfView(20.0);
+    }
+
     emit fovIsChanged(camera()->fieldOfView());
-    emit distanceIsChanged(camera()->eye().length());
 }
 
 void ModelViewQt3D::onViewChanged()
 {
-    QVector3D center = camera()->center();
-    QVector3D viewVector = camera()->eye() - center;
-    qreal length = viewVector.length();
-    QVector3D normal = viewVector.normalized();
-    QRay3D viewLine(center, normal);
-    length = qBound(1.74, length, 10.0);
-    camera()->setEye(viewLine.point(length));
 //    qDebug() << this << "view changed"
 //             << camera()->eye().length() << "\t" << camera()->fieldOfView();
     camera()->setUpVector(QVector3D(0,1,0));
-    emit fovIsChanged(camera()->fieldOfView());
+
+    QVector3D center = camera()->center();
+    QVector3D viewVector = camera()->eye() - center;
+    QVector3D normal = viewVector.normalized();
+    QRay3D viewLine(center, normal);
+
+    qreal length = viewVector.length();
+    if (length > 8.0) {
+        camera()->setEye(viewLine.point(8.0));
+    } else if (length < 1.74) {
+        camera()->setEye(viewLine.point(1.74));
+    }
+
     emit distanceIsChanged(camera()->eye().length());
 }
 
@@ -129,28 +140,34 @@ void ModelViewQt3D::initWorld()
         return;
     qDebug() << this << "initWorld";
 
-    m_scene = QGLAbstractScene::loadScene(":/modelviewqt3d/models/world.dae");
-    if (!m_scene) {
-        qCritical() << this << "loadWorld failed, alarm, alarm!";
-        return;
-    }
-    m_world = m_scene->mainNode();
+    QGLBuilder builder;
+    builder << QGLSphere(50.0);
+    m_world = builder.finalizedSceneNode();
 
-    QVector3D size = m_world->boundingBox().size();
-    qreal max = qMax(qMax(size.x(), size.y()), size.z());
-    qreal ratio = 50.0 / max;
-    QVector3D scale = QVector3D(ratio, ratio, ratio);
-    QGraphicsScale3D *s = new QGraphicsScale3D(m_world);
-    s->setScale(scale);
+    QUrl url;
+    url.setPath(worldFilename);
+    url.setScheme(QString("file"));
 
-    m_world->addTransform(s);
-    QVector3D center = m_world->boundingBox().center();
-    QVector3D trans = QVector3D(center.x(), center.y(), center.z());
-    QGraphicsTranslation3D *t = new QGraphicsTranslation3D(m_world);
-    t->setTranslate(-trans);
+    QGLMaterial *mat = new QGLMaterial();
+    mat->setTextureUrl(url);
 
-    m_world->addTransform(t);
+    m_world->setMaterial(mat);
     m_world->setEffect(QGL::FlatReplaceTexture2D);
+
+    QGraphicsRotation3D *rot;
+    rot = new QGraphicsRotation3D(m_world);
+    rot->setAxis(QVector3D(1,0,0));
+    rot->setAngle(-90);
+    m_world->addTransform(rot);
+
+    QGeometryData *data;
+    data = new QGeometryData(m_world->allChildren().takeAt(0)->geometry());
+    for (int i = 0; i < data->normals().count(); ++i) {
+        data->normal(i) *= -1;
+    }
+    for (int i = 0; i < data->texCoords().count(); ++i) {
+        data->texCoord(i).setX(1 - data->texCoord(i).x());
+    }
 }
 
 void ModelViewQt3D::initModel()
