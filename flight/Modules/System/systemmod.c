@@ -175,7 +175,8 @@ static void systemTask(void *parameters)
 		FlightStatusGet(&flightStatus);
 
 		// Wait until next period
-		if(flightStatus.Armed == FLIGHTSTATUS_ARMED_ARMED) {
+		if(flightStatus.Armed == FLIGHTSTATUS_ARMED_ARMED ||
+		   flightStatus.Armed == FLIGHTSTATUS_ARMED_HTIL) {
 			vTaskDelayUntil(&lastSysTime, SYSTEM_UPDATE_PERIOD_MS / portTICK_RATE_MS / (LED_BLINK_RATE_HZ * 2) );
 		} else {
 			vTaskDelayUntil(&lastSysTime, SYSTEM_UPDATE_PERIOD_MS / portTICK_RATE_MS);

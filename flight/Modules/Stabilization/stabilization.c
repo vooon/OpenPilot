@@ -335,7 +335,7 @@ static void stabilizationTask(void* parameters)
 			ActuatorDesiredSet(&actuatorDesired);
 		}
 
-		if(flightStatus.Armed != FLIGHTSTATUS_ARMED_ARMED ||
+		if((flightStatus.Armed != FLIGHTSTATUS_ARMED_ARMED && flightStatus.Armed != FLIGHTSTATUS_ARMED_HITL) ||
 		   (lowThrottleZeroIntegral && stabDesired.Throttle < 0) ||
 		   !shouldUpdate)
 		{

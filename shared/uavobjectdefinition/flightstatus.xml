@@ -1,7 +1,7 @@
 <xml>
     <object name="FlightStatus" singleinstance="true" settings="false">
         <description>Contains major flight status information for other modules.</description>
-        <field name="Armed" units="" type="enum" elements="1" options="Disarmed,Arming,Armed" defaultvalue="Disarmed"/>
+        <field name="Armed" units="" type="enum" elements="1" options="Disarmed,Arming,Armed,HITL" defaultvalue="Disarmed"/>
 
 	<!-- Note these enumerated values should be the same as ManualControlSettings -->
         <field name="FlightMode" units="" type="enum" elements="1" options="Manual,Stabilized1,Stabilized2,Stabilized3,VelocityControl,PositionHold"/>
