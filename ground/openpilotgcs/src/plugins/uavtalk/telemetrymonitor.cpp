@@ -27,7 +27,7 @@
 
 #include "telemetrymonitor.h"
 #include "qxtlogger.h"
-
+#include "QDebug"
 /**
  * Constructor
  */
@@ -128,7 +128,7 @@ void TelemetryMonitor::retrieveNextObject()
     }
     // Get next object from the queue
     UAVObject* obj = queue.dequeue();
-    //qxtLog->trace( tr("Retrieving object: %1").arg(obj->getName()) );
+    qDebug() << tr("Retrieving object: %1").arg(obj->getName());
     // Connect to object
     connect(obj, SIGNAL(transactionCompleted(UAVObject*,bool)), this, SLOT(transactionCompleted(UAVObject*,bool)));
     // Request update
@@ -141,7 +141,11 @@ void TelemetryMonitor::retrieveNextObject()
  */
 void TelemetryMonitor::transactionCompleted(UAVObject* obj, bool success)
 {
-    Q_UNUSED(success);
+    if(!success)
+        qDebug() << tr("TelemetryMonitor: Object %1 transaction failed").arg(obj->getName());
+    else
+        qDebug() << tr("TelemetryMonitor: Object %1 transaction succeeded").arg(obj->getName());
+
     QMutexLocker locker(mutex);
     // Disconnect from sending object
     obj->disconnect(this);

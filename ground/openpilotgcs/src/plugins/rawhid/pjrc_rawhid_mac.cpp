@@ -258,6 +258,8 @@ int pjrc_rawhid::send(int num, void *buf, int len, int timeout)
         // Can now perform test on error code, display it to user, or whatever.
         usleep(1000000);
     }
+    quint8 * a = (quint8 *) buf;
+    qDebug() << "prjc_rawhid::send " << a[4] << a[5] << a[6] << a[7];
 
 #endif
 #if 0

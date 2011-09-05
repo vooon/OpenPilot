@@ -31,6 +31,7 @@
 #include <QtGlobal>
 #include <stdlib.h>
 #include <QDebug>
+#include <QMutexLocker>
 
 /**
  * Constructor
@@ -124,6 +125,8 @@ void Telemetry::setUpdatePeriod(UAVObject* obj, qint32 periodMs)
  */
 void Telemetry::connectToObjectInstances(UAVObject* obj, quint32 eventMask)
 {
+    QMutexLocker locker(mutex);
+
     QList<UAVObject*> objs = objMngr->getObjectInstances(obj->getObjID());
     for (int n = 0; n < objs.length(); ++n)
     {
@@ -154,6 +157,8 @@ void Telemetry::connectToObjectInstances(UAVObject* obj, quint32 eventMask)
  */
 void Telemetry::updateObject(UAVObject* obj)
 {
+    QMutexLocker locker(mutex);
+
     // Get metadata
     UAVObject::Metadata metadata = obj->getMetadata();
 
@@ -209,10 +214,12 @@ void Telemetry::updateObject(UAVObject* obj)
  */
 void Telemetry::transactionCompleted(UAVObject* obj, bool success)
 {
+    QMutexLocker locker(mutex);
+
     // Check if there is a pending transaction and the objects match
     if ( transPending && transInfo.obj->getObjID() == obj->getObjID() )
     {
-    //    qDebug() << QString("Telemetry: transaction completed for %1").arg(obj->getName());
+        qDebug() << QString("Telemetry: transaction completed for %1").arg(obj->getName());
         // Complete transaction
         transTimer->stop();
         transPending = false;
@@ -222,7 +229,7 @@ void Telemetry::transactionCompleted(UAVObject* obj, bool success)
         processObjectQueue();
     } else
     {
-  //      qDebug() << "Error: received a transaction completed when did not expect it.";
+        //qDebug() << "Error: received a transaction completed when did not expect it.";
     }
 }
 
@@ -231,7 +238,8 @@ void Telemetry::transactionCompleted(UAVObject* obj, bool success)
  */
 void Telemetry::transactionTimeout()
 {
-//    qDebug() << "Telemetry: transaction timeout.";
+    QMutexLocker locker(mutex);
+    qDebug() << "Telemetry: transaction timeout.";
     transTimer->stop();
     // Proceed only if there is a pending transaction
     if ( transPending )
@@ -262,9 +270,10 @@ void Telemetry::transactionTimeout()
  */
 void Telemetry::processObjectTransaction()
 {
+    QMutexLocker locker(mutex);
     if (transPending)
     {
-    //    qDebug() << tr("Process Object transaction for %1").arg(transInfo.obj->getName());
+        qDebug() << tr("Process Object transaction for %1").arg(transInfo.obj->getName());
         // Initiate transaction
         if (transInfo.objRequest)
         {
@@ -286,7 +295,7 @@ void Telemetry::processObjectTransaction()
         }
     } else
     {
-  //      qDebug() << "Error: inside of processObjectTransaction with no transPending";
+        //qDebug() << "Error: inside of processObjectTransaction with no transPending";
     }
 }
 
@@ -295,8 +304,10 @@ void Telemetry::processObjectTransaction()
  */
 void Telemetry::processObjectUpdates(UAVObject* obj, EventMask event, bool allInstances, bool priority)
 {
+    QMutexLocker locker(mutex);
+
     // Push event into queue
-//    qDebug() << "Push event into queue for obj " << QString("%1 event %2").arg(obj->getName()).arg(event);
+    //qDebug() << "Push event " << event << " into queue for obj " << QString("%1 event %2").arg(obj->getName()).arg(event);
     ObjectQueueInfo objInfo;
     objInfo.obj = obj;
     objInfo.event = event;
@@ -330,11 +341,11 @@ void Telemetry::processObjectUpdates(UAVObject* obj, EventMask event, bool allIn
     // If there is no transaction in progress then process event
     if (!transPending)
     {
-    //    qDebug() << "No transaction pending, process object queue...";
+        //qDebug() << "No transaction pending, process object queue...";
         processObjectQueue();
     } else
     {
-   //     qDebug() << "Transaction pending, DO NOT process object queue...";
+        //qDebug() << "Transaction pending, DO NOT process object queue...";
     }
 }
 
@@ -343,12 +354,22 @@ void Telemetry::processObjectUpdates(UAVObject* obj, EventMask event, bool allIn
  */
 void Telemetry::processObjectQueue()
 {
-  //  qDebug() << "Process object queue " << tr("- Depth (%1 %2)").arg(objQueue.length()).arg(objPriorityQueue.length());
+    QMutexLocker locker(mutex);
+
+    //qDebug() << "Process object queue " << tr("- Depth (%1 %2)").arg(objQueue.length()).arg(objPriorityQueue.length());
 
     // Don nothing if a transaction is already in progress (should not happen)
     if (transPending)
     {
-        qxtLog->error("Telemetry: Dequeue while a transaction pending!");
+        // Unlikely previous comment this is normal and since it took me forever to
+        // track down I'll document here.  During initial object retrieval sometimes
+        // other things might be on the processing queue (normally GCS Stats).  When
+        // that transaction completes first the telemetrymanager.cpp pushes an object
+        // request onto the queue which begins executing (and sets transPending true).
+        // Then the transaction completed signal is processed by telemetry.cpp when
+        // also calls processObject queue and throws hits this path.
+
+        //qDebug() << "Telemetry: processObjectQueue while a transaction pending";
         return;
     }
 
@@ -401,7 +422,7 @@ void Telemetry::processObjectQueue()
         processObjectTransaction();
     } else
     {
-//        qDebug() << QString("Process object queue: this is an unpack event for %1").arg(objInfo.obj->getName());
+        //qDebug() << QString("Process object queue: this is an unpack event for %1").arg(objInfo.obj->getName());
     }
 
     // If this is a metaobject then make necessary telemetry updates
@@ -415,8 +436,8 @@ void Telemetry::processObjectQueue()
     // we do not have additional objects still in the queue,
     // so we have to reschedule queue processing to make sure they are not
     // stuck:
-    if ( objInfo.event == EV_UNPACKED )
-        processObjectQueue();
+    //if ( objInfo.event == EV_UNPACKED && !transPending)
+    //    processObjectQueue();
 
 }
 
@@ -513,24 +534,27 @@ void Telemetry::resetStats()
 void Telemetry::objectUpdatedAuto(UAVObject* obj)
 {
     QMutexLocker locker(mutex);
+    //qDebug() << "EV_UPDATED: " << obj->getName();
     processObjectUpdates(obj, EV_UPDATED, false, true);
 }
 
 void Telemetry::objectUpdatedManual(UAVObject* obj)
 {
     QMutexLocker locker(mutex);
+    //qDebug() << "EV_UPDATED_MANUAL: " << obj->getName();
     processObjectUpdates(obj, EV_UPDATED_MANUAL, false, true);
 }
 
 void Telemetry::objectUnpacked(UAVObject* obj)
 {
     QMutexLocker locker(mutex);
-    processObjectUpdates(obj, EV_UNPACKED, false, true);
+    //processObjectUpdates(obj, EV_UNPACKED, false, true);
 }
 
 void Telemetry::updateRequested(UAVObject* obj)
 {
     QMutexLocker locker(mutex);
+    qDebug() << "EV_UPDATE_REQ: " << obj->getName();
     processObjectUpdates(obj, EV_UPDATE_REQ, false, true);
 }
 

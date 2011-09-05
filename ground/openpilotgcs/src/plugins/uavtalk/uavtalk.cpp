@@ -426,6 +426,10 @@ bool UAVTalk::receiveObject(quint8 type, quint32 objId, quint16 instId, quint8* 
         {
             // Get object and update its data
             obj = updateObject(objId, instId, data);
+
+            qDebug() << "UAVTalk: receiveObject(" << obj->getName() << ", TYPE_OBJ)";
+            qDebug() << "Bytes waiting to parse: " << io->bytesAvailable();
+
             // Check if an ack is pending
             if ( obj != NULL )
             {
@@ -447,6 +451,7 @@ bool UAVTalk::receiveObject(quint8 type, quint32 objId, quint16 instId, quint8* 
         {
             // Get object and update its data
             obj = updateObject(objId, instId, data);
+            qDebug() << "UAVTalk: receiveObject(" << obj->getName() << ", TYPE_OBJ_ACK)";
             // Transmit ACK
             if ( obj != NULL )
             {
@@ -467,10 +472,12 @@ bool UAVTalk::receiveObject(quint8 type, quint32 objId, quint16 instId, quint8* 
         if (allInstances)
         {
             obj = objMngr->getObject(objId);
+            qDebug() << "UAVTalk: receiveObject(" << obj->getName() << ", TYPE_OBJ_REQ, allInstances)";
         }
         else
         {
             obj = objMngr->getObject(objId, instId);
+            qDebug() << "UAVTalk: receiveObject(" << obj->getName() << ", TYPE_OBJ_REQ, instId)";
         }
         // If object was found transmit it
         if (obj != NULL)
@@ -491,6 +498,7 @@ bool UAVTalk::receiveObject(quint8 type, quint32 objId, quint16 instId, quint8* 
         {
             // Get object
             obj = objMngr->getObject(objId, instId);
+            qDebug() << "UAVTalk: receiveObject(" << obj->getName() << ", TYPE_NACK)";
             // Check if object exists:
             if (obj != NULL)
             {
@@ -508,6 +516,7 @@ bool UAVTalk::receiveObject(quint8 type, quint32 objId, quint16 instId, quint8* 
         {
             // Get object
             obj = objMngr->getObject(objId, instId);
+            qDebug() << "UAVTalk: receiveObject(" << obj->getName() << ", TYPE_ACK)";
             // Check if an ack is pending
             if (obj != NULL)
             {
@@ -520,6 +529,8 @@ bool UAVTalk::receiveObject(quint8 type, quint32 objId, quint16 instId, quint8* 
         }
         break;
     default:
+        qDebug() << "UAVTalk: receiveObject(bad case)";
+
         error = true;
     }
     // Done
@@ -625,11 +636,13 @@ bool UAVTalk::transmitObject(UAVObject* obj, quint8 type, bool allInstances)
         }
         else
         {
+            qDebug() << "UAVTalk: transmitObject(" << obj->getName() << "(" << obj->getObjID() << ")  TYPE_OBJ)";
             return transmitSingleObject(obj, type, false);
         }
     }
     else if (type == TYPE_OBJ_REQ)
     {
+        qDebug() << "UAVTalk: transmitObject(" << obj->getName() << "(" << obj->getObjID() << ", TYPE_OBJ_REQ)";
         return transmitSingleObject(obj, TYPE_OBJ_REQ, allInstances);
     }
     else if (type == TYPE_ACK)
@@ -757,6 +770,8 @@ bool UAVTalk::transmitSingleObject(UAVObject* obj, quint8 type, bool allInstance
     // Calculate checksum
     txBuffer[dataOffset+length] = updateCRC(0, txBuffer, dataOffset + length);
 
+    while(io->bytesToWrite() > 0);
+
     // Send buffer, check that the transmit backlog does not grow above limit
     if ( io->bytesToWrite() < TX_BUFFER_SIZE )
     {
@@ -767,6 +782,8 @@ bool UAVTalk::transmitSingleObject(UAVObject* obj, quint8 type, bool allInstance
         ++stats.txErrors;
         return false;
     }
+
+    qDebug() << "UAVTalk: transmitSingleObject wrote " << obj->getName() << " " << txBuffer[4] << txBuffer[5] << txBuffer[6] << txBuffer[7];
 
     // Update stats
     ++stats.txObjects;
