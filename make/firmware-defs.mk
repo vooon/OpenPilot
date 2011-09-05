@@ -154,7 +154,7 @@ OOCD_EXE=openocd
 OOCD_CL=-d0
 # interface and board/target settings (using the OOCD target-library here)
 OOCD_CL+=-s $(TOP)/flight/Project/OpenOCD
-OOCD_CL+=-f foss-jtag.revb.cfg -f stm32.cfg
+OOCD_CL+=-f foss-jtag.revb.cfg -f stm32f1x.cfg
 
 # initialize
 OOCD_CL+=-c init
