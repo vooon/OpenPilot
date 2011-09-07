@@ -43,11 +43,11 @@
 
 $(FIELDSINIT)
 
-    fields = [NSArray arrayWithArray:tmpFields];
-    [fields retain];
+    //fields = [NSArray arrayWithArray:tmpFields];
+    //[fields retain];
     
     // Initialize object
-    [super initializeFields:fields withData:(uint8_t*)&objectData andLength:sizeof($(NAMELC)_DataFields)];
+    [super initializeFields:[NSArray arrayWithArray:tmpFields] withData:(uint8_t*)&objectData andLength:sizeof($(NAMELC)_DataFields)];
     
     // Set the default field values
     [self setDefaultFieldValues];
