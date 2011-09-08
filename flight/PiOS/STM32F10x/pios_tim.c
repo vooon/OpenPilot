@@ -186,7 +186,7 @@ static void PIOS_TIM_generic_irq_handler(TIM_TypeDef * timer)
 			}
 
 			/* Figure out which interrupt bit we should be looking at */
-			uint16_t timer_it;
+			uint16_t timer_it = 0;
 			switch (chan->timer_chan) {
 			case TIM_Channel_1:
 				timer_it = TIM_IT_CC1;
@@ -205,8 +205,8 @@ static void PIOS_TIM_generic_irq_handler(TIM_TypeDef * timer)
 				break;
 			}
 
-			bool edge_event;
-			uint16_t edge_count;
+			bool edge_event = false;
+			uint16_t edge_count = 0;
 			if (TIM_GetITStatus(chan->timer, timer_it) == SET) {
 				TIM_ClearITPendingBit(chan->timer, timer_it);
 
@@ -229,9 +229,6 @@ static void PIOS_TIM_generic_irq_handler(TIM_TypeDef * timer)
 					break;
 				}
 				edge_event = true;
-			} else {
-				edge_event = false;
-				edge_count = 0;
 			}
 
 			if (!tim_dev->callbacks) {

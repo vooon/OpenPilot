@@ -386,6 +386,10 @@ CSTANDARD = -std=gnu99
 
 ifeq ($(DEBUG),YES)
 CFLAGS = -g$(DEBUGF) -DDEBUG
+
+# Enable the run-time stack overflow detector, with a performance and code size
+# penalty.
+CFLAGS += -finstrument-functions -ffixed-r10
 endif
 
 # OP has enough memory to always enable optional objects
