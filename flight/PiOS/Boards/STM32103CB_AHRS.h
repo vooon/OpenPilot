@@ -244,6 +244,4 @@ extern uint32_t pios_com_aux_id;
 #define PIOS_HMC5843_DRDY_IRQn			EXTI9_5_IRQn
 #define PIOS_HMC5843_DRDY_PRIO			PIOS_IRQ_PRIO_HIGH
 
-
-
 #endif /* STM32103CB_AHRS_H_ */

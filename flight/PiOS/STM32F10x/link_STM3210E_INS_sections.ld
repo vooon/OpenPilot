@@ -207,6 +207,16 @@ SECTIONS
     } > FLASH
  
 
+    /* exti configs */
+    .exti_configs :
+    {
+	. = ALIGN(4);
+	__exti_configs_base = .;
+	KEEP(*(.exti_configs))
+	. = ALIGN(4);
+	__exti_configs_end  = .;
+    } > FLASH
+
     /* the program code is stored in the .text section, which goes to Flash */
     .text :
     {
@@ -225,7 +235,6 @@ SECTIONS
          _sidata = _etext;
     } > FLASH
     
-
     /* 
      * This stack is used both as the initial sp during early init as well as ultimately
      * being used as the STM32's MSP (Main Stack Pointer) which is the same stack that

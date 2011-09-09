@@ -192,6 +192,16 @@ SECTIONS
 	__module_initcall_end   = .;
     } >FLASH
 
+    /* exti configs */
+    ..exti_configs :
+    {
+	. = ALIGN(4);
+	__exti_configs_base = .;
+	KEEP(*(.exti_configs))
+	. = ALIGN(4);
+	__exti_configs_end  = .;
+    } > FLASH
+
     /* the program code is stored in the .text section, which goes to Flash */
     .text :
     {

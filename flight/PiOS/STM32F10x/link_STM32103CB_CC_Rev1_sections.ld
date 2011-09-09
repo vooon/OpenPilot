@@ -13,6 +13,16 @@ PROVIDE(pios_board_info_blob = ORIGIN(BD_INFO));
 /* Section Definitions */
 SECTIONS
 {
+    /* exti configs */
+    ..exti_configs :
+    {
+	. = ALIGN(4);
+	__exti_configs_base = .;
+	KEEP(*(.exti_configs))
+	. = ALIGN(4);
+	__exti_configs_end  = .;
+    } > FLASH
+
     .text :
     {
         PROVIDE (pios_isr_vector_table_base = .);
