@@ -114,7 +114,7 @@ void PIOS_HMC5843_EndOfConversion (void)
 	pios_hmc5843_data_ready = true;
 }
 
-struct pios_exti_cfg pios_exti_hmc5843_cfg = {
+static const struct pios_exti_cfg pios_exti_hmc5843_cfg __exti_config = {
 	.vector = PIOS_HMC5843_EndOfConversion,
 	.line = PIOS_HMC5843_DRDY_EXTI_LINE,
 	.pin = {

@@ -76,7 +76,7 @@ void PIOS_BMP085_EndOfConversion (void)
 #endif
 }
 
-const struct pios_exti_cfg pios_exti_bmp085_cfg __attribute__((section(".exti_configs"))) = {
+static const struct pios_exti_cfg pios_exti_bmp085_cfg __exti_config = {
 	.vector = PIOS_BMP085_EndOfConversion,
 	.line = PIOS_BMP085_EOC_EXTI_LINE,
 	.pin = {

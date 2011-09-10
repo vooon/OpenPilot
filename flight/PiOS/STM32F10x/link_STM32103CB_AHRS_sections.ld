@@ -5,16 +5,6 @@ _estack = 0x20004FF0;
 /* Section Definitions */
 SECTIONS
 {
-    /* exti configs */
-    .exti_configs :
-    {
-	. = ALIGN(4);
-	__exti_configs_base = .;
-	KEEP(*(.exti_configs))
-	. = ALIGN(4);
-	__exti_configs_end  = .;
-    } > FLASH
-
     .text :
     {
         PROVIDE (pios_isr_vector_table_base = .);

@@ -42,8 +42,8 @@ static uint8_t pios_exti_line_to_cfg_map[EXTI_MAX_LINES] = {
 };
 
 /* Table of exti configs registered at compile time */
-extern struct pios_exti_cfg * __exti_configs_base;
-extern struct pios_exti_cfg * __exti_configs_end;
+extern struct pios_exti_cfg __start__exti __attribute__((weak));
+extern struct pios_exti_cfg __stop__exti  __attribute__((weak));
 
 static uint8_t PIOS_EXTI_line_to_index (uint32_t line)
 {
@@ -113,11 +113,12 @@ uint8_t PIOS_EXTI_gpio_pin_to_exti_source_pin(uint8_t gpio_pin)
 
 int32_t PIOS_EXTI_Init(const struct pios_exti_cfg * cfg)
 {
-	PIOS_Assert(cfg);
-	PIOS_Assert(cfg >= __exti_configs_base);
-	PIOS_Assert(cfg < __exti_configs_end);
+  	PIOS_Assert(cfg);
+	PIOS_Assert(&__start__exti);
+	PIOS_Assert(cfg >= &__start__exti);
+	PIOS_Assert(cfg < &__stop__exti);
 
-	uint8_t cfg_index = cfg - __exti_configs_base;
+	uint8_t cfg_index = cfg - &__start__exti;
 
 	/* Connect this config to the requested vector */
 	uint8_t line_index = PIOS_EXTI_line_to_index(cfg->line);
@@ -152,13 +153,15 @@ static void PIOS_EXTI_generic_irq_handler(uint8_t line_index)
 {
 	uint8_t cfg_index = pios_exti_line_to_cfg_map[line_index];
 
+	PIOS_Assert(&__start__exti);
+
 	if (cfg_index > NELEMENTS(pios_exti_line_to_cfg_map) ||
 		cfg_index == PIOS_EXTI_INVALID) {
 		/* Unconfigured interrupt just fired! */
 		return;
 	}
 
-	struct pios_exti_cfg * cfg = &__exti_configs_base[cfg_index];
+	struct pios_exti_cfg * cfg = &__start__exti + cfg_index;
 	cfg->vector();
 }
 
