@@ -315,6 +315,9 @@ static void actuatorTask(void* parameters)
 						case MIXERSETTINGS_MIXER1TYPE_CAMERAPITCH:
 							status[ct] = cameraDesired.Pitch;
 							break;
+						case MIXERSETTINGS_MIXER1TYPE_CAMERAPITCHNEG:
+							status[ct] = -cameraDesired.Pitch;
+							break;
 						case MIXERSETTINGS_MIXER1TYPE_CAMERAYAW:
 							status[ct] = cameraDesired.Yaw;
 							break;
