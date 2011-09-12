@@ -206,6 +206,10 @@ bool UAVObjectGeneratorObjC::process_object(ObjectInfo* info)
                           .arg( info->fields[n]->numElements ) );
         }
     }
+    enums.append( QString("    #define %1_OBJID  0x%2\n")
+                  .arg(info->namelc)
+                  .arg(QString().setNum(info->id,16).toUpper()) );
+
     outInclude.replace(QString("$(DATAFIELDINFO)"), enums);
 
     // Replace the $(INITFIELDS) tag
