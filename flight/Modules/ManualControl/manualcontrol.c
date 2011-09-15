@@ -37,6 +37,7 @@
 #include "manualcontrol.h"
 #include "manualcontrolsettings.h"
 #include "stabilizationsettings.h"
+#include "attitudesettings.h"
 #include "manualcontrolcommand.h"
 #include "actuatordesired.h"
 #include "stabilizationdesired.h"
@@ -247,7 +248,7 @@ static void manualControlTask(void *parameters)
 				cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_YAW] == (uint16_t) PIOS_RCVR_NODRIVER ||
 				cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_THROTTLE] == (uint16_t) PIOS_RCVR_NODRIVER ||
 				cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_FLIGHTMODE] == (uint16_t) PIOS_RCVR_NODRIVER || 
-				accelBias[0] == 0xFFFF || accelBias[1] == 0xFFFF || accelBias[2] == 0xFFFF) {
+				accelBias[0] == -32768 || accelBias[1] == -32768 || accelBias[2] == -32768) {
 
 				AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_CRITICAL);
 				cmd.Connected = MANUALCONTROLCOMMAND_CONNECTED_FALSE;
