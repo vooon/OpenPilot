@@ -33,11 +33,14 @@
 #include "op_dfu.h"
 #include <QWidget>
 #include <QFileDialog>
+#include <QErrorMessage>
+#include <QByteArray>
 #include <QtSvg/QGraphicsSvgItem>
 #include <QtSvg/QSvgRenderer>
-
+#include <QCryptographicHash>
+#include "uavobjectutilmanager.h"
+#include "devicedescriptorstruct.h"
 using namespace OP_DFU;
-
 class deviceWidget : public QWidget
 {
     Q_OBJECT
@@ -51,25 +54,32 @@ public:
     QString setOpenFileName();
     QString setSaveFileName();
 private:
+    deviceDescriptorStruct onBoardDescrition;
+    deviceDescriptorStruct LoadedDescrition;
+    QByteArray loadedFW;
+    QString idToBoardName(int id);
     Ui_deviceWidget *myDevice;
     int deviceID;
     DFUObject *m_dfu;
     QByteArray downloadedFirmware;
     QString filename;
     QGraphicsSvgItem *devicePic;
+    QByteArray descriptionArray;
     void status(QString str, StatusIcon ic);
-
+    bool populateBoardStructuredDescription(QByteArray arr);
+    bool populateLoadedStructuredDescription(QByteArray arr);
 
 signals:
 
 public slots:
-    void verifyFirmware();
     void uploadFirmware();
+    void loadFirmware();
     void downloadFirmware();
     void setProgress(int);
     void downloadFinished();
     void uploadFinished(OP_DFU::Status);
     void dfuStatus(QString);
+    void confirmCB(int);
 
 protected:
     void showEvent(QShowEvent *event);

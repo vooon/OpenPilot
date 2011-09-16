@@ -46,12 +46,6 @@ public:
         ConfigOutputWidget(QWidget *parent = 0);
         ~ConfigOutputWidget();
 
-public slots:
-	void onTelemetryStart();
-	void onTelemetryStop();
-	void onTelemetryConnect();
-	void onTelemetryDisconnect();
-
 private:
         Ui_OutputWidget *m_config;
 
@@ -75,18 +69,17 @@ private:
 
 	bool firstUpdate;
 
-	void enableControls(bool enable);
 
 private slots:
-	void requestRCOutputUpdate();
-	void sendRCOutputUpdate();
-	void saveRCOutputObject();
+        virtual void refreshWidgetsValues();
+        void updateObjectsFromWidgets();
 	void runChannelTests(bool state);
 	void sendChannelTest(int value);
 	void setChOutRange();
 	void reverseChannel(bool state);
 	void linkToggled(bool state);
         void setSpinningArmed(bool val);
+        void openHelp();
 };
 
 #endif

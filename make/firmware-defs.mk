@@ -9,6 +9,8 @@ OBJCOPY = $(TCHAIN_PREFIX)objcopy
 OBJDUMP = $(TCHAIN_PREFIX)objdump
 SIZE    = $(TCHAIN_PREFIX)size
 NM      = $(TCHAIN_PREFIX)nm
+STRIP   = $(TCHAIN_PREFIX)strip
+INSTALL = install
 
 THUMB   = -mthumb
 
@@ -27,6 +29,8 @@ MSG_FORMATERROR      := ${quote} Can not handle output-format${quote}
 MSG_MODINIT          := ${quote} MODINIT   ${quote}
 MSG_SIZE             := ${quote} SIZE      ${quote}
 MSG_LOAD_FILE        := ${quote} BIN/HEX   ${quote}
+MSG_BIN_OBJ          := ${quote} BINO      ${quote}
+MSG_STRIP_FILE       := ${quote} STRIP     ${quote}
 MSG_EXTENDED_LISTING := ${quote} LIS       ${quote}
 MSG_SYMBOL_TABLE     := ${quote} NM        ${quote}
 MSG_LINKING          := ${quote} LD        ${quote}
@@ -40,6 +44,11 @@ MSG_CLEANING         := ${quote} CLEAN     ${quote}
 MSG_ASMFROMC         := ${quote} AS(C)     ${quote}
 MSG_ASMFROMC_ARM     := ${quote} AS(C)-ARM ${quote}
 MSG_PYMITEINIT       := ${quote} PY        ${quote}
+MSG_INSTALLING       := ${quote} INSTALL   ${quote}
+MSG_OPFIRMWARE       := ${quote} OPFW      ${quote}
+MSG_FWINFO           := ${quote} FWINFO    ${quote}
+MSG_JTAG_PROGRAM     := ${quote} JTAG-PGM  ${quote}
+MSG_JTAG_WIPE        := ${quote} JTAG-WIPE ${quote}
 
 toprel = $(subst $(realpath $(TOP))/,,$(abspath $(1)))
 
@@ -53,10 +62,29 @@ gccversion :
 	@echo $(MSG_LOAD_FILE) $(call toprel, $@)
 	$(V1) $(OBJCOPY) -O ihex $< $@
 
+# Create stripped output file (.elf.stripped) from ELF output file.
+%.elf.stripped: %.elf
+	@echo $(MSG_STRIP_FILE) $(call toprel, $@)
+	$(V1) $(STRIP) --strip-unneeded $< -o $@
+
 # Create final output file (.bin) from ELF output file.
 %.bin: %.elf
 	@echo $(MSG_LOAD_FILE) $(call toprel, $@)
 	$(V1) $(OBJCOPY) -O binary $< $@
+
+%.bin: %.o
+	@echo $(MSG_LOAD_FILE) $(call toprel, $@)
+	$(V1) $(OBJCOPY) -O binary $< $@
+
+%.bin.o: %.bin
+	@echo $(MSG_BIN_OBJ) $(call toprel, $@)
+	$(V1) $(OBJCOPY) -I binary -O elf32-littlearm --binary-architecture arm \
+		--rename-section .data=.rodata,alloc,load,readonly,data,contents \
+		--wildcard \
+		--redefine-sym _binary_$(subst :,_,$(subst -,_,$(subst .,_,$(subst /,_,$<))))_start=_binary_start \
+		--redefine-sym _binary_$(subst :,_,$(subst -,_,$(subst .,_,$(subst /,_,$<))))_end=_binary_end \
+		--redefine-sym _binary_$(subst :,_,$(subst -,_,$(subst .,_,$(subst /,_,$<))))_size=_binary_size \
+		$< $@
 
 # Create extended listing file/disassambly from ELF output file.
 # using objdump testing: option -C
@@ -70,10 +98,37 @@ gccversion :
 	$(V1) $(NM) -n $< > $@
 
 define SIZE_TEMPLATE
+.PHONY: size
+size: $(1)_size
+
 .PHONY: $(1)_size
 $(1)_size: $(1)
 	@echo $(MSG_SIZE) $$(call toprel, $$<)
 	$(V1) $(SIZE) -A $$<
+endef
+
+# OpenPilot firmware image template
+#  $(1) = path to bin file
+#  $(2) = boardtype in hex
+#  $(3) = board revision in hex
+define OPFW_TEMPLATE
+FORCE:
+
+$(1).firmwareinfo.c: $(1) $(TOP)/make/templates/firmwareinfotemplate.c FORCE
+	@echo $(MSG_FWINFO) $$(call toprel, $$@)
+	$(V1) python $(TOP)/make/scripts/version-info.py \
+		--path=$(TOP) \
+		--template=$(TOP)/make/templates/firmwareinfotemplate.c \
+		--outfile=$$@ \
+		--image=$(1) \
+		--type=$(2) \
+		--revision=$(3)
+
+$(eval $(call COMPILE_C_TEMPLATE, $(1).firmwareinfo.c))
+
+$(OUTDIR)/$(notdir $(basename $(1))).opfw : $(1) $(1).firmwareinfo.bin
+	@echo $(MSG_OPFIRMWARE) $$(call toprel, $$@)
+	$(V1) cat $(1) $(1).firmwareinfo.bin > $$@
 endef
 
 # Assemble: create object files from assembler source files.
@@ -143,25 +198,50 @@ $($(1):.c=.s) : %.s : %.c
 	$(V1) $(CC) -S $$(CFLAGS) $$(CONLYFLAGS) $$< -o $$@
 endef
 
+# $(1) = Name of binary image to write
+# $(2) = Base of flash region to write/wipe
+# $(3) = Size of flash region to write/wipe
+# $(4) = OpenOCD configuration file to use
+define JTAG_TEMPLATE
 # ---------------------------------------------------------------------------
-#  # Options for OpenOCD flash-programming
+# Options for OpenOCD flash-programming
 # see openocd.pdf/openocd.texi for further information
-# #
-# OOCD_LOADFILE+=$(OUTDIR)/$(TARGET).elf                                                                                                                                                                                               
+
 # if OpenOCD is in the $PATH just set OPENOCDEXE=openocd
-OOCD_EXE=openocd
+OOCD_EXE ?= openocd
+
 # debug level
-OOCD_CL=-d0
+OOCD_JTAG_SETUP  = -d0
 # interface and board/target settings (using the OOCD target-library here)
-OOCD_CL+=-s $(TOP)/flight/Project/OpenOCD
-OOCD_CL+=-f foss-jtag.revb.cfg -f stm32f1x.cfg
+OOCD_JTAG_SETUP += -s $(TOP)/flight/Project/OpenOCD
+OOCD_JTAG_SETUP += -f foss-jtag.revb.cfg -f $(4)
 
 # initialize
-OOCD_CL+=-c init
+OOCD_BOARD_RESET = -c init
 # show the targets
-OOCD_CL+=-c targets
+#OOCD_BOARD_RESET += -c targets
 # commands to prepare flash-write
-OOCD_CL+= -c "reset halt"
-# flash erase
-OOCD_CL+=-c "stm32x mass_erase 0"
-# flash-write
+OOCD_BOARD_RESET += -c "reset halt"
+
+.PHONY: program
+program: $(1)
+	@echo $(MSG_JTAG_PROGRAM) $$(call toprel, $$<)
+	$(V1) $(OOCD_EXE) \
+		$$(OOCD_JTAG_SETUP) \
+		$$(OOCD_BOARD_RESET) \
+		-c "flash write_image erase $$< $(2) bin" \
+		-c "verify_image $$< $(2) bin" \
+		-c "reset run" \
+		-c "shutdown"
+
+.PHONY: wipe
+wipe:
+	@echo $(MSG_JTAG_WIPE) wiping $(3) bytes starting from $(2)
+	$(V1) $(OOCD_EXE) \
+		$$(OOCD_JTAG_SETUP) \
+		$$(OOCD_BOARD_RESET) \
+		-c "flash erase_address pad $(2) $(3)" \
+		-c "reset run" \
+		-c "shutdown"
+endef
+

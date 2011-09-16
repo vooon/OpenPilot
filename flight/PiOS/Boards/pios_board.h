@@ -14,7 +14,7 @@
 #elif USE_STM32F103CB_ESC_Rev1
 #include "STM32F103CB_ESC_Rev1.h"
 #else
-#error Undefined board type
+#error Board definition has not been provided.
 #endif
 
 #endif /* PIOS_BOARD_H_ */

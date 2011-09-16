@@ -41,9 +41,11 @@
 #include "openpilot.h"
 #include "systemmod.h"
 #include "objectpersistence.h"
-#include "manualcontrolcommand.h"
+#include "flightstatus.h"
 #include "systemstats.h"
+#include "systemsettings.h"
 #include "i2cstats.h"
+#include "taskinfo.h"
 #include "watchdogstatus.h"
 #include "taskmonitor.h"
 #include "pios_config.h"
@@ -52,12 +54,15 @@
 // Private constants
 #define SYSTEM_UPDATE_PERIOD_MS 1000
 #define LED_BLINK_RATE_HZ 5
+
+#ifndef IDLE_COUNTS_PER_SEC_AT_NO_LOAD
 #define IDLE_COUNTS_PER_SEC_AT_NO_LOAD 995998	// calibrated by running tests/test_cpuload.c
 											  // must be updated if the FreeRTOS or compiler
 											  // optimisation options are changed.
+#endif
 
-#if defined(PIOS_MANUAL_STACK_SIZE)
-#define STACK_SIZE_BYTES PIOS_MANUAL_STACK_SIZE
+#if defined(PIOS_SYSTEM_STACK_SIZE)
+#define STACK_SIZE_BYTES PIOS_SYSTEM_STACK_SIZE
 #else
 #define STACK_SIZE_BYTES 924
 #endif
@@ -70,29 +75,58 @@
 static uint32_t idleCounter;
 static uint32_t idleCounterClear;
 static xTaskHandle systemTaskHandle;
-static int32_t stackOverflow;
+static bool stackOverflow;
+static bool mallocFailed;
 
 // Private functions
 static void objectUpdatedCb(UAVObjEvent * ev);
 static void updateStats();
-static void updateI2Cstats();
-static void updateWDGstats();
 static void updateSystemAlarms();
 static void systemTask(void *parameters);
-
+#if defined(DIAGNOSTICS)
+static void updateI2Cstats();
+static void updateWDGstats();
+#endif
 /**
- * Initialise the module, called on startup.
- * \returns 0 on success or -1 if initialisation failed
+ * Create the module task.
+ * \returns 0 on success or -1 if initialization failed
  */
-int32_t SystemModInitialize(void)
+int32_t SystemModStart(void)
 {
 	// Initialize vars
-	stackOverflow = 0;
+	stackOverflow = false;
+	mallocFailed = false;
 	// Create system task
 	xTaskCreate(systemTask, (signed char *)"System", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &systemTaskHandle);
+	// Register task
+	TaskMonitorAdd(TASKINFO_RUNNING_SYSTEM, systemTaskHandle);
+
 	return 0;
 }
 
+/**
+ * Initialize the module, called on startup.
+ * \returns 0 on success or -1 if initialization failed
+ */
+int32_t SystemModInitialize(void)
+{
+
+	// Must registers objects here for system thread because ObjectManager started in OpenPilotInit
+	SystemSettingsInitialize();
+	SystemStatsInitialize();
+	ObjectPersistenceInitialize();
+#if defined(DIAGNOSTICS)
+	TaskInfoInitialize();
+	I2CStatsInitialize();
+	WatchdogStatusInitialize();
+#endif
+
+	SystemModStart();
+
+	return 0;
+}
+
+MODULE_INITCALL(SystemModInitialize, 0)
 /**
  * System task, periodically executes every SYSTEM_UPDATE_PERIOD_MS
  */
@@ -100,11 +134,8 @@ static void systemTask(void *parameters)
 {
 	portTickType lastSysTime;
 
-	// System initialization
-	OpenPilotInit();
-
-	// Register task
-	TaskMonitorAdd(TASKINFO_RUNNING_SYSTEM, systemTaskHandle);
+	/* create all modules thread */
+	MODULE_TASKCREATE_ALL
 
 	// Initialize vars
 	idleCounter = 0;
@@ -115,15 +146,16 @@ static void systemTask(void *parameters)
 	ObjectPersistenceConnectCallback(&objectUpdatedCb);
 
 	// Main system loop
-	while (1) {		
+	while (1) {
 		// Update the system statistics
 		updateStats();
 
 		// Update the system alarms
 		updateSystemAlarms();
+#if defined(DIAGNOSTICS)
 		updateI2Cstats();
 		updateWDGstats();
-		
+#endif
 		// Update the task status object
 		TaskMonitorUpdateAll();
 
@@ -139,11 +171,11 @@ static void systemTask(void *parameters)
 		}
 #endif
 
-		ManualControlCommandData manualControlCommandData;
-		ManualControlCommandGet(&manualControlCommandData);
+		FlightStatusData flightStatus;
+		FlightStatusGet(&flightStatus);
 
 		// Wait until next period
-		if(manualControlCommandData.Armed == MANUALCONTROLCOMMAND_ARMED_TRUE) {
+		if(flightStatus.Armed == FLIGHTSTATUS_ARMED_ARMED) {
 			vTaskDelayUntil(&lastSysTime, SYSTEM_UPDATE_PERIOD_MS / portTICK_RATE_MS / (LED_BLINK_RATE_HZ * 2) );
 		} else {
 			vTaskDelayUntil(&lastSysTime, SYSTEM_UPDATE_PERIOD_MS / portTICK_RATE_MS);
@@ -214,6 +246,11 @@ static void objectUpdatedCb(UAVObjEvent * ev)
 				   || objper.Selection == OBJECTPERSISTENCE_SELECTION_ALLOBJECTS) {
 				retval = UAVObjDeleteMetaobjects();
 			}
+		} else if (objper.Operation == OBJECTPERSISTENCE_OPERATION_FULLERASE) {
+			retval = -1;
+#if defined(PIOS_INCLUDE_FLASH_SECTOR_SETTINGS)
+			retval = PIOS_FLASHFS_Format();
+#endif
 		}
 		if(retval == 0) { 
 			objper.Operation = OBJECTPERSISTENCE_OPERATION_COMPLETED;
@@ -225,9 +262,7 @@ static void objectUpdatedCb(UAVObjEvent * ev)
 /**
  * Called periodically to update the I2C statistics 
  */
-#if defined(ARCH_POSIX) || defined(ARCH_WIN32)
-static void updateI2Cstats() {} //Posix and win32 don't have I2C
-#else
+#if defined(DIAGNOSTICS)
 static void updateI2Cstats() 
 {
 #if defined(PIOS_INCLUDE_I2C)
@@ -247,7 +282,6 @@ static void updateI2Cstats()
 	I2CStatsSet(&i2cStats);
 #endif
 }
-#endif
 
 static void updateWDGstats() 
 {
@@ -255,6 +289,50 @@ static void updateWDGstats()
 	watchdogStatus.BootupFlags = PIOS_WDG_GetBootupFlags();
 	watchdogStatus.ActiveFlags = PIOS_WDG_GetActiveFlags();
 	WatchdogStatusSet(&watchdogStatus);
+}
+#endif
+
+
+/**
+ * Called periodically to update the system stats
+ */
+static uint16_t GetFreeIrqStackSize(void)
+{
+	uint32_t i = 0x200;
+
+#if !defined(ARCH_POSIX) && !defined(ARCH_WIN32) && defined(CHECK_IRQ_STACK)
+extern uint32_t _irq_stack_top;
+extern uint32_t _irq_stack_end;
+uint32_t pattern = 0x0000A5A5;
+uint32_t *ptr = &_irq_stack_end;
+
+#if 1 /* the ugly way accurate but takes more time, useful for debugging */
+	uint32_t stack_size = (((uint32_t)&_irq_stack_top - (uint32_t)&_irq_stack_end) & ~3 ) / 4;
+
+	for (i=0; i< stack_size; i++)
+	{
+		if (ptr[i] != pattern)
+		{
+			i=i*4;
+			break;
+		}
+	}
+#else /* faster way but not accurate */
+	if (*(volatile uint32_t *)((uint32_t)ptr + IRQSTACK_LIMIT_CRITICAL) != pattern)
+	{
+		i = IRQSTACK_LIMIT_CRITICAL - 1;
+	}
+	else if (*(volatile uint32_t *)((uint32_t)ptr + IRQSTACK_LIMIT_WARNING) != pattern)
+	{
+		i = IRQSTACK_LIMIT_WARNING - 1;
+	}
+	else
+	{
+		i = IRQSTACK_LIMIT_WARNING;
+	}
+#endif
+#endif
+	return i;
 }
 
 /**
@@ -274,6 +352,9 @@ static void updateStats()
 #else
 	stats.HeapRemaining = xPortGetFreeHeapSize();
 #endif
+
+	// Get Irq stack status
+	stats.IRQStackRemaining = GetFreeIrqStackSize();
 
 	// When idleCounterClear was not reset by the idle-task, it means the idle-task did not run
 	if (idleCounterClear) {
@@ -317,6 +398,17 @@ static void updateSystemAlarms()
 		AlarmsClear(SYSTEMALARMS_ALARM_OUTOFMEMORY);
 	}
 
+#if !defined(ARCH_POSIX) && !defined(ARCH_WIN32) && defined(CHECK_IRQ_STACK)
+	// Check IRQ stack
+	if (stats.IRQStackRemaining < IRQSTACK_LIMIT_CRITICAL) {
+		AlarmsSet(SYSTEMALARMS_ALARM_OUTOFMEMORY, SYSTEMALARMS_ALARM_CRITICAL);
+	} else if (stats.IRQStackRemaining < IRQSTACK_LIMIT_WARNING) {
+		AlarmsSet(SYSTEMALARMS_ALARM_OUTOFMEMORY, SYSTEMALARMS_ALARM_WARNING);
+	} else {
+		AlarmsClear(SYSTEMALARMS_ALARM_OUTOFMEMORY);
+	}
+#endif
+
 	// Check CPU load
 	if (stats.CPULoad > CPULOAD_LIMIT_CRITICAL) {
 		AlarmsSet(SYSTEMALARMS_ALARM_CPUOVERLOAD, SYSTEMALARMS_ALARM_CRITICAL);
@@ -327,10 +419,17 @@ static void updateSystemAlarms()
 	}
 
 	// Check for stack overflow
-	if (stackOverflow == 1) {
+	if (stackOverflow) {
 		AlarmsSet(SYSTEMALARMS_ALARM_STACKOVERFLOW, SYSTEMALARMS_ALARM_CRITICAL);
 	} else {
 		AlarmsClear(SYSTEMALARMS_ALARM_STACKOVERFLOW);
+	}
+
+	// Check for malloc failures
+	if (mallocFailed) {
+		AlarmsSet(SYSTEMALARMS_ALARM_OUTOFMEMORY, SYSTEMALARMS_ALARM_CRITICAL);
+	} else {
+		AlarmsClear(SYSTEMALARMS_ALARM_OUTOFMEMORY);
 	}
 
 #if defined(PIOS_INCLUDE_SDCARD)
@@ -371,9 +470,29 @@ void vApplicationIdleHook(void)
 /**
  * Called by the RTOS when a stack overflow is detected.
  */
+#define DEBUG_STACK_OVERFLOW 0
 void vApplicationStackOverflowHook(xTaskHandle * pxTask, signed portCHAR * pcTaskName)
 {
-	stackOverflow = 1;
+	stackOverflow = true;
+#if DEBUG_STACK_OVERFLOW
+	static volatile bool wait_here = true;
+	while(wait_here);
+	wait_here = true;
+#endif
+}
+
+/**
+ * Called by the RTOS when a malloc call fails.
+ */
+#define DEBUG_MALLOC_FAILURES 0
+void vApplicationMallocFailedHook(void)
+{
+	mallocFailed = true;
+#if DEBUG_MALLOC_FAILURES
+	static volatile bool wait_here = true;
+	while(wait_here);
+	wait_here = true;
+#endif
 }
 
 /**

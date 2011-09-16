@@ -51,7 +51,7 @@
 #include "positiondesired.h"	// object that will be updated by the module
 #include "positionactual.h"
 #include "manualcontrol.h"
-#include "manualcontrolcommand.h"
+#include "flightstatus.h"
 #include "nedaccel.h"
 #include "stabilizationdesired.h"
 #include "stabilizationsettings.h"
@@ -82,20 +82,36 @@ static void updateVtolDesiredAttitude();
  * Initialise the module, called on startup
  * \returns 0 on success or -1 if initialisation failed
  */
-int32_t GuidanceInitialize()
+int32_t GuidanceStart()
 {
-	// Create object queue
-	queue = xQueueCreate(MAX_QUEUE_SIZE, sizeof(UAVObjEvent));
-	
-	// Listen for updates.
-	AttitudeRawConnectQueue(queue);
-	
 	// Start main task
 	xTaskCreate(guidanceTask, (signed char *)"Guidance", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &guidanceTaskHandle);
 	TaskMonitorAdd(TASKINFO_RUNNING_GUIDANCE, guidanceTaskHandle);
 
 	return 0;
 }
+
+/**
+ * Initialise the module, called on startup
+ * \returns 0 on success or -1 if initialisation failed
+ */
+int32_t GuidanceInitialize()
+{
+
+	GuidanceSettingsInitialize();
+	PositionDesiredInitialize();
+	NedAccelInitialize();
+	VelocityDesiredInitialize();
+
+	// Create object queue
+	queue = xQueueCreate(MAX_QUEUE_SIZE, sizeof(UAVObjEvent));
+	
+	// Listen for updates.
+	AttitudeRawConnectQueue(queue);
+	
+	return 0;
+}
+MODULE_INITCALL(GuidanceInitialize, GuidanceStart)
 
 static float northVelIntegral = 0;
 static float eastVelIntegral = 0;
@@ -114,7 +130,7 @@ static void guidanceTask(void *parameters)
 {
 	SystemSettingsData systemSettings;
 	GuidanceSettingsData guidanceSettings;
-	ManualControlCommandData manualControl;
+	FlightStatusData flightStatus;
 
 	portTickType thisTime;
 	portTickType lastUpdateTime;
@@ -182,11 +198,11 @@ static void guidanceTask(void *parameters)
 		NedAccelSet(&accelData);
 		
 		
-		ManualControlCommandGet(&manualControl);
+		FlightStatusGet(&flightStatus);
 		SystemSettingsGet(&systemSettings);
 		GuidanceSettingsGet(&guidanceSettings);
 		
-		if ((PARSE_FLIGHT_MODE(manualControl.FlightMode) == FLIGHTMODE_GUIDANCE) &&
+		if ((PARSE_FLIGHT_MODE(flightStatus.FlightMode) == FLIGHTMODE_GUIDANCE) &&
 		    ((systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_VTOL) ||
 		     (systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_QUADP) ||
 		     (systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_QUADX) ||
@@ -204,7 +220,7 @@ static void guidanceTask(void *parameters)
 				positionHoldLast = 1;
 			}
 			
-			if( manualControl.FlightMode == MANUALCONTROLCOMMAND_FLIGHTMODE_POSITIONHOLD ) 
+			if( flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_POSITIONHOLD ) 
 				updateVtolDesiredVelocity();
 			else
 				manualSetDesiredVelocity();			
@@ -236,7 +252,7 @@ void updateVtolDesiredVelocity()
 {
 	static portTickType lastSysTime;
 	portTickType thisSysTime = xTaskGetTickCount();;
-	float dT;
+	float dT = 0;
 
 	GuidanceSettingsData guidanceSettings;
 	PositionActualData positionActual;
@@ -304,7 +320,7 @@ static void updateVtolDesiredAttitude()
 {
 	static portTickType lastSysTime;
 	portTickType thisSysTime = xTaskGetTickCount();;
-	float dT;
+	float dT = 0;
 
 	VelocityDesiredData velocityDesired;
 	VelocityActualData velocityActual;

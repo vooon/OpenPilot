@@ -34,14 +34,18 @@ deviceWidget::deviceWidget(QWidget *parent) :
     devicePic = NULL; // Initialize pointer to null
 
     // Initialization of the Device icon display
-    myDevice->devicePicture->setScene(new QGraphicsScene(this));
-
-    connect(myDevice->verifyButton, SIGNAL(clicked()), this, SLOT(verifyFirmware()));
+    myDevice->verticalGroupBox_loaded->setVisible(false);
+    myDevice->groupCustom->setVisible(false);
+    myDevice->youdont->setVisible(false);
+    myDevice->gVDevice->setScene(new QGraphicsScene(this));
     connect(myDevice->retrieveButton, SIGNAL(clicked()), this, SLOT(downloadFirmware()));
     connect(myDevice->updateButton, SIGNAL(clicked()), this, SLOT(uploadFirmware()));
-
+    connect(myDevice->pbLoad, SIGNAL(clicked()), this, SLOT(loadFirmware()));
+    connect(myDevice->youdont, SIGNAL(stateChanged(int)), this, SLOT(confirmCB(int)));
     QPixmap pix = QPixmap(QString(":uploader/images/view-refresh.svg"));
     myDevice->statusIcon->setPixmap(pix);
+
+    myDevice->lblCertified->setText("");
 }
 
 
@@ -52,14 +56,16 @@ void deviceWidget::showEvent(QShowEvent *event)
     // widget is shown, otherwise it cannot compute its values and
     // the result is usually a ahrsbargraph that is way too small.
     if (devicePic)
-       myDevice->devicePicture->fitInView(devicePic,Qt::KeepAspectRatio);
+    {
+        myDevice->gVDevice->fitInView(devicePic,Qt::KeepAspectRatio);
+    }
 }
 
 void deviceWidget::resizeEvent(QResizeEvent* event)
 {
     Q_UNUSED(event);
     if (devicePic)
-        myDevice->devicePicture->fitInView(devicePic, Qt::KeepAspectRatio);
+        myDevice->gVDevice->fitInView(devicePic, Qt::KeepAspectRatio);
 }
 
 
@@ -72,21 +78,43 @@ void deviceWidget::setDfu(DFUObject *dfu)
     m_dfu = dfu;
 }
 
+QString deviceWidget::idToBoardName(int id)
+{
+    switch (id | 0x0011) {
+    case 0x0111://MB
+        return QString("OpenPilot MainBoard");
+        break;
+    case 0x0311://PipX
+        return QString("PipXtreme");
+        break;
+    case 0x0411://Coptercontrol
+        return QString("CopterControl");
+        break;
+    case 0x0211://INS
+        return QString("OpenPilot INS");
+        break;
+    default:
+        return QString("");
+        break;
+    }
+}
+
 /**
   Fills the various fields for the device
   */
 void deviceWidget::populate()
 {
+
     int id = m_dfu->devices[deviceID].ID;
-    myDevice->deviceID->setText(QString("Device ID: ") + QString::number(id, 16));
+    myDevice->lbldevID->setText(QString("Device ID: ") + QString::number(id, 16));
     // DeviceID tells us what sort of HW we have detected:
     // display a nice icon:
-    myDevice->devicePicture->scene()->clear();
-    if (devicePic)
-        delete devicePic;
+    myDevice->gVDevice->scene()->clear();
+    myDevice->lblDevName->setText(deviceDescriptorStruct::idToBoardName(id));
+    myDevice->lblHWRev->setText(QString(tr("HW Revision: "))+QString::number(id & 0x0011, 16));
+
     devicePic = new QGraphicsSvgItem();
     devicePic->setSharedRenderer(new QSvgRenderer());
-
     switch (id) {
     case 0x0101:
         devicePic->renderer()->load(QString(":/uploader/images/deviceID-0101.svg"));
@@ -104,25 +132,35 @@ void deviceWidget::populate()
         break;
     }
     devicePic->setElementId("device");
-    myDevice->devicePicture->scene()->addItem(devicePic);
-    myDevice->devicePicture->setSceneRect(devicePic->boundingRect());
-    myDevice->devicePicture->fitInView(devicePic,Qt::KeepAspectRatio);
+    myDevice->gVDevice->scene()->addItem(devicePic);
+    myDevice->gVDevice->setSceneRect(devicePic->boundingRect());
+    myDevice->gVDevice->fitInView(devicePic,Qt::KeepAspectRatio);
 
     bool r = m_dfu->devices[deviceID].Readable;
     bool w = m_dfu->devices[deviceID].Writable;
-    myDevice->deviceACL->setText(QString("Access: ") + QString(r ? "R" : "-") + QString(w ? "W" : "-"));
-    myDevice->maxCodeSize->setText(QString("Max code size: ") +QString::number(m_dfu->devices[deviceID].SizeOfCode));
-    myDevice->fwCRC->setText(QString("FW CRC: ") + QString::number(m_dfu->devices[deviceID].FW_CRC));
-    myDevice->BLVersion->setText(QString("BL Version: ") + QString::number(m_dfu->devices[deviceID].BL_Version));
 
+    myDevice->lblAccess->setText(QString("Flash access: ") + QString(r ? "R" : "-") + QString(w ? "W" : "-"));
+    myDevice->lblMaxCode->setText(QString("Max code size: ") +QString::number(m_dfu->devices[deviceID].SizeOfCode));
+    myDevice->lblCRC->setText(QString::number(m_dfu->devices[deviceID].FW_CRC));
+    myDevice->lblBLVer->setText(QString("BL version: ") + QString::number(m_dfu->devices[deviceID].BL_Version));
     int size=((OP_DFU::device)m_dfu->devices[deviceID]).SizeOfDesc;
     m_dfu->enterDFU(deviceID);
-    QString str = m_dfu->DownloadDescription(size);
-    myDevice->description->setMaxLength(size);
-    myDevice->description->setText(str.left(str.indexOf(QChar(255))));
+    QByteArray desc = m_dfu->DownloadDescriptionAsBA(size);
+
+    if (! populateBoardStructuredDescription(desc)) {
+        //TODO
+        // desc was not a structured description
+        QString str = m_dfu->DownloadDescription(size);
+        myDevice->lblDescription->setText(QString("Firmware custom description: ")+str.left(str.indexOf(QChar(255))));
+        QPixmap pix = QPixmap(QString(":uploader/images/warning.svg"));
+        myDevice->lblCertified->setPixmap(pix);
+        myDevice->lblCertified->setToolTip(tr("Custom Firmware Build"));
+        myDevice->lblBuildDate->setText("Warning: development firmware");
+        myDevice->lblGitTag->setText("");
+        myDevice->lblBrdName->setText("");
+    }
 
     status("Ready...", STATUSICON_INFO);
-
 }
 
 /**
@@ -131,18 +169,91 @@ void deviceWidget::populate()
   */
 void deviceWidget::freeze()
 {
-   myDevice->description->setEnabled(false);
-   myDevice->updateButton->setEnabled(false);
-   myDevice->verifyButton->setEnabled(false);
-   myDevice->retrieveButton->setEnabled(false);
+    myDevice->description->setEnabled(false);
+    myDevice->updateButton->setEnabled(false);
+    myDevice->retrieveButton->setEnabled(false);
 }
 
+/**
+  Populates the widget field with the description in case
+  it is structured properly
+  */
+bool deviceWidget::populateBoardStructuredDescription(QByteArray desc)
+{
+    if(UAVObjectUtilManager::descriptionToStructure(desc,&onBoardDescrition))
+    {
+        myDevice->lblGitTag->setText(onBoardDescrition.gitTag);
+        myDevice->lblBuildDate->setText(onBoardDescrition.buildDate);
+        if(onBoardDescrition.description.startsWith("release",Qt::CaseInsensitive))
+        {
+            myDevice->lblDescription->setText(QString("Firmware tag: ")+onBoardDescrition.description);
+            QPixmap pix = QPixmap(QString(":uploader/images/application-certificate.svg"));
+            myDevice->lblCertified->setPixmap(pix);
+            myDevice->lblCertified->setToolTip(tr("Tagged officially released firmware build"));
+
+        }
+        else
+        {
+            myDevice->lblDescription->setText(onBoardDescrition.description);
+            QPixmap pix = QPixmap(QString(":uploader/images/warning.svg"));
+            myDevice->lblCertified->setPixmap(pix);
+            myDevice->lblCertified->setToolTip(tr("Untagged or custom firmware build"));
+        }
+
+        myDevice->lblBrdName->setText(idToBoardName(onBoardDescrition.boardType<<8));
+
+        return true;
+    }
+
+    return false;
+
+}
+bool deviceWidget::populateLoadedStructuredDescription(QByteArray desc)
+{
+    if(UAVObjectUtilManager::descriptionToStructure(desc,&LoadedDescrition))
+    {
+        myDevice->lblGitTagL->setText(LoadedDescrition.gitTag);
+        myDevice->lblBuildDateL->setText( LoadedDescrition.buildDate);
+        if(LoadedDescrition.description.startsWith("release",Qt::CaseInsensitive))
+        {
+            myDevice->lblDescritpionL->setText(LoadedDescrition.description);
+            myDevice->description->setText(LoadedDescrition.description);
+            QPixmap pix = QPixmap(QString(":uploader/images/application-certificate.svg"));
+            myDevice->lblCertifiedL->setPixmap(pix);
+            myDevice->lblCertifiedL->setToolTip(tr("Tagged officially released firmware build"));
+        }
+        else
+        {
+            myDevice->lblDescritpionL->setText(LoadedDescrition.description);
+            myDevice->description->setText(LoadedDescrition.description);
+            QPixmap pix = QPixmap(QString(":uploader/images/warning.svg"));
+            myDevice->lblCertifiedL->setPixmap(pix);
+            myDevice->lblCertifiedL->setToolTip(tr("Untagged or custom firmware build"));
+        }
+        myDevice->lblBrdNameL->setText(deviceDescriptorStruct::idToBoardName(LoadedDescrition.boardType<<8));
+
+        return true;
+    }
+
+    return false;
+
+}
 /**
   Updates status message for messages coming from DFU
   */
 void deviceWidget::dfuStatus(QString str)
 {
     status(str, STATUSICON_RUNNING);
+}
+
+void deviceWidget::confirmCB(int value)
+{
+    if(value==Qt::Checked)
+    {
+        myDevice->updateButton->setEnabled(true);
+    }
+    else
+        myDevice->updateButton->setEnabled(false);
 }
 
 /**
@@ -168,11 +279,77 @@ void deviceWidget::status(QString str, StatusIcon ic)
     myDevice->statusIcon->setPixmap(px);
 }
 
-/**
-  Verifies the firmware CRC
-  */
-void deviceWidget::verifyFirmware()
+
+void deviceWidget::loadFirmware()
 {
+    myDevice->verticalGroupBox_loaded->setVisible(false);
+    myDevice->groupCustom->setVisible(false);
+
+    filename = setOpenFileName();
+
+    if (filename.isEmpty()) {
+        status("Empty filename", STATUSICON_FAIL);
+        return;
+    }
+
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly)) {
+        status("Can't open file", STATUSICON_FAIL);
+        return;
+    }
+
+    loadedFW = file.readAll();
+    myDevice->youdont->setVisible(false);
+    myDevice->youdont->setChecked(false);
+    QByteArray desc = loadedFW.right(100);
+    QPixmap px;
+    if(loadedFW.length()>m_dfu->devices[deviceID].SizeOfCode)
+        myDevice->lblCRCL->setText(tr("Can't calculate, file too big for device"));
+    else
+        myDevice->lblCRCL->setText( QString::number(DFUObject::CRCFromQBArray(loadedFW,m_dfu->devices[deviceID].SizeOfCode)));
+    //myDevice->lblFirmwareSizeL->setText(QString("Firmware size: ")+QVariant(loadedFW.length()).toString()+ QString(" bytes"));
+    if (populateLoadedStructuredDescription(desc))
+    {
+        myDevice->youdont->setChecked(true);
+        myDevice->verticalGroupBox_loaded->setVisible(true);
+        myDevice->groupCustom->setVisible(false);
+        if(myDevice->lblCRC->text()==myDevice->lblCRCL->text())
+        {
+            myDevice->statusLabel->setText(tr("The board has the same firmware as loaded. No need to update"));
+            px.load(QString(":/uploader/images/warning.svg"));
+        }
+        else if(myDevice->lblDevName->text()!=myDevice->lblBrdNameL->text())
+        {
+            myDevice->statusLabel->setText(tr("WARNING: the loaded firmware is for different hardware. Do not update!"));
+            px.load(QString(":/uploader/images/error.svg"));
+        }
+        else if(QDateTime::fromString(onBoardDescrition.buildDate)>QDateTime::fromString(LoadedDescrition.buildDate))
+        {
+            myDevice->statusLabel->setText(tr("The board has newer firmware than loaded. Are you sure you want to update?"));
+            px.load(QString(":/uploader/images/warning.svg"));
+        }
+        else if(!LoadedDescrition.description.startsWith("release",Qt::CaseInsensitive))
+        {
+            myDevice->statusLabel->setText(tr("The loaded firmware is untagged or custom build. Update only if it was received from a trusted source (official website or your own build)"));
+            px.load(QString(":/uploader/images/warning.svg"));
+        }
+        else
+        {
+            myDevice->statusLabel->setText(tr("This is the tagged officially released OpenPilot firmware"));
+            px.load(QString(":/uploader/images/gtk-info.svg"));
+        }
+    }
+    else
+    {
+        myDevice->statusLabel->setText(tr("WARNING: the loaded firmware was not packaged with the OpenPilot format. Do not update unless you know what you are doing"));
+        px.load(QString(":/uploader/images/error.svg"));
+        myDevice->youdont->setChecked(false);
+        myDevice->youdont->setVisible(true);
+        myDevice->verticalGroupBox_loaded->setVisible(false);
+        myDevice->groupCustom->setVisible(true);
+    }
+    myDevice->statusIcon->setPixmap(px);
+    //myDevice->updateButton->setEnabled(true);
 
 }
 
@@ -192,12 +369,30 @@ void deviceWidget::uploadFirmware()
         verify = true;
      */
 
-    QString filename = setOpenFileName();
-
-    if (filename.isEmpty()) {
-        status("Empty filename", STATUSICON_FAIL);
-        return;
+    QByteArray desc = loadedFW.right(100);
+    if (desc.startsWith("OpFw")) {
+        descriptionArray = desc;
+        // Now do sanity checking:
+        // - Check whether board type matches firmware:
+        int board = m_dfu->devices[deviceID].ID;
+        int firmwareBoard = ((desc.at(12)&0xff)<<8) + (desc.at(13)&0xff);
+        if (firmwareBoard != board) {
+            status("Error: firmware does not match board", STATUSICON_FAIL);
+            return;
+        }
+        // Check the firmware embedded in the file:
+        QByteArray firmwareHash = desc.mid(40,20);
+        QByteArray fileHash = QCryptographicHash::hash(loadedFW.left(loadedFW.length()-100), QCryptographicHash::Sha1);
+        if (firmwareHash != fileHash) {
+            status("Error: firmware file corrupt", STATUSICON_FAIL);
+            return;
+        }
+    } else {
+        // The firmware is not packaged, just upload the text in the description field
+        // if it is there.
+        descriptionArray.clear();
     }
+
 
     status("Starting firmware upload", STATUSICON_RUNNING);
     // We don't know which device was used previously, so we
@@ -214,7 +409,7 @@ void deviceWidget::uploadFirmware()
     connect(m_dfu, SIGNAL(progressUpdated(int)), this, SLOT(setProgress(int)));
     connect(m_dfu, SIGNAL(operationProgress(QString)), this, SLOT(dfuStatus(QString)));
     connect(m_dfu, SIGNAL(uploadFinished(OP_DFU::Status)), this, SLOT(uploadFinished(OP_DFU::Status)));
-    bool retstatus = m_dfu->UploadFirmware(filename.toAscii(),verify, deviceID);
+    bool retstatus = m_dfu->UploadFirmware(filename,verify, deviceID);
     if(!retstatus ) {
         status("Could not start upload", STATUSICON_FAIL);
         return;
@@ -277,15 +472,27 @@ void deviceWidget::uploadFinished(OP_DFU::Status retstatus)
         status(QString("Upload failed with code: ") + m_dfu->StatusToString(retstatus).toLatin1().data(), STATUSICON_FAIL);
         return;
     } else
-    if(!myDevice->description->text().isEmpty()) {
-        status(QString("Updating description"), STATUSICON_RUNNING);
-        repaint(); // Make sure the text above shows right away
-        retstatus = m_dfu->UploadDescription(myDevice->description->text());
-        if( retstatus != OP_DFU::Last_operation_Success) {
-            status(QString("Upload failed with code: ") + m_dfu->StatusToString(retstatus).toLatin1().data(), STATUSICON_FAIL);
-            return;
+        if (!descriptionArray.isEmpty()) {
+            // We have a structured array to save
+            status(QString("Updating description"), STATUSICON_RUNNING);
+            repaint(); // Make sure the text above shows right away
+            retstatus = m_dfu->UploadDescription(descriptionArray);
+            if( retstatus != OP_DFU::Last_operation_Success) {
+                status(QString("Upload failed with code: ") + m_dfu->StatusToString(retstatus).toLatin1().data(), STATUSICON_FAIL);
+                return;
+            }
+
+        } else if (!myDevice->description->text().isEmpty()) {
+            // Fallback: we save the description field:
+            status(QString("Updating description"), STATUSICON_RUNNING);
+            repaint(); // Make sure the text above shows right away
+            retstatus = m_dfu->UploadDescription(myDevice->description->text());
+            if( retstatus != OP_DFU::Last_operation_Success) {
+                status(QString("Upload failed with code: ") + m_dfu->StatusToString(retstatus).toLatin1().data(), STATUSICON_FAIL);
+                return;
+            }
         }
-    }
+    populate();
     status("Upload successful", STATUSICON_OK);
 
 }
@@ -310,7 +517,7 @@ QString deviceWidget::setOpenFileName()
     QString fileName = QFileDialog::getOpenFileName(this,
                                                     tr("Select firmware file"),
                                                     "",
-                                                    tr("Firmware Files (*.bin)"),
+                                                    tr("Firmware Files (*.opfw *.bin)"),
                                                     &selectedFilter,
                                                     options);
     return fileName;

@@ -41,6 +41,9 @@
 #include "actuatordesired.h"
 #include "stabilizationdesired.h"
 #include "flighttelemetrystats.h"
+#include "flightstatus.h"
+#include "accessorydesired.h"
+#include "receiveractivity.h"
 
 // Private constants
 #if defined(PIOS_MANUAL_STACK_SIZE)
@@ -54,6 +57,7 @@
 #define THROTTLE_FAILSAFE -0.1
 #define FLIGHT_MODE_LIMIT 1.0/3.0
 #define ARMED_TIME_MS      1000
+#define ARMED_THRESHOLD    0.50
 //safe band to allow a bit of calibration error or trim offset (in microseconds)
 #define CONNECTION_OFFSET 150
 
@@ -70,87 +74,68 @@ typedef enum
 // Private variables
 static xTaskHandle taskHandle;
 static ArmState_t armState;
+static portTickType lastSysTime;
 
 // Private functions
 static void updateActuatorDesired(ManualControlCommandData * cmd);
 static void updateStabilizationDesired(ManualControlCommandData * cmd, ManualControlSettingsData * settings);
+static void processFlightMode(ManualControlSettingsData * settings, float flightMode);
+static void processArm(ManualControlCommandData * cmd, ManualControlSettingsData * settings);
+static void setArmedIfChanged(uint8_t val);
 
 static void manualControlTask(void *parameters);
-static float scaleChannel(int16_t value, int16_t max, int16_t min, int16_t neutral, int16_t deadband_percent);
+static float scaleChannel(int16_t value, int16_t max, int16_t min, int16_t neutral);
 static uint32_t timeDifferenceMs(portTickType start_time, portTickType end_time);
 static bool okToArm(void);
 static bool validInputRange(int16_t min, int16_t max, uint16_t value);
 
-#define assumptions1 ( \
-		((int)MANUALCONTROLSETTINGS_STABILIZATION1SETTINGS_NONE      == (int)STABILIZATIONDESIRED_STABILIZATIONMODE_NONE)       && \
-		((int)MANUALCONTROLSETTINGS_STABILIZATION1SETTINGS_RATE      == (int)STABILIZATIONDESIRED_STABILIZATIONMODE_RATE)       && \
-		((int)MANUALCONTROLSETTINGS_STABILIZATION1SETTINGS_ATTITUDE  == (int)STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE)      \
-		)
+#define RCVR_ACTIVITY_MONITOR_CHANNELS_PER_GROUP 12
+#define RCVR_ACTIVITY_MONITOR_MIN_RANGE 10
+struct rcvr_activity_fsm {
+	ManualControlSettingsChannelGroupsOptions group;
+	uint16_t prev[RCVR_ACTIVITY_MONITOR_CHANNELS_PER_GROUP];
+	uint8_t sample_count;
+};
+static struct rcvr_activity_fsm activity_fsm;
 
-#define assumptions3 ( \
-		((int)MANUALCONTROLSETTINGS_STABILIZATION2SETTINGS_NONE      == (int)STABILIZATIONDESIRED_STABILIZATIONMODE_NONE)      && \
-		((int)MANUALCONTROLSETTINGS_STABILIZATION2SETTINGS_RATE      == (int)STABILIZATIONDESIRED_STABILIZATIONMODE_RATE)      && \
-		((int)MANUALCONTROLSETTINGS_STABILIZATION2SETTINGS_ATTITUDE  == (int)STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE)     \
-		)
+static void resetRcvrActivity(struct rcvr_activity_fsm * fsm);
+static bool updateRcvrActivity(struct rcvr_activity_fsm * fsm);
 
-#define assumptions5 ( \
-		((int)MANUALCONTROLSETTINGS_STABILIZATION3SETTINGS_NONE      == (int)STABILIZATIONDESIRED_STABILIZATIONMODE_NONE)      && \
-		((int)MANUALCONTROLSETTINGS_STABILIZATION3SETTINGS_RATE      == (int)STABILIZATIONDESIRED_STABILIZATIONMODE_RATE)      && \
-		((int)MANUALCONTROLSETTINGS_STABILIZATION3SETTINGS_ATTITUDE  == (int)STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE)     \
-		)
+#define assumptions (assumptions1 && assumptions3 && assumptions5 && assumptions7 && assumptions8 && assumptions_flightmode && assumptions_channelcount)
 
+/**
+ * Module starting
+ */
+int32_t ManualControlStart()
+{
+	// Start main task
+	xTaskCreate(manualControlTask, (signed char *)"ManualControl", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &taskHandle);
+	TaskMonitorAdd(TASKINFO_RUNNING_MANUALCONTROL, taskHandle);
+	PIOS_WDG_RegisterFlag(PIOS_WDG_MANUAL);
 
-
-#define ARMING_CHANNEL_ROLL     0
-#define ARMING_CHANNEL_PITCH    1
-#define ARMING_CHANNEL_YAW      2
-
-#define assumptions7 ( \
-		( ((int)MANUALCONTROLSETTINGS_ARMING_ROLLLEFT           -(int)MANUALCONTROLSETTINGS_ARMING_ROLLLEFT)/2 	== ARMING_CHANNEL_ROLL) 	&& \
-		( ((int)MANUALCONTROLSETTINGS_ARMING_ROLLRIGHT          -(int)MANUALCONTROLSETTINGS_ARMING_ROLLLEFT)/2 	== ARMING_CHANNEL_ROLL) 	&& \
-		( ((int)MANUALCONTROLSETTINGS_ARMING_PITCHFORWARD       -(int)MANUALCONTROLSETTINGS_ARMING_ROLLLEFT)/2 	== ARMING_CHANNEL_PITCH) 	&& \
-		( ((int)MANUALCONTROLSETTINGS_ARMING_PITCHAFT           -(int)MANUALCONTROLSETTINGS_ARMING_ROLLLEFT)/2 	== ARMING_CHANNEL_PITCH) 	&& \
-		( ((int)MANUALCONTROLSETTINGS_ARMING_YAWLEFT            -(int)MANUALCONTROLSETTINGS_ARMING_ROLLLEFT)/2 	== ARMING_CHANNEL_YAW) 		&& \
-		( ((int)MANUALCONTROLSETTINGS_ARMING_YAWRIGHT           -(int)MANUALCONTROLSETTINGS_ARMING_ROLLLEFT)/2 	== ARMING_CHANNEL_YAW)		\
-		)
-
-#define assumptions8 ( \
-		( ((int)MANUALCONTROLSETTINGS_ARMING_ROLLLEFT           -(int)MANUALCONTROLSETTINGS_ARMING_ROLLLEFT)%2 	== 0) 	&& \
-		( ((int)MANUALCONTROLSETTINGS_ARMING_ROLLRIGHT          -(int)MANUALCONTROLSETTINGS_ARMING_ROLLLEFT)%2 	!= 0) 	&& \
-		( ((int)MANUALCONTROLSETTINGS_ARMING_PITCHFORWARD       -(int)MANUALCONTROLSETTINGS_ARMING_ROLLLEFT)%2 	== 0) 	&& \
-		( ((int)MANUALCONTROLSETTINGS_ARMING_PITCHAFT           -(int)MANUALCONTROLSETTINGS_ARMING_ROLLLEFT)%2 	!= 0) 	&& \
-		( ((int)MANUALCONTROLSETTINGS_ARMING_YAWLEFT            -(int)MANUALCONTROLSETTINGS_ARMING_ROLLLEFT)%2 	== 0)	&& \
-		( ((int)MANUALCONTROLSETTINGS_ARMING_YAWRIGHT           -(int)MANUALCONTROLSETTINGS_ARMING_ROLLLEFT)%2 	!= 0)	\
-		)
-
-
-#define assumptions_flightmode ( \
-		( (int)MANUALCONTROLSETTINGS_FLIGHTMODEPOSITION_MANUAL == (int) MANUALCONTROLCOMMAND_FLIGHTMODE_MANUAL) && \
-		( (int)MANUALCONTROLSETTINGS_FLIGHTMODEPOSITION_STABILIZED1 == (int) MANUALCONTROLCOMMAND_FLIGHTMODE_STABILIZED1) && \
-		( (int)MANUALCONTROLSETTINGS_FLIGHTMODEPOSITION_STABILIZED2 == (int) MANUALCONTROLCOMMAND_FLIGHTMODE_STABILIZED2) && \
-		( (int)MANUALCONTROLSETTINGS_FLIGHTMODEPOSITION_STABILIZED3 == (int) MANUALCONTROLCOMMAND_FLIGHTMODE_STABILIZED3) && \
-		( (int)MANUALCONTROLSETTINGS_FLIGHTMODEPOSITION_VELOCITYCONTROL == (int) MANUALCONTROLCOMMAND_FLIGHTMODE_VELOCITYCONTROL) && \
-		( (int)MANUALCONTROLSETTINGS_FLIGHTMODEPOSITION_POSITIONHOLD == (int) MANUALCONTROLCOMMAND_FLIGHTMODE_POSITIONHOLD) \
-		)
-
-#define assumptions (assumptions1 && assumptions3 && assumptions5 && assumptions7 && assumptions8 && assumptions_flightmode)
+	return 0;
+}
 
 /**
  * Module initialization
  */
 int32_t ManualControlInitialize()
 {
-	/* Check the assumptions about uavobject enum's are correct */
-	if(!assumptions) 
-		return -1;
-	// Start main task
-	xTaskCreate(manualControlTask, (signed char *)"ManualControl", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &taskHandle);
-	TaskMonitorAdd(TASKINFO_RUNNING_MANUALCONTROL, taskHandle);
-	PIOS_WDG_RegisterFlag(PIOS_WDG_MANUAL);
 
+	/* Check the assumptions about uavobject enum's are correct */
+	if(!assumptions)
+		return -1;
+
+	AccessoryDesiredInitialize();
+	ManualControlCommandInitialize();
+	FlightStatusInitialize();
+	StabilizationDesiredInitialize();
+	ReceiverActivityInitialize();
+	ManualControlSettingsInitialize();
 
 	return 0;
 }
+MODULE_INITCALL(ManualControlInitialize, ManualControlStart)
 
 /**
  * Module task
@@ -159,24 +144,31 @@ static void manualControlTask(void *parameters)
 {
 	ManualControlSettingsData settings;
 	ManualControlCommandData cmd;
-	portTickType lastSysTime;
-	
+	FlightStatusData flightStatus;
 	float flightMode = 0;
 
 	uint8_t disconnected_count = 0;
 	uint8_t connected_count = 0;
-	enum { CONNECTED, DISCONNECTED } connection_state = DISCONNECTED;
+
+	// For now manual instantiate extra instances of Accessory Desired.  In future should be done dynamically
+	// this includes not even registering it if not used
+	AccessoryDesiredCreateInstance();
+	AccessoryDesiredCreateInstance();
 
 	// Make sure unarmed on power up
 	ManualControlCommandGet(&cmd);
-	cmd.Armed = MANUALCONTROLCOMMAND_ARMED_FALSE;
-	ManualControlCommandSet(&cmd);
+	FlightStatusGet(&flightStatus);
+	flightStatus.Armed = FLIGHTSTATUS_ARMED_DISARMED;
 	armState = ARM_STATE_DISARMED;
+
+	/* Initialize the RcvrActivty FSM */
+	portTickType lastActivityTime = xTaskGetTickCount();
+	resetRcvrActivity(&activity_fsm);
 
 	// Main task loop
 	lastSysTime = xTaskGetTickCount();
 	while (1) {
-		float scaledChannel[MANUALCONTROLCOMMAND_CHANNEL_NUMELEM];
+		float scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_NUMELEM];
 
 		// Wait until next update
 		vTaskDelayUntil(&lastSysTime, UPDATE_PERIOD_MS / portTICK_RATE_MS);
@@ -184,6 +176,18 @@ static void manualControlTask(void *parameters)
 
 		// Read settings
 		ManualControlSettingsGet(&settings);
+
+		/* Update channel activity monitor */
+		if (flightStatus.Armed == ARM_STATE_DISARMED) {
+			if (updateRcvrActivity(&activity_fsm)) {
+				/* Reset the aging timer because activity was detected */
+				lastActivityTime = lastSysTime;
+			}
+		}
+		if (timeDifferenceMs(lastActivityTime, lastSysTime) > 5000) {
+			resetRcvrActivity(&activity_fsm);
+			lastActivityTime = lastSysTime;
+		}
 
 		if (ManualControlCommandReadOnly(&cmd)) {
 			FlightTelemetryStatsData flightTelemStats;
@@ -199,244 +203,167 @@ static void manualControlTask(void *parameters)
 
 		if (!ManualControlCommandReadOnly(&cmd)) {
 
+			bool valid_input_detected = true;
+			
 			// Read channel values in us
-			// TODO: settings.InputMode is currently ignored because PIOS will not allow runtime
-			// selection of PWM and PPM. The configuration is currently done at compile time in
-			// the pios_config.h file.
-			for (int n = 0; n < MANUALCONTROLCOMMAND_CHANNEL_NUMELEM; ++n) {
-#if defined(PIOS_INCLUDE_PWM)
-				cmd.Channel[n] = PIOS_PWM_Get(n);
-#elif defined(PIOS_INCLUDE_PPM)
-				cmd.Channel[n] = PIOS_PPM_Get(n);
-#elif defined(PIOS_INCLUDE_SPEKTRUM)
-				cmd.Channel[n] = PIOS_SPEKTRUM_Get(n);
-#endif
-				scaledChannel[n] = scaleChannel(cmd.Channel[n], settings.ChannelMax[n],	settings.ChannelMin[n], settings.ChannelNeutral[n], 0);
+			for (uint8_t n = 0; 
+			     n < MANUALCONTROLSETTINGS_CHANNELGROUPS_NUMELEM && n < MANUALCONTROLCOMMAND_CHANNEL_NUMELEM;
+			     ++n) {
+				extern uint32_t pios_rcvr_group_map[];
+
+				if (settings.ChannelGroups[n] >= MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE) {
+					cmd.Channel[n] = PIOS_RCVR_INVALID;
+				} else {
+					cmd.Channel[n] = PIOS_RCVR_Read(pios_rcvr_group_map[settings.ChannelGroups[n]],
+									settings.ChannelNumber[n]);
+				}
+				
+				// If a channel has timed out this is not valid data and we shouldn't update anything
+				// until we decide to go to failsafe
+				if(cmd.Channel[n] == PIOS_RCVR_TIMEOUT)
+					valid_input_detected = false;
+				else
+					scaledChannel[n] = scaleChannel(cmd.Channel[n], settings.ChannelMax[n],	settings.ChannelMin[n], settings.ChannelNeutral[n]);
 			}
 
 			// Check settings, if error raise alarm
-			if (settings.Roll >= MANUALCONTROLSETTINGS_ROLL_NONE ||
-			    settings.Pitch >= MANUALCONTROLSETTINGS_PITCH_NONE ||
-			    settings.Yaw >= MANUALCONTROLSETTINGS_YAW_NONE ||
-			    settings.Throttle >= MANUALCONTROLSETTINGS_THROTTLE_NONE ||
-			    settings.FlightMode >= MANUALCONTROLSETTINGS_FLIGHTMODE_NONE) {
+			if (settings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_ROLL] >= MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE ||
+				settings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_PITCH] >= MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE ||
+				settings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_YAW] >= MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE ||
+				settings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_THROTTLE] >= MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE ||
+				settings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_FLIGHTMODE] >= MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE ||
+				// Check all channel mappings are valid
+				cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ROLL] == (uint16_t) PIOS_RCVR_INVALID ||
+				cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_PITCH] == (uint16_t) PIOS_RCVR_INVALID ||
+				cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_YAW] == (uint16_t) PIOS_RCVR_INVALID ||
+				cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_THROTTLE] == (uint16_t) PIOS_RCVR_INVALID ||
+				cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_FLIGHTMODE] == (uint16_t) PIOS_RCVR_INVALID ||
+				// Check the driver is exists
+				cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ROLL] == (uint16_t) PIOS_RCVR_NODRIVER ||
+				cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_PITCH] == (uint16_t) PIOS_RCVR_NODRIVER ||
+				cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_YAW] == (uint16_t) PIOS_RCVR_NODRIVER ||
+				cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_THROTTLE] == (uint16_t) PIOS_RCVR_NODRIVER ||
+				cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_FLIGHTMODE] == (uint16_t) PIOS_RCVR_NODRIVER) {
+
 				AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_CRITICAL);
 				cmd.Connected = MANUALCONTROLCOMMAND_CONNECTED_FALSE;
 				ManualControlCommandSet(&cmd);
+
+				// Need to do this here since we don't process armed status.  Since this shouldn't happen in flight (changed config) 
+				// immediately disarm
+				setArmedIfChanged(FLIGHTSTATUS_ARMED_DISARMED);
+
 				continue;
 			}
 
 			// decide if we have valid manual input or not
-			bool valid_input_detected = TRUE;
-			if (!validInputRange(settings.ChannelMin[settings.Throttle], settings.ChannelMax[settings.Throttle], cmd.Channel[settings.Throttle]))
-				valid_input_detected = FALSE;
-			if (!validInputRange(settings.ChannelMin[settings.Roll], settings.ChannelMax[settings.Roll], cmd.Channel[settings.Roll]))
-				valid_input_detected = FALSE;
-			if (!validInputRange(settings.ChannelMin[settings.Yaw], settings.ChannelMax[settings.Yaw], cmd.Channel[settings.Yaw]))
-				valid_input_detected = FALSE;
-			if (!validInputRange(settings.ChannelMin[settings.Pitch], settings.ChannelMax[settings.Pitch], cmd.Channel[settings.Pitch]))
-				valid_input_detected = FALSE;
+			valid_input_detected &= validInputRange(settings.ChannelMin[MANUALCONTROLSETTINGS_CHANNELGROUPS_THROTTLE], settings.ChannelMax[MANUALCONTROLSETTINGS_CHANNELGROUPS_THROTTLE], cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_THROTTLE]) &&
+			     validInputRange(settings.ChannelMin[MANUALCONTROLSETTINGS_CHANNELGROUPS_ROLL], settings.ChannelMax[MANUALCONTROLSETTINGS_CHANNELGROUPS_ROLL], cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ROLL]) &&
+			     validInputRange(settings.ChannelMin[MANUALCONTROLSETTINGS_CHANNELGROUPS_YAW], settings.ChannelMax[MANUALCONTROLSETTINGS_CHANNELGROUPS_YAW], cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_YAW]) &&
+			     validInputRange(settings.ChannelMin[MANUALCONTROLSETTINGS_CHANNELGROUPS_PITCH], settings.ChannelMax[MANUALCONTROLSETTINGS_CHANNELGROUPS_PITCH], cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_PITCH]);
 
 			// Implement hysteresis loop on connection status
-			if (valid_input_detected)
-			{
-				if (++connected_count > 10)
-				{
-					connection_state = CONNECTED;
-					connected_count = 0;
-					disconnected_count = 0;
-				}
-			}
-			else
-			{
-				if (++disconnected_count > 10)
-				{
-					connection_state = DISCONNECTED;
-					connected_count = 0;
-					disconnected_count = 0;
-				}
+			if (valid_input_detected && (++connected_count > 10)) {
+				cmd.Connected = MANUALCONTROLCOMMAND_CONNECTED_TRUE;
+				connected_count = 0;
+				disconnected_count = 0;
+			} else if (!valid_input_detected && (++disconnected_count > 10)) {
+				cmd.Connected = MANUALCONTROLCOMMAND_CONNECTED_FALSE;
+				connected_count = 0;
+				disconnected_count = 0;
 			}
 
-			if (connection_state == DISCONNECTED) {
-				cmd.Connected = MANUALCONTROLCOMMAND_CONNECTED_FALSE;
+			if (cmd.Connected == MANUALCONTROLCOMMAND_CONNECTED_FALSE) {
 				cmd.Throttle = -1;	// Shut down engine with no control
 				cmd.Roll = 0;
 				cmd.Yaw = 0;
 				cmd.Pitch = 0;
+				cmd.Collective = 0;
 				//cmd.FlightMode = MANUALCONTROLCOMMAND_FLIGHTMODE_AUTO; // don't do until AUTO implemented and functioning
 				// Important: Throttle < 0 will reset Stabilization coefficients among other things. Either change this,
 				// or leave throttle at IDLE speed or above when going into AUTO-failsafe.
 				AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
-				ManualControlCommandSet(&cmd);
+				
+				AccessoryDesiredData accessory;
+				// Set Accessory 0
+				if (settings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0] != 
+					MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE) {
+					accessory.AccessoryVal = 0;
+					if(AccessoryDesiredInstSet(0, &accessory) != 0)
+						AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
+				}
+				// Set Accessory 1
+				if (settings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY1] != 
+					MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE) {
+					accessory.AccessoryVal = 0;
+					if(AccessoryDesiredInstSet(1, &accessory) != 0)
+						AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
+				}
+				// Set Accessory 2
+				if (settings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY2] != 
+					MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE) {
+					accessory.AccessoryVal = 0;
+					if(AccessoryDesiredInstSet(2, &accessory) != 0)
+						AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
+				}
+
 			} else {
-				cmd.Connected = MANUALCONTROLCOMMAND_CONNECTED_TRUE;
 				AlarmsClear(SYSTEMALARMS_ALARM_MANUALCONTROL);
 
 				// Scale channels to -1 -> +1 range
-				cmd.Roll 		= scaledChannel[settings.Roll];
-				cmd.Pitch 		= scaledChannel[settings.Pitch];
-				cmd.Yaw 		= scaledChannel[settings.Yaw];
-				cmd.Throttle 	= scaledChannel[settings.Throttle];
-				flightMode 		= scaledChannel[settings.FlightMode];
+				cmd.Roll           = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ROLL];
+				cmd.Pitch          = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_PITCH];
+				cmd.Yaw            = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_YAW];
+				cmd.Throttle       = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_THROTTLE];
+				flightMode         = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_FLIGHTMODE];
 
-				if (settings.Accessory1 != MANUALCONTROLSETTINGS_ACCESSORY1_NONE)
-					cmd.Accessory1 = scaledChannel[settings.Accessory1];
-				else
-					cmd.Accessory1 = 0;
-
-				if (settings.Accessory2 != MANUALCONTROLSETTINGS_ACCESSORY2_NONE)
-					cmd.Accessory2 = scaledChannel[settings.Accessory2];
-				else
-					cmd.Accessory2 = 0;
-
-				if (settings.Accessory3 != MANUALCONTROLSETTINGS_ACCESSORY3_NONE)
-					cmd.Accessory3 = scaledChannel[settings.Accessory3];
-				else
-					cmd.Accessory3 = 0;
-
-				// Note here the code is ass
-				if (flightMode < -FLIGHT_MODE_LIMIT) 
-					cmd.FlightMode = settings.FlightModePosition[0];
-				else if (flightMode > FLIGHT_MODE_LIMIT) 
-					cmd.FlightMode = settings.FlightModePosition[2];
-				else 
-					cmd.FlightMode = settings.FlightModePosition[1];
-				
-
-				//
-				// Arming and Disarming mechanism
-				//
-
-				if (settings.Arming == MANUALCONTROLSETTINGS_ARMING_ALWAYSDISARMED) {
-					// In this configuration we always disarm
-					cmd.Armed = MANUALCONTROLCOMMAND_ARMED_FALSE;
-				} else {
-					// In all other cases, we will not change the arm state when disconnected
-					if (connection_state == CONNECTED)
-					{
-						if (settings.Arming == MANUALCONTROLSETTINGS_ARMING_ALWAYSARMED) {
-							// In this configuration, we go into armed state as soon as the throttle is low, never disarm
-							if (cmd.Throttle < 0) {
-								cmd.Armed = MANUALCONTROLCOMMAND_ARMED_TRUE;
-							}
-						} else {
-							// When the configuration is not "Always armed" and no "Always disarmed",
-							// the state will not be changed when the throttle is not low
-							if (cmd.Throttle < 0) {
-								static portTickType armedDisarmStart;
-								float armingInputLevel = 0;
-
-								// Calc channel see assumptions7
-								switch ( (settings.Arming-MANUALCONTROLSETTINGS_ARMING_ROLLLEFT)/2 ) {
-								case ARMING_CHANNEL_ROLL: 	armingInputLevel = cmd.Roll; 	break;
-								case ARMING_CHANNEL_PITCH: 	armingInputLevel = cmd.Pitch; 	break;
-								case ARMING_CHANNEL_YAW: 	armingInputLevel = cmd.Yaw; 	break;
-								}
-
-								bool manualArm = false;
-								bool manualDisarm = false;
-
-								if (connection_state == CONNECTED) {
-									// Should use RC input only if RX is connected
-									if (armingInputLevel <= -0.50)
-										manualArm = true;
-									else if (armingInputLevel >= +0.50)
-										manualDisarm = true;
-								}
-
-								// Swap arm-disarming see assumptions8
-								if ((settings.Arming-MANUALCONTROLSETTINGS_ARMING_ROLLLEFT)%2) {
-									bool temp = manualArm;
-									manualArm = manualDisarm;
-									manualDisarm = temp;
-								}
-
-								switch(armState) {
-								case ARM_STATE_DISARMED:
-									cmd.Armed = MANUALCONTROLCOMMAND_ARMED_FALSE;
-
-									if (manualArm)
-									{
-										if (okToArm())	// only allow arming if it's OK too
-										{
-											armedDisarmStart = lastSysTime;
-											armState = ARM_STATE_ARMING_MANUAL;
-										}
-									}
-									break;
-
-								case ARM_STATE_ARMING_MANUAL:
-									if (manualArm) {
-										if (timeDifferenceMs(armedDisarmStart, lastSysTime) > ARMED_TIME_MS)
-											armState = ARM_STATE_ARMED;
-									}
-									else
-										armState = ARM_STATE_DISARMED;
-									break;
-
-								case ARM_STATE_ARMED:
-									// When we get here, the throttle is low,
-									// we go immediately to disarming due to timeout, also when the disarming mechanism is not enabled
-									armedDisarmStart = lastSysTime;
-									armState = ARM_STATE_DISARMING_TIMEOUT;
-									cmd.Armed = MANUALCONTROLCOMMAND_ARMED_TRUE;
-									break;
-
-								case ARM_STATE_DISARMING_TIMEOUT:
-									// We get here when armed while throttle low, even when the arming timeout is not enabled
-									if (settings.ArmedTimeout != 0)
-										if (timeDifferenceMs(armedDisarmStart, lastSysTime) > settings.ArmedTimeout)
-											armState = ARM_STATE_DISARMED;
-									// Switch to disarming due to manual control when needed
-									if (manualDisarm) {
-										armedDisarmStart = lastSysTime;
-										armState = ARM_STATE_DISARMING_MANUAL;
-									}
-									break;
-
-								case ARM_STATE_DISARMING_MANUAL:
-									if (manualDisarm) {
-										if (timeDifferenceMs(armedDisarmStart, lastSysTime) > ARMED_TIME_MS)
-											armState = ARM_STATE_DISARMED;
-									}
-									else
-										armState = ARM_STATE_ARMED;
-									break;
-								}	// End Switch
-							} else {
-								// The throttle is not low, in case we where arming or disarming, abort
-								switch(armState) {
-									case ARM_STATE_DISARMING_MANUAL:
-									case ARM_STATE_DISARMING_TIMEOUT:
-										armState = ARM_STATE_ARMED;
-										break;
-									case ARM_STATE_ARMING_MANUAL:
-										armState = ARM_STATE_DISARMED;
-										break;
-									default:
-										// Nothing needs to be done in the other states
-										break;
-								}
-							}
-						}
-					}
+				if(cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_COLLECTIVE] != PIOS_RCVR_INVALID &&
+				   cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_COLLECTIVE] != PIOS_RCVR_NODRIVER &&
+				   cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_COLLECTIVE] != PIOS_RCVR_TIMEOUT)
+					cmd.Collective = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_COLLECTIVE];
+				   
+				AccessoryDesiredData accessory;
+				// Set Accessory 0
+				if (settings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0] != 
+					MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE) {
+					accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0];
+					if(AccessoryDesiredInstSet(0, &accessory) != 0)
+						AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
 				}
-				//
-				// End of arming/disarming
-				//
+				// Set Accessory 1
+				if (settings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY1] != 
+					MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE) {
+					accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY1];
+					if(AccessoryDesiredInstSet(1, &accessory) != 0)
+						AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
+				}
+				// Set Accessory 2
+				if (settings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY2] != 
+					MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE) {
+					accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY2];
+					if(AccessoryDesiredInstSet(2, &accessory) != 0)
+						AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
+				}
 
-				// Update cmd object
-				ManualControlCommandSet(&cmd);
+
+				processFlightMode(&settings, flightMode);
 
 			}
+
+			// Process arming outside conditional so system will disarm when disconnected
+			processArm(&cmd, &settings);
 			
+			// Update cmd object
+			ManualControlCommandSet(&cmd);
+
 		} else {
 			ManualControlCommandGet(&cmd);	/* Under GCS control */
 		}
 
+		FlightStatusGet(&flightStatus);
 
 		// Depending on the mode update the Stabilization or Actuator objects
-		switch(PARSE_FLIGHT_MODE(cmd.FlightMode)) {
+		switch(PARSE_FLIGHT_MODE(flightStatus.FlightMode)) {
 			case FLIGHTMODE_UNDEFINED:
 				// This reflects a bug in the code architecture!
 				AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_CRITICAL);
@@ -450,11 +377,150 @@ static void manualControlTask(void *parameters)
 			case FLIGHTMODE_GUIDANCE:
 				// TODO: Implement
 				break;
-		}				
+		}
 	}
 }
 
-static void updateActuatorDesired(ManualControlCommandData * cmd) 
+static void resetRcvrActivity(struct rcvr_activity_fsm * fsm)
+{
+	ReceiverActivityData data;
+	bool updated = false;
+
+	/* Clear all channel activity flags */
+	ReceiverActivityGet(&data);
+	if (data.ActiveGroup != RECEIVERACTIVITY_ACTIVEGROUP_NONE &&
+		data.ActiveChannel != 255) {
+		data.ActiveGroup = RECEIVERACTIVITY_ACTIVEGROUP_NONE;
+		data.ActiveChannel = 255;
+		updated = true;
+	}
+	if (updated) {
+		ReceiverActivitySet(&data);
+	}
+
+	/* Reset the FSM state */
+	fsm->group        = 0;
+	fsm->sample_count = 0;
+}
+
+static void updateRcvrActivitySample(uint32_t rcvr_id, uint16_t samples[], uint8_t max_channels) {
+	for (uint8_t channel = 1; channel <= max_channels; channel++) {
+		// Subtract 1 because channels are 1 indexed
+		samples[channel - 1] = PIOS_RCVR_Read(rcvr_id, channel);
+	}
+}
+
+static bool updateRcvrActivityCompare(uint32_t rcvr_id, struct rcvr_activity_fsm * fsm)
+{
+	bool activity_updated = false;
+
+	/* Compare the current value to the previous sampled value */
+	for (uint8_t channel = 1;
+	     channel <= RCVR_ACTIVITY_MONITOR_CHANNELS_PER_GROUP;
+	     channel++) {
+		uint16_t delta;
+		uint16_t prev = fsm->prev[channel - 1];   // Subtract 1 because channels are 1 indexed
+		uint16_t curr = PIOS_RCVR_Read(rcvr_id, channel); 
+		if (curr > prev) {
+			delta = curr - prev;
+		} else {
+			delta = prev - curr;
+		}
+
+		if (delta > RCVR_ACTIVITY_MONITOR_MIN_RANGE) {
+			/* Mark this channel as active */
+			ReceiverActivityActiveGroupOptions group;
+
+			/* Don't assume manualcontrolsettings and receiveractivity are in the same order. */
+			switch (fsm->group) {
+			case MANUALCONTROLSETTINGS_CHANNELGROUPS_PWM: 
+				group = RECEIVERACTIVITY_ACTIVEGROUP_PWM;
+				break;
+			case MANUALCONTROLSETTINGS_CHANNELGROUPS_PPM:
+				group = RECEIVERACTIVITY_ACTIVEGROUP_PPM;
+				break;
+			case MANUALCONTROLSETTINGS_CHANNELGROUPS_SPEKTRUM1:
+				group = RECEIVERACTIVITY_ACTIVEGROUP_SPEKTRUM1;
+				break;
+			case MANUALCONTROLSETTINGS_CHANNELGROUPS_SPEKTRUM2:
+				group = RECEIVERACTIVITY_ACTIVEGROUP_SPEKTRUM2;
+				break;
+			case MANUALCONTROLSETTINGS_CHANNELGROUPS_SBUS:
+				group = RECEIVERACTIVITY_ACTIVEGROUP_SBUS;
+				break;
+			case MANUALCONTROLSETTINGS_CHANNELGROUPS_GCS:
+				group = RECEIVERACTIVITY_ACTIVEGROUP_GCS;
+				break;
+			default:
+				PIOS_Assert(0);
+				break;
+			}
+
+			ReceiverActivityActiveGroupSet(&group);
+			ReceiverActivityActiveChannelSet(&channel);
+			activity_updated = true;
+		}
+	}
+	return (activity_updated);
+}
+
+static bool updateRcvrActivity(struct rcvr_activity_fsm * fsm)
+{
+	bool activity_updated = false;
+
+	if (fsm->group >= MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE) {
+		/* We're out of range, reset things */
+		resetRcvrActivity(fsm);
+	}
+
+	extern uint32_t pios_rcvr_group_map[];
+	if (!pios_rcvr_group_map[fsm->group]) {
+		/* Unbound group, skip it */
+		goto group_completed;
+	}
+
+	if (fsm->sample_count == 0) {
+		/* Take a sample of each channel in this group */
+		updateRcvrActivitySample(pios_rcvr_group_map[fsm->group],
+					fsm->prev,
+					NELEMENTS(fsm->prev));
+		fsm->sample_count++;
+		return (false);
+	}
+
+	/* Compare with previous sample */
+	activity_updated = updateRcvrActivityCompare(pios_rcvr_group_map[fsm->group], fsm);
+
+group_completed:
+	/* Reset the sample counter */
+	fsm->sample_count = 0;
+
+	/* Find the next active group, but limit search so we can't loop forever here */
+	for (uint8_t i = 0; i < MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE; i++) {
+		/* Move to the next group */
+		fsm->group++;
+		if (fsm->group >= MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE) {
+			/* Wrap back to the first group */
+			fsm->group = 0;
+		}
+		if (pios_rcvr_group_map[fsm->group]) {
+			/* 
+			 * Found an active group, take a sample here to avoid an
+			 * extra 20ms delay in the main thread so we can speed up
+			 * this algorithm.
+			 */
+			updateRcvrActivitySample(pios_rcvr_group_map[fsm->group],
+						fsm->prev,
+						NELEMENTS(fsm->prev));
+			fsm->sample_count++;
+			break;
+		}
+	}
+
+	return (activity_updated);
+}
+
+static void updateActuatorDesired(ManualControlCommandData * cmd)
 {
 	ActuatorDesiredData actuator;
 	ActuatorDesiredGet(&actuator);
@@ -462,62 +528,70 @@ static void updateActuatorDesired(ManualControlCommandData * cmd)
 	actuator.Pitch = cmd->Pitch;
 	actuator.Yaw = cmd->Yaw;
 	actuator.Throttle = (cmd->Throttle < 0) ? -1 : cmd->Throttle;
-	ActuatorDesiredSet(&actuator);	
+	ActuatorDesiredSet(&actuator);
 }
 
 static void updateStabilizationDesired(ManualControlCommandData * cmd, ManualControlSettingsData * settings)
 {
 	StabilizationDesiredData stabilization;
 	StabilizationDesiredGet(&stabilization);
-	
+
 	StabilizationSettingsData stabSettings;
 	StabilizationSettingsGet(&stabSettings);
-		
+
 	uint8_t * stab_settings;
-	switch(cmd->FlightMode) {
-		case MANUALCONTROLCOMMAND_FLIGHTMODE_STABILIZED1:
+	FlightStatusData flightStatus;
+	FlightStatusGet(&flightStatus);
+	switch(flightStatus.FlightMode) {
+		case FLIGHTSTATUS_FLIGHTMODE_STABILIZED1:
 			stab_settings = settings->Stabilization1Settings;
 			break;
-		case MANUALCONTROLCOMMAND_FLIGHTMODE_STABILIZED2:
+		case FLIGHTSTATUS_FLIGHTMODE_STABILIZED2:
 			stab_settings = settings->Stabilization2Settings;
 			break;
-		case MANUALCONTROLCOMMAND_FLIGHTMODE_STABILIZED3:
+		case FLIGHTSTATUS_FLIGHTMODE_STABILIZED3:
 			stab_settings = settings->Stabilization3Settings;
 			break;
 		default:
 			// Major error, this should not occur because only enter this block when one of these is true
 			AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_CRITICAL);
-			return;	
+			return;
 	}
-	
+
 	// TOOD: Add assumption about order of stabilization desired and manual control stabilization mode fields having same order
 	stabilization.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_ROLL]  = stab_settings[0];
 	stabilization.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_PITCH] = stab_settings[1];
 	stabilization.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_YAW]   = stab_settings[2];
-	
+
 	stabilization.Roll = (stab_settings[0] == STABILIZATIONDESIRED_STABILIZATIONMODE_NONE) ? cmd->Roll :
 	     (stab_settings[0] == STABILIZATIONDESIRED_STABILIZATIONMODE_RATE) ? cmd->Roll * stabSettings.ManualRate[STABILIZATIONSETTINGS_MANUALRATE_ROLL] :
+	     (stab_settings[0] == STABILIZATIONDESIRED_STABILIZATIONMODE_WEAKLEVELING) ? cmd->Roll * stabSettings.ManualRate[STABILIZATIONSETTINGS_MANUALRATE_ROLL] :
 	     (stab_settings[0] == STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE) ? cmd->Roll * stabSettings.RollMax :
+	     (stab_settings[0] == STABILIZATIONDESIRED_STABILIZATIONMODE_AXISLOCK) ? cmd->Roll * stabSettings.ManualRate[STABILIZATIONSETTINGS_MANUALRATE_ROLL] :
 	     0; // this is an invalid mode
 					      ;
 	stabilization.Pitch = (stab_settings[1] == STABILIZATIONDESIRED_STABILIZATIONMODE_NONE) ? cmd->Pitch :
 	     (stab_settings[1] == STABILIZATIONDESIRED_STABILIZATIONMODE_RATE) ? cmd->Pitch * stabSettings.ManualRate[STABILIZATIONSETTINGS_MANUALRATE_PITCH] :
+	     (stab_settings[1] == STABILIZATIONDESIRED_STABILIZATIONMODE_WEAKLEVELING) ? cmd->Pitch * stabSettings.ManualRate[STABILIZATIONSETTINGS_MANUALRATE_PITCH] :
 	     (stab_settings[1] == STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE) ? cmd->Pitch * stabSettings.PitchMax :
+	     (stab_settings[1] == STABILIZATIONDESIRED_STABILIZATIONMODE_AXISLOCK) ? cmd->Pitch * stabSettings.ManualRate[STABILIZATIONSETTINGS_MANUALRATE_PITCH] :
 	     0; // this is an invalid mode
 
 	stabilization.Yaw = (stab_settings[2] == STABILIZATIONDESIRED_STABILIZATIONMODE_NONE) ? cmd->Yaw :
 	     (stab_settings[2] == STABILIZATIONDESIRED_STABILIZATIONMODE_RATE) ? cmd->Yaw * stabSettings.ManualRate[STABILIZATIONSETTINGS_MANUALRATE_YAW] :
-	     (stab_settings[2] == STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE) ? fmod(cmd->Yaw * 180.0, 360) :
+	     (stab_settings[2] == STABILIZATIONDESIRED_STABILIZATIONMODE_WEAKLEVELING) ? cmd->Yaw * stabSettings.ManualRate[STABILIZATIONSETTINGS_MANUALRATE_YAW] :
+	     (stab_settings[2] == STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE) ? cmd->Yaw * stabSettings.YawMax :
+	     (stab_settings[2] == STABILIZATIONDESIRED_STABILIZATIONMODE_AXISLOCK) ? cmd->Yaw * stabSettings.ManualRate[STABILIZATIONSETTINGS_MANUALRATE_YAW] :
 	     0; // this is an invalid mode
-	
-	stabilization.Throttle = (cmd->Throttle < 0) ? -1 : cmd->Throttle; 
+
+	stabilization.Throttle = (cmd->Throttle < 0) ? -1 : cmd->Throttle;
 	StabilizationDesiredSet(&stabilization);
 }
 
 /**
  * Convert channel from servo pulse duration (microseconds) to scaled -1/+1 range.
  */
-static float scaleChannel(int16_t value, int16_t max, int16_t min, int16_t neutral, int16_t deadband_percent)
+static float scaleChannel(int16_t value, int16_t max, int16_t min, int16_t neutral)
 {
 	float valueScaled;
 
@@ -535,20 +609,6 @@ static float scaleChannel(int16_t value, int16_t max, int16_t min, int16_t neutr
 			valueScaled = (float)(value - neutral) / (float)(neutral - min);
 		else
 			valueScaled = 0;
-	}
-
-	// Neutral RC stick position dead band
-	if (deadband_percent > 0)
-	{
-		if (deadband_percent > 50) deadband_percent = 50;   // limit deadband to a maximum of 50%
-		float deadband = (float)deadband_percent / 100;
-		if (fabs(valueScaled) <= deadband)
-			valueScaled = 0;                                // deadband the value
-		else
-		if (valueScaled < 0)
-			valueScaled = (valueScaled + deadband) / (1.0 - deadband);	// value scales 0.0 to -1.0 after deadband
-		else
-			valueScaled = (valueScaled - deadband) / (1.0 - deadband);  // value scales 0.0 to +1.0 after deadband
 	}
 
 	// Bound
@@ -592,6 +652,161 @@ static bool okToArm(void)
 }
 
 /**
+ * @brief Update the flightStatus object only if value changed.  Reduces callbacks
+ * @param[in] val The new value
+ */
+static void setArmedIfChanged(uint8_t val) {
+	FlightStatusData flightStatus;
+	FlightStatusGet(&flightStatus);
+
+	if(flightStatus.Armed != val) {
+		flightStatus.Armed = val;
+		FlightStatusSet(&flightStatus);
+	}
+}
+
+/**
+ * @brief Process the inputs and determine whether to arm or not
+ * @param[out] cmd The structure to set the armed in
+ * @param[in] settings Settings indicating the necessary position
+ */
+static void processArm(ManualControlCommandData * cmd, ManualControlSettingsData * settings)
+{
+
+	bool lowThrottle = cmd->Throttle <= 0;
+
+	if (settings->Arming == MANUALCONTROLSETTINGS_ARMING_ALWAYSDISARMED) {
+		// In this configuration we always disarm
+		setArmedIfChanged(FLIGHTSTATUS_ARMED_DISARMED);
+	} else {
+		// Not really needed since this function not called when disconnected
+		if (cmd->Connected == MANUALCONTROLCOMMAND_CONNECTED_FALSE)
+			lowThrottle = true;
+
+		// The throttle is not low, in case we where arming or disarming, abort
+		if (!lowThrottle) {
+			switch(armState) {
+				case ARM_STATE_DISARMING_MANUAL:
+				case ARM_STATE_DISARMING_TIMEOUT:
+					armState = ARM_STATE_ARMED;
+					break;
+				case ARM_STATE_ARMING_MANUAL:
+					armState = ARM_STATE_DISARMED;
+					break;
+				default:
+					// Nothing needs to be done in the other states
+					break;
+			}
+			return;
+		}
+
+		// The rest of these cases throttle is low
+		if (settings->Arming == MANUALCONTROLSETTINGS_ARMING_ALWAYSARMED) {
+			// In this configuration, we go into armed state as soon as the throttle is low, never disarm
+			setArmedIfChanged(FLIGHTSTATUS_ARMED_ARMED);
+			return;
+		}
+
+
+		// When the configuration is not "Always armed" and no "Always disarmed",
+		// the state will not be changed when the throttle is not low
+		static portTickType armedDisarmStart;
+		float armingInputLevel = 0;
+
+		// Calc channel see assumptions7
+		int8_t sign = ((settings->Arming-MANUALCONTROLSETTINGS_ARMING_ROLLLEFT)%2) ? -1 : 1;
+		switch ( (settings->Arming-MANUALCONTROLSETTINGS_ARMING_ROLLLEFT)/2 ) {
+			case ARMING_CHANNEL_ROLL:    armingInputLevel = sign * cmd->Roll;    break;
+			case ARMING_CHANNEL_PITCH:   armingInputLevel = sign * cmd->Pitch;   break;
+			case ARMING_CHANNEL_YAW:     armingInputLevel = sign * cmd->Yaw;     break;
+		}
+
+		bool manualArm = false;
+		bool manualDisarm = false;
+
+		if (armingInputLevel <= -ARMED_THRESHOLD)
+			manualArm = true;
+		else if (armingInputLevel >= +ARMED_THRESHOLD)
+			manualDisarm = true;
+
+		switch(armState) {
+			case ARM_STATE_DISARMED:
+				setArmedIfChanged(FLIGHTSTATUS_ARMED_DISARMED);
+
+				// only allow arming if it's OK too
+				if (manualArm && okToArm()) {
+					armedDisarmStart = lastSysTime;
+					armState = ARM_STATE_ARMING_MANUAL;
+				}
+				break;
+
+			case ARM_STATE_ARMING_MANUAL:
+				setArmedIfChanged(FLIGHTSTATUS_ARMED_ARMING);
+
+				if (manualArm && (timeDifferenceMs(armedDisarmStart, lastSysTime) > ARMED_TIME_MS))
+					armState = ARM_STATE_ARMED;
+				else if (!manualArm)
+					armState = ARM_STATE_DISARMED;
+				break;
+
+			case ARM_STATE_ARMED:
+				// When we get here, the throttle is low,
+				// we go immediately to disarming due to timeout, also when the disarming mechanism is not enabled
+				armedDisarmStart = lastSysTime;
+				armState = ARM_STATE_DISARMING_TIMEOUT;
+				setArmedIfChanged(FLIGHTSTATUS_ARMED_ARMED);
+				break;
+
+			case ARM_STATE_DISARMING_TIMEOUT:
+				// We get here when armed while throttle low, even when the arming timeout is not enabled
+				if ((settings->ArmedTimeout != 0) && (timeDifferenceMs(armedDisarmStart, lastSysTime) > settings->ArmedTimeout))
+					armState = ARM_STATE_DISARMED;
+
+				// Switch to disarming due to manual control when needed
+				if (manualDisarm) {
+					armedDisarmStart = lastSysTime;
+					armState = ARM_STATE_DISARMING_MANUAL;
+				}
+				break;
+
+			case ARM_STATE_DISARMING_MANUAL:
+				if (manualDisarm &&(timeDifferenceMs(armedDisarmStart, lastSysTime) > ARMED_TIME_MS))
+					armState = ARM_STATE_DISARMED;
+				else if (!manualDisarm)
+					armState = ARM_STATE_ARMED;
+				break;
+		}	// End Switch
+	}
+}
+
+/**
+ * @brief Determine which of three positions the flight mode switch is in and set flight mode accordingly
+ * @param[out] cmd Pointer to the command structure to set the flight mode in
+ * @param[in] settings The settings which indicate which position is which mode
+ * @param[in] flightMode the value of the switch position
+ */
+static void processFlightMode(ManualControlSettingsData * settings, float flightMode)
+{
+	FlightStatusData flightStatus;
+	FlightStatusGet(&flightStatus);
+
+	uint8_t newMode;
+	// Note here the code is ass
+	if (flightMode < -FLIGHT_MODE_LIMIT)
+		newMode = settings->FlightModePosition[0];
+	else if (flightMode > FLIGHT_MODE_LIMIT)
+		newMode = settings->FlightModePosition[2];
+	else
+		newMode = settings->FlightModePosition[1];
+
+	if(flightStatus.FlightMode != newMode) {
+		flightStatus.FlightMode = newMode;
+		FlightStatusSet(&flightStatus);
+	}
+
+}
+
+/**
  * @brief Determine if the manual input value is within acceptable limits
  * @returns return TRUE if so, otherwise return FALSE
  */
@@ -606,16 +821,6 @@ bool validInputRange(int16_t min, int16_t max, uint16_t value)
 	return (value >= min - CONNECTION_OFFSET && value <= max + CONNECTION_OFFSET);
 }
 
-//
-//static void armingMechanism(uint8_t* armingState, const ManualControlSettingsData* settings, const ManualControlCommandData* cmd)
-//{
-//	if (settings->Arming == MANUALCONTROLSETTINGS_ARMING_ALWAYSDISARMED) {
-//		*armingState = MANUALCONTROLCOMMAND_ARMED_FALSE;
-//		return;
-//	}
-//
-//
-//}
 /**
   * @}
   * @}

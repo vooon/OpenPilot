@@ -34,28 +34,36 @@
 #include "objectpersistence.h"
 #include <QtGui/QWidget>
 #include <QList>
-
-#include "fancytabwidget.h"
-
+//#include <QtWebKit/QWebView>
+#include <QTextBrowser>
+#include "utils/pathutils.h"
+#include <QMessageBox>
+//#include "fancytabwidget.h"
+#include "utils/mytabbedstackwidget.h"
+#include "configtaskwidget.h"
 
 class ConfigGadgetWidget: public QWidget
 {
     Q_OBJECT
+    QTextBrowser* help;
 
 public:
     ConfigGadgetWidget(QWidget *parent = 0);
     ~ConfigGadgetWidget();
+    enum widgetTabs {hardware=0, aircraft, input, output, ins, stabilization, camerastabilization};
 
 public slots:
     void onAutopilotConnect();
+    void onAutopilotDisconnect();
+    void tabAboutToChange(int i,bool *);
 
 signals:
     void autopilotConnected();
+    void autopilotDisconnected();
 
 protected:
         void resizeEvent(QResizeEvent * event);
-        FancyTabWidget *ftw;
-
+        MyTabbedStackWidget *ftw;
 };
 
 #endif // CONFIGGADGETWIDGET_H

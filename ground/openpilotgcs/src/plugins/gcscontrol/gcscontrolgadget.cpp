@@ -249,13 +249,17 @@ void GCSControlGadget::buttonState(ButtonNumber number, bool pressed)
                 case 1://Armed
                     if (currentCGSControl)
                     {
-                        if(obj->getField("Armed")->getValue().toString().compare("True")==0)
+                        ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
+                        UAVObjectManager *objManager = pm->getObject<UAVObjectManager>();
+                        UAVDataObject* obj = dynamic_cast<UAVDataObject*>( objManager->getObject(QString("FlightStatus")) );
+
+                        if(obj->getField("Armed")->getValue().toString().compare("Armed")==0)
                         {
-                            obj->getField("Armed")->setValue("False");
+                            obj->getField("Armed")->setValue("Disarmed");
                         }
                         else
                         {
-                            obj->getField("Armed")->setValue("True");
+                            obj->getField("Armed")->setValue("Armed");
                         }
                     }
                 break;
@@ -279,8 +283,8 @@ void GCSControlGadget::buttonState(ButtonNumber number, bool pressed)
 void GCSControlGadget::axesValues(QListInt16 values)
 {
     int chMax = values.length();
-    if (rollChannel > chMax || pitchChannel > chMax ||
-            yawChannel > chMax || throttleChannel > chMax ) {
+    if (rollChannel >= chMax || pitchChannel >= chMax ||
+            yawChannel >= chMax || throttleChannel >= chMax ) {
         qDebug() << "GCSControl: configuration is inconsistent with current joystick! Aborting update.";
         return;
     }
