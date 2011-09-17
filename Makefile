@@ -432,7 +432,7 @@ all_$(1)_clean: $$(addsuffix _clean, $$(filter bl_$(1), $$(BL_TARGETS)))
 all_$(1)_clean: $$(addsuffix _clean, $$(filter bu_$(1), $$(BU_TARGETS)))
 endef
 
-ALL_BOARDS := openpilot ahrs coptercontrol pipxtreme ins
+ALL_BOARDS := openpilot ahrs coptercontrol pipxtreme ins esc
 
 # Friendly names of each board (used to find source tree)
 openpilot_friendly     := OpenPilot
@@ -440,6 +440,7 @@ coptercontrol_friendly := CopterControl
 pipxtreme_friendly     := PipXtreme
 ins_friendly           := INS
 ahrs_friendly          := AHRS
+esc_friendly           := ESC
 
 # Start out assuming that we'll build fw, bl and bu for all boards
 FW_BOARDS  := $(ALL_BOARDS)
@@ -480,30 +481,6 @@ $(foreach board, $(ALL_BOARDS), $(eval $(call BU_TEMPLATE,$(board),$($(board)_fr
 
 # Expand the firmware rules
 $(foreach board, $(ALL_BOARDS), $(eval $(call FW_TEMPLATE,$(board),$($(board)_friendly))))
-
-.PHONY: esc
-esc: esc_bin
-
-esc_%: 
-	$(V1) mkdir -p $(BUILD_DIR)/esc/dep
-	$(V1) $(MAKE) -r --no-print-directory OUTDIR="$(BUILD_DIR)/esc" TCHAIN_PREFIX="$(ARM_SDK_PREFIX)" REMOVE_CMD="$(RM)" OOCD_EXE="$(OPENOCD)" -C $(ROOT_DIR)/flight/ESC $*
-
-.PHONY: esc_clean
-esc_clean:
-	$(V0) @echo " CLEAN     $@"
-	$(V1) $(RM) -fr $(BUILD_DIR)/esc
-
-.PHONY: bl_esc
-bl_esc: bl_esc_elf
-
-bl_esc%:
-	$(V1) mkdir -p $(BUILD_DIR)/bl_esc/dep
-	$(V1) $(MAKE) -r --no-print-directory OUTDIR="$(BUILD_DIR)/bl_esc" TCHAIN_PREFIX="$(ARM_SDK_PREFIX)" REMOVE_CMD="$(RM)" OOCD_EXE="$(OPENOCD)" -C $(ROOT_DIR)/flight/Bootloaders/ESC $*
-
-.PHONY: bl_esc_clean
-bl_esc_clean:
-	$(V0) @echo " CLEAN     $@"
-	$(V1) $(RM) -fr $(BUILD_DIR)/bl_esc
 
 # Expand the bootloader rules
 $(foreach board, $(ALL_BOARDS), $(eval $(call BL_TEMPLATE,$(board),$($(board)_friendly))))
