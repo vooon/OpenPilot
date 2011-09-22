@@ -37,9 +37,9 @@ struct esc_config config = {
 	.kff2 = -0.05,
 	.ilim = 0.5,
 	.max_dc_change = 2,
-	.min_dc = 0.01,
+	.min_dc = 0.00,
 	.max_dc = 0.90,
-	.initial_startup_speed = 100,
+	.initial_startup_speed = 40,
 	.final_startup_speed = 700,
 	.startup_current_target = 30,
 	.commutation_phase = 7,
@@ -196,6 +196,8 @@ uint32_t stops_requested;
 void esc_process_static_fsm_rxn() {
 
 	static uint32_t zero_time;
+	if(esc_data.speed_setpoint > 0)
+		zero_time = PIOS_DELAY_GetRaw();
 
 	switch(esc_data.state) {
 		case ESC_STATE_FSM_FAULT:
@@ -206,7 +208,7 @@ void esc_process_static_fsm_rxn() {
 			break;
 		case ESC_STATE_WAIT_FOR_ARM:
 		case ESC_STATE_STOPPED:
-			if(esc_data.speed_setpoint == 0 && zero_time > 10000) {
+			if(esc_data.speed_setpoint == 0) {
 				esc_fsm_inject_event(ESC_EVENT_ARM,0);
 				zero_time = 0;
 			}
@@ -228,7 +230,7 @@ void esc_process_static_fsm_rxn() {
 		case ESC_STATE_STARTUP_WAIT:
 		case ESC_STATE_STARTUP_ZCD_DETECTED:
 		case ESC_STATE_STARTUP_NOZCD_COMMUTATED:			
-			if(esc_data.speed_setpoint == 0)
+			if(esc_data.speed_setpoint == 0 && PIOS_DELAY_DiffuS(zero_time) > 30000)
 				esc_fsm_inject_event(ESC_EVENT_STOP,0);
 			
 			break;
@@ -240,26 +242,15 @@ void esc_process_static_fsm_rxn() {
 		case ESC_STATE_CL_COMMUTATED:
 		case ESC_STATE_CL_NOZCD:
 		case ESC_STATE_CL_ZCD:
-		{
-			static uint16_t last_timer;
-			uint16_t cur_timer = PIOS_DELAY_GetuS();
-
 			if(esc_data.current > config.soft_current_limit) {
-
-//				float dT = (uint16_t) (cur_timer - last_timer);
-//				dT *= 1e-6; // convert to seconds
-//				float max_dc_change = config.max_dc_change * dT;
-
 				esc_data.duty_cycle -= 0.001;
 				PIOS_ESC_SetDutyCycle(esc_data.duty_cycle);
 			}
-			last_timer = cur_timer;
 
-			if(esc_data.speed_setpoint == 0) {
+			if(esc_data.speed_setpoint == 0 && PIOS_DELAY_DiffuS(zero_time) > 30000) {
 				esc_fsm_inject_event(ESC_EVENT_STOP,0);
 				stops_requested++;
 			}
-		}
 			break;
 
 		// By default do nothing
@@ -322,7 +313,7 @@ static void go_esc_startup_grab(uint16_t time)
 
 	PIOS_ESC_SetState(0);
 	esc_data.current_speed = config.initial_startup_speed;
-	esc_data.duty_cycle = 0.1;
+	esc_data.duty_cycle = 0.12;
 	esc_data.consecutive_missed = 0;
 	esc_data.consecutive_detected = 0;
 	

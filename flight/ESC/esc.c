@@ -85,11 +85,6 @@ struct esc_fsm_data * esc_data = 0;
 /**
  * @brief ESC Main function
  */
-#define MAX_INPUT_FILTER 8
-uint16_t input[MAX_INPUT_FILTER];
-uint32_t input_filter_pointer = 0;
-uint32_t input_sum;
-
 uint32_t offs = 0;
 
 int main()
@@ -137,24 +132,8 @@ int main()
 
 	PIOS_ADC_StartDma();
 	
-	uint32_t off_time = 0;
-	uint32_t off_status = false;
-	
 	while(1) {
 		counter++;
-		
-		if(input_sum > 1050)
-			esc_data->speed_setpoint = (input_sum < 1050) ? 0 : 400 + ((input_sum - 1050) << 3);
-		else {
-			if(off_status == false) {
-				off_status = true;
-				off_time = PIOS_DELAY_GetRaw();
-				offs++;
-			} else if (PIOS_DELAY_DiffuS(off_time) > 1000000) {
-				off_status = false;
-				esc_data->speed_setpoint = 0;
-			}
-		}
 		
 		esc_process_static_fsm_rxn();
 	}
@@ -599,6 +578,8 @@ void test_esc() {
 }
 
 uint32_t bad_inputs;
+uint16_t input;
+
 void PIOS_TIM_4_irq_override();
 extern void PIOS_DELAY_timeout();
 void TIM4_IRQHandler(void) __attribute__ ((alias ("PIOS_TIM_4_irq_handler")));
@@ -613,9 +594,15 @@ static void PIOS_TIM_4_irq_handler (void)
 		
 		extern uint32_t pios_rcvr_group_map[];
 		
-		input_sum = PIOS_RCVR_Read(pios_rcvr_group_map[0],1);
-		if(input_sum == PIOS_RCVR_INVALID || input_sum == PIOS_RCVR_TIMEOUT)
-			input_sum = 0;		
+		input = PIOS_RCVR_Read(pios_rcvr_group_map[0],1);
+		if (input == PIOS_RCVR_INVALID || input == PIOS_RCVR_TIMEOUT)
+			input = 0;
+		else if (input < 900 || input > 2200) {
+			bad_inputs++;
+			input = 0;
+		}
+		
+		esc_data->speed_setpoint = (input < 1050) ? 0 : 400 + ((input - 1050) << 3);
 	}
 }
 
