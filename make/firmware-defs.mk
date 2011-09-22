@@ -116,7 +116,7 @@ FORCE:
 
 $(1).firmwareinfo.c: $(1) $(TOP)/make/templates/firmwareinfotemplate.c FORCE
 	@echo $(MSG_FWINFO) $$(call toprel, $$@)
-	$(V1) python $(TOP)/make/scripts/version-info.py \
+	python $(TOP)/make/scripts/version-info.py \
 		--path=$(TOP) \
 		--template=$(TOP)/make/templates/firmwareinfotemplate.c \
 		--outfile=$$@ \
@@ -213,7 +213,7 @@ OOCD_EXE ?= openocd
 OOCD_JTAG_SETUP  = -d0
 # interface and board/target settings (using the OOCD target-library here)
 OOCD_JTAG_SETUP += -s $(TOP)/flight/Project/OpenOCD
-OOCD_JTAG_SETUP += -f foss-jtag.revb.cfg -f stm32.cfg
+OOCD_JTAG_SETUP += -f flyswatter.cfg -f stm32f1x.cfg
 
 # initialize
 OOCD_BOARD_RESET = -c init
@@ -228,8 +228,8 @@ program: $(1)
 	$(V1) $(OOCD_EXE) \
 		$$(OOCD_JTAG_SETUP) \
 		$$(OOCD_BOARD_RESET) \
-		-c "flash write_image erase $$< $(2) bin" \
-		-c "verify_image $$< $(2) bin" \
+		-c "flash write_image erase $(subst c:,,$(1)) $(2) bin" \
+		-c "verify_image $(subst c:,,$(1)) $(2) bin" \
 		-c "reset run" \
 		-c "shutdown"
 
