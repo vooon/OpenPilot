@@ -22,7 +22,7 @@
 // 6. Freehweeling mode for when a ZCD is missed
 
 // To act like a normal open loop ESC
-#define OPEN_LOOP
+//#define OPEN_LOOP
 
 //#define RPM_TO_US(x) (1e6 * 60 / (x * COMMUTATIONS_PER_ROT) )
 #define RPM_TO_US(x) (1428571 / x)
@@ -37,14 +37,14 @@ struct esc_config config = {
 	.kff2 = -0.05,
 	.ilim = 0.5,
 	.max_dc_change = 2,
-	.min_dc = 0.01,
+	.min_dc = 0.00,
 	.max_dc = 0.90,
 	.initial_startup_speed = 100,
 	.final_startup_speed = 700,
-	.startup_current_target = 30,
-	.commutation_phase = 7,
-	.soft_current_limit = 800,
-	.hard_current_limit = 2500,
+	.startup_current_target = 50,
+	.commutation_phase = 10,
+	.soft_current_limit = 500,
+	.hard_current_limit = 1000,
 	.magic = ESC_CONFIG_MAGIC,
 };
 
@@ -295,6 +295,17 @@ static void go_esc_stopped(uint16_t time)
  */
 static void go_esc_startup_enable(uint16_t time)
 {
+	PIOS_ESC_SetState(0);
+	esc_data.current_speed = config.initial_startup_speed;
+	esc_data.consecutive_missed = 0;
+	esc_data.consecutive_detected = 0;
+	esc_data.last_swap_time = PIOS_DELAY_GetRaw();
+	
+	for(uint8_t i = 0; i < NUM_STORED_SWAP_INTERVALS; i++)
+		esc_data.swap_intervals[i] = 0;
+	esc_data.swap_interval_sum = 0;
+
+	PIOS_ESC_SetDutyCycle(0);
 	PIOS_ADC_StartDma();
 	PIOS_ESC_SetMode(ESC_MODE_LOW_ON_PWM_HIGH);
 
@@ -310,16 +321,7 @@ static void go_esc_startup_enable(uint16_t time)
 static void go_esc_startup_grab(uint16_t time)
 {
 	// TODO: Set up a timeout for whole startup system
-
-	PIOS_ESC_SetState(0);
-	esc_data.current_speed = config.initial_startup_speed;
-	esc_data.duty_cycle = 0.08;
-	esc_data.consecutive_missed = 0;
-	esc_data.consecutive_detected = 0;
-	
-	for(uint8_t i = 0; i < NUM_STORED_SWAP_INTERVALS; i++)
-		esc_data.swap_intervals[i] = 0;
-	esc_data.swap_interval_sum = 0;
+	esc_data.duty_cycle = 0.10;
 	PIOS_ESC_SetDutyCycle(esc_data.duty_cycle);
 	esc_fsm_schedule_event(ESC_EVENT_COMMUTATED, 30000);  // Grab stator for 30 ms
 }
@@ -353,8 +355,8 @@ static void go_esc_startup_zcd(uint16_t time)
 	zcd(time);
 
 	// Since we aren't getting ZCD keep accelerating
-	if(esc_data.current_speed < config.final_startup_speed)
-		esc_data.current_speed+=0;
+//	if(esc_data.current_speed < config.final_startup_speed)
+//		esc_data.current_speed+=10;
 
 	esc_fsm_schedule_event(ESC_EVENT_COMMUTATED, RPM_TO_US(esc_data.current_speed) >> 1);
 
@@ -362,13 +364,13 @@ static void go_esc_startup_zcd(uint16_t time)
 	current_time = TIM4->CNT + RPM_TO_US(esc_data.current_speed) / 2;
 	diff_time = prev_time - current_time;
 	
-	if(esc_data.consecutive_detected > 100) {
+	if(esc_data.consecutive_detected > 20) {
 		esc_fsm_inject_event(ESC_EVENT_CLOSED, 0);
 	} else {
 		// Timing adjusted in entry function
 		// This should perform run a current control loop
 
-/*		float current_error = (config.startup_current_target - esc_data.current);
+		float current_error = (config.startup_current_target - esc_data.current);
 		current_error *= 0.00001;
 		esc_data.duty_cycle += current_error;
 
@@ -376,7 +378,7 @@ static void go_esc_startup_zcd(uint16_t time)
 			esc_data.duty_cycle = 0.01;
 		if(esc_data.duty_cycle > 0.4)
 			esc_data.duty_cycle = 0.4;
-		PIOS_ESC_SetDutyCycle(esc_data.duty_cycle); */
+		PIOS_ESC_SetDutyCycle(esc_data.duty_cycle);
 	}
 }
 
@@ -396,7 +398,7 @@ static void go_esc_startup_nozcd(uint16_t time)
 
 		// Since we aren't getting ZCD keep accelerating
 		if(esc_data.current_speed < config.final_startup_speed)
-			esc_data.current_speed+=5;
+			esc_data.current_speed+=10;
 
 		startup_schedules++;
 		
@@ -657,7 +659,20 @@ static void commutate()
 		esc_data.swap_intervals_pointer = 0;	
 	
 	esc_data.swap_interval_smoothed = esc_data.swap_interval_sum / NUM_STORED_SWAP_INTERVALS;
-	esc_data.current_speed = US_TO_RPM(esc_data.swap_interval_smoothed);
+	
+	// Only use swap interval for speed after starting up
+	switch(esc_data.state) {
+		case ESC_STATE_CL_START:
+		case ESC_STATE_CL_COMMUTATED:
+		case ESC_STATE_CL_NOZCD:
+		case ESC_STATE_CL_ZCD:
+			esc_data.current_speed = US_TO_RPM(esc_data.swap_interval_smoothed);
+			break;
+		default:
+//			if(esc_data.consecutive_detected > (NUM_STORED_SWAP_INTERVALS << 1))
+//				esc_data.current_speed = US_TO_RPM(esc_data.swap_interval_smoothed);
+			break;
+	}
 	
 	esc_data.detected = false;
 	commutations++;

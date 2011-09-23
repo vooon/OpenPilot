@@ -379,7 +379,9 @@ void DMA1_Channel1_IRQHandler(void)
 		else
 		   running_filter_length = filter_length[esc_data->current_speed >> 7];
 
-//		running_filter_length = esc_data->swap_interval_smoothed / divisor;
+		if(esc_data->current_speed > 4000)
+			running_filter_length = running_filter_length * 0.7;
+
 		if(running_filter_length >= MAX_RUNNING_FILTER)
 			running_filter_length = MAX_RUNNING_FILTER;
 			
@@ -427,15 +429,6 @@ void DMA1_Channel1_IRQHandler(void)
 		else
 			diff = ref - undriven;
 
-		// Compute moving average of derivative
-		int16_t deriv = diff - last_diff;
-		if(samples_averaged > 1)
-			deriv_filter_sum += deriv;
-		if(samples_averaged >= running_filter_length)
-			deriv_filter_sum -= deriv_filter[diff_filter_pointer];
-		deriv_filter[diff_filter_pointer] = deriv;
-		last_diff = diff;
-		
 		// Update running sum and history
 		running_filter_sum += diff;
 		// To avoid having to wipe the filter each commutation
