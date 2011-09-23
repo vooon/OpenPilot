@@ -31,8 +31,6 @@
 #include "fifo_buffer.h"
 #include <pios_stm32.h>
 
-#define CURRENT_LIMIT 1210
-
 //TODO: Check the ADC buffer pointer and make sure it isn't dropping swaps
 //TODO: Check the time commutation is being scheduled, make sure it's the future
 //TODO: Slave two timers together so in phase
@@ -309,8 +307,8 @@ static const int32_t filter_length[] = {
 	2, // ... 17920
 	1,
 };	
-	
-
+int32_t time_diff;
+extern struct esc_config config;
 void DMA1_Channel1_IRQHandler(void)
 {	
 	static enum pios_esc_state prev_state = ESC_STATE_AB;
@@ -347,9 +345,6 @@ void DMA1_Channel1_IRQHandler(void)
 	if(back_buf_point >= (NELEMENTS(back_buf)-3))
 #endif
 
-	if( PIOS_DELAY_DiffuS(esc_data->last_swap_time) < DEMAG_BLANKING )
-		return;
-	
 	// Smooth the estimate of current a bit 	
 	current_filter_sum += raw_buf[0];
 	current_filter_sum -= current_filter[current_filter_pointer];
@@ -364,10 +359,9 @@ void DMA1_Channel1_IRQHandler(void)
 #endif
 
 
-	if(esc_data->current > CURRENT_LIMIT)
+	if(esc_data->current > config.hard_current_limit)
 		esc_fsm_inject_event(ESC_EVENT_OVERCURRENT, 0);
-
-	   
+		   
 	// If detected this commutation don't bother here
 	if(curr_state == prev_state && esc_data->detected)
 	   return;
@@ -432,12 +426,23 @@ void DMA1_Channel1_IRQHandler(void)
 			diff = undriven - ref;
 		else
 			diff = ref - undriven;
+
+		// Compute moving average of derivative
+		int16_t deriv = diff - last_diff;
+		if(samples_averaged > 1)
+			deriv_filter_sum += deriv;
+		if(samples_averaged >= running_filter_length)
+			deriv_filter_sum -= deriv_filter[diff_filter_pointer];
+		deriv_filter[diff_filter_pointer] = deriv;
+		last_diff = diff;
 		
 		// Update running sum and history
 		running_filter_sum += diff;
 		// To avoid having to wipe the filter each commutation
 		if(samples_averaged >= running_filter_length)
 			running_filter_sum -= diff_filter[diff_filter_pointer];
+		else
+			running_filter_sum -= 0;
 		diff_filter[diff_filter_pointer] = diff;
 		diff_filter_pointer++;
 		if(diff_filter_pointer >= running_filter_length)

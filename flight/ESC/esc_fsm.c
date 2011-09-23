@@ -22,7 +22,7 @@
 // 6. Freehweeling mode for when a ZCD is missed
 
 // To act like a normal open loop ESC
-//#define OPEN_LOOP
+#define OPEN_LOOP
 
 //#define RPM_TO_US(x) (1e6 * 60 / (x * COMMUTATIONS_PER_ROT) )
 #define RPM_TO_US(x) (1428571 / x)
@@ -37,9 +37,9 @@ struct esc_config config = {
 	.kff2 = -0.05,
 	.ilim = 0.5,
 	.max_dc_change = 2,
-	.min_dc = 0.00,
+	.min_dc = 0.01,
 	.max_dc = 0.90,
-	.initial_startup_speed = 40,
+	.initial_startup_speed = 100,
 	.final_startup_speed = 700,
 	.startup_current_target = 30,
 	.commutation_phase = 7,
@@ -313,7 +313,7 @@ static void go_esc_startup_grab(uint16_t time)
 
 	PIOS_ESC_SetState(0);
 	esc_data.current_speed = config.initial_startup_speed;
-	esc_data.duty_cycle = 0.12;
+	esc_data.duty_cycle = 0.08;
 	esc_data.consecutive_missed = 0;
 	esc_data.consecutive_detected = 0;
 	
@@ -356,18 +356,13 @@ static void go_esc_startup_zcd(uint16_t time)
 	if(esc_data.current_speed < config.final_startup_speed)
 		esc_data.current_speed+=0;
 
-	// Schedule next commutation but only if the last ZCD was near where we expected.  Essentially
-	// this is dealing with a startup condition where noise will cause the ZCD to detect early, and
-	// then drive the speed up and make this happen really quickly and trigger a stall.  It can be
-	// neglected entirely but doing this makes it startup faster by phasing itself.
-	if(abs(esc_data.last_zcd_time - RPM_TO_US(esc_data.current_speed)) < 250)
-		esc_fsm_schedule_event(ESC_EVENT_COMMUTATED, RPM_TO_US(esc_data.current_speed) / 2);
+	esc_fsm_schedule_event(ESC_EVENT_COMMUTATED, RPM_TO_US(esc_data.current_speed) >> 1);
 
 	prev_time = TIM4->CCR1;
 	current_time = TIM4->CNT + RPM_TO_US(esc_data.current_speed) / 2;
 	diff_time = prev_time - current_time;
 	
-	if(esc_data.consecutive_detected > 10) {
+	if(esc_data.consecutive_detected > 100) {
 		esc_fsm_inject_event(ESC_EVENT_CLOSED, 0);
 	} else {
 		// Timing adjusted in entry function
@@ -441,7 +436,7 @@ static void go_esc_cl_commutated(uint16_t time)
 {
 	uint32_t timeval = PIOS_DELAY_GetRaw();
 	commutate();
-	esc_fsm_schedule_event(ESC_EVENT_TIMEOUT, esc_data.swap_interval_smoothed << 1);
+	esc_fsm_schedule_event(ESC_EVENT_TIMEOUT, esc_data.swap_interval_smoothed);
 //	esc_data.Kv += (esc_data.current_speed / (12 * esc_data.duty_cycle) - esc_data.Kv) * 0.001;
 	commutation_time = PIOS_DELAY_DiffuS(timeval);
 }
@@ -516,10 +511,10 @@ static void go_esc_cl_nozcd(uint16_t time)
 {
 	esc_data.consecutive_detected = 0;
 	esc_data.consecutive_missed++;
-	if(esc_data.consecutive_missed > 10000)
+	if(esc_data.consecutive_missed > 50)
 		esc_fsm_inject_event(ESC_EVENT_FAULT, 0);
 	else {
-//		PIOS_ESC_SetDutyCycle(esc_data.duty_cycle / 10);
+		PIOS_ESC_SetDutyCycle(0);
 		esc_fsm_inject_event(ESC_EVENT_COMMUTATED, 0);
 	}
 	esc_data.total_missed++;
