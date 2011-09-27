@@ -36,7 +36,7 @@ struct esc_config config = {
 	.kff = 1.3e-4,
 	.kff2 = -0.05,
 	.ilim = 0.5,
-	.max_dc_change = 0.2 * PIOS_ESC_MAX_DUTYCYCLE,
+	.max_dc_change = 0.02 * PIOS_ESC_MAX_DUTYCYCLE,
 	.min_dc = 0,
 	.max_dc = 0.90 * PIOS_ESC_MAX_DUTYCYCLE,
 	.initial_startup_speed = 100,
@@ -325,7 +325,7 @@ static void go_esc_startup_enable(uint16_t time)
 static void go_esc_startup_grab(uint16_t time)
 {
 	// TODO: Set up a timeout for whole startup system
-	esc_data.duty_cycle = 0.10 * PIOS_ESC_MAX_DUTYCYCLE;
+	esc_data.duty_cycle = 0.07 * PIOS_ESC_MAX_DUTYCYCLE;
 	PIOS_ESC_SetDutyCycle(esc_data.duty_cycle);
 	esc_fsm_schedule_event(ESC_EVENT_COMMUTATED, 30000);  // Grab stator for 30 ms
 }
