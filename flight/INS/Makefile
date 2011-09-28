@@ -1,26 +1,26 @@
- #####
- # Project: OpenPilot INS
- #
- #
- # Makefile for OpenPilot INS project
- #
- # The OpenPilot Team, http://www.openpilot.org, Copyright (C) 2011.
- #
- #
- # This program is free software; you can redistribute it and/or modify
- # it under the terms of the GNU General Public License as published by
- # the Free Software Foundation; either version 3 of the License, or
- # (at your option) any later version.
- #
- # This program is distributed in the hope that it will be useful, but
- # WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- # or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
- # for more details.
- #
- # You should have received a copy of the GNU General Public License along
- # with this program; if not, write to the Free Software Foundation, Inc.,
- # 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- #####
+#####
+# Project: OpenPilot INS
+#
+#
+# Makefile for OpenPilot INS project
+#
+# The OpenPilot Team, http://www.openpilot.org, Copyright (C) 2009.
+#
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+#####
 
 WHEREAMI := $(dir $(lastword $(MAKEFILE_LIST)))
 TOP      := $(realpath $(WHEREAMI)/../../)
@@ -35,7 +35,7 @@ OUTDIR := $(TOP)/build/$(TARGET)
 
 # Set developer code and compile options
 # Set to YES for debugging
-DEBUG ?= YES
+DEBUG ?= NO
 
 # Set to YES when using Code Sourcery toolchain
 CODE_SOURCERY ?= YES
@@ -55,13 +55,12 @@ PIOS = ../PiOS
 PIOSINC = $(PIOS)/inc
 FLIGHTLIB = ../Libraries
 FLIGHTLIBINC = ../Libraries/inc
-PIOSSTM32F10X = $(PIOS)/STM32F10x
+PIOSSTM32F2XX = $(PIOS)/STM32F2xx
 PIOSCOMMON = $(PIOS)/Common
 PIOSBOARDS = $(PIOS)/Boards
-APPLIBDIR = $(PIOSSTM32F10X)/Libraries
+APPLIBDIR = $(PIOSSTM32F2XX)/Libraries
 STMLIBDIR = $(APPLIBDIR)
-STMSPDDIR = $(STMLIBDIR)/STM32F10x_StdPeriph_Driver
-STMUSBDIR = $(STMLIBDIR)/STM32_USB-FS-Device_Driver
+STMSPDDIR = $(STMLIBDIR)/STM32F2xx_StdPeriph_Driver
 STMSPDSRCDIR = $(STMSPDDIR)/src
 STMSPDINCDIR = $(STMSPDDIR)/inc
 CMSISDIR  = $(STMLIBDIR)/CMSIS/Core/CM3
@@ -80,59 +79,61 @@ OPUAVSYNTHDIR = $(OUTDIR)/../uavobject-synthetics/flight
 ## INS:
 SRC = ins.c
 SRC += pios_board.c
-#SRC += ins_timer.c
-#SRC += insgps13state.c
+SRC += insgps13state.c
+SRC += insgps_helper.c
+SRC += $(FLIGHTLIB)/CoordinateConversions.c
 SRC += $(FLIGHTLIB)/fifo_buffer.c
-#SRC += $(FLIGHTLIB)/ins_spi_comm.c
-#SRC += $(FLIGHTLIB)/ins_comm_objects.c
-#SRC += $(FLIGHTLIB)/CoordinateConversions.c
-#SRC += $(BOOT)/ins_spi_program_slave.c
-#SRC += $(BOOT)/ins_slave_test.c
-#SRC += $(BOOT)/ins_spi_program.c
+SRC += $(FLIGHTLIB)/ahrs_spi_comm.c
+SRC += $(FLIGHTLIB)/ahrs_comm_objects.c
+SRC += $(FLIGHTLIB)/NMEA.c
+SRC += $(BOOT)/ahrs_spi_program_slave.c
+SRC += $(BOOT)/ahrs_slave_test.c
+SRC += $(BOOT)/ahrs_spi_program.c
 
-## PIOS Hardware (STM32F10x)
-SRC += $(PIOSSTM32F10X)/pios_sys.c
-SRC += $(PIOSSTM32F10X)/pios_led.c
-SRC += $(PIOSSTM32F10X)/pios_delay.c
-SRC += $(PIOSSTM32F10X)/pios_usart.c
-SRC += $(PIOSSTM32F10X)/pios_irq.c
-SRC += $(PIOSSTM32F10X)/pios_i2c.c
-SRC += $(PIOSSTM32F10X)/pios_debug.c
-SRC += $(PIOSSTM32F10X)/pios_gpio.c
-SRC += $(PIOSSTM32F10X)/pios_spi.c
-SRC += $(PIOSSTM32F10X)/pios_exti.c
+## PIOS Hardware (STM32F2xx)
+SRC += $(PIOSSTM32F2XX)/pios_sys.c
+SRC += $(PIOSSTM32F2XX)/pios_led.c
+SRC += $(PIOSSTM32F2XX)/pios_delay.c
+SRC += $(PIOSSTM32F2XX)/pios_usart.c
+SRC += $(PIOSSTM32F2XX)/pios_irq.c
+SRC += $(PIOSSTM32F2XX)/pios_i2c.c
+#SRC += $(PIOSSTM32F2XX)/pios_debug.c
+#SRC += $(PIOSSTM32F2XX)/pios_gpio.c
+SRC += $(PIOSSTM32F2XX)/pios_spi.c
+#SRC += $(PIOSSTM32F2XX)/pios_exti.c
+SRC += $(PIOSSTM32F2XX)/pios_iap.c
+SRC += $(PIOSSTM32F2XX)/pios_bma180.c
+SRC += $(PIOSSTM32F2XX)/pios_hmc5883.c
+SRC += $(PIOSSTM32F2XX)/pios_bmp085.c
+SRC += $(PIOSSTM32F2XX)/pios_imu3000.c
 
 ## PIOS Hardware (Common)
 SRC += $(PIOSCOMMON)/pios_com.c
 SRC += $(PIOSCOMMON)/printf-stdarg.c
-SRC += $(PIOSCOMMON)/pios_iap.c
-SRC += $(PIOSCOMMON)/pios_bma180.c
-SRC += $(PIOSCOMMON)/pios_hmc5883.c
-SRC += $(PIOSCOMMON)/pios_bmp085.c
-SRC += $(PIOSCOMMON)/pios_imu3000.c
+
+SRC += $(PIOSCOMMON)/pios_bl_helper.c
 
 ## CMSIS for STM32
 SRC += $(CMSISDIR)/core_cm3.c
-SRC += $(CMSISDIR)/system_stm32f10x.c
+SRC += $(CMSISDIR)/system_stm32f2xx.c
 
 ## Used parts of the STM-Library
-SRC += $(STMSPDSRCDIR)/stm32f10x_adc.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_bkp.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_crc.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_dac.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_dma.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_exti.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_flash.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_gpio.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_i2c.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_pwr.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_rcc.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_rtc.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_spi.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_tim.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_usart.c
+SRC += $(STMSPDSRCDIR)/stm32f2xx_adc.c
+SRC += $(STMSPDSRCDIR)/stm32f2xx_crc.c
+SRC += $(STMSPDSRCDIR)/stm32f2xx_dac.c
+SRC += $(STMSPDSRCDIR)/stm32f2xx_dma.c
+SRC += $(STMSPDSRCDIR)/stm32f2xx_exti.c
+SRC += $(STMSPDSRCDIR)/stm32f2xx_flash.c
+SRC += $(STMSPDSRCDIR)/stm32f2xx_gpio.c
+SRC += $(STMSPDSRCDIR)/stm32f2xx_i2c.c
+SRC += $(STMSPDSRCDIR)/stm32f2xx_pwr.c
+SRC += $(STMSPDSRCDIR)/stm32f2xx_rcc.c
+SRC += $(STMSPDSRCDIR)/stm32f2xx_rtc.c
+SRC += $(STMSPDSRCDIR)/stm32f2xx_spi.c
+SRC += $(STMSPDSRCDIR)/stm32f2xx_syscfg.c
+SRC += $(STMSPDSRCDIR)/stm32f2xx_tim.c
+SRC += $(STMSPDSRCDIR)/stm32f2xx_usart.c
 SRC += $(STMSPDSRCDIR)/misc.c
-
 # List C source files here which must be compiled in ARM-Mode (no -mthumb).
 # use file-extension c for "c-only"-files
 ## just for testing, timer.c could be compiled in thumb-mode too
@@ -154,7 +155,7 @@ CPPSRCARM =
 # Even though the DOS/Win* filesystem matches both .s and .S the same,
 # it will preserve the spelling of the filenames, and gcc itself does
 # care about how the name is spelled on its command-line.
-ASRC = $(PIOSSTM32F10X)/startup_stm32f10x_$(MODEL)$(MODEL_SUFFIX).S
+ASRC = $(PIOSSTM32F2XX)/startup_stm32f2xx.S
 
 # List Assembler source files here which must be assembled in ARM-Mode..
 ASRCARM =
@@ -164,7 +165,7 @@ ASRCARM =
 EXTRAINCDIRS  += $(PIOS)
 EXTRAINCDIRS  += $(PIOSINC)
 EXTRAINCDIRS  += $(FLIGHTLIBINC)
-EXTRAINCDIRS  += $(PIOSSTM32F10X)
+EXTRAINCDIRS  += $(PIOSSTM32F2XX)
 EXTRAINCDIRS  += $(PIOSCOMMON)
 EXTRAINCDIRS  += $(PIOSBOARDS)
 EXTRAINCDIRS  += $(STMSPDINCDIR)
@@ -188,18 +189,24 @@ EXTRA_LIBDIRS =
 EXTRA_LIBS =
 
 # Path to Linker-Scripts
-LINKERSCRIPTPATH = $(PIOSSTM32F10X)
+LINKERSCRIPTPATH = $(PIOSSTM32F2XX)
 
 # Optimization level, can be [0, 1, 2, 3, s].
 # 0 = turn off optimization. s = optimize for size.
 # (Note: 3 is not always the best optimization level. See avr-libc FAQ.)
 
 ifeq ($(DEBUG),YES)
-CFLAGS += -Os
+CFLAGS += -O0
 CFLAGS += -DGENERAL_COV
 else
 CFLAGS += -Os
 endif
+
+# This is not the best place for these.  Really should abstract out
+# to the board file or something
+CFLAGS += -DHSE_VALUE=$(OSCILLATOR_FREQ)
+CFLAGS += -DSTM32F2XX
+CFLAGS += -DMEM_SIZE=1024000000
 
 # Output format. (can be ihex or binary or both)
 #  binary to create a load-image in raw-binary format i.e. for SAM-BA,
@@ -216,7 +223,7 @@ DEBUGF = dwarf-2
 CDEFS = -DSTM32F10X_$(MODEL)
 CDEFS += -DUSE_STDPERIPH_DRIVER
 CDEFS += -DUSE_$(BOARD)
-CDEFS += -DIN_INS
+CDEFS += -DIN_AHRS
 
 # Place project-specific -D and/or -U options for
 # Assembler with preprocessor here.
@@ -243,13 +250,7 @@ CSTANDARD = -std=gnu99
 #
 # Flags for C and C++ (arm-elf-gcc/arm-elf-g++)
 
-
-ifeq ($(DEBUG),YES)
-CFLAGS += -g$(DEBUGF) #-DDEBUG
-else
 CFLAGS += -g$(DEBUGF)
-endif
-
 
 CFLAGS += -ffast-math
 
@@ -264,7 +265,7 @@ CFLAGS += -fpromote-loop-indices
 endif
 
 CFLAGS += -Wall
-#CFLAGS += -Werror
+CFLAGS += -Werror
 CFLAGS += -Wa,-adhlns=$(addprefix $(OUTDIR)/, $(notdir $(addsuffix .lst, $(basename $<))))
 # Compiler flags to generate dependency files:
 CFLAGS += -MD -MP -MF $(OUTDIR)/dep/$(@F).d
@@ -402,6 +403,7 @@ clean_list :
 	$(V1) $(REMOVE) $(OUTDIR)/$(TARGET).bin
 	$(V1) $(REMOVE) $(OUTDIR)/$(TARGET).sym
 	$(V1) $(REMOVE) $(OUTDIR)/$(TARGET).lss
+	$(V1) $(REMOVE) $(OUTDIR)/$(TARGET).bin.o
 	$(V1) $(REMOVE) $(ALLOBJ)
 	$(V1) $(REMOVE) $(LSTFILES)
 	$(V1) $(REMOVE) $(DEPFILES)

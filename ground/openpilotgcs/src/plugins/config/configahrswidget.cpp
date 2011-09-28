@@ -35,10 +35,14 @@
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QPushButton>
 #include <QThread>
+#include <QErrorMessage>
 #include <iostream>
 #include <Eigen/align-function.h>
 #include <QDesktopServices>
 #include <QUrl>
+#include <inssettings.h>
+#include <attituderaw.h>
+#include <homelocation.h>
 
 #include "assertions.h"
 #include "calibration.h"
@@ -46,7 +50,6 @@
 #define sign(x) ((x < 0) ? -1 : 1)
 
 const double ConfigAHRSWidget::maxVarValue = 0.1;
-const int ConfigAHRSWidget::calibrationDelay = 7; // Time to wait for the AHRS to do its calibration
 
 // *****************
 
@@ -202,31 +205,36 @@ ConfigAHRSWidget::ConfigAHRSWidget(QWidget *parent) : ConfigTaskWidget(parent)
     position = -1;
 
     // Fill the dropdown menus:
-    UAVObject *obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("AHRSSettings")));
-    UAVObjectField *field = obj->getField(QString("Algorithm"));
+    InsSettings * insSettings = InsSettings::GetInstance(getObjectManager());
+    Q_ASSERT(insSettings);
+    UAVObjectField *field = insSettings->getField(QString("Algorithm"));
+    Q_ASSERT(field);
     m_ahrs->algorithm->addItems(field->getOptions());
 
     // Register for Home Location state changes
-    obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("HomeLocation")));
-    connect(obj, SIGNAL(objectUpdated(UAVObject*)), this , SLOT(enableHomeLocSave(UAVObject*)));
+    HomeLocation * homeLocation = HomeLocation::GetInstance(getObjectManager());
+    Q_ASSERT(homeLocation);
+    connect(homeLocation, SIGNAL(objectUpdated(UAVObject*)), this , SLOT(enableHomeLocSave(UAVObject*)));
 
     // Don't enable multi-point calibration until HomeLocation is set.
-    m_ahrs->sixPointsStart->setEnabled(obj->getField("Set")->getValue().toBool());
+    HomeLocation::DataFields homeLocationData = homeLocation->getData();
+    m_ahrs->sixPointsStart->setEnabled(homeLocationData.Set == HomeLocation::SET_TRUE);
 
     // Connect the signals
-    connect(m_ahrs->ahrsCalibStart, SIGNAL(clicked()), this, SLOT(launchAHRSCalibration()));
+    connect(m_ahrs->ahrsCalibStart, SIGNAL(clicked()), this, SLOT(measureNoise()));
     connect(m_ahrs->accelBiasStart, SIGNAL(clicked()), this, SLOT(launchAccelBiasCalibration()));
 
-    obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("AHRSSettings")));
-    connect(obj, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(refreshValues()));
-    obj = getObjectManager()->getObject(QString("HomeLocation"));
-    connect(obj, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(refreshValues()));
+    connect(homeLocation, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(refreshValues()));
+    connect(insSettings, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(refreshValues()));
 
     connect(m_ahrs->ahrsSettingsSaveRAM, SIGNAL(clicked()), this, SLOT(ahrsSettingsSaveRAM()));
     connect(m_ahrs->ahrsSettingsSaveSD, SIGNAL(clicked()), this, SLOT(ahrsSettingsSaveSD()));
     connect(m_ahrs->sixPointsStart, SIGNAL(clicked()), this, SLOT(multiPointCalibrationMode()));
     connect(m_ahrs->sixPointsSave, SIGNAL(clicked()), this, SLOT(savePositionData()));
     connect(m_ahrs->startDriftCalib, SIGNAL(clicked()),this, SLOT(launchGyroDriftCalibration()));
+
+    // Leave this timer permanently connected.  The timer itself is started and stopped.
+    connect(&progressBarTimer, SIGNAL(timeout()), this, SLOT(incrementProgress()));
 
     // Order is important: 1st request the settings (it will also enable the controls)
     // then explicitely disable them. They will be re-enabled right afterwards by the
@@ -278,35 +286,29 @@ void ConfigAHRSWidget::launchAccelBiasCalibration()
     m_ahrs->accelBiasStart->setEnabled(false);
     m_ahrs->accelBiasProgress->setValue(0);
 
-    // Setup the AHRS to give us the right data at the right rate:
-    UAVDataObject* obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("AHRSSettings")));
-    UAVObjectField* field = obj->getField(QString("BiasCorrectedRaw"));
-    field->setValue("FALSE");
-    obj->updated();
+    InsSettings * insSettings = InsSettings::GetInstance(getObjectManager());
+    Q_ASSERT(insSettings);
+    InsSettings::DataFields insSettingsData = insSettings->getData();
+    insSettingsData.BiasCorrectedRaw = InsSettings::BIASCORRECTEDRAW_FALSE;
+    insSettings->setData(insSettingsData);
+    insSettings->updated();
 
     accel_accum_x.clear();
     accel_accum_y.clear();
     accel_accum_z.clear();
 
-//    UAVDataObject* ahrsCalib = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("AHRSCalibration")));
-//    ahrsCalib->getField("accel_bias")->setDouble(0,0);
-//    ahrsCalib->getField("accel_bias")->setDouble(0,1);
-//    ahrsCalib->getField("accel_bias")->setDouble(0,2);
-//    ahrsCalib->updated();
-
     /* Need to get as many AttitudeRaw updates as possible */
-    obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("AttitudeRaw")));
-    initialMdata = obj->getMetadata();
+    AttitudeRaw * attitudeRaw = AttitudeRaw::GetInstance(getObjectManager());
+    Q_ASSERT(attitudeRaw);
+    initialMdata = attitudeRaw->getMetadata();
     UAVObject::Metadata mdata = initialMdata;
     mdata.flightTelemetryUpdateMode = UAVObject::UPDATEMODE_PERIODIC;
     mdata.flightTelemetryUpdatePeriod = 100;
-    obj->setMetadata(mdata);
+    attitudeRaw->setMetadata(mdata);
 
     // Now connect to the attituderaw updates, gather for 100 samples
     collectingData = true;
-    obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("AttitudeRaw")));
-    connect(obj, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(accelBiasattitudeRawUpdated(UAVObject*)));
-
+    connect(attitudeRaw, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(accelBiasattitudeRawUpdated(UAVObject*)));
 }
 
 /**
@@ -314,47 +316,42 @@ void ConfigAHRSWidget::launchAccelBiasCalibration()
   */
 void ConfigAHRSWidget::accelBiasattitudeRawUpdated(UAVObject *obj)
 {
-	// TODO: THis one gets replaced with the multipoint calibratino below.
-    UAVObjectField *accel_field = obj->getField(QString("accels"));
-    Q_ASSERT(accel_field != 0);
+    Q_UNUSED(obj);
+
+    AttitudeRaw * attitudeRaw = AttitudeRaw::GetInstance(getObjectManager());
+    Q_ASSERT(attitudeRaw);
+    AttitudeRaw::DataFields attitudeRawData = attitudeRaw->getData();
 
     // This is necessary to prevent a race condition on disconnect signal and another update
     if (collectingData == true) {
-        accel_accum_x.append(accel_field->getValue(0).toDouble());
-        accel_accum_y.append(accel_field->getValue(1).toDouble());
-        accel_accum_z.append(accel_field->getValue(2).toDouble());
+        accel_accum_x.append(attitudeRawData.accels[InsSettings::ACCEL_BIAS_X]);
+        accel_accum_y.append(attitudeRawData.accels[InsSettings::ACCEL_BIAS_Y]);
+        accel_accum_z.append(attitudeRawData.accels[InsSettings::ACCEL_BIAS_Z]);
     }
 
     m_ahrs->accelBiasProgress->setValue(m_ahrs->accelBiasProgress->value()+1);
 
     if(accel_accum_x.size() >= 100 && collectingData == true) {
         collectingData = false;
-        disconnect(obj,SIGNAL(objectUpdated(UAVObject*)),this,SLOT(accelBiasattitudeRawUpdated(UAVObject*)));
+        disconnect(attitudeRaw,SIGNAL(objectUpdated(UAVObject*)),this,SLOT(accelBiasattitudeRawUpdated(UAVObject*)));
         m_ahrs->accelBiasStart->setEnabled(true);
 
-        UAVDataObject* ahrsCalib = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("AHRSCalibration")));
-        UAVObjectField* field = ahrsCalib->getField("accel_bias");
-        double xBias = field->getDouble(0)- listMean(accel_accum_x);
-        double yBias = field->getDouble(1) - listMean(accel_accum_y);
-        double zBias = -9.81 + field->getDouble(2) - listMean(accel_accum_z);
+        InsSettings * insSettings = InsSettings::GetInstance(getObjectManager());
+        Q_ASSERT(insSettings);
+        InsSettings::DataFields insSettingsData = insSettings->getData();
+        insSettingsData.BiasCorrectedRaw = InsSettings::BIASCORRECTEDRAW_TRUE;
 
-        field->setDouble(xBias,0);
-        field->setDouble(yBias,1);
-        field->setDouble(zBias,2);
+        insSettingsData.accel_bias[InsSettings::ACCEL_BIAS_X] -= listMean(accel_accum_x);
+        insSettingsData.accel_bias[InsSettings::ACCEL_BIAS_Y] -= listMean(accel_accum_y);
+        insSettingsData.accel_bias[InsSettings::ACCEL_BIAS_Z] -= 9.81 + listMean(accel_accum_z);
 
-        ahrsCalib->updated();
+        insSettings->setData(insSettingsData);
+        insSettings->updated();
 
-        getObjectManager()->getObject(QString("AttitudeRaw"))->setMetadata(initialMdata);
-
-        UAVDataObject* obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("AHRSSettings")));
-        field = obj->getField(QString("BiasCorrectedRaw"));
-        field->setValue("TRUE");
-        obj->updated();
+        attitudeRaw->setMetadata(initialMdata);
 
         saveAHRSCalibration();
-
     }
-
 }
 
 
@@ -498,80 +495,76 @@ void ConfigAHRSWidget::computeGyroDrift() {
 
 }
 
-
-
-
 /**
-  Launches the AHRS sensors calibration
+  Launches the INS sensors noise measurements
   */
-void ConfigAHRSWidget::launchAHRSCalibration()
+void ConfigAHRSWidget::measureNoise()
 {
+    if(collectingData) {
+        QErrorMessage err(this);
+        err.showMessage("Cannot start noise measurement as data already being gathered");
+        err.exec();
+        return;
+    }
     m_ahrs->calibInstructions->setText("Estimating sensor variance...");
     m_ahrs->ahrsCalibStart->setEnabled(false);
+    m_ahrs->calibProgress->setValue(0);
 
-    UAVObject *obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("AHRSCalibration")));
-    UAVObjectField *field = obj->getField(QString("measure_var"));
-    field->setValue("MEASURE");
-    obj->updated();
+    InsSettings * insSettings = InsSettings::GetInstance(getObjectManager());
+    InsSettings::DataFields insSettingsData = insSettings->getData();
+    algorithm = insSettingsData.Algorithm;
+    insSettingsData.Algorithm = InsSettings::ALGORITHM_CALIBRATION;
+    insSettings->setData(insSettingsData);
+    insSettings->updated();
+    collectingData = true;
 
-    QTimer::singleShot(calibrationDelay*1000, this, SLOT(calibPhase2()));
-    m_ahrs->calibProgress->setRange(0,calibrationDelay);
-    phaseCounter = 0;
-    progressBarIndex = 0;
-    connect(&progressBarTimer, SIGNAL(timeout()), this, SLOT(incrementProgress()));
-    progressBarTimer.start(1000);
+    connect(insSettings,SIGNAL(objectUpdated(UAVObject*)),this,SLOT(noiseMeasured()));
+    m_ahrs->calibProgress->setRange(0,calibrationDelay*10);
+    progressBarTimer.start(100);
 }
 
 /**
-  Increment progress bar
+  Increment progress bar for noise measurements (not really based on feedback)
   */
 void ConfigAHRSWidget::incrementProgress()
 {
-    m_ahrs->calibProgress->setValue(progressBarIndex++);
-    if (progressBarIndex > m_ahrs->calibProgress->maximum()) {
+    m_ahrs->calibProgress->setValue(m_ahrs->calibProgress->value()+1);
+    if (m_ahrs->calibProgress->value() >= m_ahrs->calibProgress->maximum()) {
         progressBarTimer.stop();
-        progressBarIndex = 0;
+
+        InsSettings * insSettings = InsSettings::GetInstance(getObjectManager());
+        Q_ASSERT(insSettings);
+        disconnect(insSettings, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(noiseMeasured()));
+        collectingData = false;
+
+        QErrorMessage err(this);
+        err.showMessage("Noise measurement timed out.  State undetermined.  Please power cycle.");
+        err.exec();
     }
 }
 
-
 /**
-  Callback once calibration is done on the board.
-
-  Currently we don't have a way to tell if calibration is finished, so we
-  have to use a timer.
-
-  calibPhase2 is also connected to the AHRSCalibration object update signal.
-
-
+  *@brief Callback once calibration is done on the board.  Restores the original algorithm.
   */
-void ConfigAHRSWidget::calibPhase2()
+void ConfigAHRSWidget::noiseMeasured()
 {
+    Q_ASSERT(collectingData); // Let's catch any race conditions
 
-    UAVObject *obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("AHRSCalibration")));
-//    UAVObjectField *field = obj->getField(QString("measure_var"));
+    // Do all the clean stopping stuff
+    InsSettings * insSettings = InsSettings::GetInstance(getObjectManager());
+    Q_ASSERT(insSettings);
+    disconnect(insSettings, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(noiseMeasured()));
+    collectingData = false;
+    progressBarTimer.stop();
+    m_ahrs->calibProgress->setValue(m_ahrs->calibProgress->maximum());
 
-    //  This is a bit weird, but it is because we are expecting an update from the
-      // OP board with the correct calibration values, and those only arrive on the object update
-      // which comes back from the board, and not the first object update signal which is in fast
-      // the object update we did ourselves... Clear ?
-      switch (phaseCounter) {
-      case 0:
-          phaseCounter++;
-          m_ahrs->calibInstructions->setText("Getting results...");
-          connect(obj, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(calibPhase2()));
-          //  We need to echo back the results of calibration before changing to set mode
-          obj->requestUpdate();
-          break;
-      case 1:  // This is the update with the right values (coming from the board)
-          disconnect(obj, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(calibPhase2()));
-          // Now update size of all the graphs
-          drawVariancesGraph();
-          saveAHRSCalibration();
-          m_ahrs->calibInstructions->setText(QString("Calibration saved."));
-          m_ahrs->ahrsCalibStart->setEnabled(true);
-          break;
-      }
+    InsSettings::DataFields insSettingsData = insSettings->getData();
+    insSettingsData.Algorithm = algorithm;
+    insSettings->setData(insSettingsData);
+    insSettings->updated();
+
+    m_ahrs->calibInstructions->setText(QString("Calibration complete."));
+    m_ahrs->ahrsCalibStart->setEnabled(true);
 }
 
 /**
@@ -579,11 +572,8 @@ void ConfigAHRSWidget::calibPhase2()
   */
 void ConfigAHRSWidget::saveAHRSCalibration()
 {
-    UAVObject *obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("AHRSCalibration")));
-    UAVObjectField *field = obj->getField(QString("measure_var"));
-    field->setValue("SET");
-    obj->updated();
-    saveObjectToSD(obj);
+    InsSettings * insSettings = InsSettings::GetInstance(getObjectManager());
+    saveObjectToSD(insSettings);
 }
 
 FORCE_ALIGN_FUNC
@@ -1114,37 +1104,33 @@ void ConfigAHRSWidget::displayPlane(QString elementID)
   */
 void ConfigAHRSWidget::drawVariancesGraph()
 {
-    UAVObject *obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("AHRSCalibration")));
-    // Now update size of all the graphs
-    // I have not found a way to do this elegantly...
-    UAVObjectField *field = obj->getField(QString("accel_var"));
+    InsSettings * insSettings = InsSettings::GetInstance(getObjectManager());
+    Q_ASSERT(insSettings);
+    InsSettings::DataFields insSettingsData = insSettings->getData();
+
     // The expected range is from 1E-6 to 1E-1
     double steps = 6; // 6 bars on the graph
-    float accel_x_var = -1/steps*(1+steps+log10(field->getValue(0).toFloat()));
+    float accel_x_var = -1/steps*(1+steps+log10(insSettingsData.accel_var[InsSettings::ACCEL_VAR_X]));
     accel_x->setTransform(QTransform::fromScale(1,accel_x_var),false);
-    float accel_y_var = -1/steps*(1+steps+log10(field->getValue(1).toFloat()));
+    float accel_y_var = -1/steps*(1+steps+log10(insSettingsData.accel_var[InsSettings::ACCEL_VAR_Y]));
     accel_y->setTransform(QTransform::fromScale(1,accel_y_var),false);
-    float accel_z_var = -1/steps*(1+steps+log10(field->getValue(2).toFloat()));
+    float accel_z_var = -1/steps*(1+steps+log10(insSettingsData.accel_var[InsSettings::ACCEL_VAR_Z]));
     accel_z->setTransform(QTransform::fromScale(1,accel_z_var),false);
 
-    field = obj->getField(QString("gyro_var"));
-    float gyro_x_var = -1/steps*(1+steps+log10(field->getValue(0).toFloat()));
+    float gyro_x_var = -1/steps*(1+steps+log10(insSettingsData.gyro_var[InsSettings::GYRO_VAR_X]));
     gyro_x->setTransform(QTransform::fromScale(1,gyro_x_var),false);
-    float gyro_y_var = -1/steps*(1+steps+log10(field->getValue(1).toFloat()));
+    float gyro_y_var = -1/steps*(1+steps+log10(insSettingsData.gyro_var[InsSettings::GYRO_VAR_Y]));
     gyro_y->setTransform(QTransform::fromScale(1,gyro_y_var),false);
-    float gyro_z_var = -1/steps*(1+steps+log10(field->getValue(2).toFloat()));
+    float gyro_z_var = -1/steps*(1+steps+log10(insSettingsData.gyro_var[InsSettings::GYRO_VAR_Z]));
     gyro_z->setTransform(QTransform::fromScale(1,gyro_z_var),false);
 
     // Scale by 1e-3 because mag vars are much higher.
-    // TODO: Really?  This is the scale factor from mG to T
-    field = obj->getField(QString("mag_var"));
-    float mag_x_var = -1/steps*(1+steps+log10(1e-3*field->getValue(0).toFloat()));
+    float mag_x_var = -1/steps*(1+steps+log10(1e-3*insSettingsData.mag_var[InsSettings::MAG_VAR_X]));
     mag_x->setTransform(QTransform::fromScale(1,mag_x_var),false);
-    float mag_y_var = -1/steps*(1+steps+log10(1e-3*field->getValue(1).toFloat()));
+    float mag_y_var = -1/steps*(1+steps+log10(1e-3*insSettingsData.mag_var[InsSettings::MAG_VAR_Y]));
     mag_y->setTransform(QTransform::fromScale(1,mag_y_var),false);
-    float mag_z_var = -1/steps*(1+steps+log10(1e-3*field->getValue(2).toFloat()));
+    float mag_z_var = -1/steps*(1+steps+log10(1e-3*insSettingsData.mag_var[InsSettings::MAG_VAR_Z]));
     mag_z->setTransform(QTransform::fromScale(1,mag_z_var),false);
-
 }
 
 /**
@@ -1152,17 +1138,16 @@ void ConfigAHRSWidget::drawVariancesGraph()
   */
 void ConfigAHRSWidget::refreshValues()
 {
-
-    UAVObject *obj = getObjectManager()->getObject(QString("AHRSSettings"));
-    UAVObjectField *field = obj->getField(QString("Algorithm"));
-    if (field)
-        m_ahrs->algorithm->setCurrentIndex(m_ahrs->algorithm->findText(field->getValue().toString()));
+    InsSettings * insSettings = InsSettings::GetInstance(getObjectManager());
+    Q_ASSERT(insSettings);
+    InsSettings::DataFields insSettingsData = insSettings->getData();
+    m_ahrs->algorithm->setCurrentIndex(insSettingsData.Algorithm);
     drawVariancesGraph();
 
-    obj = getObjectManager()->getObject(QString("HomeLocation"));
-    field = obj->getField(QString("Set"));
-    if (field)
-        m_ahrs->homeLocationSet->setEnabled(field->getValue().toBool());
+    HomeLocation * homeLocation = HomeLocation::GetInstance(getObjectManager());
+    Q_ASSERT(homeLocation);
+    HomeLocation::DataFields homeLocationData = homeLocation->getData();
+    m_ahrs->homeLocationSet->setEnabled(homeLocationData.Set == HomeLocation::SET_TRUE);
 
     m_ahrs->ahrsCalibStart->setEnabled(true);
     m_ahrs->sixPointsStart->setEnabled(true);
@@ -1170,7 +1155,6 @@ void ConfigAHRSWidget::refreshValues()
     m_ahrs->startDriftCalib->setEnabled(true);
 
     m_ahrs->calibInstructions->setText(QString("Press \"Start\" above to calibrate."));
-
 }
 
 /**
@@ -1192,18 +1176,20 @@ void ConfigAHRSWidget::enableHomeLocSave(UAVObject * obj)
   */
 void ConfigAHRSWidget::ahrsSettingsSaveRAM()
 {
-    UAVDataObject *obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("AHRSSettings")));
-    UAVObjectField *field = obj->getField(QString("Algorithm"));
-    field->setValue(m_ahrs->algorithm->currentText());
-    obj->updated();
-    obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("HomeLocation")));
-    field = obj->getField(QString("Set"));
-    if (m_ahrs->homeLocationSet->isChecked())
-        field->setValue(QString("TRUE"));
-    else
-        field->setValue(QString("FALSE"));
-    obj->updated();
+    InsSettings * insSettings = InsSettings::GetInstance(getObjectManager());
+    Q_ASSERT(insSettings);
+    InsSettings::DataFields insSettingsData = insSettings->getData();
+    insSettingsData.Algorithm = m_ahrs->algorithm->currentIndex();
+    insSettings->setData(insSettingsData);
+    insSettings->updated();
 
+    HomeLocation * homeLocation = HomeLocation::GetInstance(getObjectManager());
+    Q_ASSERT(homeLocation);
+    HomeLocation::DataFields homeLocationData = homeLocation->getData();
+    homeLocationData.Set = m_ahrs->homeLocationSet->isChecked() ?
+                HomeLocation::SET_TRUE : HomeLocation::SET_FALSE;
+    homeLocation->setData(homeLocationData);
+    homeLocation->updated();
 }
 
 /**
@@ -1212,16 +1198,18 @@ Save AHRS Settings and home location to SD
 void ConfigAHRSWidget::ahrsSettingsSaveSD()
 {
     ahrsSettingsSaveRAM();
-    UAVDataObject *obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("HomeLocation")));
-    saveObjectToSD(obj);
-    obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("AHRSSettings")));
-    saveObjectToSD(obj);
 
+    InsSettings * insSettings = InsSettings::GetInstance(getObjectManager());
+    Q_ASSERT(insSettings);
+    saveObjectToSD(insSettings);
+
+    HomeLocation * homeLocation = HomeLocation::GetInstance(getObjectManager());
+    Q_ASSERT(homeLocation);
+    saveObjectToSD(homeLocation);
 }
 
 void ConfigAHRSWidget::openHelp()
 {
-
     QDesktopServices::openUrl( QUrl("http://wiki.openpilot.org/display/Doc/INS+Configuration", QUrl::StrictMode) );
 }
 

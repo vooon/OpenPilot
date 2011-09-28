@@ -1,28 +1,4 @@
-/**
- ******************************************************************************
- *
- * @file       link_STM3210E_INS_HD_NB.ld   
- * @author     David "Buzz" Carlson (buzz@chebuzz.com)
- * 				The OpenPilot Team, http://www.openpilot.org Copyright (C) 2011. 
- * @brief      PiOS linker for the OpenPilot INS board
- * @see        The GNU Public License (GPL) Version 3
- *
- *****************************************************************************/
-/* 
- * This program is free software; you can redistribute it and/or modify 
- * it under the terms of the GNU General Public License as published by 
- * the Free Software Foundation; either version 3 of the License, or 
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License 
- * for more details.
- * 
- * You should have received a copy of the GNU General Public License along 
- * with this program; if not, write to the Free Software Foundation, Inc., 
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+_estack = 0x20004FF0;
 
 /* This is the size of the stack for early init and for all FreeRTOS IRQs */
 _irq_stack_size = 0x400;
@@ -184,19 +160,18 @@ PROVIDE ( SysTick         = (SCS_BASE + 0x0010) ) ;
 PROVIDE ( NVIC            = (SCS_BASE + 0x0100) ) ;
 PROVIDE ( SCB             = (SCS_BASE + 0x0D00) ) ;
 
-PROVIDE(pios_board_info_blob = ORIGIN(BD_INFO));
 
 /* Sections Definitions */
 
 SECTIONS
 {
+     
     /* for Cortex devices, the beginning of the startup code is stored in the .isr_vector section, which goes to FLASH */
     .isr_vector :
     {
-        PROVIDE (pios_isr_vector_table_base = .);
         KEEP(*(.isr_vector))            /* Startup code */
         . = ALIGN(4);
-    } > FLASH
+    } >FLASH
 
     /* for some STRx devices, the beginning of the startup code is stored in the .flashtext section, which goes to FLASH */
     .flashtext :
@@ -204,8 +179,9 @@ SECTIONS
         . = ALIGN(4);
         *(.flashtext)            /* Startup code */
         . = ALIGN(4);
-    } > FLASH
+    } >FLASH
  
+
 
     /* the program code is stored in the .text section, which goes to Flash */
     .text :
@@ -223,7 +199,7 @@ SECTIONS
          _etext = .;
             /* This is used by the startup in order to initialize the .data secion */
          _sidata = _etext;
-    } > FLASH
+    } >FLASH
     
 
     /* 
@@ -240,7 +216,6 @@ SECTIONS
          . = . + _irq_stack_size ;
          . = ALIGN(4);
          _irq_stack_top = . - 4 ;
-         _init_stack_top = _irq_stack_top;
          . = ALIGN(4);
     } >RAM
 	

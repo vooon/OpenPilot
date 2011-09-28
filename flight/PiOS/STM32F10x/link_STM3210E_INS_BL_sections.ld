@@ -1,34 +1,8 @@
-/**
- ******************************************************************************
- *
- * @file       link_STM3210E_INS_HD_NB.ld   
- * @author     David "Buzz" Carlson (buzz@chebuzz.com)
- * 				The OpenPilot Team, http://www.openpilot.org Copyright (C) 2011. 
- * @brief      PiOS linker for the OpenPilot INS board
- * @see        The GNU Public License (GPL) Version 3
- *
- *****************************************************************************/
-/* 
- * This program is free software; you can redistribute it and/or modify 
- * it under the terms of the GNU General Public License as published by 
- * the Free Software Foundation; either version 3 of the License, or 
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License 
- * for more details.
- * 
- * You should have received a copy of the GNU General Public License along 
- * with this program; if not, write to the Free Software Foundation, Inc., 
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
-
 /* This is the size of the stack for early init and for all FreeRTOS IRQs */
 _irq_stack_size = 0x400;
 
 /* Check valid alignment for VTOR */
-ASSERT(ORIGIN(BL_FLASH) == ALIGN(ORIGIN(BL_FLASH), 0x80), "Start of memory region flash not aligned for startup vector table");
+ASSERT(ORIGIN(FLASH) == ALIGN(ORIGIN(FLASH), 0x80), "Start of memory region flash not aligned for startup vector table");
 
 /*
 this sends all unreferenced IRQHandlers to reset
@@ -47,10 +21,10 @@ PROVIDE (   HardFault_Handler = 0 ) ;
 PROVIDE (   MemManage_Handler = 0 ) ;
 PROVIDE (   BusFault_Handler = 0 ) ;
 PROVIDE (   UsageFault_Handler = 0 ) ;
-PROVIDE (   SVC_Handler = 0 ) ;
+PROVIDE (   vPortSVCHandler = 0 ) ;
 PROVIDE (   DebugMon_Handler = 0 ) ;
-PROVIDE (   PendSV_Handler = 0 ) ;
-PROVIDE (   SysTick_Handler = 0 ) ;
+PROVIDE (   xPortPendSVHandler = 0 ) ;
+PROVIDE (   xPortSysTickHandler = 0 ) ;
 
 PROVIDE (   WWDG_IRQHandler = 0 ) ;
 PROVIDE (   PVD_IRQHandler = 0 ) ;
@@ -193,7 +167,6 @@ SECTIONS
     /* for Cortex devices, the beginning of the startup code is stored in the .isr_vector section, which goes to FLASH */
     .isr_vector :
     {
-        PROVIDE (pios_isr_vector_table_base = .);
         KEEP(*(.isr_vector))            /* Startup code */
         . = ALIGN(4);
     } > BL_FLASH
@@ -330,13 +303,6 @@ SECTIONS
     __exidx_start = .;
     __exidx_end = .;
     
-    .boardinfo :
-    {
-	. = ALIGN(4);
-	KEEP(*(.boardinfo))
-	. = ALIGN(4);
-    } > BD_INFO
-
     /* after that it's only debugging information. */
     
     /* remove the debugging information from the standard libraries */

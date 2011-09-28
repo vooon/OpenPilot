@@ -170,24 +170,6 @@ void PIOS_ADC_Config(uint32_t oversampling)
 }
 
 /**
- * @brief Stop the DMA engine and consequently the interrupts
- */
-void PIOS_ADC_StopDma()
-{
-	DMA_ITConfig(pios_adc_devs[0].cfg->dma.rx.channel, DMA_IT_TC, DISABLE);
-        DMA_ITConfig(pios_adc_devs[0].cfg->dma.rx.channel, DMA_IT_HT, DISABLE);
-}
-
-/**
- * @brief Start the DMA engine and consequently the interrupts
- */
-void PIOS_ADC_StartDma()
-{
-	DMA_ITConfig(pios_adc_devs[0].cfg->dma.rx.channel, DMA_IT_TC, ENABLE);
-        DMA_ITConfig(pios_adc_devs[0].cfg->dma.rx.channel, DMA_IT_HT, ENABLE);
-}
-
-/**
  * Returns value of an ADC Pin
  * \param[in] pin number
  * \return ADC pin value - resolution depends on the selected oversampling rate
@@ -201,10 +183,7 @@ int32_t PIOS_ADC_PinGet(uint32_t pin)
 	}
 	
 	/* Return last conversion result */
-	if(pios_adc_devs[0].cfg->compute_downsample)
-		return pios_adc_devs[0].downsampled_buffer[pin];
-	else
-		return pios_adc_devs[0].valid_data_buffer[pin];
+	return pios_adc_devs[0].downsampled_buffer[pin];
 }
 
 /**
@@ -270,27 +249,25 @@ void PIOS_ADC_SetFIRCoefficients(float * new_filter)
  */ 
 void PIOS_ADC_downsample_data()
 {
-	if(pios_adc_devs[0].cfg->compute_downsample) {
-		uint16_t chan;
-		uint16_t sample;
-		float * downsampled_buffer = &pios_adc_devs[0].downsampled_buffer[0];
-		
-		for (chan = 0; chan < PIOS_ADC_NUM_CHANNELS; chan++) {
-			int32_t sum = 0;
-			for (sample = 0; sample < pios_adc_devs[0].adc_oversample; sample++) {
-				sum += pios_adc_devs[0].valid_data_buffer[chan + sample * pios_adc_devs[0].dma_block_size] * pios_adc_devs[0].fir_coeffs[sample];
-			}
-			downsampled_buffer[chan] = (float) sum / pios_adc_devs[0].fir_coeffs[pios_adc_devs[0].adc_oversample];
-		} 
-		
-#if defined(PIOS_INCLUDE_FREERTOS)
-		if(pios_adc_devs[0].data_queue) {
-			static portBASE_TYPE xHigherPriorityTaskWoken;
-			xQueueSendFromISR(pios_adc_devs[0].data_queue, pios_adc_devs[0].downsampled_buffer, &xHigherPriorityTaskWoken);
-			portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);		
+	uint16_t chan;
+	uint16_t sample;
+	float * downsampled_buffer = &pios_adc_devs[0].downsampled_buffer[0];
+	
+	for (chan = 0; chan < PIOS_ADC_NUM_CHANNELS; chan++) {
+		int32_t sum = 0;
+		for (sample = 0; sample < pios_adc_devs[0].adc_oversample; sample++) {
+			sum += pios_adc_devs[0].valid_data_buffer[chan + sample * pios_adc_devs[0].dma_block_size] * pios_adc_devs[0].fir_coeffs[sample];
 		}
-#endif
+		downsampled_buffer[chan] = (float) sum / pios_adc_devs[0].fir_coeffs[pios_adc_devs[0].adc_oversample];
 	}
+	
+#if defined(PIOS_INCLUDE_FREERTOS)
+	if(pios_adc_devs[0].data_queue) {
+		static portBASE_TYPE xHigherPriorityTaskWoken;
+		xQueueSendFromISR(pios_adc_devs[0].data_queue, pios_adc_devs[0].downsampled_buffer, &xHigherPriorityTaskWoken);
+		portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);		
+	}
+#endif
 	if(pios_adc_devs[0].callback_function)
 		pios_adc_devs[0].callback_function(pios_adc_devs[0].downsampled_buffer);
 }

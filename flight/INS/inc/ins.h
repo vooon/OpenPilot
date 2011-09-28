@@ -57,28 +57,20 @@ struct mag_sensor {
 //! Contains the data from the accelerometer
 struct accel_sensor {
 	struct {
-		uint16_t x;
-		uint16_t y;
-		uint16_t z;
-	} raw;
-	struct {
 		float x;
 		float y;
 		float z;
 	} filtered;
 	struct {
-		float scale[3][4];
+		float bias[3];
+		float scale[3];
 		float variance[3];
 	} calibration;
+	float temperature;
 };
 
 //! Contains the data from the gyro
 struct gyro_sensor {
-	struct {
-		uint16_t x;
-		uint16_t y;
-		uint16_t z;
-	} raw;
 	struct {
 		float x;
 		float y;
@@ -88,12 +80,8 @@ struct gyro_sensor {
 		float bias[3];
 		float scale[3];
 		float variance[3];
-		float tempcompfactor[3];
 	} calibration;
-	struct {
-		uint16_t xy;
-		uint16_t z;
-	} temp;
+	float temperature;
 };
 
 //! Conains the current estimate of the attitude

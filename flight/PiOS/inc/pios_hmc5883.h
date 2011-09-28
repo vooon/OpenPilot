@@ -32,6 +32,8 @@
 #ifndef PIOS_HMC5883_H
 #define PIOS_HMC5883_H
 
+#include <pios.h>
+
 /* HMC5883 Addresses */
 #define PIOS_HMC5883_I2C_ADDR			0x1E
 #define PIOS_HMC5883_I2C_READ_ADDR      0x3D
@@ -90,11 +92,24 @@
 #define PIOS_HMC5883_Sensitivity_5_6Ga		330	// LSB/Ga
 #define PIOS_HMC5883_Sensitivity_8_1Ga		230	// LSB/Ga  --> NOT RECOMMENDED
 
+
+struct pios_hmc5883_cfg {
+	struct stm32_gpio drdy;
+	struct stm32_exti eoc_exti;
+	struct stm32_irq eoc_irq;
+	
+	uint8_t M_ODR;		/* OUTPUT DATA RATE --> here below the relative define (See datasheet page 11 for more details) */
+	uint8_t Meas_Conf;	/* Measurement Configuration,: Normal, positive bias, or negative bias --> here below the relative define */
+	uint8_t Gain;		/* Gain Configuration, select the full scale --> here below the relative define (See datasheet page 11 for more details) */
+	uint8_t Mode;
+	
+};
+
 /* Public Functions */
-extern void PIOS_HMC5883_Init(void);
+extern void PIOS_HMC5883_Init(const struct pios_hmc5883_cfg * cfg);
 extern bool PIOS_HMC5883_NewDataAvailable(void);
-extern void PIOS_HMC5883_ReadMag(int16_t out[3]);
-extern void PIOS_HMC5883_ReadID(uint8_t out[4]);
+extern int32_t PIOS_HMC5883_ReadMag(int16_t out[3]);
+extern uint8_t PIOS_HMC5883_ReadID(uint8_t out[4]);
 extern int32_t PIOS_HMC5883_Test(void);
 
 #endif /* PIOS_HMC5883_H */

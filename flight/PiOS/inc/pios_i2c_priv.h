@@ -33,6 +33,7 @@
 
 struct pios_i2c_adapter_cfg {
 	I2C_TypeDef *regs;
+	uint32_t remap;
 	I2C_InitTypeDef init;
 
 	uint32_t transfer_timeout_ms;
@@ -85,10 +86,11 @@ enum pios_i2c_adapter_magic {
 struct pios_i2c_adapter {
 	enum pios_i2c_adapter_magic         magic;
 	const struct pios_i2c_adapter_cfg * cfg;
-	void (*callback) (uint8_t, uint8_t);
 #ifdef PIOS_INCLUDE_FREERTOS
 	xSemaphoreHandle sem_busy;
 	xSemaphoreHandle sem_ready;
+#else
+	uint8_t busy;
 #endif
 
 	bool bus_error;
@@ -98,6 +100,8 @@ struct pios_i2c_adapter {
 	const struct pios_i2c_txn *active_txn;
 	const struct pios_i2c_txn *last_txn;
 
+	void (*callback) ();
+	
 	uint8_t *active_byte;
 	uint8_t *last_byte;
 };

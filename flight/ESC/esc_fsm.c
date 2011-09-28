@@ -41,7 +41,7 @@ struct esc_config config = {
 	.min_dc = 0,
 	.max_dc = 0.90 * PIOS_ESC_MAX_DUTYCYCLE,
 	.initial_startup_speed = 100,
-	.final_startup_speed = 700,
+	.final_startup_speed = 200,
 	.startup_current_target = 50,
 	.commutation_phase = 10,
 	.soft_current_limit = 500,
@@ -244,13 +244,13 @@ void esc_process_static_fsm_rxn() {
 		case ESC_STATE_CL_COMMUTATED:
 		case ESC_STATE_CL_NOZCD:
 		case ESC_STATE_CL_ZCD:
-			if(esc_data.current > config.soft_current_limit) {
+/*			if(esc_data.current > config.soft_current_limit) {
 				esc_data.duty_cycle -= 1;
 				if(esc_data.duty_cycle < config.min_dc)
 					esc_data.duty_cycle = config.min_dc;
 
 				PIOS_ESC_SetDutyCycle(esc_data.duty_cycle);
-			}
+			} */
 
 			if(esc_data.speed_setpoint == 0 && PIOS_DELAY_DiffuS(zero_time) > 30000) {
 				esc_fsm_inject_event(ESC_EVENT_STOP,0);
@@ -326,7 +326,7 @@ static void go_esc_startup_enable(uint16_t time)
 static void go_esc_startup_grab(uint16_t time)
 {
 	// TODO: Set up a timeout for whole startup system
-	esc_data.duty_cycle = 0.07 * PIOS_ESC_MAX_DUTYCYCLE;
+	esc_data.duty_cycle = 0.10 * PIOS_ESC_MAX_DUTYCYCLE;
 	PIOS_ESC_SetDutyCycle(esc_data.duty_cycle);
 	esc_fsm_schedule_event(ESC_EVENT_COMMUTATED, 30000);  // Grab stator for 30 ms
 }
@@ -350,6 +350,7 @@ static void go_esc_startup_wait(uint16_t time)
 uint16_t current_time;
 uint16_t prev_time;
 int16_t diff_time;
+float blah = 0.4;
 static void go_esc_startup_zcd(uint16_t time)
 {
 //	PIOS_GPIO_Toggle(1);
@@ -360,26 +361,27 @@ static void go_esc_startup_zcd(uint16_t time)
 	zcd(time);
 
 	// Since we aren't getting ZCD keep accelerating
-//	if(esc_data.current_speed < config.final_startup_speed)
-//		esc_data.current_speed+=10;
+	if(esc_data.current_speed < config.final_startup_speed)
+		esc_data.current_speed+=2;
 
-	esc_fsm_schedule_event(ESC_EVENT_COMMUTATED, RPM_TO_US(esc_data.current_speed) >> 1);
+//	if(esc_data.consecutive_detected > 5)
+		esc_fsm_schedule_event(ESC_EVENT_COMMUTATED, RPM_TO_US(esc_data.current_speed) * blah);
 
 	prev_time = TIM4->CCR1;
 	current_time = TIM4->CNT + RPM_TO_US(esc_data.current_speed) / 2;
 	diff_time = prev_time - current_time;
 	
-	if(esc_data.consecutive_detected > 20) {
+	if(esc_data.consecutive_detected > 10000) {
 		esc_fsm_inject_event(ESC_EVENT_CLOSED, 0);
 	} else {
 		// Timing adjusted in entry function
 		// This should perform run a current control loop
-		int32_t current_error = (config.startup_current_target - esc_data.current);
-		current_error /= 8;
-		esc_data.duty_cycle += current_error;
+//		int32_t current_error = (config.startup_current_target - esc_data.current);
+//		current_error /= 8;
+//		esc_data.duty_cycle += current_error;
 
 		bound_duty_cycle();
-		PIOS_ESC_SetDutyCycle(esc_data.duty_cycle);
+//		PIOS_ESC_SetDutyCycle(esc_data.duty_cycle);
 	}
 }
 
@@ -409,12 +411,12 @@ static void go_esc_startup_nozcd(uint16_t time)
 			
 	// Timing adjusted in entry function
 	// This should perform run a current control loop
-	int32_t current_error = (config.startup_current_target - esc_data.current);
-	current_error /= 8;
-	esc_data.duty_cycle += current_error;
+//	int32_t current_error = (config.startup_current_target - esc_data.current);
+//	current_error /= 8;
+//	esc_data.duty_cycle += current_error;
 
 	bound_duty_cycle();
-	PIOS_ESC_SetDutyCycle(esc_data.duty_cycle);
+//	PIOS_ESC_SetDutyCycle(esc_data.duty_cycle);
 }
 
 uint32_t starts = 0;
@@ -464,11 +466,11 @@ static void go_esc_cl_zcd(uint16_t time)
 	
 	zcd1_time = PIOS_DELAY_DiffuS(timeval);
 	
-	if(esc_data.current > config.soft_current_limit) {
+/*	if(esc_data.current > config.soft_current_limit) {
 		esc_data.duty_cycle -= config.max_dc_change;
 		bound_duty_cycle();
 		PIOS_ESC_SetDutyCycle(esc_data.duty_cycle);
-	} else {
+	} else */ {
 #ifdef OPEN_LOOP
 		esc_data.duty_cycle = esc_data.speed_setpoint * PIOS_ESC_MAX_DUTYCYCLE / 8000;
 #else

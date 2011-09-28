@@ -129,6 +129,7 @@ SRC += $(STMSPDSRCDIR)/stm32f10x_bkp.c
 SRC += $(STMSPDSRCDIR)/stm32f10x_crc.c
 SRC += $(STMSPDSRCDIR)/stm32f10x_dac.c
 SRC += $(STMSPDSRCDIR)/stm32f10x_dma.c
+SRC += $(STMSPDSRCDIR)/stm32f10x_dbgmcu.c
 SRC += $(STMSPDSRCDIR)/stm32f10x_exti.c
 SRC += $(STMSPDSRCDIR)/stm32f10x_flash.c
 SRC += $(STMSPDSRCDIR)/stm32f10x_gpio.c
