@@ -15,6 +15,7 @@ SOURCES += main.cpp \
     generators/gcs/uavobjectgeneratorgcs.cpp \
     generators/matlab/uavobjectgeneratormatlab.cpp \
     generators/python/uavobjectgeneratorpython.cpp \
+    generators/arduino/uavobjectgeneratorarduino.cpp \
     generators/generator_common.cpp
 HEADERS += uavobjectparser.h \
     generators/generator_io.h \
@@ -22,4 +23,5 @@ HEADERS += uavobjectparser.h \
     generators/gcs/uavobjectgeneratorgcs.h \
     generators/matlab/uavobjectgeneratormatlab.h \
     generators/python/uavobjectgeneratorpython.h \
+    generators/arduino/uavobjectgeneratorarduino.h \
     generators/generator_common.h
