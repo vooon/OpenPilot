@@ -140,13 +140,13 @@ static uint16_t PIOS_SPEKTRUM_RxInCallback(uint32_t context, uint8_t * buf, uint
 	return (buf_len);
 }
 
-static void PIOS_SPEKTRUM_ResetFSM(struct pios_spektrum_fsm * fsm)
+static void PIOS_SPEKTRUM_ResetFSM(struct pios_spektrum_fsm * fsm, uint8_t datalength)
 {
 	fsm->channel = 0;
 	fsm->prev_byte = 0xFF;
 	fsm->sync = 0;
 	fsm->bytecount = 0;
-	fsm->datalength = 0;
+	fsm->datalength = datalength;
 	fsm->frame_error = 0;
 	fsm->sync_of = 0;
 }
@@ -161,26 +161,8 @@ static void PIOS_SPEKTRUM_ResetFSM(struct pios_spektrum_fsm * fsm)
 static int32_t PIOS_SPEKTRUM_UpdateFSM(struct pios_spektrum_fsm * fsm, uint8_t b)
 {
 	fsm->bytecount++;
-	if (fsm->sync == 0) {
-		/* Known sync bytes, 0x01, 0x02, 0x12, 0xb2 */
-		/* 0xb2 DX8 3bind pulses only */
-		if (fsm->bytecount == 2) {
-			if ((b == 0x01) || (b == 0x02) || (b == 0xb2)) {
-				fsm->datalength=0; // 10bit
-				fsm->sync = 1;
-				fsm->bytecount = 2;
-			}
-			else if(b == 0x12) {
-				fsm->datalength=1; // 11bit
-				fsm->sync = 1;
-				fsm->bytecount = 2;
-			}
-			else
-			{
-				fsm->bytecount = 0;
-			}
-		}
-	} else {
+	// drop first two bytes
+	if ((fsm->sync == 1) && (fsm->bytecount > 2)) {
 		if ((fsm->bytecount % 2) == 0) {
 			uint16_t data;
 			uint8_t channeln;
@@ -216,7 +198,7 @@ static int32_t PIOS_SPEKTRUM_UpdateFSM(struct pios_spektrum_fsm * fsm, uint8_t b
 /**
 * Bind and Initialise Spektrum satellite receiver
 */
-int32_t PIOS_SPEKTRUM_Init(uint32_t * spektrum_id, const struct pios_spektrum_cfg *cfg, const struct pios_com_driver * driver, uint32_t lower_id, uint8_t bind)
+int32_t PIOS_SPEKTRUM_Init(uint32_t * spektrum_id, const struct pios_spektrum_cfg *cfg, const struct pios_com_driver * driver, uint32_t lower_id, uint8_t bind, uint8_t datalength)
 {
 	PIOS_DEBUG_Assert(spektrum_id);
 	PIOS_DEBUG_Assert(cfg);
@@ -234,7 +216,7 @@ int32_t PIOS_SPEKTRUM_Init(uint32_t * spektrum_id, const struct pios_spektrum_cf
 		PIOS_SPEKTRUM_Bind(cfg,bind);
 	}
 
-	PIOS_SPEKTRUM_ResetFSM(&(spektrum_dev->fsm));
+	PIOS_SPEKTRUM_ResetFSM(&(spektrum_dev->fsm),datalength);
 
 	*spektrum_id = (uint32_t)spektrum_dev;
 
@@ -323,7 +305,7 @@ static void PIOS_SPEKTRUM_Supervisor(uint32_t spektrum_id)
 		/* sync between frames */
 		struct pios_spektrum_fsm * fsm = &(spektrum_dev->fsm);
 
-		fsm->sync = 0;
+		fsm->sync = 1;
 		fsm->bytecount = 0;
 		fsm->prev_byte = 0xFF;
 		fsm->frame_error = 0;

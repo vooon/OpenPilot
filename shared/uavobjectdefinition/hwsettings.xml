@@ -11,6 +11,7 @@
 
 		<field name="OptionalModules" units="" type="enum" elementnames="CameraStabilization,GPS" options="Disabled,Enabled" defaultvalue="Disabled"/>
 		<field name="DSMxBind" units=""  type="uint8"  elements="1" defaultvalue="0"/>
+		<field name="DSMxData" units="" type="enum" elements="1" options="10bit,11bit" defaultvalue="10bit"/>
 
 		<access gcs="readwrite" flight="readwrite"/>
 		<telemetrygcs acked="true" updatemode="onchange" period="0"/>
