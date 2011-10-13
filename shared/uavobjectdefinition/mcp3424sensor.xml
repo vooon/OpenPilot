@@ -1,0 +1,22 @@
+<xml>
+    <object name="MCP3424sensor" singleinstance="true" settings="false">
+        <description>The raw data from the MCP3424 sensor with up to four thermocouple values</description>
+	<field name="ColdJunction" units="deg C" type="float" elements="1"/>
+	<field name="CylinderHeadTemp" units="deg C" type="float" elements="1"/>
+	<field name="ExhaustGasTemp" units="deg C" type="float" elements="1"/>
+	<field name="BatteryVoltage" units="V" type="float" elements="1"/>
+	<field name="BatteryAmps" units="A" type="float" elements="1"/>
+        <field name="Address" units="int" type="uint8" elements="1"/>
+	<field name="Cmd" units="int" type="uint8" elements="1"/>
+	<field name="buf0" units="byte" type="uint8" elements="1"/>
+        <field name="buf1" units="byte" type="uint8" elements="1"/>
+	<field name="buf2" units="byte" type="uint8" elements="1"/>
+	<field name="buf3" units="raw counts" type="int32" elements="1"/>
+	<field name="buf4" units="int" type="uint8" elements="1"/>
+	<field name="buf5" units="int" type="uint8" elements="1"/>
+        <access gcs="readwrite" flight="readwrite"/>
+        <telemetrygcs acked="false" updatemode="manual" period="0"/>
+        <telemetryflight acked="false" updatemode="periodic" period="1000"/>
+        <logging updatemode="never" period="0"/>
+    </object>
+</xml>
