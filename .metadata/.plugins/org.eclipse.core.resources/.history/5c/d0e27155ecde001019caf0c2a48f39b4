@@ -1,0 +1,258 @@
+/**
+ ******************************************************************************
+ * @addtogroup OpenPilotModules OpenPilot Modules
+ * @{ 
+ * @addtogroup ET_EGT_Sensor EagleTree EGT Sensor Module
+ * @brief Read ET EGT temperature sensors @ref ETEGTSensor "ETEGTSensor UAV Object"
+ * @{ 
+ *
+ * @file       et_egt_sensor.c
+ * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2010.
+ * @brief      Reads dual thermocouple temperature sensors via EagleTree EGT expander
+ *
+ * @see        The GNU Public License (GPL) Version 3
+ *
+ *****************************************************************************/
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
+
+/**
+ * Output object: mcp3424sensor
+ *
+ * This module will periodically update the value of the mcp3424sensor object.
+ *
+ */
+
+#include "openpilot.h"
+#include "mcp3424.h"
+#include "mcp3424sensor.h"	// object that will be updated by the module
+
+// Private constants
+#define STACK_SIZE_BYTES 500
+#define TASK_PRIORITY (tskIDLE_PRIORITY+1)
+//#define UPDATE_PERIOD 100
+#define UPDATE_PERIOD 100
+
+// Private types
+#define MCP9804_ADDRESS 0x3F //Cold junction temp sensor
+#define MCP3424_ADDRESS 0xD0 //A/D sensor
+
+// Private variables
+static xTaskHandle taskHandle;
+
+// down sampling variables
+#define MCP3424_ds_size    4
+static int32_t MCP3424_ds_temp1 = 0;
+static int32_t MCP3424_ds_temp2 = 0;
+static int MCP3424_ds_count = 0;
+
+// Private functions
+static void MCP3424Task(void *parameters);
+
+/**
+* Initialise the module, called on startup
+* \returns 0 on success or -1 if initialisation failed
+*/
+int32_t MCP3424Start()
+{
+	// Start main task
+	xTaskCreate(MCP3424Task, (signed char *)"MCP3424", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &taskHandle);
+	TaskMonitorAdd(TASKINFO_RUNNING_MCP3424SENSOR, taskHandle);
+	return 0;
+}
+
+/**
+* Initialise the module, called on startup
+* \returns 0 on success or -1 if initialisation failed
+*/
+int32_t MCP3424Initialize()
+{
+
+	// init down-sampling data
+	MCP3424_ds_temp1 = 0;
+	MCP3424_ds_temp2 = 0;
+	MCP3424_ds_count = 0;
+
+	return 0;
+}
+
+MODULE_INITCALL(MCP3424Initialize, MCP3424Start)
+
+
+static bool Read_Cold_Junction_Temp(uint8_t* buffer)
+{
+	uint8_t cmd = 0x01;
+	const struct pios_i2c_txn txn_list_1[] = {
+		{
+		 .addr = MCP9804_ADDRESS,// & 0xFE, //Bit 0 must be 0 to write
+		 .rw = PIOS_I2C_TXN_WRITE,
+		 .len = 1,
+		 .buf = &cmd, //Read ambient temperature register
+		 },
+		{
+		 .addr = MCP9804_ADDRESS,// | 0x01, //Bit 0 must be 1 to read
+		 .rw = PIOS_I2C_TXN_READ,
+		 .len = 1,
+		 .buf = buffer,
+		 },
+
+	};
+
+	return PIOS_I2C_Transfer(PIOS_I2C_MAIN_ADAPTER, txn_list_1, NELEMENTS(txn_list_1));
+
+	const struct pios_i2c_txn txn_list_2[] = {
+		{
+		 .addr = MCP9804_ADDRESS, //Bit 0 must be 1 to read
+		 .rw = PIOS_I2C_TXN_READ,
+		 .len = 1,
+		 .buf = buffer,
+		 },
+	};
+
+	return PIOS_I2C_Transfer(PIOS_I2C_MAIN_ADAPTER, txn_list_2, NELEMENTS(txn_list_2));
+}
+
+static bool Read_Hot_Junction_Temp(uint8_t* buffer)
+{
+	const struct pios_i2c_txn txn_list_1[] = {
+		{
+		 .addr = MCP3424_ADDRESS, //Bit 0 must be 1 to read
+		 .rw = PIOS_I2C_TXN_READ,
+		 .len = 2,
+		 .buf = buffer,
+		 },
+	};
+
+	return PIOS_I2C_Transfer(PIOS_I2C_MAIN_ADAPTER, txn_list_1, NELEMENTS(txn_list_1));
+}
+/*
+static bool Read(uint8_t etaddress, uint8_t length, uint8_t * buffer, uint8_t cmd)
+{
+	//uint8_t cmd[1];
+
+	const struct pios_i2c_txn txn_list_1[] = {
+		{
+		 .addr = etaddress,
+		 .rw = PIOS_I2C_TXN_WRITE,
+		 .len = 1,
+		 .buf = &cmd,
+		 },
+	};
+
+	return PIOS_I2C_Transfer(PIOS_I2C_MAIN_ADAPTER, txn_list_1, NELEMENTS(txn_list_1));
+
+	//cmd[0] = 0x02;
+	//cmd[1] = 0x05;
+	//cmd[2] = (uint8_t) (start & 0xFF);
+	//cmd[3] = (uint8_t) (start >> 8);
+	//cmd[4] = length;
+
+	bool ok = PIOS_I2C_Transfer(PIOS_I2C_MAIN_ADAPTER, txn_list_1, NELEMENTS(txn_list_1));
+
+	if(ok) {
+		const struct pios_i2c_txn txn_list_2[] = {
+			{
+			 .addr = etaddress,
+			 .rw = PIOS_I2C_TXN_READ,
+			 .len = length,
+			 .buf = buffer,
+			 },
+		};
+
+		return PIOS_I2C_Transfer(PIOS_I2C_MAIN_ADAPTER, txn_list_2, NELEMENTS(txn_list_2));
+	}
+	else
+		return false;
+
+}
+*/
+
+/**
+ * Module thread, should not return.
+ */
+static void MCP3424Task(void *parameters)
+{
+	/*
+	 * MCP9804 will send data when address byte is received in READ mode
+	 *
+	 */
+	uint8_t buf[2] = {0};
+	bool ok = false;
+
+
+	mcp3424sensorData data;
+	data.Address = 0;
+	data.Cmd = 0;
+	data.buf0 = 0;//5.0;
+	data.buf1 = 0;
+	data.buf2 = 0;
+	data.buf3 = 0;
+	data.buf4 = 0;
+	data.buf5 = 0;
+	data.buf6 = 0;
+	data.buf7 = 0;
+	data.buf8 = 0;
+	data.buf9 = 0;
+	mcp3424sensorSet(&data);
+
+	portTickType lastSysTime;
+
+	//PIOS_BMP085_Init();
+
+	// Main task loop
+	lastSysTime = xTaskGetTickCount();
+
+	uint8_t n = 0;
+	while (1)
+	{
+		n++;
+		// Update the temperature data
+		//PIOS_BMP085_StartADC(TemperatureConv);
+		//xSemaphoreTake(PIOS_BMP085_EOC, portMAX_DELAY);
+
+		data.Address = MCP3424_ADDRESS;//5.0;
+		data.Cmd = n;
+		mcp3424sensorSet(&data);
+
+		ok = Read_Hot_Junction_Temp(buf);
+		if(ok) {
+			data.buf0 = buf[0];
+			data.buf1 = buf[1];
+			data.buf5 = 99;
+			mcp3424sensorSet(&data);
+
+			PIOS_LED_Off(LED1);
+			PIOS_LED_Off(LED2);
+
+		}
+		else {
+			data.buf5 = 200;
+			mcp3424sensorSet(&data);
+		}
+
+
+		// Delay until it is time to read the next sample
+		vTaskDelayUntil(&lastSysTime, 1000 / portTICK_RATE_MS);
+	}
+
+	Read_Cold_Junction_Temp(buf);
+
+}
+
+/**
+  * @}
+ * @}
+ */

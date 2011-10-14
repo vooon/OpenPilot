@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">&#x0A;<refactoring comment="Rename resource &apos;flight/Modules/MCP3424_Sensor&apos; to &apos;GasEngine&apos;" description="Rename resource &apos;MCP3424_Sensor&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="Modules/MCP3424_Sensor" name="GasEngine" stamp="1320187312617" updateReferences="true"/>&#x0A;<refactoring comment="Rename resource &apos;flight/Modules/GasEngine/gasEngine.c&apos; to &apos;gasengine.c&apos;" description="Rename resource &apos;gasEngine.c&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="Modules/GasEngine/gasEngine.c" name="gasengine.c" stamp="1320188178720" updateReferences="true"/>
+</session>

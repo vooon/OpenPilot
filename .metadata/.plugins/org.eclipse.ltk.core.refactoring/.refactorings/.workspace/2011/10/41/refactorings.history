@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Delete resource &apos;flight/Project/FOSS-JTAG/stm32f2x.cfg&apos;" deleteContents="false" description="Delete resource &apos;flight/Project/FOSS-JTAG/stm32f2x.cfg&apos;" element1="/flight/Project/FOSS-JTAG/stm32f2x.cfg" flags="7" id="org.eclipse.ltk.core.refactoring.delete.resources" resources="1" stamp="1317794294875"/>
+</session>

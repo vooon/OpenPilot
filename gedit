@@ -1,0 +1,1273 @@
+diff --git a/artwork/3D Model/multi/ricoo/CC.PNG b/artwork/3D Model/multi/ricoo/CC.PNG
+new file mode 100644
+index 0000000..467f34a
+Binary files /dev/null and b/artwork/3D Model/multi/ricoo/CC.PNG differ
+diff --git a/artwork/3D Model/multi/ricoo/TEXTURE.PNG b/artwork/3D Model/multi/ricoo/TEXTURE.PNG
+new file mode 100644
+index 0000000..d6e6342
+Binary files /dev/null and b/artwork/3D Model/multi/ricoo/TEXTURE.PNG differ
+diff --git a/artwork/3D Model/multi/ricoo/ricoo.3DS b/artwork/3D Model/multi/ricoo/ricoo.3DS
+new file mode 100644
+index 0000000..2269200
+Binary files /dev/null and b/artwork/3D Model/multi/ricoo/ricoo.3DS differ
+diff --git a/artwork/3D Model/multi/ricoo/ricoo.jpg b/artwork/3D Model/multi/ricoo/ricoo.jpg
+new file mode 100644
+index 0000000..93df978
+Binary files /dev/null and b/artwork/3D Model/multi/ricoo/ricoo.jpg differ
+diff --git a/flight/Bootloaders/AHRS/Makefile b/flight/Bootloaders/AHRS/Makefile
+index fe52f8a..833dba7 100644
+--- a/flight/Bootloaders/AHRS/Makefile
++++ b/flight/Bootloaders/AHRS/Makefile
+@@ -354,7 +354,7 @@ $(eval $(call PARTIAL_COMPILE_ARM_TEMPLATE, SRCARM))
+ $(OUTDIR)/$(TARGET).bin.o: $(OUTDIR)/$(TARGET).bin
+ 
+ # Add jtag targets (program and wipe)
+-$(eval $(call JTAG_TEMPLATE,$(OUTDIR)/$(TARGET).bin,$(FW_BANK_BASE),$(FW_BANK_SIZE),$(OPENOCD_CONFIG)))
++$(eval $(call JTAG_TEMPLATE,$(OUTDIR)/$(TARGET).bin,$(BL_BANK_BASE),$(BL_BANK_SIZE),$(OPENOCD_CONFIG)))
+ 
+ .PHONY: elf lss sym hex bin bino
+ elf: $(OUTDIR)/$(TARGET).elf
+diff --git a/flight/Bootloaders/CopterControl/Makefile b/flight/Bootloaders/CopterControl/Makefile
+index cc98fb7..e630f98 100644
+--- a/flight/Bootloaders/CopterControl/Makefile
++++ b/flight/Bootloaders/CopterControl/Makefile
+@@ -413,7 +413,7 @@ $(eval $(call PARTIAL_COMPILE_ARM_TEMPLATE, SRCARM))
+ $(OUTDIR)/$(TARGET).bin.o: $(OUTDIR)/$(TARGET).bin
+ 
+ # Add jtag targets (program and wipe)
+-$(eval $(call JTAG_TEMPLATE,$(OUTDIR)/$(TARGET).bin,$(FW_BANK_BASE),$(FW_BANK_SIZE),$(OPENOCD_CONFIG)))
++$(eval $(call JTAG_TEMPLATE,$(OUTDIR)/$(TARGET).bin,$(BL_BANK_BASE),$(BL_BANK_SIZE),$(OPENOCD_CONFIG)))
+ 
+ .PHONY: elf lss sym hex bin bino
+ elf: $(OUTDIR)/$(TARGET).elf
+diff --git a/flight/Bootloaders/OpenPilot/Makefile b/flight/Bootloaders/OpenPilot/Makefile
+index d4a944c..7589128 100644
+--- a/flight/Bootloaders/OpenPilot/Makefile
++++ b/flight/Bootloaders/OpenPilot/Makefile
+@@ -419,7 +419,7 @@ $(eval $(call PARTIAL_COMPILE_ARM_TEMPLATE, SRCARM))
+ $(OUTDIR)/$(TARGET).bin.o: $(OUTDIR)/$(TARGET).bin
+ 
+ # Add jtag targets (program and wipe)
+-$(eval $(call JTAG_TEMPLATE,$(OUTDIR)/$(TARGET).bin,$(FW_BANK_BASE),$(FW_BANK_SIZE),$(OPENOCD_CONFIG)))
++$(eval $(call JTAG_TEMPLATE,$(OUTDIR)/$(TARGET).bin,$(BL_BANK_BASE),$(BL_BANK_SIZE),$(OPENOCD_CONFIG)))
+ 
+ .PHONY: elf lss sym hex bin bino
+ elf: $(OUTDIR)/$(TARGET).elf
+diff --git a/flight/Bootloaders/PipXtreme/Makefile b/flight/Bootloaders/PipXtreme/Makefile
+index 94d7206..7aadcf1 100644
+--- a/flight/Bootloaders/PipXtreme/Makefile
++++ b/flight/Bootloaders/PipXtreme/Makefile
+@@ -414,7 +414,7 @@ $(eval $(call PARTIAL_COMPILE_ARM_TEMPLATE, SRCARM))
+ $(OUTDIR)/$(TARGET).bin.o: $(OUTDIR)/$(TARGET).bin
+ 
+ # Add jtag targets (program and wipe)
+-$(eval $(call JTAG_TEMPLATE,$(OUTDIR)/$(TARGET).bin,$(FW_BANK_BASE),$(FW_BANK_SIZE),$(OPENOCD_CONFIG)))
++$(eval $(call JTAG_TEMPLATE,$(OUTDIR)/$(TARGET).bin,$(BL_BANK_BASE),$(BL_BANK_SIZE),$(OPENOCD_CONFIG)))
+ 
+ .PHONY: elf lss sym hex bin bino
+ elf: $(OUTDIR)/$(TARGET).elf
+diff --git a/flight/CopterControl/Makefile b/flight/CopterControl/Makefile
+index 57f0b52..11f9a44 100644
+--- a/flight/CopterControl/Makefile
++++ b/flight/CopterControl/Makefile
+@@ -38,7 +38,7 @@ OUTDIR := $(TOP)/build/$(TARGET)
+ DEBUG ?= NO
+ 
+ # Include objects that are just nice information to show
+-DIAGNOSTICS ?= YES
++DIAGNOSTICS ?= NO
+ 
+ # Set to YES to build a FW version that will erase all flash memory
+ ERASE_FLASH ?= NO
+@@ -65,15 +65,15 @@ endif
+ FLASH_TOOL = OPENOCD
+ 
+ # List of modules to include
++MODULES = Attitude Stabilization ManualControl FirmwareIAP CameraStab 
+ OPTMODULES = CameraStab
+ ifeq ($(USE_GPS), YES)
+ OPTMODULES += GPS
+ endif
+ 
+-MODULES = Attitude FirmwareIAP 
+-#MODULES += GasEngineSensors
+-MODULES += AnalogSensors
+-# Telemetry must be last to grab the optional modules
++MODULES = Attitude Stabilization Actuator ManualControl FirmwareIAP
++MODULES += GasEngineSensors
++MODULES += AnalogSensors# Telemetry must be last to grab the optional modules (why?)
+ MODULES += Telemetry
+ 
+ # Paths
+@@ -174,8 +174,6 @@ SRC += $(OPUAVSYNTHDIR)/attitudesettings.c
+ SRC += $(OPUAVSYNTHDIR)/camerastabsettings.c
+ SRC += $(OPUAVSYNTHDIR)/cameradesired.c
+ SRC += $(OPUAVSYNTHDIR)/gpsposition.c
+-SRC += $(OPUAVSYNTHDIR)/gpstime.c
+-SRC += $(OPUAVSYNTHDIR)/gpssatellites.c
+ SRC += $(OPUAVSYNTHDIR)/hwsettings.c
+ SRC += $(OPUAVSYNTHDIR)/gcsreceiver.c
+ SRC += $(OPUAVSYNTHDIR)/receiveractivity.c
+diff --git a/flight/CopterControl/System/inc/pios_config.h b/flight/CopterControl/System/inc/pios_config.h
+index f400205..8e29e0b 100644
+--- a/flight/CopterControl/System/inc/pios_config.h
++++ b/flight/CopterControl/System/inc/pios_config.h
+@@ -55,7 +55,7 @@
+ /* Supported USART-based PIOS modules */
+ #define PIOS_INCLUDE_TELEMETRY_RF
+ #define PIOS_INCLUDE_GPS
+-//#define PIOS_GPS_MINIMAL
++#define PIOS_GPS_MINIMAL
+ 
+ #define PIOS_INCLUDE_SERVO
+ #define PIOS_INCLUDE_SPI
+diff --git a/flight/CopterControl/System/pios_board.c b/flight/CopterControl/System/pios_board.c
+index 2cb50fd..f895d8e 100644
+--- a/flight/CopterControl/System/pios_board.c
++++ b/flight/CopterControl/System/pios_board.c
+@@ -335,32 +335,30 @@ static const struct pios_tim_channel pios_tim_rcvrport_all_channels[] = {
+ };
+ 
+ static const struct pios_tim_channel pios_tim_servoport_all_pins[] = {
+-
+-//Pins B8 and B9 are being used for I2C1
+-//	{
+-//		.timer = TIM4,
+-//		.timer_chan = TIM_Channel_4,
+-//		.pin = {
+-//			.gpio = GPIOB,
+-//			.init = {
+-//				.GPIO_Pin   = GPIO_Pin_9,
+-//				.GPIO_Mode  = GPIO_Mode_AF_PP,
+-//				.GPIO_Speed = GPIO_Speed_2MHz,
+-//			},
+-//		},
+-//	},
+-//	{
+-//		.timer = TIM4,
+-//		.timer_chan = TIM_Channel_3,
+-//		.pin = {
+-//			.gpio = GPIOB,
+-//			.init = {
+-//				.GPIO_Pin   = GPIO_Pin_8,
+-//				.GPIO_Mode  = GPIO_Mode_AF_PP,
+-//				.GPIO_Speed = GPIO_Speed_2MHz,
+-//			},
+-//		},
+-//	},
++	{
++		.timer = TIM4,
++		.timer_chan = TIM_Channel_4,
++		.pin = {
++			.gpio = GPIOB,
++			.init = {
++				.GPIO_Pin   = GPIO_Pin_9,
++				.GPIO_Mode  = GPIO_Mode_AF_PP,
++				.GPIO_Speed = GPIO_Speed_2MHz,
++			},
++		},
++	},
++	{
++		.timer = TIM4,
++		.timer_chan = TIM_Channel_3,
++		.pin = {
++			.gpio = GPIOB,
++			.init = {
++				.GPIO_Pin   = GPIO_Pin_8,
++				.GPIO_Mode  = GPIO_Mode_AF_PP,
++				.GPIO_Speed = GPIO_Speed_2MHz,
++			},
++		},
++	}, 
+ 	{
+ 		.timer = TIM4,
+ 		.timer_chan = TIM_Channel_2,
+@@ -414,32 +412,30 @@ static const struct pios_tim_channel pios_tim_servoport_all_pins[] = {
+ 
+ 
+ static const struct pios_tim_channel pios_tim_servoport_rcvrport_pins[] = {
+-
+-//Pins B8 and B9 are being used for I2C1
+-//	{
+-//		.timer = TIM4,
+-//		.timer_chan = TIM_Channel_4,
+-//		.pin = {
+-//			.gpio = GPIOB,
+-//			.init = {
+-//				.GPIO_Pin   = GPIO_Pin_9,
+-//				.GPIO_Mode  = GPIO_Mode_AF_PP,
+-//				.GPIO_Speed = GPIO_Speed_2MHz,
+-//			},
+-//		},
+-//	},
+-//	{
+-//		.timer = TIM4,
+-//		.timer_chan = TIM_Channel_3,
+-//		.pin = {
+-//			.gpio = GPIOB,
+-//			.init = {
+-//				.GPIO_Pin   = GPIO_Pin_8,
+-//				.GPIO_Mode  = GPIO_Mode_AF_PP,
+-//				.GPIO_Speed = GPIO_Speed_2MHz,
+-//			},
+-//		},
+-//	},
++	{
++		.timer = TIM4,
++		.timer_chan = TIM_Channel_4,
++		.pin = {
++			.gpio = GPIOB,
++			.init = {
++				.GPIO_Pin   = GPIO_Pin_9,
++				.GPIO_Mode  = GPIO_Mode_AF_PP,
++				.GPIO_Speed = GPIO_Speed_2MHz,
++			},
++		},
++	},
++	{
++		.timer = TIM4,
++		.timer_chan = TIM_Channel_3,
++		.pin = {
++			.gpio = GPIOB,
++			.init = {
++				.GPIO_Pin   = GPIO_Pin_8,
++				.GPIO_Mode  = GPIO_Mode_AF_PP,
++				.GPIO_Speed = GPIO_Speed_2MHz,
++			},
++		},
++	},
+ 	{
+ 		.timer = TIM4,
+ 		.timer_chan = TIM_Channel_2,
+@@ -540,7 +536,6 @@ static const struct pios_tim_channel pios_tim_servoport_rcvrport_pins[] = {
+ 			},
+ 		},
+ 	},
+-
+ };
+ #if defined(PIOS_INCLUDE_USART)
+ 
+@@ -987,69 +982,11 @@ const struct pios_pwm_cfg pios_pwm_cfg = {
+  * I2C Adapters
+  */
+ 
+-//I2C1
+-void PIOS_I2C_servo_adapter_ev_irq_handler(void);
+-void PIOS_I2C_servo_adapter_er_irq_handler(void);
+-void I2C1_EV_IRQHandler() __attribute__ ((alias ("PIOS_I2C_servo_adapter_ev_irq_handler")));
+-void I2C1_ER_IRQHandler() __attribute__ ((alias ("PIOS_I2C_servo_adapter_er_irq_handler")));
+-
+-//I2C2
+ void PIOS_I2C_main_adapter_ev_irq_handler(void);
+ void PIOS_I2C_main_adapter_er_irq_handler(void);
+ void I2C2_EV_IRQHandler() __attribute__ ((alias ("PIOS_I2C_main_adapter_ev_irq_handler")));
+ void I2C2_ER_IRQHandler() __attribute__ ((alias ("PIOS_I2C_main_adapter_er_irq_handler")));
+ 
+-
+-
+-//I2C1 SCL = B6 (S1 in) or B8 (S2 out)
+-//I2C1 SDA = B7 (S3 out) or B9 (S1 out)
+-static const struct pios_i2c_adapter_cfg pios_i2c_servo_adapter_cfg = {
+-  .regs = I2C1, //I2C1
+-  .init = {
+-    .I2C_Mode                = I2C_Mode_I2C,
+-    .I2C_OwnAddress1         = 0,
+-    .I2C_Ack                 = I2C_Ack_Enable,
+-    .I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit,
+-    .I2C_DutyCycle           = I2C_DutyCycle_2,
+-    .I2C_ClockSpeed          = 400000,	/* bits/s */
+-  },
+-  .transfer_timeout_ms = 50,
+-  .scl = {
+-    .gpio = GPIOB,
+-    .init = {
+-      .GPIO_Pin   = GPIO_Pin_8, //8
+-      .GPIO_Speed = GPIO_Speed_10MHz,
+-      .GPIO_Mode  = GPIO_Mode_AF_OD,
+-    },
+-  },
+-  .sda = {
+-    .gpio = GPIOB,
+-    .init = {
+-      .GPIO_Pin   = GPIO_Pin_9, //9
+-      .GPIO_Speed = GPIO_Speed_10MHz,
+-      .GPIO_Mode  = GPIO_Mode_AF_OD,
+-    },
+-  },
+-  .event = {
+-    .flags   = 0,		/* FIXME: check this */
+-    .init = {
+-      .NVIC_IRQChannel                   = I2C1_EV_IRQn,
+-      .NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGHEST,
+-      .NVIC_IRQChannelSubPriority        = 0,
+-      .NVIC_IRQChannelCmd                = ENABLE,
+-    },
+-  },
+-  .error = {
+-    .flags   = 0,		/* FIXME: check this */
+-    .init = {
+-      .NVIC_IRQChannel                   = I2C1_ER_IRQn,
+-      .NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGHEST,
+-      .NVIC_IRQChannelSubPriority        = 0,
+-      .NVIC_IRQChannelCmd                = ENABLE,
+-    },
+-  },
+-};
+-
+ static const struct pios_i2c_adapter_cfg pios_i2c_main_adapter_cfg = {
+   .regs = I2C2,
+   .init = {
+@@ -1064,7 +1001,7 @@ static const struct pios_i2c_adapter_cfg pios_i2c_main_adapter_cfg = {
+   .scl = {
+     .gpio = GPIOB,
+     .init = {
+-      .GPIO_Pin   = GPIO_Pin_10, //10
++      .GPIO_Pin   = GPIO_Pin_10,
+       .GPIO_Speed = GPIO_Speed_10MHz,
+       .GPIO_Mode  = GPIO_Mode_AF_OD,
+     },
+@@ -1072,7 +1009,7 @@ static const struct pios_i2c_adapter_cfg pios_i2c_main_adapter_cfg = {
+   .sda = {
+     .gpio = GPIOB,
+     .init = {
+-      .GPIO_Pin   = GPIO_Pin_11, //11
++      .GPIO_Pin   = GPIO_Pin_11,
+       .GPIO_Speed = GPIO_Speed_10MHz,
+       .GPIO_Mode  = GPIO_Mode_AF_OD,
+     },
+@@ -1097,19 +1034,6 @@ static const struct pios_i2c_adapter_cfg pios_i2c_main_adapter_cfg = {
+   },
+ };
+ 
+-uint32_t pios_i2c_servo_adapter_id;
+-void PIOS_I2C_servo_adapter_ev_irq_handler(void)
+-{
+-  /* Call into the generic code to handle the IRQ for this specific device */
+-  PIOS_I2C_EV_IRQ_Handler(pios_i2c_servo_adapter_id);
+-}
+-
+-void PIOS_I2C_servo_adapter_er_irq_handler(void)
+-{
+-  /* Call into the generic code to handle the IRQ for this specific device */
+-  PIOS_I2C_ER_IRQ_Handler(pios_i2c_servo_adapter_id);
+-}
+-
+ uint32_t pios_i2c_main_adapter_id;
+ void PIOS_I2C_main_adapter_ev_irq_handler(void)
+ {
+@@ -1408,7 +1332,7 @@ void PIOS_Board_Init(void) {
+ 		break;
+ 	case HWSETTINGS_CC_FLEXIPORT_COMAUX:
+ 		break;
+-	case HWSETTINGS_CC_FLEXIPORT_I2C2:
++	case HWSETTINGS_CC_FLEXIPORT_I2C:
+ #if defined(PIOS_INCLUDE_I2C)
+ 		{
+ 			if (PIOS_I2C_Init(&pios_i2c_main_adapter_id, &pios_i2c_main_adapter_cfg)) {
+@@ -1486,26 +1410,6 @@ void PIOS_Board_Init(void) {
+ 	PIOS_DEBUG_Init(&pios_tim_servo_all_channels, NELEMENTS(pios_tim_servo_all_channels));
+ #endif	/* PIOS_DEBUG_ENABLE_DEBUG_PINS */
+ 	
+-	/* Configure the servo out port */
+-	uint8_t hwsettings_cc_servoport;
+-	HwSettingsCC_ServoPortGet(&hwsettings_cc_servoport);
+-
+-	switch (hwsettings_cc_servoport) {
+-	case HWSETTINGS_CC_SERVOPORT_SERVO:
+-	case HWSETTINGS_CC_SERVOPORT_CAN:
+-	case HWSETTINGS_CC_SERVOPORT_DISABLED:
+-		break;
+-	case HWSETTINGS_CC_SERVOPORT_I2C1: //S1=SDA, S2=SCL
+-#if defined(PIOS_INCLUDE_I2C)
+-		{
+-			if (PIOS_I2C_Init(&pios_i2c_servo_adapter_id, &pios_i2c_servo_adapter_cfg)) {
+-				PIOS_Assert(0);
+-			}
+-		}
+-#endif	/* PIOS_INCLUDE_I2C */
+-		break;
+-	}
+-
+ 	PIOS_ADC_Init();
+ 	PIOS_GPIO_Init();
+ 
+diff --git a/flight/Libraries/mcp3424.c b/flight/Libraries/mcp3424.c
+index 06a4d8c..89462cf 100644
+--- a/flight/Libraries/mcp3424.c
++++ b/flight/Libraries/mcp3424.c
+@@ -32,7 +32,6 @@
+ #include "openpilot.h"
+ #include "mcp3424.h"
+ #include "pios_i2c.h"
+-#define I2C_ADAPTER PIOS_I2C_MAIN_ADAPTER //PIOS_I2C_SERVO_ADAPTER or PIOS_I2C_MAIN_ADAPTER
+ 
+ // Private constants
+ static double_t MCP3424_REFVOLTAGE = 2.048; //internal reference voltage for MCP3424 IC
+@@ -145,7 +144,7 @@ static bool MCP3424_SetConfig(uint16_t I2CAddress, uint8_t channel, uint8_t* pNu
+ 		 },
+ 	};
+ 
+-	return PIOS_I2C_Transfer(I2C_ADAPTER, txn_list_1, NELEMENTS(txn_list_1));
++	return PIOS_I2C_Transfer(PIOS_I2C_MAIN_ADAPTER, txn_list_1, NELEMENTS(txn_list_1));
+ }
+ 
+ static void MCP3424_DecipherI2Cresponse(uint8_t* pRawDataBytes, uint8_t* pBuffer, uint8_t numDataBytes, uint8_t resolution, uint32_t* pCounts)
+@@ -234,7 +233,7 @@ bool MCP3424_GetAnalogValue(uint16_t I2CAddress, uint8_t channel, uint8_t* pBuff
+ 	};
+ 
+ 	//Read data bytes
+-	if(PIOS_I2C_Transfer(I2C_ADAPTER, txn_list_1, NELEMENTS(txn_list_1))) {
++	if(PIOS_I2C_Transfer(PIOS_I2C_MAIN_ADAPTER, txn_list_1, NELEMENTS(txn_list_1))) {
+ 
+ 		MCP3424_DecipherI2Cresponse(rawDataBytes, pBuffer, numDataBytes, resolution, &counts);
+ 
+diff --git a/flight/Libraries/mcp9804.c b/flight/Libraries/mcp9804.c
+index dfb2bcd..d46545c 100644
+--- a/flight/Libraries/mcp9804.c
++++ b/flight/Libraries/mcp9804.c
+@@ -13,7 +13,6 @@
+ */
+ 
+ #include "openpilot.h"
+-#define I2C_ADAPTER PIOS_I2C_SERVO_ADAPTER //PIOS_I2C_SERVO_ADAPTER or PIOS_I2C_MAIN_ADAPTER
+ 
+ bool MCP9804_ReadColdJunctionTemp(double_t* pColdTemp, uint16_t I2CAddress)
+ {
+@@ -37,7 +36,7 @@ bool MCP9804_ReadColdJunctionTemp(double_t* pColdTemp, uint16_t I2CAddress)
+ 	};
+ 
+ 
+-	if( PIOS_I2C_Transfer(I2C_ADAPTER, txn_list_1, NELEMENTS(txn_list_1))) {
++	if( PIOS_I2C_Transfer(PIOS_I2C_MAIN_ADAPTER, txn_list_1, NELEMENTS(txn_list_1))) {
+ 		//Convert the temperature data
+ 		//First Check flag bits
+ 		if((coldBuff[0] & 0x80) == 0x80) { //TA ≥ TCRIT
+diff --git a/flight/Modules/AnalogSensors/analogsensors.c b/flight/Modules/AnalogSensors/analogsensors.c
+new file mode 100644
+index 0000000..e09b13f
+--- /dev/null
++++ b/flight/Modules/AnalogSensors/analogsensors.c
+@@ -0,0 +1,209 @@
++/**
++ ******************************************************************************
++ * @addtogroup OpenPilotModules OpenPilot Modules
++ * @{
++ * @addtogroup ET_EGT_Sensor EagleTree EGT Sensor Module
++ * @brief Read ET EGT temperature sensors @ref ETEGTSensor "ETEGTSensor UAV Object"
++ * @{
++ *
++ * @file       et_egt_sensor.c
++ * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2010.
++ * @brief      Reads dual thermocouple temperature sensors via EagleTree EGT expander
++ *
++ * @see        The GNU Public License (GPL) Version 3
++ *
++ *****************************************************************************/
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 3 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
++ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
++ * for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
++ */
++
++/**
++ * Output object: GasEngine
++ *
++ * This module will periodically update the value of the GasEngine UAVobject.
++ *
++ */
++
++#include "openpilot.h"
++#include "analogsensors.h"
++#include "mcp3424.h"
++#include "mcp9804.h"
++#include "analogsensorsvalues.h"	// UAVobject that will be updated by the module
++#include "analogsensorssettings.h" // UAVobject used to modify module settings
++#include "hwsettings.h"
++//#include "pios_i2c.h"
++
++// Private constants
++#define STACK_SIZE_BYTES 330
++#define TASK_PRIORITY (tskIDLE_PRIORITY+1)
++#define UPDATE_PERIOD 500
++
++//static double_t DegCPerVolt = 24813.8957; //volts per celcius for K-type thermocouple
++// Private types
++
++// Private variables
++static xTaskHandle taskHandle;
++static bool analogSensorsEnabled = false;
++
++// Private functions
++static void AnalogSensorsTask(void *parameters);
++
++/**
++* Start the module, called on startup
++*/
++int32_t AnalogSensorsStart()
++{
++	// Start main task
++	if(analogSensorsEnabled) {
++		xTaskCreate(AnalogSensorsTask, (signed char *)"AnalogSensors", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &taskHandle);
++		TaskMonitorAdd(TASKINFO_RUNNING_ANALOGSENSORS, taskHandle);
++		return 0;
++	}
++	else
++		return -1;
++}
++
++/**
++* Initialise the module, called on startup
++*/
++int32_t AnalogSensorsInitialize()
++{
++	uint8_t optionalModules[HWSETTINGS_OPTIONALMODULES_NUMELEM];
++
++	HwSettingsInitialize();
++	HwSettingsOptionalModulesGet(optionalModules);
++
++	if (optionalModules[HWSETTINGS_OPTIONALMODULES_ANALOGSENSORS] == HWSETTINGS_OPTIONALMODULES_ENABLED)
++		analogSensorsEnabled = true;
++	else
++		analogSensorsEnabled = false;
++
++	if (analogSensorsEnabled) {
++		AnalogSensorsValuesInitialize(); //Initialise the UAVObject used for transferring sensor readings to GCS
++		AnalogSensorsSettingsInitialize(); //Initialise the UAVObject used for changing sensor settings
++		return 0;
++	}
++	else
++		return -1;
++}
++
++MODULE_INITCALL(AnalogSensorsInitialize, AnalogSensorsStart)
++
++/**
++ * Module thread, should not return.
++ */
++static void AnalogSensorsTask(void *parameters)
++{
++	uint8_t buf[8] = {0};
++	buf[0] = 5;
++
++	uint16_t I2CAddress = 0x00;
++	uint8_t gain, resolution = 0;
++	double_t analogValue = 0.0;
++
++	//Assume Attopilot voltage and current sensor is being used.
++	// Specifically, the full scale voltage is 51.8V = 3.3V
++	// Full scale current is 90A = 3.3V
++	double_t attoPilotVscale = 1 / 0.06369; //From data sheet
++	double_t attoPilotIscale = 1 / 0.0366; //From data sheet
++
++	portTickType lastSysTime;
++
++	//UAVObject data structure
++	AnalogSensorsValuesData d1;
++
++	//UAVObject settings data
++	AnalogSensorsSettingsData s1;
++
++	// Main task loop
++	lastSysTime = xTaskGetTickCount();
++
++	while(1) {
++
++		//get any updated settings
++		AnalogSensorsSettingsGet(&s1);
++		I2CAddress = s1.I2CAddress;
++
++		/******************
++		 * Read channel 1
++		 ******************/
++		gain = MCP3424_GetGain(s1.Channel1Gain);
++		resolution = MCP3424_GetResolution(s1.Channel1Resolution);
++
++		if (MCP3424_GetAnalogValue(I2CAddress, 1, buf, resolution, gain, &analogValue))
++		{
++			//TODO: switch conversion factor based on channel input option
++			d1.Sensor1 = analogValue * attoPilotVscale;
++		}
++		else
++		{
++			d1.Sensor1 = -99;
++		}
++
++		/*******************
++		 * Read channel 2
++		 ********************/
++		gain = MCP3424_GetGain(s1.Channel2Gain);
++		resolution = MCP3424_GetResolution(s1.Channel2Resolution);
++
++		//Read thermocouple connected to channel 1 of MCP3424 IC via I2C
++		if (MCP3424_GetAnalogValue(I2CAddress, 2, buf, resolution, gain, &analogValue))
++		{
++			d1.Sensor2 = analogValue * attoPilotIscale;
++		}
++		else
++			d1.Sensor2 = -99;
++
++		/******************
++		 * Read channel 3
++		 *******************/
++		gain = MCP3424_GetGain(s1.Channel3Gain);
++		resolution = MCP3424_GetResolution(s1.Channel3Resolution);
++
++		if (MCP3424_GetAnalogValue(I2CAddress, 3, buf, resolution, gain, &analogValue))
++		{
++			d1.Sensor3 = analogValue * attoPilotVscale;
++		}
++		else
++			d1.Sensor3 = -99;
++
++		/***************
++		 * Read channel 4
++		 ***************/
++		gain = MCP3424_GetGain(s1.Channel4Gain);
++		resolution = MCP3424_GetResolution(s1.Channel4Resolution);
++
++		if (MCP3424_GetAnalogValue(I2CAddress, 4, buf, resolution, gain, &analogValue))
++		{
++			d1.Sensor4 = analogValue * attoPilotIscale;
++		}
++		else
++			d1.Sensor4 = -99;
++
++		/*
++		 * Update UAVObject data
++		 */
++		AnalogSensorsValuesSet(&d1);
++
++		// Delay until it is time to read the next sample
++		vTaskDelayUntil(&lastSysTime, UPDATE_PERIOD / portTICK_RATE_MS);
++	}
++}
++
++
++/**
++  * @}
++ * @}
++ */
+diff --git a/flight/Modules/AnalogSensors/inc/analogsensors.h b/flight/Modules/AnalogSensors/inc/analogsensors.h
+new file mode 100644
+index 0000000..72aaa80
+--- /dev/null
++++ b/flight/Modules/AnalogSensors/inc/analogsensors.h
+@@ -0,0 +1,41 @@
++/**
++ ******************************************************************************
++ * @addtogroup OpenPilotModules OpenPilot Modules
++ * @{ 
++ * @addtogroup GasEngine Module
++ * @brief Communicate with MCP3424 and update @ref GasEngineData "GasEngineData UAV Object"
++ * @{ 
++ *
++ * @file       GasEngineSensors_H.h
++ * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2010.
++ * @brief      mcp3424 module, reads 4 analog channels from mcp3424 via I2C
++ *
++ * @see        The GNU Public License (GPL) Version 3
++ *
++ *****************************************************************************/
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 3 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
++ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
++ * for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
++ */
++#ifndef GasEngineSensors_H
++#define GasEngineSensors_H
++
++int32_t GasEngineSensorsInitialize();
++
++#endif // GasEngineSensors_H
++
++/**
++ * @}
++ * @}
++ */
+diff --git a/flight/Modules/CameraStab/camerastab.c b/flight/Modules/CameraStab/camerastab.c
+index e832154..770ff7a 100644
+--- a/flight/Modules/CameraStab/camerastab.c
++++ b/flight/Modules/CameraStab/camerastab.c
+@@ -62,8 +62,6 @@
+ 
+ // Private variables
+ 
+-static uint8_t camerastabEnabled = 0;
+-
+ // Private functions
+ static void attitudeUpdated(UAVObjEvent* ev);
+ static float bound(float val);
+@@ -76,16 +74,18 @@ int32_t CameraStabInitialize(void)
+ {
+ 	static UAVObjEvent ev;
+ 
+-	HwSettingsInitialize();
++	bool cameraStabEnabled;
+ 	uint8_t optionalModules[HWSETTINGS_OPTIONALMODULES_NUMELEM];
++
++	HwSettingsInitialize();
+ 	HwSettingsOptionalModulesGet(optionalModules);
+-    if (optionalModules[HWSETTINGS_OPTIONALMODULES_CAMERASTAB]==HWSETTINGS_OPTIONALMODULES_ENABLED) {
+-		camerastabEnabled=1;
+-	} else {
+-		camerastabEnabled=0;
+-	}
+ 
+-	if (camerastabEnabled) {
++	if (optionalModules[HWSETTINGS_OPTIONALMODULES_CAMERASTAB] == HWSETTINGS_OPTIONALMODULES_ENABLED)
++		cameraStabEnabled = true;
++	else
++		cameraStabEnabled = false;
++
++	if (cameraStabEnabled) {
+ 
+ 		AttitudeActualInitialize();
+ 
+diff --git a/flight/Modules/GPS/GPS.c b/flight/Modules/GPS/GPS.c
+index 3d844d5..bc8f92c 100644
+--- a/flight/Modules/GPS/GPS.c
++++ b/flight/Modules/GPS/GPS.c
+@@ -78,7 +78,7 @@ static float GravityAccel(float latitude, float longitude, float altitude);
+ // Private variables
+ 
+ static uint32_t gpsPort;
+-static uint8_t gpsEnabled = 0;
++static bool gpsEnabled = false;
+ 
+ static xTaskHandle gpsTaskHandle;
+ 
+@@ -120,14 +120,16 @@ int32_t GPSStart(void)
+ int32_t GPSInitialize(void)
+ {
+ 	gpsPort = PIOS_COM_GPS;
++
+ 	HwSettingsInitialize();
+ 	uint8_t optionalModules[HWSETTINGS_OPTIONALMODULES_NUMELEM];
++
+ 	HwSettingsOptionalModulesGet(optionalModules);
+-    if (optionalModules[HWSETTINGS_OPTIONALMODULES_GPS]==HWSETTINGS_OPTIONALMODULES_ENABLED) {
+-		gpsEnabled=1;
+-	} else {
+-		gpsEnabled=0;
+-	}
++
++	if (optionalModules[HWSETTINGS_OPTIONALMODULES_GPS] == HWSETTINGS_OPTIONALMODULES_ENABLED)
++		gpsEnabled = true;
++	else
++		gpsEnabled = false;
+ 
+ 	if (gpsPort && gpsEnabled) {
+ 		GPSPositionInitialize();
+@@ -149,6 +151,7 @@ int32_t GPSInitialize(void)
+ 
+ 	return -1;
+ }
++
+ MODULE_INITCALL(GPSInitialize, GPSStart)
+ 
+ // ****************
+diff --git a/flight/Modules/GasEngineSensors/gasenginesensors.c b/flight/Modules/GasEngineSensors/gasenginesensors.c
+new file mode 100644
+index 0000000..d7c7260
+--- /dev/null
++++ b/flight/Modules/GasEngineSensors/gasenginesensors.c
+@@ -0,0 +1,247 @@
++/**
++ ******************************************************************************
++ * @addtogroup OpenPilotModules OpenPilot Modules
++ * @{
++ * @addtogroup ET_EGT_Sensor EagleTree EGT Sensor Module
++ * @brief Read ET EGT temperature sensors @ref ETEGTSensor "ETEGTSensor UAV Object"
++ * @{
++ *
++ * @file       et_egt_sensor.c
++ * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2010.
++ * @brief      Reads dual thermocouple temperature sensors via EagleTree EGT expander
++ *
++ * @see        The GNU Public License (GPL) Version 3
++ *
++ *****************************************************************************/
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 3 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
++ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
++ * for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
++ */
++
++/**
++ * Output object: GasEngine
++ *
++ * This module will periodically update the value of the GasEngine UAVobject.
++ *
++ */
++
++#include "openpilot.h"
++#include "gasenginesensors.h"
++#include "mcp3424.h"
++#include "mcp9804.h"
++#include "gasenginedata.h"	// UAVobject that will be updated by the module
++#include "gasenginedatasettings.h" // UAVobject used to modify module settings
++#include "hwsettings.h"
++
++// Private constants
++#define STACK_SIZE_BYTES 350
++#define TASK_PRIORITY (tskIDLE_PRIORITY+1)
++#define UPDATE_PERIOD 500
++
++#define MCP9804_I2C_ADDRESS 0x1F //Cold junction temperature sensor
++#define GASENGINE_I2C_ADDRESS 0x68 //Four channel ADC sensor MCP3424
++
++#define IGNITIONBATTVOLTAGE_CHANNEL 1
++#define IGNITIONBATTCURRENT_CHANNEL 2
++#define CYLINDERHEADTEMP_CHANNEL    3
++#define EXHAUSTGASTEMP_CHANNEL      4
++
++static double_t DegCPerVolt = 24813.8957; //volts per celcius for K-type thermocouple
++// Private types
++
++// Private variables
++static xTaskHandle taskHandle;
++static bool gasEngineSensorsEnabled = false;
++
++// Private functions
++static void GasEngineSensorsTask(void *parameters);
++
++/**
++* Start the module, called on startup
++*/
++int32_t GasEngineSensorsStart()
++{
++	// Start main task
++	if (gasEngineSensorsEnabled) {
++		xTaskCreate(GasEngineSensorsTask, (signed char *)"GasEngineSensors", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &taskHandle);
++		TaskMonitorAdd(TASKINFO_RUNNING_GASENGINESENSORS, taskHandle);
++		return 0;
++	}
++	else
++		return -1;
++}
++
++/**
++* Initialise the module, called on startup
++*/
++int32_t GasEngineSensorsInitialize()
++{
++
++	uint8_t optionalModules[HWSETTINGS_OPTIONALMODULES_NUMELEM];
++
++	HwSettingsInitialize();
++	HwSettingsOptionalModulesGet(optionalModules);
++
++	if (optionalModules[HWSETTINGS_OPTIONALMODULES_GASENGINESENSORS] == HWSETTINGS_OPTIONALMODULES_ENABLED)
++		gasEngineSensorsEnabled = true;
++	else
++		gasEngineSensorsEnabled = false;
++
++	if (gasEngineSensorsEnabled) {
++		GasEngineDataInitialize(); //Initialise the UAVObject used for transferring sensor readings to GCS
++		GasEngineDataSettingsInitialize(); //Initialise the UAVObject used for changing sensor settings
++		return 0;
++	}
++
++	return -1;
++}
++
++MODULE_INITCALL(GasEngineSensorsInitialize, GasEngineSensorsStart)
++
++/**
++ * Module thread, should not return.
++ * Channel1 = ignitionBatteryVoltage
++ * Channel2 = ignitionBatteryAmps
++ * Channel3 = cylinderHeadTemperature
++ * Channel4 = exhaustGasTemperature
++ */
++static void GasEngineSensorsTask(void *parameters)
++{
++	uint8_t buf[8] = {0};
++	buf[0] = 5;
++
++	uint16_t I2CAddress = 0x00;
++	uint8_t gain, resolution = 0;
++	double_t analogValue = 0.0;
++	float_t mAh = 0.0;
++
++	//Assume Attopilot voltage and current sensor is being used.
++	// Specifically, the full scale voltage is 51.8V = 3.3V
++	// Full scale current is 90A = 3.3V
++	double_t attoPilotVscale = 1 / 0.06369; //From data sheet
++	double_t attoPilotIscale = 1 / 0.0366; //From data sheet
++
++	portTickType lastSysTime;
++
++	GasEngineDataData d1; //UAVObject data structure
++	GasEngineDataSettingsData s1; //UAVObject settings data
++
++	double_t coldTemp = 0;
++
++	portTickType energyTimeTickCount = 0; //delta time for calculating battery energy consumption
++
++	// Main task loop
++	lastSysTime = xTaskGetTickCount();
++
++	while(1) {
++
++		/*****************
++		 * Read cold junction temp from separate MCP9804 IC via I2C
++		 ****************/
++
++		bool b2 = MCP9804_ReadColdJunctionTemp(&coldTemp, MCP9804_I2C_ADDRESS);
++
++		if(b2)
++			d1.ColdJunction = coldTemp;
++		else
++			d1.ColdJunction = -99;
++
++
++		//get any updated settings
++		GasEngineDataSettingsGet(&s1);
++		I2CAddress = GASENGINE_I2C_ADDRESS; //gasEngineSettingsData.I2CAddress;
++
++		/******************
++		 * Read channel 1
++		 *******************/
++		gain = MCP3424_GetGain(s1.Channel1Gain);
++		resolution = MCP3424_GetResolution(s1.Channel1Resolution);
++
++		if (MCP3424_GetAnalogValue(I2CAddress, IGNITIONBATTVOLTAGE_CHANNEL, buf, resolution, gain, &analogValue))
++		{
++			d1.BatteryVoltage = analogValue * attoPilotVscale;
++		}
++		else
++			d1.BatteryVoltage = -99;
++
++		/***************
++		 * Read channel 2
++		 ***************/
++		gain = MCP3424_GetGain(s1.Channel2Gain);
++		resolution = MCP3424_GetResolution(s1.Channel2Resolution);
++
++		if (MCP3424_GetAnalogValue(I2CAddress, IGNITIONBATTCURRENT_CHANNEL, buf, resolution, gain, &analogValue))
++		{
++			d1.BatteryAmps = analogValue * attoPilotIscale;
++		}
++		else
++			d1.BatteryAmps = -99;
++
++		/******************
++		 * Read channel 3
++		 ******************/
++		gain = MCP3424_GetGain(s1.Channel3Gain);
++		resolution = MCP3424_GetResolution(s1.Channel3Resolution);
++
++		if (MCP3424_GetAnalogValue(I2CAddress, CYLINDERHEADTEMP_CHANNEL, buf, resolution, gain, &analogValue))
++		{
++			d1.CylinderHeadTemp = (analogValue * DegCPerVolt) + coldTemp;  //Assume K-type thermocouple
++		}
++		else
++		{
++			d1.CylinderHeadTemp = -99;
++		}
++
++		/*******************
++		 * Read channel 4
++		 ********************/
++		gain = MCP3424_GetGain(s1.Channel4Gain);
++		resolution = MCP3424_GetResolution(s1.Channel4Resolution);
++
++		//Read thermocouple connected to channel 1 of MCP3424 IC via I2C
++		if (MCP3424_GetAnalogValue(I2CAddress, EXHAUSTGASTEMP_CHANNEL, buf, resolution, gain, &analogValue))
++		{
++			d1.ExhaustGasTemp = (analogValue * DegCPerVolt) + coldTemp;  //Assume K-type thermocouple
++		}
++		else
++			d1.ExhaustGasTemp = -99;
++
++		/*************************
++		 * Calculate mAh consumed
++		 *************************/
++
++		portTickType x = xTaskGetTickCount();
++		portTickType deltaT = (x - energyTimeTickCount) * portTICK_RATE_MS; //Conversion to milliseconds
++		energyTimeTickCount = x;
++
++		//float_t mAh = 0.0;
++		//GasEngineIgnitionBattery_mAhGet(&mAh); //This allows some other module or the GCS to reset it to zero
++
++		/*
++		 * Update UAVObject data
++		 */
++		d1.IgnitionBattery_mAh = mAh + (deltaT * d1.BatteryAmps / 3600.0); //Conversion to mAh
++
++		GasEngineDataSet(&d1);
++
++		// Delay until it is time to read the next sample
++		vTaskDelayUntil(&lastSysTime, UPDATE_PERIOD / portTICK_RATE_MS);
++	}
++}
++
++
++/**
++  * @}
++ * @}
++ */
+diff --git a/flight/Modules/GasEngineSensors/inc/gasenginesensors.h b/flight/Modules/GasEngineSensors/inc/gasenginesensors.h
+new file mode 100644
+index 0000000..72aaa80
+--- /dev/null
++++ b/flight/Modules/GasEngineSensors/inc/gasenginesensors.h
+@@ -0,0 +1,41 @@
++/**
++ ******************************************************************************
++ * @addtogroup OpenPilotModules OpenPilot Modules
++ * @{ 
++ * @addtogroup GasEngine Module
++ * @brief Communicate with MCP3424 and update @ref GasEngineData "GasEngineData UAV Object"
++ * @{ 
++ *
++ * @file       GasEngineSensors_H.h
++ * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2010.
++ * @brief      mcp3424 module, reads 4 analog channels from mcp3424 via I2C
++ *
++ * @see        The GNU Public License (GPL) Version 3
++ *
++ *****************************************************************************/
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 3 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
++ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
++ * for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
++ */
++#ifndef GasEngineSensors_H
++#define GasEngineSensors_H
++
++int32_t GasEngineSensorsInitialize();
++
++#endif // GasEngineSensors_H
++
++/**
++ * @}
++ * @}
++ */
+diff --git a/flight/Modules/System/systemmod.c b/flight/Modules/System/systemmod.c
+index 6740e88..b3da268 100644
+--- a/flight/Modules/System/systemmod.c
++++ b/flight/Modules/System/systemmod.c
+@@ -46,7 +46,6 @@
+ #include "systemsettings.h"
+ #include "i2cstats.h"
+ #include "taskinfo.h"
+-#include "hwsettings.h"
+ #include "watchdogstatus.h"
+ #include "taskmonitor.h"
+ 
+diff --git a/flight/OpenPilot/Makefile b/flight/OpenPilot/Makefile
+index 3fa0977..c18ad13 100644
+--- a/flight/OpenPilot/Makefile
++++ b/flight/OpenPilot/Makefile
+@@ -61,7 +61,8 @@ FLASH_TOOL = OPENOCD
+ 
+ # List of modules to include
+ #MODULES = Actuator Telemetry GPS ManualControl Altitude GasEngineSensors AHRSComms Stabilization Guidance FirmwareIAP
+-MODULES = Actuator FirmwareIAP GasEngineSensors
++OPTMODULES = CameraStab GPS
++MODULES = Actuator ManualControl Altitude AHRSComms Stabilization Guidance FirmwareIAP
+ PYMODULES = FlightPlan
+ #MODULES = Telemetry Example
+ #MODULES = Telemetry MK/MKSerial
+@@ -69,7 +70,6 @@ PYMODULES = FlightPlan
+ #MODULES += Osd/OsdEtStd
+ #MODULES += MCP3424_Sensor
+ MODULES += Telemetry #Telemetry must be the last module added!
+-
+ # Paths
+ OPSYSTEM = ./System
+ OPSYSTEMINC = $(OPSYSTEM)/inc
+diff --git a/flight/PiOS/Boards/STM32103CB_CC_Rev1.h b/flight/PiOS/Boards/STM32103CB_CC_Rev1.h
+index a78fa1c..1a8a17c 100644
+--- a/flight/PiOS/Boards/STM32103CB_CC_Rev1.h
++++ b/flight/PiOS/Boards/STM32103CB_CC_Rev1.h
+@@ -109,12 +109,9 @@ TIM4  |  RC In 1  |  Servo 3  |  Servo 2  |  Servo 1
+ // PIOS_I2C
+ // See also pios_board.c
+ //------------------------
+-#define PIOS_I2C_MAX_DEVS			2
+-extern uint32_t pios_i2c_servo_adapter_id;
++#define PIOS_I2C_MAX_DEVS			1
+ extern uint32_t pios_i2c_main_adapter_id;
+ #define PIOS_I2C_MAIN_ADAPTER			(pios_i2c_main_adapter_id)
+-#define PIOS_I2C_SERVO_ADAPTER			(pios_i2c_servo_adapter_id)
+-
+ 
+ //-------------------------
+ // SPI
+diff --git a/flight/PiOS/STM32F10x/link_STM32103CB_CC_Rev1_sections.ld b/flight/PiOS/STM32F10x/link_STM32103CB_CC_Rev1_sections.ld
+index 568dddf..d3e9f79 100644
+--- a/flight/PiOS/STM32F10x/link_STM32103CB_CC_Rev1_sections.ld
++++ b/flight/PiOS/STM32F10x/link_STM32103CB_CC_Rev1_sections.ld
+@@ -1,5 +1,5 @@
+ /* This is the size of the stack for all FreeRTOS IRQs */
+-_irq_stack_size = 0x1A0;
++_irq_stack_size = 0x1E6;
+ /* This is the size of the stack for early init: life span is until scheduler starts */
+ _init_stack_size = 0x100;
+ 
+diff --git a/ground/openpilotgcs/share/openpilotgcs/models/multi/ricoo/CC.PNG b/ground/openpilotgcs/share/openpilotgcs/models/multi/ricoo/CC.PNG
+new file mode 100644
+index 0000000..467f34a
+Binary files /dev/null and b/ground/openpilotgcs/share/openpilotgcs/models/multi/ricoo/CC.PNG differ
+diff --git a/ground/openpilotgcs/share/openpilotgcs/models/multi/ricoo/TEXTURE.PNG b/ground/openpilotgcs/share/openpilotgcs/models/multi/ricoo/TEXTURE.PNG
+new file mode 100644
+index 0000000..d6e6342
+Binary files /dev/null and b/ground/openpilotgcs/share/openpilotgcs/models/multi/ricoo/TEXTURE.PNG differ
+diff --git a/ground/openpilotgcs/share/openpilotgcs/models/multi/ricoo/ricoo.3DS b/ground/openpilotgcs/share/openpilotgcs/models/multi/ricoo/ricoo.3DS
+new file mode 100644
+index 0000000..2269200
+Binary files /dev/null and b/ground/openpilotgcs/share/openpilotgcs/models/multi/ricoo/ricoo.3DS differ
+diff --git a/ground/openpilotgcs/share/openpilotgcs/models/multi/ricoo/ricoo.jpg b/ground/openpilotgcs/share/openpilotgcs/models/multi/ricoo/ricoo.jpg
+new file mode 100644
+index 0000000..93df978
+Binary files /dev/null and b/ground/openpilotgcs/share/openpilotgcs/models/multi/ricoo/ricoo.jpg differ
+diff --git a/ground/openpilotgcs/src/plugins/config/airframe.ui b/ground/openpilotgcs/src/plugins/config/airframe.ui
+index fd039a9..343581f 100644
+--- a/ground/openpilotgcs/src/plugins/config/airframe.ui
++++ b/ground/openpilotgcs/src/plugins/config/airframe.ui
+@@ -172,7 +172,7 @@
+                   </size>
+                  </property>
+                  <property name="title">
+-                  <string>Output channel asignmets</string>
++                  <string>Output channel assignments</string>
+                  </property>
+                  <layout class="QFormLayout" name="formLayout_3">
+                   <item row="0" column="0">
+diff --git a/ground/openpilotgcs/src/plugins/coreplugin/OpenPilotGCS.xml b/ground/openpilotgcs/src/plugins/coreplugin/OpenPilotGCS.xml
+index 9847730..d4a0a4c 100644
+--- a/ground/openpilotgcs/src/plugins/coreplugin/OpenPilotGCS.xml
++++ b/ground/openpilotgcs/src/plugins/coreplugin/OpenPilotGCS.xml
+@@ -1627,6 +1627,17 @@
+           <enableVbo>false</enableVbo>
+         </data>
+       </Test__PCT__20Quad__PCT__20X>
++      <Ricoo>
++        <configInfo>
++          <locked>false</locked>
++          <version>0.0.0</version>
++        </configInfo>
++        <data>
++          <acFilename>%%DATAPATH%%models/multi/ricoo/ricoo.3DS</acFilename>
++          <bgFilename>%%DATAPATH%%models/backgrounds/default_background.png</bgFilename>
++          <enableVbo>false</enableVbo>
++        </data>
++      </Ricoo>
+       <CopterControl>
+         <configInfo>
+           <locked>false</locked>
+diff --git a/ground/openpilotgcs/src/plugins/coreplugin/manhattanstyle.cpp b/ground/openpilotgcs/src/plugins/coreplugin/manhattanstyle.cpp
+index 4b00525..cec350d 100644
+--- a/ground/openpilotgcs/src/plugins/coreplugin/manhattanstyle.cpp
++++ b/ground/openpilotgcs/src/plugins/coreplugin/manhattanstyle.cpp
+@@ -55,6 +55,7 @@
+ #include <QtGui/QStyleOption>
+ #include <QtGui/QToolBar>
+ #include <QtGui/QToolButton>
++#include <QtGui/QAbstractItemView>
+ 
+ // We define a currently unused state for indicating animations
+ #define State_Animating 0x00000040
+@@ -217,7 +218,35 @@ QRect ManhattanStyle::subControlRect(ComplexControl control, const QStyleOptionC
+                                      SubControl subControl, const QWidget *widget) const
+ {
+     QRect rect;
++#ifndef Q_WS_MACX
++    // Not using OSX, size combo dropdown to fit contents
++    if(control == CC_ComboBox && subControl == SC_ComboBoxListBoxPopup)
++    {
++        const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(option);
++        const QComboBox* combo = qobject_cast<const QComboBox*>(widget);
++        QRect comboRect = cb->rect;
++        int newWidth = combo->view()->sizeHintForColumn(0);
++        if(newWidth > comboRect.width())
++        {
++            // Set new rectangle, only width matters, list height is set by
++            // combination of number of combo box items and setMaxVisibleItems
++            rect.setRect(comboRect.x(), comboRect.y(), newWidth, comboRect.height());
++            rect = visualRect(cb->direction, cb->rect, rect);
++        }
++        else
++        {
++            rect = d->style->subControlRect(control, option, subControl, widget);
++        }
++    }
++    else
++    {
++        rect = d->style->subControlRect(control, option, subControl, widget);
++    }
++#else
++    // Using OSX, use default style behaviour as this already sizes the
++    // combo dropdown to fit
+     rect = d->style->subControlRect(control, option, subControl, widget);
++#endif
+     return rect;
+ }
+ 
+diff --git a/shared/uavobjectdefinition/hwsettings.xml b/shared/uavobjectdefinition/hwsettings.xml
+index b086bee..e8f4535 100644
+--- a/shared/uavobjectdefinition/hwsettings.xml
++++ b/shared/uavobjectdefinition/hwsettings.xml
+@@ -3,8 +3,7 @@
+ 		<description>Selection of optional hardware configurations.</description>
+ 		<field name="CC_RcvrPort" units="function" type="enum" elements="1" options="Disabled,PWM,PPM,PPM+Servo,Servo" defaultvalue="PWM"/>
+ 		<field name="CC_MainPort" units="function" type="enum" elements="1" options="Disabled,Telemetry,GPS,S.Bus,DSM2,DSMX (10bit),DSMX (11bit),ComAux" defaultvalue="Disabled"/>
+-		<field name="CC_FlexiPort" units="function" type="enum" elements="1" options="Disabled,Telemetry,GPS,I2C2,DSM2,DSMX (10bit),DSMX (11bit),ComAux" defaultvalue="Disabled"/>
+-		<field name="CC_ServoPort" units="function" type="enum" elements="1" options="Disabled,Servo,I2C1,CAN" defaultvalue="Servo"/>
++		<field name="CC_FlexiPort" units="function" type="enum" elements="1" options="Disabled,Telemetry,GPS,I2C,DSM2,DSMX (10bit),DSMX (11bit),ComAux" defaultvalue="Disabled"/>
+ 
+ 		<field name="OP_RcvrPort" units="function" type="enum" elements="1" options="Disabled,PWM,PPM,DSM2,DSMX (10bit),DSMX (11bit),Debug" defaultvalue="PWM"/>
+ 		<field name="OP_MainPort" units="function" type="enum" elements="1" options="Disabled,Telemetry" defaultvalue="Telemetry"/>
+@@ -13,7 +12,7 @@
+ 		<field name="TelemetrySpeed" units="bps" type="enum" elements="1" options="2400,4800,9600,19200,38400,57600,115200" defaultvalue="57600"/>
+ 		<field name="GPSSpeed" units="bps" type="enum" elements="1" options="2400,4800,9600,19200,38400,57600,115200" defaultvalue="57600"/>
+ 
+-		<field name="OptionalModules" units="" type="enum" elementnames="CameraStab,GPS" options="Disabled,Enabled" defaultvalue="Disabled"/>
++		<field name="OptionalModules" units="" type="enum" elementnames="CameraStab,GPS,GasEngineSensors,AnalogSensors" options="Disabled,Enabled" defaultvalue="Disabled"/>
+ 		<field name="DSMxBind" units=""  type="uint8"  elements="1" defaultvalue="0"/>
+ 
+ 		<access gcs="readwrite" flight="readwrite"/>
