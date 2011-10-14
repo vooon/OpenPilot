@@ -67,10 +67,7 @@ PYMODULES = FlightPlan
 #MODULES = Telemetry MK/MKSerial
 #MODULES = Telemetry
 #MODULES += Osd/OsdEtStd
-
-#MODULES += MCP3424_Sensor
 MODULES += Telemetry #Telemetry must be the last module added!
-
 # Paths
 OPSYSTEM = ./System
 OPSYSTEMINC = $(OPSYSTEM)/inc
