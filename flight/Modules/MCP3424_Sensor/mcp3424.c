@@ -32,14 +32,14 @@
 /**
  * Output object: mcp3424sensor
  *
- * This module will periodically update the value of the mcp3424sensor object.
+ * This module will periodically update the value of the mcp3424sensor UAVobject.
  *
  */
 
 #include "openpilot.h"
 #include "mcp3424.h"
-#include "mcp3424sensor.h"	// object that will be updated by the module
-#include "mcp3424settings.h" // object used to modify module settings
+#include "mcp3424sensor.h"	// UAVobject that will be updated by the module
+#include "mcp3424settings.h" // UAVobject used to modify module settings
 
 // Private constants
 #define STACK_SIZE_BYTES 600
