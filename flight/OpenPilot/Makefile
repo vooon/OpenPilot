@@ -68,6 +68,7 @@ PYMODULES = FlightPlan
 #MODULES = Telemetry
 #MODULES += Osd/OsdEtStd
 MODULES += Telemetry #Telemetry must be the last module added!
+
 # Paths
 OPSYSTEM = ./System
 OPSYSTEMINC = $(OPSYSTEM)/inc
