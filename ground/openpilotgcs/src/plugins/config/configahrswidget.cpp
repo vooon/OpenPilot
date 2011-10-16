@@ -639,32 +639,32 @@ void ConfigAHRSWidget::attitudeRawUpdated(UAVObject * obj)
         	const char* instructions;
         	const char* display;
         } instructions[] = {
-                        { tr("Pitch up 45 deg and click save position..."), tr("plane-horizontal") },
-                        { tr("Pitch down 45 deg and click save position..."), tr("plane-horizontal") },
-                        { tr("Roll left 45 deg and click save position..."), tr("plane-left") },
+                        { tr("Pitch up 45 deg and click save position..."), "plane-horizontal" },
+                        { tr("Pitch down 45 deg and click save position..."), "plane-horizontal" },
+                        { tr("Roll left 45 deg and click save position..."), "plane-left" },
+                        { tr("Roll right 45 deg and click save position..."), "plane-left" },
+
+                        { tr("Turn left 90 deg to 09:00 position and click save position..."), "plane-horizontal" },
+                        { tr("Pitch up 45 deg and click save position..."), "plane-horizontal" },
+                        { tr("Pitch down 45 deg and click save position..."), "plane-horizontal" },
+                        { tr("Roll left 45 deg and click save position..."), "plane-left" },
+                        { tr("Roll right 45 deg and click save position..."), "plane-left" },
+
+                        { tr("Turn left 90 deg to 06:00 position and click save position..."), "plane-horizontal" },
+                        { tr("Pitch up 45 deg and click save position..."), "plane-horizontal" },
+                        { tr("Pitch down 45 deg and click save position..."), "plane-horizontal" },
+                        { tr("Roll left 45 deg and click save position..."), "plane-left" },
                         { tr("Roll right 45 deg and click save position..."), tr("plane-left") },
 
-                        { tr("Turn left 90 deg to 09:00 position and click save position..."), tr("plane-horizontal") },
-                        { tr("Pitch up 45 deg and click save position..."), tr("plane-horizontal") },
-                        { tr("Pitch down 45 deg and click save position..."), tr("plane-horizontal") },
-                        { tr("Roll left 45 deg and click save position..."), tr("plane-left") },
-                        { tr("Roll right 45 deg and click save position..."), tr("plane-left") },
+                        { tr("Turn left 90 deg to 03:00 position and click save position..."), "plane-horizontal" },
+                        { tr("Pitch up 45 deg and click save position..."), "plane-horizontal" },
+                        { tr("Pitch down 45 deg and click save position..."), "plane-horizontal" },
+                        { tr("Roll left 45 deg and click save position..."), "plane-left" },
+                        { tr("Roll right 45 deg and click save position..."), "plane-left" },
 
-                        { tr("Turn left 90 deg to 06:00 position and click save position..."), tr("plane-horizontal") },
-                        { tr("Pitch up 45 deg and click save position..."), tr("plane-horizontal") },
-                        { tr("Pitch down 45 deg and click save position..."), tr("plane-horizontal") },
-                        { tr("Roll left 45 deg and click save position..."), tr("plane-left") },
-                        { tr("Roll right 45 deg and click save position..."), tr("plane-left") },
-
-                        { tr("Turn left 90 deg to 03:00 position and click save position..."), tr("plane-horizontal") },
-                        { tr("Pitch up 45 deg and click save position..."), tr("plane-horizontal") },
-                        { tr("Pitch down 45 deg and click save position..."), tr("plane-horizontal") },
-                        { tr("Roll left 45 deg and click save position..."), tr("plane-left") },
-                        { tr("Roll right 45 deg and click save position..."), tr("plane-left") },
-
-                        { tr("Place with nose vertically up and click save position..."), tr("plane-up") },
-                        { tr("Place with nose straight down and click save position..."), tr("plane-down") },
-                        { tr("Place upside down and click save position..."), tr("plane-flip") },
+                        { tr("Place with nose vertically up and click save position..."), "plane-up" },
+                        { tr("Place with nose straight down and click save position..."), "plane-down" },
+                        { tr("Place upside down and click save position..."), "plane-flip" },
         };
 
         n_positions = sizeof(instructions) / sizeof(instructions[0]);
