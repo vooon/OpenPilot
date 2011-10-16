@@ -34,7 +34,7 @@
 // 4. BEEPS!
 
 // 5. In case of soft current limit, go into current limiting mode
-// 6. Freehweeling mode for when a ZCD is missed
+// 6. Freewheeling mode for when a ZCD is missed
 
 
 #define NUM_POLE_PAIRS 7 //THIS NEEDS TO BE DEFINED ELSEWHERE, IF DEFINED AT ALL!
