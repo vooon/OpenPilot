@@ -506,7 +506,7 @@ void ConfigAHRSWidget::computeGyroDrift() {
   */
 void ConfigAHRSWidget::launchAHRSCalibration()
 {
-    m_ahrs->calibInstructions->setText("Estimating sensor variance...");
+    m_ahrs->calibInstructions->setText(tr("Estimating sensor variance..."));
     m_ahrs->ahrsCalibStart->setEnabled(false);
 
     UAVObject *obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("AHRSCalibration")));
@@ -558,7 +558,7 @@ void ConfigAHRSWidget::calibPhase2()
       switch (phaseCounter) {
       case 0:
           phaseCounter++;
-          m_ahrs->calibInstructions->setText("Getting results...");
+          m_ahrs->calibInstructions->setText(tr("Getting results..."));
           connect(obj, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(calibPhase2()));
           //  We need to echo back the results of calibration before changing to set mode
           obj->requestUpdate();
@@ -568,7 +568,7 @@ void ConfigAHRSWidget::calibPhase2()
           // Now update size of all the graphs
           drawVariancesGraph();
           saveAHRSCalibration();
-          m_ahrs->calibInstructions->setText(QString("Calibration saved."));
+          m_ahrs->calibInstructions->setText(QString(tr("Calibration saved.")));
           m_ahrs->ahrsCalibStart->setEnabled(true);
           break;
       }
@@ -639,32 +639,32 @@ void ConfigAHRSWidget::attitudeRawUpdated(UAVObject * obj)
         	const char* instructions;
         	const char* display;
         } instructions[] = {
-        		{ "Pitch up 45 deg and click save position...", "plane-horizontal" },
-        		{ "Pitch down 45 deg and click save position...", "plane-horizontal" },
-        		{ "Roll left 45 deg and click save position...", "plane-left" },
-        		{ "Roll right 45 deg and click save position...", "plane-left" },
+                        { tr("Pitch up 45 deg and click save position..."), tr("plane-horizontal") },
+                        { tr("Pitch down 45 deg and click save position..."), tr("plane-horizontal") },
+                        { tr("Roll left 45 deg and click save position..."), tr("plane-left") },
+                        { tr("Roll right 45 deg and click save position..."), tr("plane-left") },
 
-        		{ "Turn left 90 deg to 09:00 position and click save position...", "plane-horizontal" },
-        		{ "Pitch up 45 deg and click save position...", "plane-horizontal" },
-        		{ "Pitch down 45 deg and click save position...", "plane-horizontal" },
-        		{ "Roll left 45 deg and click save position...", "plane-left" },
-        		{ "Roll right 45 deg and click save position...", "plane-left" },
+                        { tr("Turn left 90 deg to 09:00 position and click save position..."), tr("plane-horizontal") },
+                        { tr("Pitch up 45 deg and click save position..."), tr("plane-horizontal") },
+                        { tr("Pitch down 45 deg and click save position..."), tr("plane-horizontal") },
+                        { tr("Roll left 45 deg and click save position..."), tr("plane-left") },
+                        { tr("Roll right 45 deg and click save position..."), tr("plane-left") },
 
-        		{ "Turn left 90 deg to 06:00 position and click save position...", "plane-horizontal" },
-        		{ "Pitch up 45 deg and click save position...", "plane-horizontal" },
-        		{ "Pitch down 45 deg and click save position...", "plane-horizontal" },
-        		{ "Roll left 45 deg and click save position...", "plane-left" },
-        		{ "Roll right 45 deg and click save position...", "plane-left" },
+                        { tr("Turn left 90 deg to 06:00 position and click save position..."), tr("plane-horizontal") },
+                        { tr("Pitch up 45 deg and click save position..."), tr("plane-horizontal") },
+                        { tr("Pitch down 45 deg and click save position..."), tr("plane-horizontal") },
+                        { tr("Roll left 45 deg and click save position..."), tr("plane-left") },
+                        { tr("Roll right 45 deg and click save position..."), tr("plane-left") },
 
-        		{ "Turn left 90 deg to 03:00 position and click save position...", "plane-horizontal" },
-        		{ "Pitch up 45 deg and click save position...", "plane-horizontal" },
-        		{ "Pitch down 45 deg and click save position...", "plane-horizontal" },
-        		{ "Roll left 45 deg and click save position...", "plane-left" },
-        		{ "Roll right 45 deg and click save position...", "plane-left" },
+                        { tr("Turn left 90 deg to 03:00 position and click save position..."), tr("plane-horizontal") },
+                        { tr("Pitch up 45 deg and click save position..."), tr("plane-horizontal") },
+                        { tr("Pitch down 45 deg and click save position..."), tr("plane-horizontal") },
+                        { tr("Roll left 45 deg and click save position..."), tr("plane-left") },
+                        { tr("Roll right 45 deg and click save position..."), tr("plane-left") },
 
-        		{ "Place with nose vertically up and click save position...", "plane-up" },
-        		{ "Place with nose straight down and click save position...", "plane-down" },
-        		{ "Place upside down and click save position...", "plane-flip" },
+                        { tr("Place with nose vertically up and click save position..."), tr("plane-up") },
+                        { tr("Place with nose straight down and click save position..."), tr("plane-down") },
+                        { tr("Place upside down and click save position..."), tr("plane-flip") },
         };
 
         n_positions = sizeof(instructions) / sizeof(instructions[0]);
@@ -710,7 +710,7 @@ void ConfigAHRSWidget::savePositionData()
     UAVObject *obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("AttitudeRaw")));
     connect(obj, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(attitudeRawUpdated(UAVObject*)));
 
-    m_ahrs->sixPointCalibInstructions->append("Hold...");
+    m_ahrs->sixPointCalibInstructions->append(tr("Hold..."));
 }
 
 //*****************************************************************
@@ -831,11 +831,11 @@ ConfigAHRSWidget::updateScaleFactors(UAVObjectField *scale,
 		calibration(1, 2) = calibration(2, 1) = orthof(2);
 	}
 
-	std::cout << "old calibration matrix: \n" << calibration << "\n";
+        std::cout << tr("old calibration matrix: \n") << calibration << "\n";
 
 	Matrix4f update;
 	update << updateScale, updateBias, Vector4f::UnitW().transpose();
-	std::cout << "new calibration matrix update: \n" << update << "\n";
+        std::cout << tr("new calibration matrix update: \n") << update << "\n";
 
 	calibration = update * calibration;
 
@@ -854,9 +854,9 @@ ConfigAHRSWidget::updateScaleFactors(UAVObjectField *scale,
     else {
     	// Give the user the calibration data and restore their settings.
 		std::ostringstream msg;
-		msg << "Scale factors and/or offsets are out of range.\n";
-		msg << "Please see the troubleshooting section of the manual and retry.\n\n"
-			"The following values were computed:\n";
+                msg << tr("Scale factors and/or offsets are out of range.\n");
+                msg << tr("Please see the troubleshooting section of the manual and retry.\n\n"
+                        "The following values were computed:\n");
 		msg << qPrintable(scale->getName()) << ": "
 			<< calibration.diagonal().start<3>().transpose() << "\n";
 		vectorToTuple(scale, oldScale);
@@ -892,13 +892,13 @@ void ConfigAHRSWidget::computeScaleBias()
     double noise = 0.04;
     Vector3f accelBias;
     Matrix3f accelScale;
-    std::cout << "number of samples: " << n_positions << "\n";
+    std::cout << tr("number of samples: ") << n_positions << "\n";
     twostep_bias_scale(accelBias, accelScale, accel_data, n_positions, referenceField, noise*noise);
     // Twostep computes an offset from the identity scalar, and a negative bias offset
     accelScale += Matrix3f::Identity();
     accelBias = -accelBias;
-    std::cout << "computed accel bias: " << accelBias.transpose()
-		<< "\ncomputed accel scale:\n" << accelScale<< std::endl;
+    std::cout << tr("computed accel bias: ") << accelBias.transpose()
+                << tr("\ncomputed accel scale:\n") << accelScale<< std::endl;
 
     // Apply the computed scale factor and bias to each sample
     for (int i = 0; i < n_positions; ++i) {
@@ -912,8 +912,8 @@ void ConfigAHRSWidget::computeScaleBias()
     twostep_bias_scale(magBias, magScale, mag_data, n_positions, localMagField, noise*noise);
     magScale += Vector3f::Ones();
     magBias = -magBias;
-    std::cout << "computed mag bias: " << magBias.transpose()
-		<< "\ncomputed mag scale:\n" << magScale << std::endl;
+    std::cout << tr("computed mag bias: ") << magBias.transpose()
+                << tr("\ncomputed mag scale:\n") << magScale << std::endl;
 
     // Apply the computed scale factor and bias to each sample
     for (int i = 0; i < n_positions; ++i) {
@@ -924,15 +924,15 @@ void ConfigAHRSWidget::computeScaleBias()
     Matrix3f accelSensitivity;
     Vector3f gyroBias;
     gyroscope_calibration(gyroBias, accelSensitivity, gyro_data, accel_data, n_positions);
-    std::cout << "gyro bias: " << gyroBias.transpose()
-		<< "\ngyro's acceleration sensitivity:\n" << accelSensitivity << std::endl;
+    std::cout << tr("gyro bias: ") << gyroBias.transpose()
+                << tr("\ngyro's acceleration sensitivity:\n") << accelSensitivity << std::endl;
 
     // Calibrate alignment between the accelerometer and magnetometer, taking the mag as the
     // reference.
     Vector3f accelRotation;
     calibration_misalignment(accelRotation, accel_data, -Vector3f::UnitZ()*localGravity,
 			mag_data, localMagField, n_positions);
-    std::cout << "magnetometer rotation vector: " << accelRotation.transpose() << std::endl;
+    std::cout << tr("magnetometer rotation vector: ") << accelRotation.transpose() << std::endl;
 
     // Update the calibration scalars with a clear message box
     m_ahrs->sixPointCalibInstructions->clear();
@@ -969,7 +969,7 @@ void ConfigAHRSWidget::computeScaleBias()
 
     position = -1; //set to run again
 	if (success)
-		m_ahrs->sixPointCalibInstructions->append("Computed new accel and mag scale and bias.");
+                m_ahrs->sixPointCalibInstructions->append(tr("Computed new accel and mag scale and bias."));
 
 }
 
@@ -1004,7 +1004,7 @@ void ConfigAHRSWidget::multiPointCalibrationMode()
 
     /* Show instructions and enable controls */
     m_ahrs->sixPointCalibInstructions->clear();
-    m_ahrs->sixPointCalibInstructions->append("Stand facing Earth's magnetic N or S.  Place the vehicle horizontally facing forward and click save position...");
+    m_ahrs->sixPointCalibInstructions->append(tr("Stand facing Earth's magnetic N or S.  Place the vehicle horizontally facing forward and click save position..."));
     displayPlane("plane-horizontal");
     m_ahrs->sixPointsStart->setEnabled(false);
     m_ahrs->sixPointsSave->setEnabled(true);
@@ -1041,7 +1041,7 @@ void ConfigAHRSWidget::cacheCurrentCalibration()
     		i->cache = tupleToVector(field);
     	}
     	else {
-    		qDebug() << "WARNING: AHRSCalibration field not found: " << i->field_name << "\n";
+                qDebug() << tr("WARNING: AHRSCalibration field not found: ") << i->field_name << "\n";
     	}
     }
 }
@@ -1169,7 +1169,7 @@ void ConfigAHRSWidget::refreshValues()
     m_ahrs->accelBiasStart->setEnabled(true);
     m_ahrs->startDriftCalib->setEnabled(true);
 
-    m_ahrs->calibInstructions->setText(QString("Press \"Start\" above to calibrate."));
+    m_ahrs->calibInstructions->setText(QString(tr("Press \"Start\" above to calibrate.")));
 
 }
 

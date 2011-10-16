@@ -78,7 +78,7 @@ void AntennaTrackGadget::loadConfiguration(IUAVGadgetConfiguration* config)
     foreach( QextPortInfo nport, ports ) {
         if(nport.friendName == AntennaTrackConfig->port())
         {
-            qDebug() << "Using Serial port";
+            qDebug() << tr("Using Serial port");
             //parser = new NMEAParser();
 
 #ifdef Q_OS_WIN
@@ -96,7 +96,7 @@ void AntennaTrackGadget::loadConfiguration(IUAVGadgetConfiguration* config)
         }
     }
     m_widget->dataStreamGroupBox->setHidden(false);
-    qDebug() << "Using Telemetry parser";
+    qDebug() << tr("Using Telemetry parser");
     parser = new TelemetryParser();
 
     connect(parser, SIGNAL(position(double,double,double)), m_widget,SLOT(setPosition(double,double,double)));
@@ -105,31 +105,31 @@ void AntennaTrackGadget::loadConfiguration(IUAVGadgetConfiguration* config)
 }
 
 void AntennaTrackGadget::onConnect() {
-    m_widget->textBrowser->append(QString("Connecting to Tracker ...\n"));
+    m_widget->textBrowser->append(QString(tr("Connecting to Tracker ...\n")));
     // TODO: Somehow mark that we're running, and disable connect button while so?
 
     if (port) {
-        qDebug() <<  "Opening: " <<  port->portName() << ".";
+        qDebug() <<  tr("Opening: ") <<  port->portName() << ".";
         bool isOpen =  port->open(QIODevice::ReadWrite);
-        qDebug() <<  "Open: " << isOpen;
+        qDebug() <<  tr("Open: ") << isOpen;
         if(isOpen) {
             m_widget->connectButton->setEnabled(false);
             m_widget->disconnectButton->setEnabled(true);
         }
     } else {
-        qDebug() << "Port undefined or invalid.";
+        qDebug() << tr("Port undefined or invalid.");
     }
 
 }
 
 void AntennaTrackGadget::onDisconnect() {
     if (port) {
-        qDebug() <<  "Closing: " <<  port->portName() << ".";
+        qDebug() <<  tr("Closing: ") <<  port->portName() << ".";
         port->close();
         m_widget->connectButton->setEnabled(true);
         m_widget->disconnectButton->setEnabled(false);
     } else {
-        qDebug() << "Port undefined or invalid.";
+        qDebug() << tr("Port undefined or invalid.");
     }
 }
 

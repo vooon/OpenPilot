@@ -174,13 +174,13 @@ QWidget *AntennaTrackGadgetOptionsPage::createPage(QWidget *parent)
     QList<QextPortInfo> ports = QextSerialEnumerator::getPorts();
     qSort(ports.begin(), ports.end(),sortPorts);
     foreach( QextPortInfo port, ports ) {
-        qDebug() << "Adding port: " << port.friendName << " (" << port.portName << ")";
+        qDebug() << tr("Adding port: ") << port.friendName << " (" << port.portName << ")";
         options_page->portComboBox->addItem(port.friendName, port.friendName);
     }
 
     int portIndex = options_page->portComboBox->findData(m_config->port());
     if(portIndex!=-1){
-        qDebug() << "createPage(): port is " << m_config->port();
+        qDebug() << tr("createPage(): port is ") << m_config->port();
         options_page->portComboBox->setCurrentIndex(portIndex);
     }
 
@@ -228,7 +228,7 @@ QWidget *AntennaTrackGadgetOptionsPage::createPage(QWidget *parent)
     options_page->timeoutSpinBox->setValue(m_config->timeOut());
 
     QStringList connectionModes;
-    connectionModes << "Serial";
+    connectionModes << tr("Serial");
     options_page->connectionMode->addItems(connectionModes);
     int conMode = options_page->connectionMode->findText(m_config->connectionMode());
     if (conMode != -1)
@@ -248,7 +248,7 @@ void AntennaTrackGadgetOptionsPage::apply()
 {
     int portIndex = options_page->portComboBox->currentIndex();
     m_config->setPort(options_page->portComboBox->itemData(portIndex).toString());
-    qDebug() << "apply(): port is " << m_config->port();
+    qDebug() << tr("apply(): port is ") << m_config->port();
 
     m_config->setSpeed((BaudRateType)BaudRateTypeStringALL.indexOf(options_page->portSpeedComboBox->currentText()));
     m_config->setFlow((FlowType)FlowTypeString.indexOf(options_page->flowControlComboBox->currentText()));

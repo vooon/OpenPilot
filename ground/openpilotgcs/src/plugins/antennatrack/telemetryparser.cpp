@@ -43,14 +43,14 @@ TelemetryParser::TelemetryParser(QObject *parent) : GPSParser(parent)
     if (gpsObj != NULL) {
         connect(gpsObj, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(updateGPS(UAVObject*)));
     } else {
-        qDebug() << "Error: Object is unknown (GPSPosition).";
+        qDebug() << tr("Error: Object is unknown (GPSPosition).");
     }
 
     gpsObj = dynamic_cast<UAVDataObject*>(objManager->getObject("HomeLocation"));
     if (gpsObj != NULL) {
     connect(gpsObj, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(updateHome(UAVObject*)));
     } else {
-        qDebug() << "Error: Object is unknown (HomeLocation).";
+        qDebug() << tr("Error: Object is unknown (HomeLocation).");
     }
 
 }
