@@ -67,21 +67,21 @@
 
 // Private variables
 static xTaskHandle taskHandle;
-static xTaskHandle txTaskHandle;
-static xTaskHandle rxTaskHandle;
+//static xTaskHandle txTaskHandle;
+//static xTaskHandle rxTaskHandle;
 //static uint32_t telemetryPort;
 static xQueueHandle adc_queue;
 static xQueueHandle txqueue;
-static UAVTalk com;
-static uint32_t txErrors;
-static uint32_t txRetries;
+//static UAVTalk com;
+//static uint32_t txErrors;
+//static uint32_t txRetries;
 
 // Private functions
 static void transmitterControlsTask(void *parameters);
-static void transmitterTxTask(void *parameters);
-static void transmitterRxTask(void *parameters);
-static void processObjEvent(UAVObjEvent * ev);
-static int32_t transmitData(uint8_t * data, int32_t length);
+//static void transmitterTxTask(void *parameters);
+//static void transmitterRxTask(void *parameters);
+//static void processObjEvent(UAVObjEvent * ev);
+//static int32_t transmitData(uint8_t * data, int32_t length);
 static void registerObject(UAVObjHandle obj);
 static void updateObject(UAVObjHandle obj);
 static int32_t setUpdatePeriod(UAVObjHandle obj, int32_t updatePeriodMs);
@@ -95,14 +95,17 @@ int32_t TransmitterControlsStart(void) {
 
 	// Start main task
 	xTaskCreate(transmitterControlsTask, (signed char *)"TransmitterControls", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &taskHandle);
-	TaskMonitorAdd(TASKINFO_RUNNING_TRANSMITTERCONTROLS, taskHandle);
+	//TaskMonitorAdd(TASKINFO_RUNNING_TRANSMITTERCONTROLS, taskHandle);
 	PIOS_WDG_RegisterFlag(PIOS_WDG_ATTITUDE);
 
+#ifdef NVER
 	// Start the Tx and Rx tasks
 	xTaskCreate(transmitterTxTask, (signed char *)"TransmitterTx", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &txTaskHandle);
-	TaskMonitorAdd(TASKINFO_RUNNING_TRANSMITTERTX, txTaskHandle);
+	//TaskMonitorAdd(TASKINFO_RUNNING_TRANSMITTERTX, txTaskHandle);
 	xTaskCreate(transmitterRxTask, (signed char *)"TransmitterRx", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &rxTaskHandle);
-	TaskMonitorAdd(TASKINFO_RUNNING_TRANSMITTERRX, rxTaskHandle);
+	//TaskMonitorAdd(TASKINFO_RUNNING_TRANSMITTERRX, rxTaskHandle);
+	}
+#endif
 
 	return 0;
 }
@@ -123,7 +126,7 @@ int32_t TransmitterControlsInitialize(void) {
 	txqueue = xQueueCreate(TELEM_QUEUE_SIZE, sizeof(UAVObjEvent));
 
 	// Initialise UAVTalk
-	UAVTalkInitialize(&com, &transmitData);
+	//UAVTalkInitialize(&com, &transmitData);
 
 	// Process all registered objects and connect queue for updates
 	UAVObjIterate(&registerObject);
@@ -249,6 +252,7 @@ static void transmitterControlsTask(void *parameters)
 			mcc.Channel[3] = gyro[3];
 			ManualControlCommandSet(&mcc);
 			if((cntr % 1000) == 0) {
+				PIOS_COM_SendString(PIOS_COM_DEBUG, "ADC\n\r");
 				//PIOS_COM_SendFormattedStringNonBlocking(PIOS_COM_DEBUG, "%d %d %d %d\n\r",
 				//(uint32_t)gyro[0], (uint32_t)gyro[1], (uint32_t)gyro[2], (uint32_t)gyro[3]);
 				cntr = 0;
@@ -258,6 +262,7 @@ static void transmitterControlsTask(void *parameters)
 	}
 }
 
+#ifdef NEVER
 /**
  * Processes queue events
  */
@@ -374,6 +379,7 @@ static int32_t transmitData(uint8_t * data, int32_t length)
 	}
 	return 0;
 }
+#endif
 
 /**
  * @}

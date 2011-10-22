@@ -7,7 +7,7 @@ MCU                 := cortex-m3
 CHIP                := STM32F103CBT
 BOARD               := STM32103CB_Transmitter
 MODEL               := MD
-MODEL_SUFFIX        := _CC
+MODEL_SUFFIX        := _Transmitter
 
 OPENOCD_CONFIG      := stm32f1x.cfg
 
