@@ -128,19 +128,21 @@ extern uint32_t pios_i2c_main_adapter_id;
 //-------------------------
 // PIOS_USART
 //-------------------------
-#define PIOS_USART_MAX_DEVS			2
+#define PIOS_USART_MAX_DEVS			3
 
 //-------------------------
 // PIOS_COM
 //
 // See also pios_board.c
 //-------------------------
-#define PIOS_COM_MAX_DEVS			3
+#define PIOS_COM_MAX_DEVS			4
 
 extern uint32_t pios_com_telem_rf_id;
 extern uint32_t pios_com_debug_id;
+extern uint32_t pios_com_usart2_id;
 #define PIOS_COM_TELEM_RF               (pios_com_telem_rf_id)
 #define PIOS_COM_DEBUG                  (pios_com_debug_id)
+#define PIOS_COM_USART2                 (pios_com_usart2_id)
 //#define PIOS_COM_LINK_USB               (pios_com_telem_usb_id)
 #define PIOS_COM_LINK_USB               (pios_com_telem_rf_id)
 
@@ -209,6 +211,28 @@ extern uint32_t pios_com_telem_usb_id;
 #define PIOS_ADC_CHANNELS			{ PIOS_ADC_PIN1_GPIO_CHANNEL, PIOS_ADC_PIN2_GPIO_CHANNEL, PIOS_ADC_PIN3_GPIO_CHANNEL, PIOS_ADC_PIN4_GPIO_CHANNEL, PIOS_ADC_PIN5_GPIO_CHANNEL, PIOS_ADC_PIN6_GPIO_CHANNEL }
 #define PIOS_ADC_MAPPING			{ PIOS_ADC_PIN1_ADC, PIOS_ADC_PIN2_ADC, PIOS_ADC_PIN3_ADC, PIOS_ADC_PIN4_ADC, PIOS_ADC_PIN5_ADC, PIOS_ADC_PIN6_ADC }
 #define PIOS_ADC_CHANNEL_MAPPING		{ PIOS_ADC_PIN1_ADC_NUMBER, PIOS_ADC_PIN2_ADC_NUMBER, PIOS_ADC_PIN3_ADC_NUMBER, PIOS_ADC_PIN4_ADC_NUMBER, PIOS_ADC_PIN5_ADC_NUMBER, PIOS_ADC_PIN6_ADC_NUMBER }
+
+#define PIOS_ADC_NUM_CHANNELS			(PIOS_ADC_NUM_PINS + PIOS_ADC_USE_TEMP_SENSOR)
+#define PIOS_ADC_NUM_ADC_CHANNELS		2
+#define PIOS_ADC_USE_ADC2			1
+#define PIOS_ADC_CLOCK_FUNCTION			RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1 | RCC_APB2Periph_ADC2, ENABLE)
+#define PIOS_ADC_ADCCLK				RCC_PCLK2_Div8
+/* RCC_PCLK2_Div2: ADC clock = PCLK2/2 */
+/* RCC_PCLK2_Div4: ADC clock = PCLK2/4 */
+/* RCC_PCLK2_Div6: ADC clock = PCLK2/6 */
+/* RCC_PCLK2_Div8: ADC clock = PCLK2/8 */
+#define PIOS_ADC_SAMPLE_TIME			ADC_SampleTime_239Cycles5
+/* Sample time: */
+/* With an ADCCLK = 14 MHz and a sampling time of 239.5 cycles: */
+/* Tconv = 239.5 + 12.5 = 252 cycles = 18�s */
+/* (1 / (ADCCLK / CYCLES)) = Sample Time (�S) */
+#define PIOS_ADC_IRQ_PRIO			PIOS_IRQ_PRIO_LOW
+
+// Currently analog acquistion hard coded at 480 Hz
+// PCKL2 = HCLK / 16
+// ADCCLK = PCLK2 / 2
+#define PIOS_ADC_RATE		(72.0e6 / 1.0 / 8.0 / 252.0 / (PIOS_ADC_NUM_CHANNELS >> PIOS_ADC_USE_ADC2))
+#define PIOS_ADC_MAX_OVERSAMPLING               36
 
 //-------------------------
 // GPIO
