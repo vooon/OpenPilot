@@ -289,12 +289,43 @@ static bool MCP3424SetConfig(uint8_t channel, uint8_t* dataNumBytes, uint8_t* pR
 	return PIOS_I2C_Transfer(PIOS_I2C_MAIN_ADAPTER, txn_list_1, NELEMENTS(txn_list_1));
 }
 
+static void decipherI2Cresponse(uint8_t* bufferTemp, uint8_t* pBuffer, uint8_t* numDataBytes, uint8_t* resolution, uint32_t* counts){
+	int8_t sign = 0; //+ve
+
+	if(*numDataBytes == 3) {
+		memcpy(pBuffer, bufferTemp, 4);
+		sign = bufferTemp[0];
+
+	}
+	else { //numDataBytes == 2.
+		pBuffer[0] = 0;              //set upper data byte to zero
+		pBuffer[1] = bufferTemp[0];  //middle data byte
+		pBuffer[2] = bufferTemp[1];  //lower data byte
+		pBuffer[3] = bufferTemp[2];  //config byte
+
+		sign = bufferTemp[1];
+	}
+
+	//TODO: need to ignore additional bits in the middle data byte if 12 or 14 bit resolution is selected
+	//This will only work for 18 bit resolution
+	pBuffer[0] = pBuffer[0] & 0x01; //ignore the first 7 bits
+
+	*counts = ((pBuffer[0] << 16) | (pBuffer[1] << 8) | pBuffer[2]);
+
+	//Convert to 2's complement
+	if(sign < 0) {
+		int32_t largestNumber = ((1 << (*resolution - 1)) - 1);
+		*counts = -largestNumber + *counts;
+	}
+}
+
 static bool ReadCylinderHeadTemp(uint8_t* pBuffer, double_t* pTemperature, uint8_t* pConfigByte)
 {
 	uint8_t channel = 1;
 	uint8_t numDataBytes = 3;
 	uint8_t bufferTemp[4] = {0};  //buffer to store return data from sensor
 	uint8_t resolution, gain = 0;
+	uint32_t counts = 0;
 
 	double_t refVoltage = 2.048; //internal reference voltage for MCP3424 IC
 
@@ -318,33 +349,8 @@ static bool ReadCylinderHeadTemp(uint8_t* pBuffer, double_t* pTemperature, uint8
 
 	//Read data bytes
 	if(PIOS_I2C_Transfer(PIOS_I2C_MAIN_ADAPTER, txn_list_1, NELEMENTS(txn_list_1))) {
-		int8_t sign = 0; //+ve
 
-		if(numDataBytes == 3) {
-			memcpy(pBuffer, bufferTemp, 4);
-			sign = bufferTemp[0];
-
-		}
-		else { //numDataBytes == 2.
-			pBuffer[0] = 0;              //set upper data byte to zero
-			pBuffer[1] = bufferTemp[0];  //middle data byte
-			pBuffer[2] = bufferTemp[1];  //lower data byte
-			pBuffer[3] = bufferTemp[2];  //config byte
-
-			sign = bufferTemp[1];
-		}
-
-		//TODO: need to ignore additional bits in the middle data byte if 12 or 14 bit resolution is selected
-		//This will only work for 18 bit resolution
-		pBuffer[0] = pBuffer[0] & 0x01; //ignore the first 7 bits
-
-		int32_t counts = ((pBuffer[0] << 16) | (pBuffer[1] << 8) | pBuffer[2]);
-
-		//Convert to 2's complement
-		if(sign < 0) {
-			int32_t largestNumber = ((1 << (resolution - 1)) - 1);
-			counts = -largestNumber + counts;
-		}
+		decipherI2Cresponse(bufferTemp, pBuffer, &numDataBytes, &resolution, &counts);
 
 		//Assume K-type thermocouple is connected to channel 1
 		//do conversion here
@@ -356,6 +362,97 @@ static bool ReadCylinderHeadTemp(uint8_t* pBuffer, double_t* pTemperature, uint8
 	else
 		return false;
 }
+
+static bool ReadVoltage(uint8_t* pBuffer, double_t* pVoltage, uint8_t* pConfigByte)
+{
+	uint8_t channel = 3;
+	uint8_t numDataBytes = 3;
+	uint8_t bufferTemp[4] = {0};  //buffer to store return data from sensor
+	uint8_t resolution, gain = 0;
+	uint32_t counts = 0;
+
+	double_t refVoltage = 2.048; //internal reference voltage for MCP3424 IC
+
+	bool success = MCP3424SetConfig(channel, &numDataBytes, &resolution, &gain, pConfigByte);
+
+	if(!success)
+		return false;
+
+	//wait long enough for conversion to happen after setting config
+	//TODO: make this wait dependent on the sample rate determined by the ADC resolution setting
+	vTaskDelay(100 / portTICK_RATE_MS); //100ms
+
+	const struct pios_i2c_txn txn_list_1[] = {
+		{
+		 .addr = MCP3424_I2C_ADDRESS,
+		 .rw = PIOS_I2C_TXN_READ,
+		 .len = 4, //Upper, Middle, Lower data bytes and config byte returned for 18 bit mode
+		 .buf = bufferTemp,
+		 },
+	};
+
+	//Read data bytes
+	if(PIOS_I2C_Transfer(PIOS_I2C_MAIN_ADAPTER, txn_list_1, NELEMENTS(txn_list_1))) {
+
+		decipherI2Cresponse(bufferTemp, pBuffer, &numDataBytes, &resolution, &counts);
+
+		//Assume Attopilot voltage and current sensor is being used.
+		// Specifically, the full scale voltage is 51.8V = 3.3V
+		// Full scale current is 90A = 3.3V
+		double_t LSB = 2 * refVoltage / (1 << resolution);
+		*pVoltage = counts * LSB * 51.8 / 3.3 / gain;
+
+		return true;
+	}
+	else
+		return false;
+}
+
+static bool ReadCurrent(uint8_t* pBuffer, double_t* pCurrent, uint8_t* pConfigByte)
+{
+	uint8_t channel = 3;
+	uint8_t numDataBytes = 3;
+	uint8_t bufferTemp[4] = {0};  //buffer to store return data from sensor
+	uint8_t resolution, gain = 0;
+	uint32_t counts = 0;
+
+	double_t refVoltage = 2.048; //internal reference voltage for MCP3424 IC
+
+	bool success = MCP3424SetConfig(channel, &numDataBytes, &resolution, &gain, pConfigByte);
+
+	if(!success)
+		return false;
+
+	//wait long enough for conversion to happen after setting config
+	//TODO: make this wait dependent on the sample rate determined by the ADC resolution setting
+	vTaskDelay(100 / portTICK_RATE_MS); //100ms
+
+	const struct pios_i2c_txn txn_list_1[] = {
+		{
+		 .addr = MCP3424_I2C_ADDRESS,
+		 .rw = PIOS_I2C_TXN_READ,
+		 .len = 4, //Upper, Middle, Lower data bytes and config byte returned for 18 bit mode
+		 .buf = bufferTemp,
+		 },
+	};
+
+	//Read data bytes
+	if(PIOS_I2C_Transfer(PIOS_I2C_MAIN_ADAPTER, txn_list_1, NELEMENTS(txn_list_1))) {
+
+		decipherI2Cresponse(bufferTemp, pBuffer, &numDataBytes, &resolution, &counts);
+
+		//Assume 90A Attopilot voltage and current sensor is being used.
+		// Specifically, the full scale voltage is 51.8V = 3.3V
+		// Full scale current is 90A = 3.3V
+		double_t LSB = 2 * refVoltage / (1 << resolution);
+		*pCurrent = counts * LSB * 90 / 3.3 / gain;
+
+		return true;
+	}
+	else
+		return false;
+}
+
 
 /**
  * Module thread, should not return.
@@ -450,16 +547,21 @@ static void MCP3424Task(void *parameters)
 		/*
 		 * Read channel 3
 		 */
-		batteryVoltage = 0.0;
+		bMCP3424readSuccess = ReadVoltage(buf, &batteryVoltage, &configByte);
 		//TODO: Read analog channel here
 		d1.BatteryVoltage = batteryVoltage;
 
 		/*
 		 * Read channel 4
 		 */
-		batteryCurrent = 0.0;
+		bMCP3424readSuccess = ReadCurrent(buf, &batteryCurrent, &configByte);
 		//TODO: Read analog channel here
 		d1.BatteryAmps = batteryCurrent;
+
+		/*
+		 * TODO: Compute energy consumed
+		 */
+		//d1.BatteryEnergyConsumed = deltaT * batteryVoltage * batteryCurrent;
 
 		/*
 		 * Update UAVObject data
