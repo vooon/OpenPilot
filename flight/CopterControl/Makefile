@@ -50,7 +50,7 @@ ENABLE_AUX_UART ?= NO
 
 USE_GPS ?= NO
 
-USE_I2C ?= NO
+USE_I2C ?= YES
 
 # Set to YES when using Code Sourcery toolchain
 CODE_SOURCERY ?= YES
@@ -65,7 +65,7 @@ endif
 FLASH_TOOL = OPENOCD
 
 # List of modules to include
-MODULES = Attitude Stabilization Actuator ManualControl FirmwareIAP CameraStab
+MODULES = Attitude Stabilization Actuator ManualControl FirmwareIAP CameraStab MCP3424_Sensor
 # Telemetry must be last to grab the optional modules
 MODULES += Telemetry
 
@@ -172,6 +172,8 @@ SRC += $(OPUAVSYNTHDIR)/receiveractivity.c
 SRC += $(OPUAVSYNTHDIR)/taskinfo.c
 SRC += $(OPUAVSYNTHDIR)/mixerstatus.c
 SRC += $(OPUAVSYNTHDIR)/ratedesired.c
+SRC += $(OPUAVSYNTHDIR)/mcp3424sensor.c
+SRC += $(OPUAVSYNTHDIR)/mcp3424settings.c
 
 endif
 
