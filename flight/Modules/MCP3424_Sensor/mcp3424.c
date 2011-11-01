@@ -40,6 +40,7 @@
 #include "mcp3424.h"
 #include "mcp3424sensor.h"	// UAVobject that will be updated by the module
 #include "mcp3424settings.h" // UAVobject used to modify module settings
+#include "pios_i2c.h"
 
 // Private constants
 #define STACK_SIZE_BYTES 600
@@ -558,7 +559,10 @@ static void MCP3424Task(void *parameters)
 	//UAVObject data structure
 	MCP3424sensorData d1;
 
-	double_t cylinderHeadTemp, exhaustGasTemp, batteryVoltage, batteryCurrent = 0;
+	double_t cylinderHeadTemp = 0;
+	double_t exhaustGasTemp = 0;
+	double_t batteryVoltage = 0;
+	double_t batteryCurrent = 0;
 
 	//down sample variables
 //	double_t chan1_ds_size = 3;
@@ -587,7 +591,7 @@ static void MCP3424Task(void *parameters)
 		bMCP3424readSuccess = ReadCylinderHeadTemp(buf, &cylinderHeadTemp, &configByte);
 
 		if(bMCP3424readSuccess && b2) {
-			PIOS_LED_Off(LED2);
+			//PIOS_LED_Off(LED2);
 
 			//down sample
 //			chan1_ds_temp += channel1;
@@ -606,7 +610,7 @@ static void MCP3424Task(void *parameters)
 			d1.ColdJunction = coldTemp;
 		}
 		else {
-			PIOS_LED_On(LED2);
+			//PIOS_LED_On(LED2);
 			d1.buf0 = 99;
 			d1.buf1 = 99;
 			d1.buf2 = 99;
