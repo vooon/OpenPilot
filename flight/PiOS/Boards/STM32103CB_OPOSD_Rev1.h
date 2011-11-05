@@ -150,9 +150,16 @@ extern uint32_t pios_spi_port_id;
 //-------------------------
 #define PIOS_COM_MAX_DEVS               2
 
-extern uint32_t pios_com_serial_id;
-#define PIOS_COM_SERIAL                 (pios_com_serial_id)
+extern uint32_t pios_com_hkosd_id;
+#define PIOS_COM_OSD                 (pios_com_hkosd_id)
+
+//extern uint32_t pios_com_serial_id;
+//#define PIOS_COM_SERIAL                 (pios_com_serial_id)
 //#define PIOS_COM_DEBUG                  PIOS_COM_SERIAL           // uncomment this to send debug info out the serial port
+
+//extern uint32_t pios_com_gps_id;
+//#define PIOS_COM_GPS                    (pios_com_gps_id)
+
 
 #if defined(PIOS_INCLUDE_USB_HID)
 extern uint32_t pios_com_telem_usb_id;
@@ -388,7 +395,7 @@ extern uint32_t pios_com_telem_usb_id;
 #define PIOS_VIDEO_SYNC_CLK			RCC_APB2Periph_GPIOB
 #define PIOS_VIDEO_SYNC_EXTI_LINE		EXTI_Line12
 #define PIOS_VIDEO_SYNC_IRQn			EXTI15_10_IRQn
-#define PIOS_VIDEO_SYNC_PRIO			PIOS_IRQ_PRIO_HIGH
+#define PIOS_VIDEO_SYNC_PRIO			PIOS_IRQ_PRIO_HIGHEST
 
 // *****************************************************************
 

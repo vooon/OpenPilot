@@ -48,9 +48,21 @@ endif
 
 FLASH_TOOL = OPENOCD
 
+# List of modules to include
+MODULES = Osd/osdgen Osd/osdinput 
+
+
 # Paths
 AHRS = ./
 AHRSINC = $(AHRS)/inc
+OPSYSTEM = ./
+OPSYSTEMINC = $(OPSYSTEM)/inc
+OPUAVTALK = ../UAVTalk
+OPUAVTALKINC = $(OPUAVTALK)/inc
+OPUAVOBJ = ../UAVObjects
+OPUAVOBJINC = $(OPUAVOBJ)/inc
+OPTESTS  = ./Tests
+OPMODULEDIR = ../Modules
 PIOS = ../PiOS
 PIOSINC = $(PIOS)/inc
 FLIGHTLIB = ../Libraries
@@ -65,6 +77,9 @@ STMUSBDIR = $(STMLIBDIR)/STM32_USB-FS-Device_Driver
 STMSPDSRCDIR = $(STMSPDDIR)/src
 STMSPDINCDIR = $(STMSPDDIR)/inc
 CMSISDIR  = $(STMLIBDIR)/CMSIS/Core/CM3
+RTOSDIR = $(APPLIBDIR)/FreeRTOS
+RTOSSRCDIR = $(RTOSDIR)/Source
+RTOSINCDIR = $(RTOSSRCDIR)/include
 OPDIR = ../OpenPilot
 OPUAVOBJ = ../UAVObjects
 OPUAVOBJINC = $(OPUAVOBJ)/inc
@@ -78,13 +93,59 @@ OPUAVSYNTHDIR = $(OUTDIR)/../uavobject-synthetics/flight
 # use file-extension c for "c-only"-files
 
 ## AHRS:
-SRC = oposd.c
+## MODULES
+SRC += ${foreach MOD, ${MODULES}, ${wildcard ${OPMODULEDIR}/${MOD}/*.c}}
+## OPENPILOT CORE:
+SRC += ${OPMODULEDIR}/System/systemmod.c
+SRC += oposd.c
 SRC += pios_board.c
-SRC += linedriver.c
-SRC += textdriver.c
-SRC += graphicdriver.c
-SRC += watchdog.c
+#SRC += linedriver.c
+#SRC += textdriver.c
+#SRC += graphicdriver.c
+#SRC += watchdog.c
 SRC += $(FLIGHTLIB)/fifo_buffer.c
+SRC += $(OPSYSTEM)/alarms.c
+SRC += $(OPSYSTEM)/taskmonitor.c
+SRC += $(OPUAVTALK)/uavtalk.c
+SRC += $(OPUAVOBJ)/uavobjectmanager.c
+SRC += $(OPUAVOBJ)/eventdispatcher.c
+#SRC += $(OPSYSTEM)/pios_usb_hid_desc.c
+
+## UAVOBJECTS
+#SRC += $(OPUAVSYNTHDIR)/accessorydesired.c
+SRC += $(OPUAVSYNTHDIR)/objectpersistence.c
+#SRC += $(OPUAVSYNTHDIR)/gcstelemetrystats.c
+#SRC += $(OPUAVSYNTHDIR)/flighttelemetrystats.c
+SRC += $(OPUAVSYNTHDIR)/flightstatus.c
+SRC += $(OPUAVSYNTHDIR)/systemstats.c
+SRC += $(OPUAVSYNTHDIR)/systemalarms.c
+SRC += $(OPUAVSYNTHDIR)/systemsettings.c
+#SRC += $(OPUAVSYNTHDIR)/stabilizationdesired.c
+#SRC += $(OPUAVSYNTHDIR)/stabilizationsettings.c
+#SRC += $(OPUAVSYNTHDIR)/actuatorcommand.c
+#SRC += $(OPUAVSYNTHDIR)/actuatordesired.c
+#SRC += $(OPUAVSYNTHDIR)/actuatorsettings.c
+#SRC += $(OPUAVSYNTHDIR)/attituderaw.c
+SRC += $(OPUAVSYNTHDIR)/attitudeactual.c
+#SRC += $(OPUAVSYNTHDIR)/manualcontrolcommand.c
+#SRC += $(OPUAVSYNTHDIR)/i2cstats.c
+#S#RC += $(OPUAVSYNTHDIR)/watchdogstatus.c
+#SRC += $(OPUAVSYNTHDIR)/telemetrysettings.c
+#SRC += $(OPUAVSYNTHDIR)/manualcontrolsettings.c
+#SRC += $(OPUAVSYNTHDIR)/mixersettings.c
+#SRC += $(OPUAVSYNTHDIR)/firmwareiapobj.c
+#SRC += $(OPUAVSYNTHDIR)/attitudesettings.c
+#SRC += $(OPUAVSYNTHDIR)/camerastabsettings.c
+#SRC += $(OPUAVSYNTHDIR)/cameradesired.c
+#SRC += $(OPUAVSYNTHDIR)/hwsettings.c
+#SRC += $(OPUAVSYNTHDIR)/gcsreceiver.c
+#SRC += $(OPUAVSYNTHDIR)/receiveractivity.c
+#SRC += $(OPUAVSYNTHDIR)/taskinfo.c
+#SRC += $(OPUAVSYNTHDIR)/mixerstatus.c
+#SRC += $(OPUAVSYNTHDIR)/ratedesired.c
+
+
+
 
 ## PIOS Hardware (STM32F10x)
 SRC += $(PIOSSTM32F10X)/pios_adc.c
@@ -106,6 +167,7 @@ SRC += $(PIOSCOMMON)/pios_com.c
 SRC += $(PIOSCOMMON)/printf-stdarg.c
 SRC += $(PIOSCOMMON)/pios_iap.c
 SRC += $(PIOSCOMMON)/pios_bl_helper.c
+SRC += $(PIOSCOMMON)/pios_video.c
 
 ## CMSIS for STM32
 SRC += $(CMSISDIR)/core_cm3.c
@@ -128,6 +190,15 @@ SRC += $(STMSPDSRCDIR)/stm32f10x_spi.c
 SRC += $(STMSPDSRCDIR)/stm32f10x_tim.c
 SRC += $(STMSPDSRCDIR)/stm32f10x_usart.c
 SRC += $(STMSPDSRCDIR)/misc.c
+
+## RTOS
+SRC += $(RTOSSRCDIR)/list.c
+SRC += $(RTOSSRCDIR)/queue.c
+SRC += $(RTOSSRCDIR)/tasks.c
+
+## RTOS Portable
+SRC += $(RTOSSRCDIR)/portable/GCC/ARM_CM3/port.c
+SRC += $(RTOSSRCDIR)/portable/MemMang/heap_1.c
 
 # List C source files here which must be compiled in ARM-Mode (no -mthumb).
 # use file-extension c for "c-only"-files
@@ -157,6 +228,13 @@ ASRCARM =
 
 # List any extra directories to look for include files here.
 #    Each directory must be seperated by a space.
+EXTRAINCDIRS  =  $(OPSYSTEM)
+EXTRAINCDIRS  += $(OPSYSTEMINC)
+EXTRAINCDIRS  += $(OPUAVTALK)
+EXTRAINCDIRS  += $(OPUAVTALKINC)
+EXTRAINCDIRS  += $(OPUAVOBJ)
+EXTRAINCDIRS  += $(OPUAVOBJINC)
+EXTRAINCDIRS  += $(OPUAVSYNTHDIR)
 EXTRAINCDIRS  += $(PIOS)
 EXTRAINCDIRS  += $(PIOSINC)
 EXTRAINCDIRS  += $(FLIGHTLIBINC)
@@ -165,9 +243,14 @@ EXTRAINCDIRS  += $(PIOSCOMMON)
 EXTRAINCDIRS  += $(PIOSBOARDS)
 EXTRAINCDIRS  += $(STMSPDINCDIR)
 EXTRAINCDIRS  += $(CMSISDIR)
+EXTRAINCDIRS  += $(RTOSINCDIR)
+EXTRAINCDIRS  += $(APPLIBDIR)
+EXTRAINCDIRS  += $(RTOSSRCDIR)/portable/GCC/ARM_CM3
 EXTRAINCDIRS  += $(AHRSINC)
 EXTRAINCDIRS  += $(OPUAVSYNTHDIR)
 EXTRAINCDIRS  += $(BOOTINC)
+
+EXTRAINCDIRS += ${foreach MOD, ${MODULES}, ${OPMODULEDIR}/${MOD}/inc} ${OPMODULEDIR}/System/inc
 
 # List any extra directories to look for library files here.
 # Also add directories where the linker should search for

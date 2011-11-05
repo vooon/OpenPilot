@@ -41,13 +41,16 @@
 extern void PIOS_Video_IRQHandler(void);
 void EXTI15_10_IRQHandler(void)
 {
+
+#if defined(PIOS_INCLUDE_FREERTOS)
+	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+#endif
+
+#if defined(PIOS_INCLUDE_VIDEO)
 	if (EXTI_GetITStatus(PIOS_VIDEO_SYNC_EXTI_LINE) != RESET) {
 		PIOS_Video_IRQHandler();
 		EXTI_ClearITPendingBit(PIOS_VIDEO_SYNC_EXTI_LINE);
 	}
-
-#if defined(PIOS_INCLUDE_FREERTOS)
-	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 #endif
 
 #if defined(PIOS_INCLUDE_BMP085)

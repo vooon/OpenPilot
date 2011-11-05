@@ -7,7 +7,7 @@ MCU                 := cortex-m3
 CHIP                := STM32F103CBT
 BOARD               := STM32103CB_OPOSD
 MODEL               := MD
-MODEL_SUFFIX        := 
+MODEL_SUFFIX        := _CC
 
 # Note: These must match the values in link_$(BOARD)_memory.ld
 BL_BANK_BASE        := 0x08000000  # Start of bootloader flash

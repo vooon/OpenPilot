@@ -10,45 +10,43 @@
 
 #include <pios.h>
 
-#define GRAPICSENABLED
-#define TEXT_ENABLED
 // *****************************************************************************
 
 // Text
-#ifndef TEXT_SMALL_ENABLED
-#define TEXT_LINE_MAX_CHARS 40
-#else
-#define TEXT_LINE_MAX_CHARS 58
-#endif //TEXT_SMALL_ENABLED
 #define TEXT_CHAR_HEIGHT 8
-#define TEXT_LINES 4
-#define TEXT_TRIG_LINES_LIST 31, 31+25, 260, 260+25
 #define TEXT_INVERTED_OFF 0
 #define TEXT_INVERTED_ON 1
 #define TEXT_INVERTED_FLIP 2
-#ifndef TEXT_SMALL_ENABLED
-#define TEXT_SIZE_MULT 2
-#else
-#define TEXT_SIZE_MULT 1
-#endif //TEXT_SMALL_ENABLED
+//#define TEXT_SIZE_MULT 2
+
 
 
 // Graphics
-#define GRAPHICS_SIZE 64 // Multiple of 8
-#define GRAPHICS_WIDTH_REAL GRAPHICS_SIZE
-#define GRAPHICS_WIDTH (GRAPHICS_SIZE/16)
-#define GRAPHICS_HEIGHT GRAPHICS_SIZE
-#define GRAPHICS_LINE 135
-#define GRAPHICS_OFFSET 18
+//#define GRAPHICS_SIZE 64 // Multiple of 8
+//#define GRAPHICS_LINE 135
+//#define GRAPHICS_OFFSET 18
+
+#define GRAPHICS_LINE 30
+#define GRAPHICS_OFFSET 10
+
+#define GRAPHICS_WIDTH_REAL 336
+#define GRAPHICS_WIDTH (GRAPHICS_WIDTH_REAL/16)
+#define GRAPHICS_HEIGHT_REAL 272
+#define GRAPHICS_HEIGHT GRAPHICS_HEIGHT_REAL
 
 #define BUFFER_LINE_LENGTH         GRAPHICS_WIDTH  //Yes, in 16 bit halfwords.
 #define BUFFER_VERT_SIZE           GRAPHICS_HEIGHT
+#define TEXT_LINE_MAX_CHARS 		GRAPHICS_WIDTH_REAL/8
+
 #define LEFT_MARGIN 3
 #define TOP_MARGIN 2
 
 // Line triggering
 #define MAX(a, b)  (((a) > (b)) ? (a) : (b))
-#define LAST_LINE 100 //240+25+16+2
+#define LAST_LINE 312 //625/2 //PAL
+#define UPDATE_LINE GRAPHICS_LINE+GRAPHICS_HEIGHT_REAL+1
+//#define LAST_LINE 525/2 //NTSC
+
 
 #define LINE_TYPE_UNKNOWN 0
 #define LINE_TYPE_TEXT 1
@@ -75,5 +73,38 @@ typedef struct {
 } TTime;
 
 extern TTime time;
+
+
+#include "xconvert.h"
+#include "oem6x8.h"
+
+
+uint8_t getCharData(uint16_t charPos);
+void introText();
+
+void clearGraphics();
+uint8_t validPos(uint16_t x, uint16_t y);
+void setPixel(uint16_t x, uint16_t y, uint8_t state);
+void drawCircle(uint16_t x0, uint16_t y0, uint16_t radius);
+void swap(uint16_t* a, uint16_t* b);
+void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+void drawBox(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
+void drawArrow(uint16_t x, uint16_t y, uint16_t angle, uint16_t size);
+void drawAttitude(uint16_t x, uint16_t y, int16_t pitch, int16_t roll, uint16_t size);
+void introGraphics();
+void updateGrapics();
+void drawGrapicsLine();
+
+extern volatile uint16_t gActiveLine;
+extern volatile uint16_t gActivePixmapLine;
+
+extern volatile uint8_t gUpdateScreenData;
+extern volatile uint8_t gLineType;
+
+void initLine();
+void updateLine();
+
+void setAttitudeOsd(int16_t pitch, int16_t roll);
+void updateOnceEveryFrame();
 
 #endif /* VIDEOCONF_H_ */

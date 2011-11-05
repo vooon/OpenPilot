@@ -136,6 +136,9 @@
 
 #include <pios_crc.h>
 
+#include <pios_video.h>
+
+
 #define NELEMENTS(x) (sizeof(x) / sizeof(*(x)))
 
 #endif /* PIOS_H */

@@ -36,13 +36,16 @@
 
 #include "oposd.h"
 #include "watchdog.h"
-#include "videoconf.h"
-#include "linedriver.h"
-#include "textdriver.h"
-#include "graphicdriver.h"
+#include "systemmod.h"
+
+/* Task Priorities */
+#define PRIORITY_TASK_HOOKS             (tskIDLE_PRIORITY + 3)
+
+/* Global Variables */
 
 /* Prototype of PIOS_Board_Init() function */
 extern void PIOS_Board_Init(void);
+extern void Stack_Change(void);
 
 // *****************************************************************************
 // Global Variables
@@ -174,7 +177,7 @@ void processReset(void)
     RCC_ClearFlag();
 }
 
-static void updateOnceEveryFrame() {
+/*static void updateOnceEveryFrame() {
 #ifdef TEXT_ENABLED
 	clearText();
 	for (uint8_t i = 0; i < TEXT_LINES; ++i) {
@@ -187,7 +190,7 @@ static void updateOnceEveryFrame() {
 	updateGrapics();
 #endif //GRAPICSENABLED
 }
-
+*/
 
 int main()
 {
@@ -197,7 +200,8 @@ int main()
 
     PIOS_Board_Init();
 
-    initLine();
+    MODULE_INITIALISE_ALL
+
     sequenceLEDs();
 
     // turn all the leds off
@@ -210,8 +214,34 @@ int main()
 
     // *************
     // Main executive loop
+	/*clearGraphics();
+	introGraphics();
+	PIOS_DELAY_WaitmS(1000);
+	clearText();
+	introText();
+	for(int i=0;i<10000;i++){
+		updateTextPixmap(activeTextId);
+		PIOS_DELAY_WaituS(10);
+	}
+*/
 
+	/* swap the stack to use the IRQ stack */
+	Stack_Change();
 
+	/* Start the FreeRTOS scheduler which should never returns.*/
+	vTaskStartScheduler();
+
+	/* If all is well we will never reach here as the scheduler will now be running. */
+
+	/* Do some indication to user that something bad just happened */
+	PIOS_LED_Off(LED1); \
+	for(;;) { \
+		PIOS_LED_Toggle(LED1); \
+		PIOS_DELAY_WaitmS(100); \
+	};
+
+	return 0;
+/*
     for (;;)
     {
 #ifdef TEXT_ENABLED
@@ -248,7 +278,7 @@ int main()
     PIOS_SYS_Reset();
 
     while (1);
-
+*/
     return 0;
 }
 

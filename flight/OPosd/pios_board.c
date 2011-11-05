@@ -24,7 +24,11 @@
  */
 
 #include <pios.h>
-#include "videoconf.h"
+#include <openpilot.h>
+#include <uavobjectsinit.h>
+#include <hwsettings.h>
+#include <manualcontrolsettings.h>
+#include <gcsreceiver.h>
 
 #define PIOS_COM_TELEM_RF_RX_BUF_LEN 192
 #define PIOS_COM_TELEM_RF_TX_BUF_LEN 192
@@ -274,7 +278,7 @@ static const struct pios_usart_cfg pios_usart_serial_cfg =
 {
 		.regs = USART3,
 		.init = {
-			 .USART_BaudRate = 115200,
+			 .USART_BaudRate = 57600,
 			 .USART_WordLength = USART_WordLength_8b,
 			 .USART_Parity = USART_Parity_No,
 			 .USART_StopBits = USART_StopBits_1,
@@ -285,7 +289,7 @@ static const struct pios_usart_cfg pios_usart_serial_cfg =
 		.irq = {
 			.init = {
 				 .NVIC_IRQChannel = USART3_IRQn,
-				 .NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGH,
+				 .NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_LOW,
 				 .NVIC_IRQChannelSubPriority = 0,
 				 .NVIC_IRQChannelCmd = ENABLE,
 				 },
@@ -322,7 +326,7 @@ static const struct pios_usart_cfg pios_usart_serial_cfg =
 
 extern const struct pios_com_driver pios_usb_com_driver;
 
-uint32_t pios_com_serial_id;
+uint32_t pios_com_hkosd_id;
 uint32_t pios_com_telem_usb_id;
 
 /**
@@ -368,7 +372,7 @@ void DMA_Config(void)
 	DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(SPI2->DR);
 	DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)frameBuffer[1];
 	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralDST;
-	DMA_InitStructure.DMA_Priority = DMA_Priority_Low;
+	DMA_InitStructure.DMA_Priority = DMA_Priority_High;
 
 	DMA_InitStructure.DMA_BufferSize = BUFFER_LINE_LENGTH;
 	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
@@ -382,6 +386,10 @@ void DMA_Config(void)
 }
 static void Clock(uint32_t spektrum_id);
 
+
+#define PIOS_COM_HKOSD_RX_BUF_LEN 22
+#define PIOS_COM_HKOSD_TX_BUF_LEN 22
+
 void PIOS_Board_Init(void) {
 	// Bring up System using CMSIS functions, enables the LEDs.
 	PIOS_SYS_Init();
@@ -392,6 +400,18 @@ void PIOS_Board_Init(void) {
 	// Delay system
 	PIOS_DELAY_Init();
 
+	/* Initialize UAVObject libraries */
+	EventDispatcherInitialize();
+	UAVObjInitialize();
+
+
+	/* Initialize the alarms library */
+	AlarmsInitialize();
+
+	/* Initialize the task monitor library */
+	TaskMonitorInitialize();
+
+
 #if defined(PIOS_INCLUDE_RTC)
 	/* Initialize the real-time clock and its associated tick */
 	PIOS_RTC_Init(&pios_rtc_main_cfg);
@@ -399,6 +419,22 @@ void PIOS_Board_Init(void) {
 		PIOS_DEBUG_Assert(0);
 	}
 #endif
+
+
+	uint32_t pios_usart_hkosd_id;
+	if (PIOS_USART_Init(&pios_usart_hkosd_id, &pios_usart_serial_cfg)) {
+		PIOS_Assert(0);
+	}
+	uint8_t * rx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_HKOSD_RX_BUF_LEN);
+	PIOS_Assert(rx_buffer);
+
+	uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_HKOSD_TX_BUF_LEN);
+	PIOS_Assert(tx_buffer);
+	if (PIOS_COM_Init(&pios_com_hkosd_id, &pios_usart_com_driver, pios_usart_hkosd_id,
+				rx_buffer, PIOS_COM_HKOSD_RX_BUF_LEN,
+				tx_buffer, PIOS_COM_HKOSD_TX_BUF_LEN)) {
+		PIOS_Assert(0);
+	}
 
 /*
 	uint32_t pios_usart_serial_id;
@@ -437,6 +473,9 @@ void PIOS_Board_Init(void) {
 
 	//Setup the DMA to keep the spi port fed
 	DMA_Config();
+
+    initLine();
+
 	//fillFrameBuffer();
 }
 
