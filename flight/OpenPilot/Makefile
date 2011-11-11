@@ -61,7 +61,7 @@ FLASH_TOOL = OPENOCD
 
 # List of modules to include
 OPTMODULES = CameraStab GPS
-MODULES = Actuator ManualControl Altitude AHRSComms Stabilization Guidance FirmwareIAP
+MODULES = Actuator FirmwareIAP GasEngineSensors
 PYMODULES = FlightPlan
 #MODULES = Telemetry Example
 #MODULES = Telemetry MK/MKSerial
