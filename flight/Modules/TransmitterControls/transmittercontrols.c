@@ -54,8 +54,8 @@
 #include "transmittercontrols.h"
 
 // Private constants
-//#define STACK_SIZE_BYTES 540
-#define STACK_SIZE_BYTES 320
+#define STACK_SIZE_BYTES 540
+//#define STACK_SIZE_BYTES 320
 #define TASK_PRIORITY (tskIDLE_PRIORITY+3)
 
 #define UPDATE_RATE	 2.0f
@@ -117,7 +117,7 @@ int32_t TransmitterControlsStart(void) {
 int32_t TransmitterControlsInitialize(void) {
 
 	// Create queue for passing control data, allow 2 back samples in case
-	adc_queue = xQueueCreate(1, sizeof(float) * 4);
+	adc_queue = xQueueCreate(1, sizeof(float) * 7);
 	if(adc_queue == NULL)
 		return -1;
 	PIOS_ADC_SetQueue(adc_queue);
@@ -220,7 +220,7 @@ static void registerObject(UAVObjHandle obj)
  */
 static void transmitterControlsTask(void *parameters)
 {
-	ManualControlCommandData mcc;
+	//ManualControlCommandData mcc;
 	/*
     uint8_t Connected;
     float Roll;
@@ -240,21 +240,32 @@ static void transmitterControlsTask(void *parameters)
 		PIOS_WDG_UpdateFlag(PIOS_WDG_ATTITUDE);
 
 		// Only wait the time for two nominal updates before setting an alarm
-		float gyro[5];
+		float gyro[PIOS_ADC_NUM_CHANNELS];
 		if(xQueueReceive(adc_queue, (void * const) gyro, UPDATE_RATE * 2) == errQUEUE_EMPTY)
 			AlarmsSet(SYSTEMALARMS_ALARM_ATTITUDE, SYSTEMALARMS_ALARM_ERROR);
 		else {
 			++cntr;
-			ManualControlCommandGet(&mcc);
-			mcc.Channel[0] = gyro[0];
-			mcc.Channel[1] = gyro[1];
-			mcc.Channel[2] = gyro[2];
-			mcc.Channel[3] = gyro[3];
-			ManualControlCommandSet(&mcc);
+			//ManualControlCommandGet(&mcc);
+			//mcc.Channel[0] = gyro[1];
+			//mcc.Channel[1] = gyro[2];
+			//mcc.Channel[2] = gyro[3];
+			//mcc.Channel[3] = gyro[4];
+			//ManualControlCommandSet(&mcc);
 			if((cntr % 1000) == 0) {
-				PIOS_COM_SendString(PIOS_COM_DEBUG, "ADC\n\r");
-				//PIOS_COM_SendFormattedStringNonBlocking(PIOS_COM_DEBUG, "%d %d %d %d\n\r",
-				//(uint32_t)gyro[0], (uint32_t)gyro[1], (uint32_t)gyro[2], (uint32_t)gyro[3]);
+				char buf[15];
+				int i;
+				PIOS_COM_SendString(PIOS_COM_DEBUG, "ACD: ");
+				for(i = 0; i < PIOS_ADC_NUM_CHANNELS; ++i) {
+					sprintf(buf, "%x ", (unsigned int)gyro[i]);
+					PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
+				}
+				PIOS_COM_SendString(PIOS_COM_DEBUG, "\n\r");
+				PIOS_COM_SendString(PIOS_COM_DEBUG, "ACD Read: ");
+				for(i = 0; i < PIOS_ADC_NUM_CHANNELS; ++i) {
+					sprintf(buf, "%x ", (unsigned int)PIOS_ADC_PinGet(i));
+					PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
+				}
+				PIOS_COM_SendString(PIOS_COM_DEBUG, "\n\r");
 				cntr = 0;
 			}
 			AlarmsClear(SYSTEMALARMS_ALARM_ATTITUDE);

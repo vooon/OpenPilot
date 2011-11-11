@@ -27,6 +27,8 @@
 #ifndef STM32103CB_CC_H_
 #define STM32103CB_CC_H_
 
+#define ADD_ONE_ADC
+
 //------------------------
 // Timers and Channels Used
 //------------------------
@@ -152,122 +154,69 @@ extern uint32_t pios_com_telem_usb_id;
 
 //-------------------------
 // ADC
-// PIOS_ADC_PinGet(0) = Gyro Z
-// PIOS_ADC_PinGet(1) = Gyro Y
-// PIOS_ADC_PinGet(2) = Gyro X
+// PIOS_ADC_PinGet(0) = 
+// PIOS_ADC_PinGet(1) = 
+// PIOS_ADC_PinGet(2) = 
+// PIOS_ADC_PinGet(3) = 
+// PIOS_ADC_PinGet(4) = 
+// PIOS_ADC_PinGet(5) = 
 //-------------------------
 //#define PIOS_ADC_OVERSAMPLING_RATE		1
 #define PIOS_ADC_USE_TEMP_SENSOR		0
 #define PIOS_ADC_TEMP_SENSOR_ADC		ADC1
 #define PIOS_ADC_TEMP_SENSOR_ADC_CHANNEL	1
 
-#define PIOS_ADC_PIN1_GPIO_PORT			GPIOA			// PA4 (Gyro X)
-#define PIOS_ADC_PIN1_GPIO_PIN			GPIO_Pin_4		// ADC12_IN4
-#define PIOS_ADC_PIN1_GPIO_CHANNEL		ADC_Channel_4
-#define PIOS_ADC_PIN1_ADC			ADC2
+#define PIOS_ADC_PIN1_GPIO_PORT			GPIOA			// PA0
+#define PIOS_ADC_PIN1_GPIO_PIN			GPIO_Pin_0		// ADC12_IN0
+#define PIOS_ADC_PIN1_GPIO_CHANNEL		ADC_Channel_0
+#define PIOS_ADC_PIN1_ADC			ADC1
 #define PIOS_ADC_PIN1_ADC_NUMBER		1
 
-#define PIOS_ADC_PIN2_GPIO_PORT			GPIOA			// PA5 (Gyro Y)
-#define PIOS_ADC_PIN2_GPIO_PIN			GPIO_Pin_5		// ADC123_IN5
-#define PIOS_ADC_PIN2_GPIO_CHANNEL		ADC_Channel_5
-#define PIOS_ADC_PIN2_ADC			ADC1
-#define PIOS_ADC_PIN2_ADC_NUMBER		2
+#define PIOS_ADC_PIN2_GPIO_PORT			GPIOA			// PA1
+#define PIOS_ADC_PIN2_GPIO_PIN			GPIO_Pin_1		// ADC123_IN1
+#define PIOS_ADC_PIN2_GPIO_CHANNEL		ADC_Channel_1
+#define PIOS_ADC_PIN2_ADC			ADC2
+#define PIOS_ADC_PIN2_ADC_NUMBER		1
 
-#define PIOS_ADC_PIN3_GPIO_PORT			GPIOA			// PA3 (Gyro Z)
-#define PIOS_ADC_PIN3_GPIO_PIN			GPIO_Pin_3		// ADC12_IN3
-#define PIOS_ADC_PIN3_GPIO_CHANNEL		ADC_Channel_3
-#define PIOS_ADC_PIN3_ADC			ADC2
+#define PIOS_ADC_PIN3_GPIO_PORT			GPIOA			// PA4
+#define PIOS_ADC_PIN3_GPIO_PIN			GPIO_Pin_4		// ADC12_IN4
+#define PIOS_ADC_PIN3_GPIO_CHANNEL		ADC_Channel_4
+#define PIOS_ADC_PIN3_ADC			ADC1
 #define PIOS_ADC_PIN3_ADC_NUMBER		2
 
-#define PIOS_ADC_PIN4_GPIO_PORT			GPIOA			// PA2
-#define PIOS_ADC_PIN4_GPIO_PIN			GPIO_Pin_2		// ADC12_IN2
-#define PIOS_ADC_PIN4_GPIO_CHANNEL		ADC_Channel_2
-#define PIOS_ADC_PIN4_ADC			ADC1
-#define PIOS_ADC_PIN4_ADC_NUMBER		1
+#define PIOS_ADC_PIN4_GPIO_PORT			GPIOA			// PA5
+#define PIOS_ADC_PIN4_GPIO_PIN			GPIO_Pin_5		// ADC12_IN5
+#define PIOS_ADC_PIN4_GPIO_CHANNEL		ADC_Channel_5
+#define PIOS_ADC_PIN4_ADC			ADC2
+#define PIOS_ADC_PIN4_ADC_NUMBER		2
 
-#define PIOS_ADC_NUM_PINS			4
+#define PIOS_ADC_PIN5_GPIO_PORT			GPIOA			// PA6
+#define PIOS_ADC_PIN5_GPIO_PIN			GPIO_Pin_6		// ADC12_IN6
+#define PIOS_ADC_PIN5_GPIO_CHANNEL		ADC_Channel_6
+#define PIOS_ADC_PIN5_ADC			ADC1
+#define PIOS_ADC_PIN5_ADC_NUMBER		3
 
-#define PIOS_ADC_PORTS				{ PIOS_ADC_PIN1_GPIO_PORT, PIOS_ADC_PIN2_GPIO_PORT, PIOS_ADC_PIN3_GPIO_PORT, PIOS_ADC_PIN4_GPIO_PORT }
-#define PIOS_ADC_PINS				{ PIOS_ADC_PIN1_GPIO_PIN, PIOS_ADC_PIN2_GPIO_PIN, PIOS_ADC_PIN3_GPIO_PIN, PIOS_ADC_PIN4_GPIO_PIN }
-#define PIOS_ADC_CHANNELS			{ PIOS_ADC_PIN1_GPIO_CHANNEL, PIOS_ADC_PIN2_GPIO_CHANNEL, PIOS_ADC_PIN3_GPIO_CHANNEL, PIOS_ADC_PIN4_GPIO_CHANNEL }
-#define PIOS_ADC_MAPPING			{ PIOS_ADC_PIN1_ADC, PIOS_ADC_PIN2_ADC, PIOS_ADC_PIN3_ADC, PIOS_ADC_PIN4_ADC }
-#define PIOS_ADC_CHANNEL_MAPPING		{ PIOS_ADC_PIN1_ADC_NUMBER, PIOS_ADC_PIN2_ADC_NUMBER, PIOS_ADC_PIN3_ADC_NUMBER, PIOS_ADC_PIN4_ADC_NUMBER }
+#define PIOS_ADC_PIN6_GPIO_PORT			GPIOA			// PA7
+#define PIOS_ADC_PIN6_GPIO_PIN			GPIO_Pin_7		// ADC12_IN7
+#define PIOS_ADC_PIN6_GPIO_CHANNEL		ADC_Channel_7
+#define PIOS_ADC_PIN6_ADC			ADC2
+#define PIOS_ADC_PIN6_ADC_NUMBER		3
 
-#define PIOS_ADC_NUM_CHANNELS			(PIOS_ADC_NUM_PINS + PIOS_ADC_USE_TEMP_SENSOR)
-#define PIOS_ADC_NUM_ADC_CHANNELS		2
-#define PIOS_ADC_USE_ADC2			1
-#define PIOS_ADC_CLOCK_FUNCTION			RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1 | RCC_APB2Periph_ADC2, ENABLE)
-#define PIOS_ADC_ADCCLK				RCC_PCLK2_Div8
-/* RCC_PCLK2_Div2: ADC clock = PCLK2/2 */
-/* RCC_PCLK2_Div4: ADC clock = PCLK2/4 */
-/* RCC_PCLK2_Div6: ADC clock = PCLK2/6 */
-/* RCC_PCLK2_Div8: ADC clock = PCLK2/8 */
-#define PIOS_ADC_SAMPLE_TIME			ADC_SampleTime_239Cycles5
-/* Sample time: */
-/* With an ADCCLK = 14 MHz and a sampling time of 239.5 cycles: */
-/* Tconv = 239.5 + 12.5 = 252 cycles = 18�s */
-/* (1 / (ADCCLK / CYCLES)) = Sample Time (�S) */
-#define PIOS_ADC_IRQ_PRIO			PIOS_IRQ_PRIO_LOW
+#define PIOS_ADC_NUM_PINS			6
 
-// Currently analog acquistion hard coded at 480 Hz
-// PCKL2 = HCLK / 16
-// ADCCLK = PCLK2 / 2
-#define PIOS_ADC_RATE		(72.0e6 / 1.0 / 8.0 / 252.0 / (PIOS_ADC_NUM_CHANNELS >> PIOS_ADC_USE_ADC2))
-#define PIOS_ADC_MAX_OVERSAMPLING               36
-
-//------------------------
-// PIOS_RCVR
-// See also pios_board.c
-//------------------------
-#define PIOS_RCVR_MAX_DEVS                      3
-#define PIOS_RCVR_MAX_CHANNELS			12
-
-//-------------------------
-// Receiver PPM input
-//-------------------------
-#define PIOS_PPM_MAX_DEVS			1
-#define PIOS_PPM_NUM_INPUTS                     12
-
-//-------------------------
-// Receiver PWM input
-//-------------------------
-#define PIOS_PWM_MAX_DEVS			1
-#define PIOS_PWM_NUM_INPUTS                     6
-
-//-------------------------
-// Receiver SPEKTRUM input
-//-------------------------
-#define PIOS_SPEKTRUM_MAX_DEVS			2
-#define PIOS_SPEKTRUM_NUM_INPUTS                12
-
-//-------------------------
-// Servo outputs
-//-------------------------
-#define PIOS_SERVO_UPDATE_HZ                    50
-#define PIOS_SERVOS_INITIAL_POSITION            0 /* dont want to start motors, have no pulse till settings loaded */
-
-//--------------------------
-// Timer controller settings
-//--------------------------
-#define PIOS_TIM_MAX_DEVS			3
+#define PIOS_ADC_PORTS				{ PIOS_ADC_PIN1_GPIO_PORT, PIOS_ADC_PIN2_GPIO_PORT, PIOS_ADC_PIN3_GPIO_PORT, PIOS_ADC_PIN4_GPIO_PORT, PIOS_ADC_PIN5_GPIO_PORT, PIOS_ADC_PIN6_GPIO_PORT }
+#define PIOS_ADC_PINS				{ PIOS_ADC_PIN1_GPIO_PIN, PIOS_ADC_PIN2_GPIO_PIN, PIOS_ADC_PIN3_GPIO_PIN, PIOS_ADC_PIN4_GPIO_PIN, PIOS_ADC_PIN5_GPIO_PIN, PIOS_ADC_PIN6_GPIO_PIN }
+#define PIOS_ADC_CHANNELS			{ PIOS_ADC_PIN1_GPIO_CHANNEL, PIOS_ADC_PIN2_GPIO_CHANNEL, PIOS_ADC_PIN3_GPIO_CHANNEL, PIOS_ADC_PIN4_GPIO_CHANNEL, PIOS_ADC_PIN5_GPIO_CHANNEL, PIOS_ADC_PIN6_GPIO_CHANNEL }
+#define PIOS_ADC_MAPPING			{ PIOS_ADC_PIN1_ADC, PIOS_ADC_PIN2_ADC, PIOS_ADC_PIN3_ADC, PIOS_ADC_PIN4_ADC, PIOS_ADC_PIN5_ADC, PIOS_ADC_PIN6_ADC }
+#define PIOS_ADC_CHANNEL_MAPPING		{ PIOS_ADC_PIN1_ADC_NUMBER, PIOS_ADC_PIN2_ADC_NUMBER, PIOS_ADC_PIN3_ADC_NUMBER, PIOS_ADC_PIN4_ADC_NUMBER, PIOS_ADC_PIN5_ADC_NUMBER, PIOS_ADC_PIN6_ADC_NUMBER }
 
 //-------------------------
 // GPIO
 //-------------------------
-#define PIOS_GPIO_1_PORT			GPIOA
-#define PIOS_GPIO_1_PIN				GPIO_Pin_7
-#define PIOS_GPIO_1_GPIO_CLK			RCC_APB2Periph_GPIOA
-
-#define PIOS_GPIO_PORTS				{ PIOS_GPIO_1_PORT }
-#define PIOS_GPIO_PINS				{ PIOS_GPIO_1_PIN }
-#define PIOS_GPIO_CLKS				{ PIOS_GPIO_1_GPIO_CLK }
-#define PIOS_GPIO_NUM				1
-
-#define PIOS_FLASH_CS_PIN                       0
-#define PIOS_FLASH_ENABLE                       PIOS_GPIO_On(0)
-#define PIOS_FLASH_DISABLE                      PIOS_GPIO_Off(0)
-#define PIOS_ADXL_ENABLE                        PIOS_SPI_RC_PinSet(PIOS_SPI_ACCEL,0)
-#define PIOS_ADXL_DISABLE                       PIOS_SPI_RC_PinSet(PIOS_SPI_ACCEL,1)
+#define PIOS_GPIO_PORTS				{ }
+#define PIOS_GPIO_PINS				{ }
+#define PIOS_GPIO_CLKS				{ }
+#define PIOS_GPIO_NUM				0
 
 //-------------------------
 // USB
@@ -278,4 +227,10 @@ extern uint32_t pios_com_telem_usb_id;
 #define PIOS_USB_DETECT_GPIO_PIN                GPIO_Pin_15
 #define PIOS_USB_DETECT_EXTI_LINE               EXTI_Line15
 #define PIOS_IRQ_USB_PRIORITY                   PIOS_IRQ_PRIO_MID
+
+//------------------------
+// UAVTalkBus Devices
+//------------------------
+#define PIOS_UAVTALK_NUM			2
+#define PIOS_UAVTALK_PORTS			{ PIOS_COM_TELEM_USB, PIOS_COM_TELEM_RF }
 #endif /* STM32103CB_AHRS_H_ */
