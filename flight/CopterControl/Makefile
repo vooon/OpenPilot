@@ -38,7 +38,7 @@ OUTDIR := $(TOP)/build/$(TARGET)
 DEBUG ?= NO
 
 # Include objects that are just nice information to show
-DIAGNOSTICS ?= NO
+DIAGNOSTICS ?= YES
 
 # Set to YES to build a FW version that will erase all flash memory
 ERASE_FLASH ?= NO
@@ -71,7 +71,10 @@ OPTMODULES += GPS
 endif
 
 MODULES = Attitude Stabilization Actuator ManualControl FirmwareIAP
-# Telemetry must be last to grab the optional modules (why?)
+MODULES = Attitude Stabilization ManualControl FirmwareIAP CameraStab 
+MODULES += GasEngineSensors
+MODULES += AnalogSensors
+# Telemetry must be last to grab the optional modules
 MODULES += Telemetry
 
 # Paths
@@ -178,8 +181,11 @@ SRC += $(OPUAVSYNTHDIR)/receiveractivity.c
 SRC += $(OPUAVSYNTHDIR)/taskinfo.c
 SRC += $(OPUAVSYNTHDIR)/mixerstatus.c
 SRC += $(OPUAVSYNTHDIR)/ratedesired.c
-SRC += $(OPUAVSYNTHDIR)/mcp3424sensor.c
-SRC += $(OPUAVSYNTHDIR)/mcp3424settings.c
+SRC += $(OPUAVSYNTHDIR)/gasenginedata.c
+SRC += $(OPUAVSYNTHDIR)/gasenginedatasettings.c
+SRC += $(OPUAVSYNTHDIR)/analogsensorsvalues.c
+SRC += $(OPUAVSYNTHDIR)/analogsensorssettings.c
+
 
 endif
 
@@ -226,6 +232,10 @@ SRC += $(PIOSCOMMON)/printf-stdarg.c
 ## Libraries for flight calculations
 SRC += $(FLIGHTLIB)/fifo_buffer.c
 SRC += $(FLIGHTLIB)/CoordinateConversions.c
+
+## Libraries for analog sensors
+SRC += $(FLIGHTLIB)/mcp3424.c
+SRC += $(FLIGHTLIB)/mcp9804.c
 
 ## CMSIS for STM32
 SRC += $(CMSISDIR)/core_cm3.c
