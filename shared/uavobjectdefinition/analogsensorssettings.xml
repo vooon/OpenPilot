@@ -1,0 +1,20 @@
+<xml>
+    <object name="AnalogSensorsSettings" singleinstance="true" settings="true">
+        <description>Settings for the @ref MCP3424 anaolog expansion board. These settings control internal gain parameters, etc.</description>
+        <field name="I2CAddress" units="byte" type="uint16" elements="1" defaultvalue="00"/>
+	<field name="Channel1Gain" units="" type="enum" elements="1" options="1,2,4,8" defaultvalue="8"/>
+        <field name="Channel1Resolution" units="" type="enum" elements="1" options="12,14,16,18" defaultvalue="18"/>
+	<field name="Channel2Gain" units="" type="enum" elements="1" options="1,2,4,8" defaultvalue="8"/>
+        <field name="Channel2Resolution" units="" type="enum" elements="1" options="12,14,16,18" defaultvalue="18"/>
+	<field name="Channel3Gain" units="" type="enum" elements="1" options="1,2,4,8" defaultvalue="8"/>
+        <field name="Channel3Resolution" units="" type="enum" elements="1" options="12,14,16,18" defaultvalue="18"/>
+	<field name="Channel4Gain" units="" type="enum" elements="1" options="1,2,4,8" defaultvalue="8"/>
+        <field name="Channel4Resolution" units="" type="enum" elements="1" options="12,14,16,18" defaultvalue="18"/>
+        <field name="Downsampling" units="" type="uint8" elements="1" defaultvalue="3"/>
+        <field name="UpdatePeriod" units="ms" type="uint32" elements="1" defaultvalue="1000"/>
+        <access gcs="readwrite" flight="readwrite"/>
+        <telemetrygcs acked="true" updatemode="onchange" period="0"/>
+        <telemetryflight acked="true" updatemode="onchange" period="0"/>
+        <logging updatemode="never" period="0"/>
+    </object>
+</xml>

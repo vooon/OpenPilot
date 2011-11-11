@@ -1,0 +1,15 @@
+<xml>
+    <object name="GasEngineData" singleinstance="true" settings="false">
+        <description>Sensor data pulled from MCP3424 and MCP9804 via I2C</description>
+        <field name="BatteryVoltage" units="V" type="float" elements="1"/>
+        <field name="BatteryAmps" units="A" type="float" elements="1"/>
+        <field name="IgnitionBattery_mAh" units="mAh" type="float" elements="1"/>
+        <field name="ColdJunction" units="deg C" type="float" elements="1"/>
+        <field name="CylinderHeadTemp" units="deg C" type="float" elements="1"/>
+        <field name="ExhaustGasTemp" units="deg C" type="float" elements="1"/>
+        <access gcs="readwrite" flight="readwrite"/>
+        <telemetrygcs acked="false" updatemode="manual" period="0"/>
+        <telemetryflight acked="false" updatemode="periodic" period="1000"/>
+        <logging updatemode="never" period="0"/>
+    </object>
+</xml>
