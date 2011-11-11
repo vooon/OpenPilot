@@ -73,8 +73,11 @@ HEADERS += $$UAVOBJECT_SYNTHETICS/accessorydesired.h \
     $$UAVOBJECT_SYNTHETICS/receiveractivity.h \
     $$UAVOBJECT_SYNTHETICS/attitudesettings.h \
     $$UAVOBJECT_SYNTHETICS/cameradesired.h \
-    $$UAVOBJECT_SYNTHETICS/mcp3424sensor.h \
-    $$UAVOBJECT_SYNTHETICS/mcp3424settings.h
+    $$UAVOBJECT_SYNTHETICS/gasenginedata.h \
+    $$UAVOBJECT_SYNTHETICS/gasenginedatasettings.h \
+    $$UAVOBJECT_SYNTHETICS/analogsensorsvalues.h \
+    $$UAVOBJECT_SYNTHETICS/analogsensorssettings.h
+
 
 SOURCES += $$UAVOBJECT_SYNTHETICS/accessorydesired.cpp \
     $$UAVOBJECT_SYNTHETICS/ahrsstatus.cpp \
@@ -127,5 +130,7 @@ SOURCES += $$UAVOBJECT_SYNTHETICS/accessorydesired.cpp \
     $$UAVOBJECT_SYNTHETICS/receiveractivity.cpp \
     $$UAVOBJECT_SYNTHETICS/attitudesettings.cpp \
     $$UAVOBJECT_SYNTHETICS/cameradesired.cpp \
-    $$UAVOBJECT_SYNTHETICS/mcp3424sensor.cpp \
-    $$UAVOBJECT_SYNTHETICS/mcp3424settings.cpp
+    $$UAVOBJECT_SYNTHETICS/gasenginedata.cpp \
+    $$UAVOBJECT_SYNTHETICS/gasenginedatasettings.cpp \
+    $$UAVOBJECT_SYNTHETICS/analogsensorsvalues.cpp \
+    $$UAVOBJECT_SYNTHETICS/analogsensorssettings.cpp \
