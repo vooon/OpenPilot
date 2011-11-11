@@ -65,7 +65,7 @@ endif
 FLASH_TOOL = OPENOCD
 
 # List of modules to include
-MODULES = TransmitterControls
+MODULES = TransmitterControls UAVTalkBus
 # Telemetry must be last to grab the optional modules
 MODULES += Telemetry
 
