@@ -80,29 +80,26 @@ DFUObject::DFUObject(bool _debug,bool _use_serial,QString portname):
     }
     else
     {
-        send_delay=10;
-        use_delay=true;
-//        int numDevices=0;
         QList<USBPortInfo> devices;
-        int count=0;
-        while((devices.length()==0) && count < 10)
-        {
-            if (debug)
-                qDebug() << ".";
-            delay::msleep(500);
-            // processEvents enables XP to process the system
-            // plug/unplug events, otherwise it will not process
-            // those events before the end of the call!
-            QApplication::processEvents();
-            devices = USBMonitor::instance()->availableDevices(0x20a0,-1,-1,USBMonitor::Bootloader);
-            count++;
-        }
-       if (devices.length()==1) {
+        devices = USBMonitor::instance()->availableDevices(0x20a0,-1,-1,USBMonitor::Bootloader);
+        if (devices.length()==1) {
            hidHandle.open(1,devices.first().vendorID,devices.first().productID,0,0);
         } else {
-           qDebug() << devices.length()  << " device(s) detected, don't know what to do!";
-           mready = false;
-       }
+            // Wait for the board to appear on the USB bus:
+            QEventLoop m_eventloop;
+            connect(USBMonitor::instance(), SIGNAL(deviceDiscovered(USBPortInfo)),&m_eventloop, SLOT(quit()));
+            QTimer::singleShot(5000,&m_eventloop, SLOT(quit()));
+            m_eventloop.exec();
+            devices = USBMonitor::instance()->availableDevices(0x20a0,-1,-1,USBMonitor::Bootloader);
+            if (devices.length()==1) {
+               delay::msleep(2000); // Let the USB Subsystem settle (especially important on Mac!)
+               hidHandle.open(1,devices.first().vendorID,devices.first().productID,0,0);
+            }
+             else {
+                qDebug() << devices.length()  << " device(s) detected, don't know what to do!";
+                mready = false;
+            }
+        }
 
     }
 }
@@ -1020,3 +1017,43 @@ int DFUObject::receiveData(void * data,int size)
         }
     }
 }
+
+#define BOARD_ID_MB     1
+#define BOARD_ID_INS    2
+#define BOARD_ID_PIP    3
+#define BOARD_ID_CC     4
+//#define BOARD_ID_PRO     ?
+
+/**
+  Gets the type of board connected
+  */
+OP_DFU::eBoardType DFUObject::GetBoardType(int boardNum)
+{
+    OP_DFU::eBoardType brdType = eBoardUnkwn;
+
+    // First of all, check what Board type we are talking to
+    int board = devices[boardNum].ID;
+    qDebug() << "Board model: " << board;
+    switch (board >> 8) {
+        case BOARD_ID_MB: // Mainboard family
+            brdType = eBoardMainbrd;
+            break;
+        case BOARD_ID_INS: // Inertial Nav
+            brdType = eBoardINS;
+            break;
+        case BOARD_ID_PIP: // PIP RF Modem
+            brdType = eBoardPip;
+            break;
+        case BOARD_ID_CC: // CopterControl family
+            brdType = eBoardCC;
+            break;
+#if 0 // Someday ;-)
+        case BOARD_ID_PRO: // Pro board
+            brdType = eBoardPro;
+            break;
+#endif
+    } 
+    return brdType;
+}
+
+
