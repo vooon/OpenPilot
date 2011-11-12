@@ -275,6 +275,7 @@ ifeq ($(DEBUG),YES)
 CFLAGS = -g$(DEBUGF)
 endif
 
+CFLAGS += -DSYSCLK_FREQ_72MHz=72000000
 CFLAGS += -O$(OPT)
 ifeq ($(DEBUG),NO)
 CFLAGS += -fdata-sections -ffunction-sections
