@@ -110,8 +110,6 @@
 		65643CB01413322000A32F59 /* pios_spektrum_priv.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pios_spektrum_priv.h; sourceTree = "<group>"; };
 		65643CB91413456D00A32F59 /* pios_tim.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pios_tim.c; sourceTree = "<group>"; };
 		65643CBA141350C200A32F59 /* pios_sbus.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pios_sbus.c; sourceTree = "<group>"; };
-		65643CEC141429A100A32F59 /* NMEA.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = NMEA.c; sourceTree = "<group>"; };
-		65643CEE141429AF00A32F59 /* NMEA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMEA.h; sourceTree = "<group>"; };
 		6572CB1613D0F2B200FC2972 /* link_STM32103CB_CC_Rev1_memory.ld */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = link_STM32103CB_CC_Rev1_memory.ld; path = ../../PiOS/STM32F10x/link_STM32103CB_CC_Rev1_memory.ld; sourceTree = SOURCE_ROOT; };
 		6572CB1713D0F2B200FC2972 /* link_STM32103CB_CC_Rev1_sections.ld */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = link_STM32103CB_CC_Rev1_sections.ld; path = ../../PiOS/STM32F10x/link_STM32103CB_CC_Rev1_sections.ld; sourceTree = SOURCE_ROOT; };
 		657CEEAD121DB6C8007A1FBE /* homelocation.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = homelocation.xml; sourceTree = "<group>"; };
@@ -125,6 +123,22 @@
 		6589A983131DE24F006BD67C /* taskmonitor.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = taskmonitor.c; sourceTree = "<group>"; };
 		6589A9DB131DEE76006BD67C /* pios_rtc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pios_rtc.c; sourceTree = "<group>"; };
 		6589A9E2131DF1C7006BD67C /* pios_rtc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pios_rtc.h; sourceTree = "<group>"; };
+		65958ED2146F361B0008A498 /* firmware-defs.mk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "firmware-defs.mk"; sourceTree = "<group>"; };
+		65958EDC146F361B0008A498 /* board-info.mk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "board-info.mk"; sourceTree = "<group>"; };
+		65958EDD146F361B0008A498 /* board-info.mk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "board-info.mk"; sourceTree = "<group>"; };
+		65958EDE146F361B0008A498 /* board-info.mk */ = {isa = PBXFileReference; lastKnownFileType = file; name = "board-info.mk"; path = "../../../make/boards/esc/board-info.mk"; sourceTree = "<group>"; };
+		65958EDF146F361B0008A498 /* board-info.mk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "board-info.mk"; sourceTree = "<group>"; };
+		65958EE0146F361B0008A498 /* board-info.mk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "board-info.mk"; sourceTree = "<group>"; };
+		65958EE1146F361B0008A498 /* board-info.mk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "board-info.mk"; sourceTree = "<group>"; };
+		65958EE2146F361B0008A498 /* version-info.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = "version-info.py"; sourceTree = "<group>"; };
+		65958EE3146F361B0008A498 /* firmwareinfotemplate.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = firmwareinfotemplate.c; sourceTree = "<group>"; };
+		65958EE4146F361B0008A498 /* gcsversioninfotemplate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gcsversioninfotemplate.h; sourceTree = "<group>"; };
+		65958EE7146F361B0008A498 /* README.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.txt; sourceTree = "<group>"; };
+		65958EE8146F361B0008A498 /* shell_script.reg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = shell_script.reg; sourceTree = "<group>"; };
+		65958EE9146F361B0008A498 /* install */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = install; sourceTree = "<group>"; };
+		65958EEA146F361B0008A498 /* make */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = make; sourceTree = "<group>"; };
+		65958EEB146F361B0008A498 /* make.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = make.sh; sourceTree = "<group>"; };
+		65958EEC146F361B0008A498 /* sh.cmd */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = sh.cmd; sourceTree = "<group>"; };
 		659ED317122226B60011010E /* ahrssettings.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = ahrssettings.xml; sourceTree = "<group>"; };
 		65B35D7F121C261E003EAD18 /* bin.pro */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = bin.pro; sourceTree = "<group>"; };
 		65B35D80121C261E003EAD18 /* openpilotgcs */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = openpilotgcs; sourceTree = "<group>"; };
@@ -3210,6 +3224,7 @@
 		08FB7794FE84155DC02AAC07 /* OpenPilotOSX */ = {
 			isa = PBXGroup;
 			children = (
+				65958ED0146F361B0008A498 /* make */,
 				65C35E4E12EFB2F3004811C2 /* shared */,
 				65173C9F12EBFD1700D6A7CB /* Makefile */,
 				657CEEB5121DBC49007A1FBE /* flight */,
@@ -3651,6 +3666,126 @@
 				657CEEBA121DBC63007A1FBE /* WorldMagModel.h */,
 			);
 			path = inc;
+			sourceTree = "<group>";
+		};
+		65958ED0146F361B0008A498 /* make */ = {
+			isa = PBXGroup;
+			children = (
+				65958ED1146F361B0008A498 /* boards */,
+				65958ED2146F361B0008A498 /* firmware-defs.mk */,
+				65958ED3146F361B0008A498 /* scripts */,
+				65958ED4146F361B0008A498 /* templates */,
+				65958ED5146F361B0008A498 /* winx86 */,
+			);
+			name = make;
+			path = OpenPilotOSX.xcodeproj/../../../../make;
+			sourceTree = "<group>";
+		};
+		65958ED1146F361B0008A498 /* boards */ = {
+			isa = PBXGroup;
+			children = (
+				65958ED6146F361B0008A498 /* ahrs */,
+				65958ED7146F361B0008A498 /* coptercontrol */,
+				65958ED8146F361B0008A498 /* esc */,
+				65958ED9146F361B0008A498 /* ins */,
+				65958EDA146F361B0008A498 /* openpilot */,
+				65958EDB146F361B0008A498 /* pipxtreme */,
+			);
+			path = boards;
+			sourceTree = "<group>";
+		};
+		65958ED3146F361B0008A498 /* scripts */ = {
+			isa = PBXGroup;
+			children = (
+				65958EE2146F361B0008A498 /* version-info.py */,
+			);
+			path = scripts;
+			sourceTree = "<group>";
+		};
+		65958ED4146F361B0008A498 /* templates */ = {
+			isa = PBXGroup;
+			children = (
+				65958EE3146F361B0008A498 /* firmwareinfotemplate.c */,
+				65958EE4146F361B0008A498 /* gcsversioninfotemplate.h */,
+			);
+			path = templates;
+			sourceTree = "<group>";
+		};
+		65958ED5146F361B0008A498 /* winx86 */ = {
+			isa = PBXGroup;
+			children = (
+				65958EE5146F361B0008A498 /* bin */,
+				65958EE6146F361B0008A498 /* cmd */,
+				65958EE7146F361B0008A498 /* README.txt */,
+				65958EE8146F361B0008A498 /* shell_script.reg */,
+			);
+			path = winx86;
+			sourceTree = "<group>";
+		};
+		65958ED6146F361B0008A498 /* ahrs */ = {
+			isa = PBXGroup;
+			children = (
+				65958EDC146F361B0008A498 /* board-info.mk */,
+			);
+			path = ahrs;
+			sourceTree = "<group>";
+		};
+		65958ED7146F361B0008A498 /* coptercontrol */ = {
+			isa = PBXGroup;
+			children = (
+				65958EDD146F361B0008A498 /* board-info.mk */,
+			);
+			path = coptercontrol;
+			sourceTree = "<group>";
+		};
+		65958ED8146F361B0008A498 /* esc */ = {
+			isa = PBXGroup;
+			children = (
+				65958EDE146F361B0008A498 /* board-info.mk */,
+			);
+			path = esc;
+			sourceTree = "<group>";
+		};
+		65958ED9146F361B0008A498 /* ins */ = {
+			isa = PBXGroup;
+			children = (
+				65958EDF146F361B0008A498 /* board-info.mk */,
+			);
+			path = ins;
+			sourceTree = "<group>";
+		};
+		65958EDA146F361B0008A498 /* openpilot */ = {
+			isa = PBXGroup;
+			children = (
+				65958EE0146F361B0008A498 /* board-info.mk */,
+			);
+			path = openpilot;
+			sourceTree = "<group>";
+		};
+		65958EDB146F361B0008A498 /* pipxtreme */ = {
+			isa = PBXGroup;
+			children = (
+				65958EE1146F361B0008A498 /* board-info.mk */,
+			);
+			path = pipxtreme;
+			sourceTree = "<group>";
+		};
+		65958EE5146F361B0008A498 /* bin */ = {
+			isa = PBXGroup;
+			children = (
+				65958EE9146F361B0008A498 /* install */,
+				65958EEA146F361B0008A498 /* make */,
+			);
+			path = bin;
+			sourceTree = "<group>";
+		};
+		65958EE6146F361B0008A498 /* cmd */ = {
+			isa = PBXGroup;
+			children = (
+				65958EEB146F361B0008A498 /* make.sh */,
+				65958EEC146F361B0008A498 /* sh.cmd */,
+			);
+			path = cmd;
 			sourceTree = "<group>";
 		};
 		65B35D7D121C261E003EAD18 /* ground */ = {
@@ -7806,24 +7941,8 @@
 		65E8F05811EFF25C00BBF654 /* STM32F10x */ = {
 			isa = PBXGroup;
 			children = (
-				65D1FBD813F51865006374A6 /* pios_bmp085.c */,
-				6560A39D13EE277E00105DA5 /* pios_iap.c */,
-				6560A39E13EE277E00105DA5 /* pios_sbus.c */,
-				6560A38E13EE270C00105DA5 /* link_STM3210E_INS_BL_sections.ld */,
-				6560A38F13EE270C00105DA5 /* link_STM3210E_INS_memory.ld */,
-				6560A39013EE270C00105DA5 /* link_STM3210E_INS_sections.ld */,
-				6560A39113EE270C00105DA5 /* link_STM3210E_OP_BL_sections.ld */,
-				6560A39213EE270C00105DA5 /* link_STM3210E_OP_memory.ld */,
-				6560A39313EE270C00105DA5 /* link_STM3210E_OP_sections.ld */,
-				6560A39413EE270C00105DA5 /* link_STM32103CB_AHRS_BL_sections.ld */,
-				6560A39513EE270C00105DA5 /* link_STM32103CB_AHRS_memory.ld */,
-				6560A39613EE270C00105DA5 /* link_STM32103CB_AHRS_sections.ld */,
-				6560A39713EE270C00105DA5 /* link_STM32103CB_CC_Rev1_BL_sections.ld */,
 				6572CB1613D0F2B200FC2972 /* link_STM32103CB_CC_Rev1_memory.ld */,
 				6572CB1713D0F2B200FC2972 /* link_STM32103CB_CC_Rev1_sections.ld */,
-				6560A39813EE270C00105DA5 /* link_STM32103CB_PIPXTREME_BL_sections.ld */,
-				6560A39913EE270C00105DA5 /* link_STM32103CB_PIPXTREME_memory.ld */,
-				6560A39A13EE270C00105DA5 /* link_STM32103CB_PIPXTREME_sections.ld */,
 				65E8F05911EFF25C00BBF654 /* Libraries */,
 				65E8F0D811EFF25C00BBF654 /* link_stm32f10x_HD.ld */,
 				65E8F0DB11EFF25C00BBF654 /* link_stm32f10x_MD.ld */,

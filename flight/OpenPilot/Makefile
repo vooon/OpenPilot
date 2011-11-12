@@ -390,7 +390,7 @@ endif
 
 # OP has enough memory to always enable optional objects
 CFLAGS += -DDIAGNOSTICS
-
+CFLAGS += -DSYSCLK_FREQ_72MHz=72000000
 CFLAGS += -O$(OPT)
 CFLAGS += -mcpu=$(MCU)
 CFLAGS += $(CDEFS)
