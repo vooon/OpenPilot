@@ -42,6 +42,7 @@
 #include "mcp9804.h"
 #include "analogsensorsvalues.h"	// UAVobject that will be updated by the module
 #include "analogsensorssettings.h" // UAVobject used to modify module settings
+#include "hwsettings.h"
 //#include "pios_i2c.h"
 
 // Private constants
@@ -54,6 +55,7 @@
 
 // Private variables
 static xTaskHandle taskHandle;
+static bool analogSensorsEnabled = false;
 
 // Private functions
 static void AnalogSensorsTask(void *parameters);
@@ -64,9 +66,13 @@ static void AnalogSensorsTask(void *parameters);
 int32_t AnalogSensorsStart()
 {
 	// Start main task
-	xTaskCreate(AnalogSensorsTask, (signed char *)"AnalogSensors", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &taskHandle);
-	TaskMonitorAdd(TASKINFO_RUNNING_ANALOGSENSORS, taskHandle);
-	return 0;
+	if(analogSensorsEnabled) {
+		xTaskCreate(AnalogSensorsTask, (signed char *)"AnalogSensors", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &taskHandle);
+		TaskMonitorAdd(TASKINFO_RUNNING_ANALOGSENSORS, taskHandle);
+		return 0;
+	}
+	else
+		return -1;
 }
 
 /**
@@ -74,10 +80,23 @@ int32_t AnalogSensorsStart()
 */
 int32_t AnalogSensorsInitialize()
 {
-	AnalogSensorsValuesInitialize(); //Initialise the UAVObject used for transferring sensor readings to GCS
-	AnalogSensorsSettingsInitialize(); //Initialise the UAVObject used for changing sensor settings
+	uint8_t optionalModules[HWSETTINGS_OPTIONALMODULES_NUMELEM];
 
-	return 0;
+	HwSettingsInitialize();
+	HwSettingsOptionalModulesGet(optionalModules);
+
+	if (optionalModules[HWSETTINGS_OPTIONALMODULES_ANALOGSENSORS] == HWSETTINGS_OPTIONALMODULES_ENABLED)
+		analogSensorsEnabled = true;
+	else
+		analogSensorsEnabled = false;
+
+	if (analogSensorsEnabled) {
+		AnalogSensorsValuesInitialize(); //Initialise the UAVObject used for transferring sensor readings to GCS
+		AnalogSensorsSettingsInitialize(); //Initialise the UAVObject used for changing sensor settings
+		return 0;
+	}
+	else
+		return -1;
 }
 
 MODULE_INITCALL(AnalogSensorsInitialize, AnalogSensorsStart)

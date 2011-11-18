@@ -42,6 +42,7 @@
 #include "mcp9804.h"
 #include "gasenginedata.h"	// UAVobject that will be updated by the module
 #include "gasenginedatasettings.h" // UAVobject used to modify module settings
+#include "hwsettings.h"
 
 // Private constants
 #define STACK_SIZE_BYTES 350
@@ -61,6 +62,7 @@ static double_t DegCPerVolt = 24813.8957; //volts per celcius for K-type thermoc
 
 // Private variables
 static xTaskHandle taskHandle;
+static bool gasEngineSensorsEnabled = false;
 
 // Private functions
 static void GasEngineSensorsTask(void *parameters);
@@ -71,9 +73,13 @@ static void GasEngineSensorsTask(void *parameters);
 int32_t GasEngineSensorsStart()
 {
 	// Start main task
-	xTaskCreate(GasEngineSensorsTask, (signed char *)"GasEngineSensors", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &taskHandle);
-	TaskMonitorAdd(TASKINFO_RUNNING_GASENGINESENSORS, taskHandle);
-	return 0;
+	if (gasEngineSensorsEnabled) {
+		xTaskCreate(GasEngineSensorsTask, (signed char *)"GasEngineSensors", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &taskHandle);
+		TaskMonitorAdd(TASKINFO_RUNNING_GASENGINESENSORS, taskHandle);
+		return 0;
+	}
+	else
+		return -1;
 }
 
 /**
@@ -81,10 +87,24 @@ int32_t GasEngineSensorsStart()
 */
 int32_t GasEngineSensorsInitialize()
 {
-	GasEngineDataInitialize(); //Initialise the UAVObject used for transferring sensor readings to GCS
-	GasEngineDataSettingsInitialize(); //Initialise the UAVObject used for changing sensor settings
 
-	return 0;
+	uint8_t optionalModules[HWSETTINGS_OPTIONALMODULES_NUMELEM];
+
+	HwSettingsInitialize();
+	HwSettingsOptionalModulesGet(optionalModules);
+
+	if (optionalModules[HWSETTINGS_OPTIONALMODULES_GASENGINESENSORS] == HWSETTINGS_OPTIONALMODULES_ENABLED)
+		gasEngineSensorsEnabled = true;
+	else
+		gasEngineSensorsEnabled = false;
+
+	if (gasEngineSensorsEnabled) {
+		GasEngineDataInitialize(); //Initialise the UAVObject used for transferring sensor readings to GCS
+		GasEngineDataSettingsInitialize(); //Initialise the UAVObject used for changing sensor settings
+		return 0;
+	}
+
+	return -1;
 }
 
 MODULE_INITCALL(GasEngineSensorsInitialize, GasEngineSensorsStart)
