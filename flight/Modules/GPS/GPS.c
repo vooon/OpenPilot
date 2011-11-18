@@ -78,7 +78,7 @@ static float GravityAccel(float latitude, float longitude, float altitude);
 // Private variables
 
 static uint32_t gpsPort;
-static uint8_t gpsEnabled = 0;
+static bool gpsEnabled = false;
 
 static xTaskHandle gpsTaskHandle;
 
@@ -120,14 +120,16 @@ int32_t GPSStart(void)
 int32_t GPSInitialize(void)
 {
 	gpsPort = PIOS_COM_GPS;
+
 	HwSettingsInitialize();
 	uint8_t optionalModules[HWSETTINGS_OPTIONALMODULES_NUMELEM];
+
 	HwSettingsOptionalModulesGet(optionalModules);
-    if (optionalModules[HWSETTINGS_OPTIONALMODULES_GPS]==HWSETTINGS_OPTIONALMODULES_ENABLED) {
-		gpsEnabled=1;
-	} else {
-		gpsEnabled=0;
-	}
+
+	if (optionalModules[HWSETTINGS_OPTIONALMODULES_GPS] == HWSETTINGS_OPTIONALMODULES_ENABLED)
+		gpsEnabled = true;
+	else
+		gpsEnabled = false;
 
 	if (gpsPort && gpsEnabled) {
 		GPSPositionInitialize();
@@ -149,6 +151,7 @@ int32_t GPSInitialize(void)
 
 	return -1;
 }
+
 MODULE_INITCALL(GPSInitialize, GPSStart)
 
 // ****************
