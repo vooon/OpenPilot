@@ -65,6 +65,7 @@ endif
 FLASH_TOOL = OPENOCD
 
 # List of modules to include
+OPTMODULES = 
 MODULES = TransmitterControls UAVTalkBus
 # Telemetry must be last to grab the optional modules
 MODULES += Telemetry
@@ -321,7 +322,7 @@ EXTRAINCDIRS  += $(RTOSSRCDIR)/portable/GCC/ARM_CM3
 EXTRAINCDIRS  += $(AHRSBOOTLOADERINC)
 EXTRAINCDIRS  += $(PYMITEINC)
 
-EXTRAINCDIRS += ${foreach MOD, ${MODULES}, ${OPMODULEDIR}/${MOD}/inc} ${OPMODULEDIR}/System/inc
+EXTRAINCDIRS += ${foreach MOD, ${OPTMODULES} ${MODULES}, ${OPMODULEDIR}/${MOD}/inc} ${OPMODULEDIR}/System/inc
 
 
 # List any extra directories to look for library files here.
