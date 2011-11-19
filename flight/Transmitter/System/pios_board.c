@@ -247,95 +247,166 @@ void PIOS_RTC_IRQ_Handler (void)
 
 #endif
 
-#if defined(PIOS_INCLUDE_I2C)
+#include "pios_tim_priv.h"
 
-#include <pios_i2c_priv.h>
-
-/*
- * I2C Adapters
- */
-
-void PIOS_I2C_main_adapter_ev_irq_handler(void);
-void PIOS_I2C_main_adapter_er_irq_handler(void);
-void I2C2_EV_IRQHandler() __attribute__ ((alias ("PIOS_I2C_main_adapter_ev_irq_handler")));
-void I2C2_ER_IRQHandler() __attribute__ ((alias ("PIOS_I2C_main_adapter_er_irq_handler")));
-
-static const struct pios_i2c_adapter_cfg pios_i2c_main_adapter_cfg = {
-  .regs = I2C2,
-  .init = {
-    .I2C_Mode                = I2C_Mode_I2C,
-    .I2C_OwnAddress1         = 0,
-    .I2C_Ack                 = I2C_Ack_Enable,
-    .I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit,
-    .I2C_DutyCycle           = I2C_DutyCycle_2,
-    .I2C_ClockSpeed          = 400000,	/* bits/s */
-  },
-  .transfer_timeout_ms = 50,
-  .scl = {
-    .gpio = GPIOB,
-    .init = {
-      .GPIO_Pin   = GPIO_Pin_10,
-      .GPIO_Speed = GPIO_Speed_10MHz,
-      .GPIO_Mode  = GPIO_Mode_AF_OD,
-    },
-  },
-  .sda = {
-    .gpio = GPIOB,
-    .init = {
-      .GPIO_Pin   = GPIO_Pin_11,
-      .GPIO_Speed = GPIO_Speed_10MHz,
-      .GPIO_Mode  = GPIO_Mode_AF_OD,
-    },
-  },
-  .event = {
-    .flags   = 0,		/* FIXME: check this */
-    .init = {
-      .NVIC_IRQChannel                   = I2C2_EV_IRQn,
-      .NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGHEST,
-      .NVIC_IRQChannelSubPriority        = 0,
-      .NVIC_IRQChannelCmd                = ENABLE,
-    },
-  },
-  .error = {
-    .flags   = 0,		/* FIXME: check this */
-    .init = {
-      .NVIC_IRQChannel                   = I2C2_ER_IRQn,
-      .NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGHEST,
-      .NVIC_IRQChannelSubPriority        = 0,
-      .NVIC_IRQChannelCmd                = ENABLE,
-    },
-  },
+static const TIM_TimeBaseInitTypeDef tim_1_2_3_4_time_base = {
+	.TIM_Prescaler = (PIOS_MASTER_CLOCK / 1000000) - 1,
+	.TIM_ClockDivision = TIM_CKD_DIV1,
+	.TIM_CounterMode = TIM_CounterMode_Up,
+	.TIM_Period = ((1000000 / PIOS_SERVO_UPDATE_HZ) - 1),
+	.TIM_RepetitionCounter = 0x0000,
 };
 
-uint32_t pios_i2c_main_adapter_id;
-void PIOS_I2C_main_adapter_ev_irq_handler(void)
-{
-  /* Call into the generic code to handle the IRQ for this specific device */
-  PIOS_I2C_EV_IRQ_Handler(pios_i2c_main_adapter_id);
-}
+static const struct pios_tim_clock_cfg tim_1_cfg = {
+	.timer = TIM1,
+	.time_base_init = &tim_1_2_3_4_time_base,
+	.irq = {
+		.init = {
+			.NVIC_IRQChannel                   = TIM1_CC_IRQn,
+			.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_MID,
+			.NVIC_IRQChannelSubPriority        = 0,
+			.NVIC_IRQChannelCmd                = ENABLE,
+		},
+	},
+};
 
-void PIOS_I2C_main_adapter_er_irq_handler(void)
-{
-  /* Call into the generic code to handle the IRQ for this specific device */
-  PIOS_I2C_ER_IRQ_Handler(pios_i2c_main_adapter_id);
-}
+static const struct pios_tim_clock_cfg tim_2_cfg = {
+	.timer = TIM2,
+	.time_base_init = &tim_1_2_3_4_time_base,
+	.irq = {
+		.init = {
+			.NVIC_IRQChannel                   = TIM2_IRQn,
+			.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_MID,
+			.NVIC_IRQChannelSubPriority        = 0,
+			.NVIC_IRQChannelCmd                = ENABLE,
+		},
+	},
+};
 
-#endif /* PIOS_INCLUDE_I2C */
+static const struct pios_tim_clock_cfg tim_3_cfg = {
+	.timer = TIM3,
+	.time_base_init = &tim_1_2_3_4_time_base,
+	.irq = {
+		.init = {
+			.NVIC_IRQChannel                   = TIM3_IRQn,
+			.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_MID,
+			.NVIC_IRQChannelSubPriority        = 0,
+			.NVIC_IRQChannelCmd                = ENABLE,
+		},
+	},
+};
 
-#if defined(PIOS_INCLUDE_GCSRCVR)
-#include "pios_gcsrcvr_priv.h"
-#endif	/* PIOS_INCLUDE_GCSRCVR */
+static const struct pios_tim_clock_cfg tim_4_cfg = {
+	.timer = TIM4,
+	.time_base_init = &tim_1_2_3_4_time_base,
+	.irq = {
+		.init = {
+			.NVIC_IRQChannel                   = TIM4_IRQn,
+			.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_MID,
+			.NVIC_IRQChannelSubPriority        = 0,
+			.NVIC_IRQChannelCmd                = ENABLE,
+		},
+	},
+};
 
-#if defined(PIOS_INCLUDE_RCVR)
+static const struct pios_tim_channel pios_tim_rcvrport_all_channels[] = {
+	{
+		.timer = TIM4,
+		.timer_chan = TIM_Channel_1,
+		.pin = {
+			.gpio = GPIOB,
+			.init = {
+				.GPIO_Pin   = GPIO_Pin_6,
+				.GPIO_Mode  = GPIO_Mode_IPD,
+				.GPIO_Speed = GPIO_Speed_2MHz,
+			},
+		},
+	},
+	{
+		.timer = TIM3,
+		.timer_chan = TIM_Channel_2,
+		.pin = {
+			.gpio = GPIOB,
+			.init = {
+				.GPIO_Pin   = GPIO_Pin_5,
+				.GPIO_Mode  = GPIO_Mode_IPD,
+				.GPIO_Speed = GPIO_Speed_2MHz,
+			},
+		},
+		.remap = GPIO_PartialRemap_TIM3,
+	},
+	{
+		.timer = TIM3,
+		.timer_chan = TIM_Channel_3,
+		.pin = {
+			.gpio = GPIOB,
+			.init = {
+				.GPIO_Pin   = GPIO_Pin_0,
+				.GPIO_Mode  = GPIO_Mode_IPD,
+				.GPIO_Speed = GPIO_Speed_2MHz,
+			},
+		},
+	}, 
+	{
+		.timer = TIM3,
+		.timer_chan = TIM_Channel_4,
+		.pin = {
+			.gpio = GPIOB,
+			.init = {
+				.GPIO_Pin   = GPIO_Pin_1,
+				.GPIO_Mode  = GPIO_Mode_IPD,
+				.GPIO_Speed = GPIO_Speed_2MHz,
+			},
+		},
+	}, 
+	{ 
+		.timer = TIM2,
+		.timer_chan = TIM_Channel_1,
+		.pin = {
+			.gpio = GPIOA,
+			.init = {
+				.GPIO_Pin   = GPIO_Pin_0,
+				.GPIO_Mode  = GPIO_Mode_IPD,
+				.GPIO_Speed = GPIO_Speed_2MHz,
+			},
+		},
+	},  	
+	{
+		.timer = TIM2,
+		.timer_chan = TIM_Channel_2,
+		.pin = {
+			.gpio = GPIOA,
+			.init = {
+				.GPIO_Pin   = GPIO_Pin_1,
+				.GPIO_Mode  = GPIO_Mode_IPD,
+				.GPIO_Speed = GPIO_Speed_2MHz,
+			},
+		},
+	}, 		
+};
+
+/* PPM */
+#include <pios_ppm_priv.h>
+
+const struct pios_ppm_cfg pios_ppm_cfg = {
+	.tim_ic_init = {
+		.TIM_ICPolarity = TIM_ICPolarity_Rising,
+		.TIM_ICSelection = TIM_ICSelection_DirectTI,
+		.TIM_ICPrescaler = TIM_ICPSC_DIV1,
+		.TIM_ICFilter = 0x0,
+	},
+	/* Use only the first channel for ppm */
+	.channels = &pios_tim_rcvrport_all_channels[0],
+	.num_channels = 1,
+};
+
 #include "pios_rcvr_priv.h"
 
 /* One slot per selectable receiver group.
- *  eg. PWM, PPM, GCS, SPEKTRUM1, SPEKTRUM2, SBUS
+ *  eg. PWM, PPM, GCS, DSMMAINPORT, DSMFLEXIPORT, SBUS
  * NOTE: No slot in this map for NONE.
  */
 uint32_t pios_rcvr_group_map[MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE];
-
-#endif /* PIOS_INCLUDE_RCVR */
 
 #if defined(PIOS_INCLUDE_USB_HID)
 #include "pios_usb_hid_priv.h"
@@ -387,6 +458,13 @@ void PIOS_Board_Init(void) {
 	/* Initialize the task monitor library */
 	TaskMonitorInitialize();
 
+	/* Set up pulse timers */
+	PIOS_TIM_InitClock(&tim_1_cfg);
+	PIOS_TIM_InitClock(&tim_2_cfg);
+	PIOS_TIM_InitClock(&tim_3_cfg);
+	PIOS_TIM_InitClock(&tim_4_cfg);
+
+
 	/* Configure USART1 */
 	{
 		uint32_t pios_usart_telem_rf_id;
@@ -404,7 +482,7 @@ void PIOS_Board_Init(void) {
 			PIOS_Assert(0);
 		}
 	}
-	//PIOS_COM_SendString(PIOS_COM_TELEM_RF, "Hello World!\n\r");
+	PIOS_COM_SendString(PIOS_COM_TELEM_RF, "Hello Telem!\n\r");
 
 	/* Configure USART2 */
 	{
@@ -443,6 +521,21 @@ void PIOS_Board_Init(void) {
 	}
 
 	PIOS_COM_SendString(PIOS_COM_DEBUG, "Hello World!\n\r");
+
+	/* Configure the rcvr port */
+	uint8_t hwsettings_rcvrport;
+	HwSettingsCC_RcvrPortGet(&hwsettings_rcvrport);
+
+	{
+		uint32_t pios_ppm_id;
+		PIOS_PPM_Init(&pios_ppm_id, &pios_ppm_cfg);
+
+		uint32_t pios_ppm_rcvr_id;
+		if (PIOS_RCVR_Init(&pios_ppm_rcvr_id, &pios_ppm_rcvr_driver, pios_ppm_id)) {
+			PIOS_Assert(0);
+		}
+		pios_rcvr_group_map[MANUALCONTROLSETTINGS_CHANNELGROUPS_PPM] = pios_ppm_rcvr_id;
+	}
 
 	/* Remap AFIO pin */
 	GPIO_PinRemapConfig( GPIO_Remap_SWJ_NoJTRST, ENABLE);
