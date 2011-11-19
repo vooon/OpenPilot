@@ -35,7 +35,7 @@
 #include "telemetry.h"
 #include "flighttelemetrystats.h"
 #include "gcstelemetrystats.h"
-#include "telemetrysettings.h"
+#include "hwsettings.h"
 
 // Private constants
 #define MAX_QUEUE_SIZE   TELEM_QUEUE_SIZE
@@ -66,7 +66,6 @@ static xTaskHandle telemetryTxTaskHandle;
 static xTaskHandle telemetryRxTaskHandle;
 static uint32_t txErrors;
 static uint32_t txRetries;
-static TelemetrySettingsData settings;
 static uint32_t timeOfLastObjectUpdate;
 static UAVTalkConnection uavTalkCon;
 
@@ -95,7 +94,6 @@ int32_t TelemetryStart(void)
     
 	// Listen to objects of interest
 	GCSTelemetryStatsConnectQueue(priorityQueue);
-	TelemetrySettingsConnectQueue(priorityQueue);
     
 	// Start telemetry tasks
 	xTaskCreate(telemetryTxTask, (signed char *)"TelTx", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY_TX, &telemetryTxTaskHandle);
@@ -118,11 +116,8 @@ int32_t TelemetryStart(void)
  */
 int32_t TelemetryInitialize(void)
 {
-	UAVObjEvent ev;
-    
 	FlightTelemetryStatsInitialize();
 	GCSTelemetryStatsInitialize();
-	TelemetrySettingsInitialize();
 
 	// Initialize vars
 	timeOfLastObjectUpdate = 0;
@@ -133,7 +128,9 @@ int32_t TelemetryInitialize(void)
 	priorityQueue = xQueueCreate(MAX_QUEUE_SIZE, sizeof(UAVObjEvent));
 #endif
 
-    // Get telemetry settings object
+	// Update telemetry settings
+	telemetryPort = PIOS_COM_TELEM_RF;
+	HwSettingsInitialize();
 	updateSettings();
     
 	// Initialise UAVTalk
@@ -142,9 +139,9 @@ int32_t TelemetryInitialize(void)
 	// Create periodic event that will be used to update the telemetry stats
 	txErrors = 0;
 	txRetries = 0;
+	UAVObjEvent ev;
 	memset(&ev, 0, sizeof(UAVObjEvent));
 	EventPeriodicQueueCreate(&ev, priorityQueue, STATS_UPDATE_PERIOD_MS);
-    
 
 	return 0;
 }
@@ -227,8 +224,6 @@ static void processObjEvent(UAVObjEvent * ev)
 		updateTelemetryStats();
 	} else if (ev->obj == GCSTelemetryStatsHandle()) {
 		gcsTelemetryStatsUpdated();
-	} else if (ev->obj == TelemetrySettingsHandle()) {
-		updateSettings();
 	} else {
 		// Only process event if connected to GCS or if object FlightTelemetryStats is updated
 		FlightTelemetryStatsGet(&flightStats);
@@ -515,27 +510,45 @@ static void updateTelemetryStats()
 }
 
 /**
- * Update the telemetry settings, called on startup and
- * each time the settings object is updated
+ * Update the telemetry settings, called on startup.
+ * FIXME: This should be in the TelemetrySettings object. But objects
+ * have too much overhead yet. Also the telemetry has no any specific
+ * settings, etc. Thus the HwSettings object which contains the
+ * telemetry port speed is used for now.
  */
 static void updateSettings()
 {
-    // Set port
-    telemetryPort = PIOS_COM_TELEM_RF;
+	if (telemetryPort) {
 
-    // Retrieve settings
-    TelemetrySettingsGet(&settings);
+		// Retrieve settings
+		uint8_t speed;
+		HwSettingsTelemetrySpeedGet(&speed);
 
-    if (telemetryPort) {
-	// Set port speed
-	if (settings.Speed == TELEMETRYSETTINGS_SPEED_2400) PIOS_COM_ChangeBaud(telemetryPort, 2400);
-	else if (settings.Speed == TELEMETRYSETTINGS_SPEED_4800) PIOS_COM_ChangeBaud(telemetryPort, 4800);
-	else if (settings.Speed == TELEMETRYSETTINGS_SPEED_9600) PIOS_COM_ChangeBaud(telemetryPort, 9600);
-	else if (settings.Speed == TELEMETRYSETTINGS_SPEED_19200) PIOS_COM_ChangeBaud(telemetryPort, 19200);
-	else if (settings.Speed == TELEMETRYSETTINGS_SPEED_38400) PIOS_COM_ChangeBaud(telemetryPort, 38400);
-	else if (settings.Speed == TELEMETRYSETTINGS_SPEED_57600) PIOS_COM_ChangeBaud(telemetryPort, 57600);
-	else if (settings.Speed == TELEMETRYSETTINGS_SPEED_115200) PIOS_COM_ChangeBaud(telemetryPort, 115200);
-    }
+		// Set port speed
+		switch (speed) {
+		case HWSETTINGS_TELEMETRYSPEED_2400:
+			PIOS_COM_ChangeBaud(telemetryPort, 2400);
+			break;
+		case HWSETTINGS_TELEMETRYSPEED_4800:
+			PIOS_COM_ChangeBaud(telemetryPort, 4800);
+			break;
+		case HWSETTINGS_TELEMETRYSPEED_9600:
+			PIOS_COM_ChangeBaud(telemetryPort, 9600);
+			break;
+		case HWSETTINGS_TELEMETRYSPEED_19200:
+			PIOS_COM_ChangeBaud(telemetryPort, 19200);
+			break;
+		case HWSETTINGS_TELEMETRYSPEED_38400:
+			PIOS_COM_ChangeBaud(telemetryPort, 38400);
+			break;
+		case HWSETTINGS_TELEMETRYSPEED_57600:
+			PIOS_COM_ChangeBaud(telemetryPort, 57600);
+			break;
+		case HWSETTINGS_TELEMETRYSPEED_115200:
+			PIOS_COM_ChangeBaud(telemetryPort, 115200);
+			break;
+		}
+	}
 }
 
 /**
