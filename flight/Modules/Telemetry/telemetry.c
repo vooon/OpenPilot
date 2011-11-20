@@ -1,3 +1,4 @@
+/* -*- Mode: c; c-basic-offset: 2; tab-width: 2; indent-tabs-mode: t -*- */
 /**
  ******************************************************************************
  * @addtogroup OpenPilotModules OpenPilot Modules
@@ -326,7 +327,12 @@ static void telemetryRxTask(void *parameters)
 			bytes_to_process = PIOS_COM_ReceiveBuffer(inputPort, serial_data, sizeof(serial_data), 500);
 			if (bytes_to_process > 0) {
 				for (uint8_t i = 0; i < bytes_to_process; i++) {
-					UAVTalkProcessInputStream(uavTalkCon,serial_data[i]);
+					UAVTalkRxState state = UAVTalkProcessInputStream(uavTalkCon,serial_data[i]);
+					uint32_t obj_id = UAVTalkGetObjectID(uavTalkCon);
+					if(state == UAVTALK_STATE_COMPLETE) {
+						uint32_t type = UAVTalkGetPacketType(uavTalkCon);
+						printf("%d %x %x\n", state, type, obj_id);
+					}
 				}
 			}
 		} else {
