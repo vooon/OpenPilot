@@ -70,7 +70,7 @@ ifeq ($(USE_GPS), YES)
 OPTMODULES += GPS
 endif
 
-MODULES = Attitude Stabilization Actuator ManualControl FirmwareIAP MCP3424_Sensor
+MODULES = Attitude Stabilization Actuator ManualControl FirmwareIAP GenericI2C_Sensor
 
 # Telemetry must be last to grab the optional modules (why?)
 MODULES += Telemetry
@@ -179,8 +179,8 @@ SRC += $(OPUAVSYNTHDIR)/receiveractivity.c
 SRC += $(OPUAVSYNTHDIR)/taskinfo.c
 SRC += $(OPUAVSYNTHDIR)/mixerstatus.c
 SRC += $(OPUAVSYNTHDIR)/ratedesired.c
-SRC += $(OPUAVSYNTHDIR)/mcp3424sensor.c
-SRC += $(OPUAVSYNTHDIR)/mcp3424settings.c
+SRC += $(OPUAVSYNTHDIR)/generici2csensor.c
+SRC += $(OPUAVSYNTHDIR)/generici2csettings.c
 
 endif
 
