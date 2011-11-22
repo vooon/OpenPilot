@@ -52,6 +52,8 @@ USE_GPS ?= YES
 
 USE_I2C ?= YES
 
+USE_ANALOGSENSORS ?= YES
+
 # Set to YES when using Code Sourcery toolchain
 CODE_SOURCERY ?= YES
 
@@ -70,10 +72,12 @@ ifeq ($(USE_GPS), YES)
 OPTMODULES += GPS
 endif
 
-MODULES = Attitude Stabilization Actuator ManualControl FirmwareIAP
-MODULES = Attitude Stabilization ManualControl FirmwareIAP CameraStab 
-MODULES += GasEngineSensors
-MODULES += AnalogSensors
+ifeq ($(USE_ANALOGSENSORS), YES)
+OPTMODULES += AnalogSensors GasEngineSensors
+endif
+
+MODULES = Attitude Actuator ManualControl FirmwareIAP
+
 # Telemetry must be last to grab the optional modules
 MODULES += Telemetry
 
@@ -146,8 +150,6 @@ SRC += $(OPTESTS)/test_common.c
 SRC += $(OPTESTS)/$(TESTAPP).c
 endif
 
-
-
 ## UAVOBJECTS
 ifndef TESTAPP
 SRC += $(OPUAVSYNTHDIR)/accessorydesired.c
@@ -181,12 +183,13 @@ SRC += $(OPUAVSYNTHDIR)/receiveractivity.c
 SRC += $(OPUAVSYNTHDIR)/taskinfo.c
 SRC += $(OPUAVSYNTHDIR)/mixerstatus.c
 SRC += $(OPUAVSYNTHDIR)/ratedesired.c
+endif
+
+ifeq ($(USE_ANALOGSENSORS), YES)
 SRC += $(OPUAVSYNTHDIR)/gasenginedata.c
 SRC += $(OPUAVSYNTHDIR)/gasenginedatasettings.c
 SRC += $(OPUAVSYNTHDIR)/analogsensorsvalues.c
 SRC += $(OPUAVSYNTHDIR)/analogsensorssettings.c
-
-
 endif
 
 ## PIOS Hardware (STM32F10x)
@@ -233,9 +236,11 @@ SRC += $(PIOSCOMMON)/printf-stdarg.c
 SRC += $(FLIGHTLIB)/fifo_buffer.c
 SRC += $(FLIGHTLIB)/CoordinateConversions.c
 
+ifeq ($(USE_ANALOGSENSORS), YES)
 ## Libraries for analog sensors
 SRC += $(FLIGHTLIB)/mcp3424.c
 SRC += $(FLIGHTLIB)/mcp9804.c
+endif
 
 ## CMSIS for STM32
 SRC += $(CMSISDIR)/core_cm3.c
