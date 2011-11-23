@@ -1,0 +1,13 @@
+<xml>
+    <object name="AnalogSensorsValues" singleinstance="true" settings="false">
+        <description>Sensor data pulled from MCP3424 via I2C</description>
+	<field name="Sensor1" units="V" type="float" elements="1"/>
+	<field name="Sensor2" units="A" type="float" elements="1"/>
+	<field name="Sensor3" units="V" type="float" elements="1"/>
+	<field name="Sensor4" units="A" type="float" elements="1"/>
+        <access gcs="readwrite" flight="readwrite"/>
+        <telemetrygcs acked="false" updatemode="manual" period="0"/>
+        <telemetryflight acked="false" updatemode="periodic" period="1000"/>
+        <logging updatemode="never" period="0"/>
+    </object>
+</xml>
