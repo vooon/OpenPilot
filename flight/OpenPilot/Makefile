@@ -70,7 +70,7 @@ PYMODULES = FlightPlan
 #MODULES = Telemetry MK/MKSerial
 #MODULES = Telemetry
 #MODULES += Osd/OsdEtStd
-#MODULES += GenericI2C_Sensor
+MODULES += GenericI2C_Sensor
 
 MODULES += Telemetry #Telemetry must be the last module added!
 
