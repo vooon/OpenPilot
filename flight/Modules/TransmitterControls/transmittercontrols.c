@@ -64,27 +64,33 @@
 #define MAX_RETRIES 2
 
 // Private types
+struct RouterCommsStruct {
+	uint8_t num;
+	uint32_t port;
+	xQueueHandle txqueue;
+	xSemaphoreHandle sem;
+	UAVTalkConnection com;
+	xTaskHandle txTaskHandle;
+	xTaskHandle rxTaskHandle;
+	struct RouterCommsStruct *relay_comm;
+};
+typedef struct RouterCommsStruct RouterComms;
+typedef RouterComms *RouterCommsHandle;
 
 // Private variables
 static xTaskHandle taskHandle;
-//static xTaskHandle txTaskHandle;
-//static xTaskHandle rxTaskHandle;
-//static uint32_t telemetryPort;
 static xQueueHandle adc_queue;
-static xQueueHandle txqueue;
-//static UAVTalk com;
-//static uint32_t txErrors;
-//static uint32_t txRetries;
+static uint32_t txErrors;
+static uint32_t txRetries;
+static RouterComms comms[2];
 
 // Private functions
 static void transmitterControlsTask(void *parameters);
-//static void transmitterTxTask(void *parameters);
-//static void transmitterRxTask(void *parameters);
+static void transmitterTxTask(void *parameters);
+static void transmitterRxTask(void *parameters);
 //static void processObjEvent(UAVObjEvent * ev);
-//static int32_t transmitData(uint8_t * data, int32_t length);
-static void registerObject(UAVObjHandle obj);
-static void updateObject(UAVObjHandle obj);
-static int32_t setUpdatePeriod(UAVObjHandle obj, int32_t updatePeriodMs);
+static int32_t transmitData1(uint8_t * data, int32_t length);
+static int32_t transmitData2(uint8_t * data, int32_t length);
 
 
 /**
@@ -98,14 +104,15 @@ int32_t TransmitterControlsStart(void) {
 	//TaskMonitorAdd(TASKINFO_RUNNING_TRANSMITTERCONTROLS, taskHandle);
 	PIOS_WDG_RegisterFlag(PIOS_WDG_ATTITUDE);
 
-#ifdef NVER
 	// Start the Tx and Rx tasks
-	xTaskCreate(transmitterTxTask, (signed char *)"TransmitterTx", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &txTaskHandle);
+	xTaskCreate(transmitterTxTask, (signed char *)"TransmitterTx1", STACK_SIZE_BYTES/4, (void*)comms, TASK_PRIORITY, &(comms[0].txTaskHandle));
 	//TaskMonitorAdd(TASKINFO_RUNNING_TRANSMITTERTX, txTaskHandle);
-	xTaskCreate(transmitterRxTask, (signed char *)"TransmitterRx", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &rxTaskHandle);
+	xTaskCreate(transmitterRxTask, (signed char *)"TransmitterRx1", STACK_SIZE_BYTES/4, (void*)comms, TASK_PRIORITY, &(comms[0].rxTaskHandle));
 	//TaskMonitorAdd(TASKINFO_RUNNING_TRANSMITTERRX, rxTaskHandle);
-	}
-#endif
+	xTaskCreate(transmitterTxTask, (signed char *)"TransmitterTx2", STACK_SIZE_BYTES/4, (void*)(comms + 1), TASK_PRIORITY, &(comms[1].txTaskHandle));
+	//TaskMonitorAdd(TASKINFO_RUNNING_TRANSMITTERTX, txTaskHandle);
+	xTaskCreate(transmitterRxTask, (signed char *)"TransmitterRx2", STACK_SIZE_BYTES/4, (void*)(comms + 1), TASK_PRIORITY, &(comms[1].rxTaskHandle));
+	//TaskMonitorAdd(TASKINFO_RUNNING_TRANSMITTERRX, rxTaskHandle);
 
 	return 0;
 }
@@ -116,104 +123,42 @@ int32_t TransmitterControlsStart(void) {
  */
 int32_t TransmitterControlsInitialize(void) {
 
+	// Set the comm number
+	comms[0].num = 0;
+	comms[1].num = 1;
+
+	// Initialize the telemetry ports
+	comms[0].port = PIOS_COM_TELEM_RF;
+	comms[1].port = PIOS_COM_USART2;
+
+	// Create the semaphores
+	comms[0].sem = xSemaphoreCreateRecursiveMutex();
+	comms[1].sem = xSemaphoreCreateRecursiveMutex();
+
+	// Point each comm to it's relay comm
+	comms[0].relay_comm = comms + 1;
+	comms[1].relay_comm = comms;
+
+	// Create object queues
+	comms[0].txqueue = xQueueCreate(TELEM_QUEUE_SIZE, sizeof(UAVObjEvent));
+	comms[1].txqueue = xQueueCreate(TELEM_QUEUE_SIZE, sizeof(UAVObjEvent));
+
+	// Initialise UAVTalk
+	comms[0].com = UAVTalkInitialize(&transmitData1, 256);
+	comms[1].com = UAVTalkInitialize(&transmitData2, 256);
+
+	//TransmitterControlsSettingsConnectCallback(&settingsUpdatedCb);
+
 	// Create queue for passing control data, allow 2 back samples in case
 	adc_queue = xQueueCreate(1, sizeof(float) * 7);
 	if(adc_queue == NULL)
 		return -1;
 	PIOS_ADC_SetQueue(adc_queue);
 
-	// Create object queues
-	txqueue = xQueueCreate(TELEM_QUEUE_SIZE, sizeof(UAVObjEvent));
-
-	// Initialise UAVTalk
-	//UAVTalkInitialize(&com, &transmitData);
-
-	// Process all registered objects and connect queue for updates
-	UAVObjIterate(&registerObject);
-
-	//TransmitterControlsSettingsConnectCallback(&settingsUpdatedCb);
-
 	return 0;
 }
 
 MODULE_INITCALL(TransmitterControlsInitialize, TransmitterControlsStart)
-
-/**
- * Set update period of object (it must be already setup for periodic updates)
- * \param[in] obj The object to update
- * \param[in] updatePeriodMs The update period in ms, if zero then periodic updates are disabled
- * \return 0 Success
- * \return -1 Failure
- */
-static int32_t setUpdatePeriod(UAVObjHandle obj, int32_t updatePeriodMs)
-{
-	UAVObjEvent ev;
-
-	// Add object for periodic updates
-	ev.obj = obj;
-	ev.instId = UAVOBJ_ALL_INSTANCES;
-	ev.event = EV_UPDATED_MANUAL;
-	return EventPeriodicQueueUpdate(&ev, txqueue, updatePeriodMs);
-}
-
-/**
- * Update object's queue connections and timer, depending on object's settings
- * \param[in] obj Object to updates
- */
-static void updateObject(UAVObjHandle obj)
-{
-	UAVObjMetadata metadata;
-	int32_t eventMask;
-
-	// Get metadata
-	UAVObjGetMetadata(obj, &metadata);
-
-	// Setup object depending on update mode
-	if (metadata.telemetryUpdateMode == UPDATEMODE_PERIODIC) {
-		// Set update period
-		setUpdatePeriod(obj, metadata.telemetryUpdatePeriod);
-		// Connect queue
-		eventMask = EV_UPDATED_MANUAL | EV_UPDATE_REQ;
-		if (UAVObjIsMetaobject(obj)) {
-			eventMask |= EV_UNPACKED;	// we also need to act on remote updates (unpack events)
-		}
-		UAVObjConnectQueue(obj, txqueue, eventMask);
-	} else if (metadata.telemetryUpdateMode == UPDATEMODE_ONCHANGE) {
-		// Set update period
-		setUpdatePeriod(obj, 0);
-		// Connect queue
-		eventMask = EV_UPDATED | EV_UPDATED_MANUAL | EV_UPDATE_REQ;
-		if (UAVObjIsMetaobject(obj)) {
-			eventMask |= EV_UNPACKED;	// we also need to act on remote updates (unpack events)
-		}
-		UAVObjConnectQueue(obj, txqueue, eventMask);
-	} else if (metadata.telemetryUpdateMode == UPDATEMODE_MANUAL) {
-		// Set update period
-		setUpdatePeriod(obj, 0);
-		// Connect queue
-		eventMask = EV_UPDATED_MANUAL | EV_UPDATE_REQ;
-		if (UAVObjIsMetaobject(obj)) {
-			eventMask |= EV_UNPACKED;	// we also need to act on remote updates (unpack events)
-		}
-		UAVObjConnectQueue(obj, txqueue, eventMask);
-	} else if (metadata.telemetryUpdateMode == UPDATEMODE_NEVER) {
-		// Set update period
-		setUpdatePeriod(obj, 0);
-		// Disconnect queue
-		UAVObjDisconnectQueue(obj, txqueue);
-	}
-}
-
-/**
- * Register a new object, adds object to local list and connects the queue depending on the object's
- * telemetry settings.
- * \param[in] obj Object to connect
- */
-static void registerObject(UAVObjHandle obj)
-{
-	// Setup object for telemetry updates
-	updateObject(obj);
-}
 
 /**
  * Module thread, should not return.
@@ -273,11 +218,10 @@ static void transmitterControlsTask(void *parameters)
 	}
 }
 
-#ifdef NEVER
 /**
  * Processes queue events
  */
-static void processObjEvent(UAVObjEvent * ev)
+static void processObjEvent(UAVObjEvent * ev, RouterComms *comm)
 {
 	UAVObjMetadata metadata;
 	int32_t retries;
@@ -292,7 +236,7 @@ static void processObjEvent(UAVObjEvent * ev)
 		PIOS_COM_SendString(PIOS_COM_DEBUG, "trans update\n\r");
 		// Send update (with retries)
 		while (retries < MAX_RETRIES && success == -1) {
-			success = UAVTalkSendObject(&com, ev->obj, ev->instId, metadata.telemetryAcked, REQ_TIMEOUT_MS);	// call blocks until ack is received or timeout
+			success = UAVTalkSendObject(&(comm->com), ev->obj, ev->instId, metadata.telemetryAcked, REQ_TIMEOUT_MS);	// call blocks until ack is received or timeout
 			++retries;
 		}
 		// Update stats
@@ -304,7 +248,7 @@ static void processObjEvent(UAVObjEvent * ev)
 		PIOS_COM_SendString(PIOS_COM_DEBUG, "trans req\n\r");
 		// Request object update from GCS (with retries)
 		while (retries < MAX_RETRIES && success == -1) {
-			success = UAVTalkSendObjectRequest(&com, ev->obj, ev->instId, REQ_TIMEOUT_MS);	// call blocks until update is received or timeout
+			success = UAVTalkSendObjectRequest(&(comm->com), ev->obj, ev->instId, REQ_TIMEOUT_MS);	// call blocks until update is received or timeout
 			++retries;
 		}
 		// Update stats
@@ -320,44 +264,41 @@ static void processObjEvent(UAVObjEvent * ev)
  */
 static void transmitterTxTask(void *parameters)
 {
+	RouterComms *comm = (RouterComms*)parameters;
 	UAVObjEvent ev;
 
 	// Loop forever
 	while (1) {
 		// Wait for queue message
-		if (xQueueReceive(txqueue, &ev, portMAX_DELAY) == pdTRUE) {
+		if (xQueueReceive(comm->txqueue, &ev, portMAX_DELAY) == pdTRUE) {
 			// Process event
-			processObjEvent(&ev);
+			processObjEvent(&ev, comm);
 		}
 	}
 }
 
 /**
- * Transmitter transmit task. Processes queue events and periodic updates.
+ * Transmitter receive task. Processes queue events and periodic updates.
  */
 static void transmitterRxTask(void *parameters)
 {
-	uint32_t inputPort = 0;
+	RouterComms *comm = (RouterComms*)parameters;
+	uint32_t inputPort = comm->port;
 
 	// Task loop
 	while (1) {
-#if defined(PIOS_INCLUDE_USB_HID)
-		// Determine input port (USB takes priority over telemetry port)
-		if (PIOS_USB_HID_CheckAvailable(0)) {
-			inputPort = PIOS_COM_TELEM_RF;
-		}
-#endif /* PIOS_INCLUDE_USB_HID */
-
 		if (inputPort) {
-			// Block until data are available
 			uint8_t serial_data[1];
 			uint16_t bytes_to_process;
 
+			// Block until data are available
 			bytes_to_process = PIOS_COM_ReceiveBuffer(inputPort, serial_data, sizeof(serial_data), 500);
 			if (bytes_to_process > 0) {
-				//PIOS_COM_SendFormattedStringNonBlocking(PIOS_COM_DEBUG, "Transmitter received %d bytes.\n\r", bytes_to_process);
 				for (uint8_t i = 0; i < bytes_to_process; i++) {
-					UAVTalkProcessInputStream(&com, serial_data[i]);
+					UAVTalkProcessInputStream(&(comm->com), serial_data[i]);
+					UAVTalkRxState state = UAVTalkProcessInputStream(comm->com, serial_data[i]);
+					if(state == UAVTALK_STATE_COMPLETE)
+						UAVTalkRelay(comm->com, comm->relay_comm->com);
 				}
 			}
 		} else {
@@ -372,17 +313,10 @@ static void transmitterRxTask(void *parameters)
  * \param[in] length Length of buffer
  * \return 0 Success
  */
-static int32_t transmitData(uint8_t * data, int32_t length)
+static int32_t transmitData(RouterComms *comm, uint8_t * data, int32_t length)
 {
-	uint32_t outputPort = 0;
+	uint32_t outputPort = comm->port;
 
-#if defined(PIOS_INCLUDE_USB_HID)
-	if (PIOS_USB_HID_CheckAvailable(0)) {
-		outputPort = PIOS_COM_TELEM_RF;
-	}
-#endif /* PIOS_INCLUDE_USB_HID */
-
-	//PIOS_COM_SendFormattedStringNonBlocking(PIOS_COM_DEBUG, "Transmitter sending %d bytes.\n\r", length);
 	if (outputPort) {
 		return PIOS_COM_SendBufferNonBlocking(outputPort, data, length);
 	} else {
@@ -390,7 +324,14 @@ static int32_t transmitData(uint8_t * data, int32_t length)
 	}
 	return 0;
 }
-#endif
+static int32_t transmitData1(uint8_t * data, int32_t length)
+{
+	return transmitData(comms, data, length);
+}
+static int32_t transmitData2(uint8_t * data, int32_t length)
+{
+	return transmitData(comms + 1, data, length);
+}
 
 /**
  * @}
