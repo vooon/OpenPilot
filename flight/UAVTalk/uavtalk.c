@@ -536,6 +536,18 @@ UAVTalkRxState UAVTalkProcessInputStream(UAVTalkConnection connectionHandle, uin
 /**
  * Transmit a packet received on one connection over another connection.
  * The sending connection must be in the COMPLETE state.
+ *
+ * A packet consists of:
+ *
+ * bytes	field
+ * -----	-----
+ * 1	sync byte
+ * 1	type
+ * 2	packet length
+ * 4	object ID
+ * 2	instance ID (optional)
+ * var	object
+ *
  * \param[in] from_connection UAVTalkConnection to send from
  * \param[in] to_connection UAVTalkConnection to send to
  */
@@ -545,33 +557,61 @@ int32_t UAVTalkRelay(UAVTalkConnection from_connection, UAVTalkConnection to_con
     CHECKCONHANDLE(from_connection,from_con,return -1);
 	UAVTalkConnectionData *to_con;
     CHECKCONHANDLE(to_connection,to_con,return -1);
-	uint32_t packet_length;
+	UAVTalkInputProcessor *iproc = &from_con->iproc;
+	const uint32_t packet_length = iproc->packet_size;
+	const int32_t length = iproc->length;
+	int32_t dataOffset;
 
-	// Get the length of the packet
-	packet_length = (uint32_t)(from_con->txBuffer[2]) + (((uint32_t)(from_con->txBuffer[3])) << 8) + UAVTALK_CHECKSUM_LENGTH;
-
-		// Lock the semaphore
+	// Lock the semaphore
 	xSemaphoreTakeRecursive(to_con->lock, portMAX_DELAY);
+
+	// Setup type and object id fields
+	to_con->txBuffer[0] = UAVTALK_SYNC_VAL;  // sync byte
+	to_con->txBuffer[1] = iproc->type;  // type
+	to_con->txBuffer[2] = (uint8_t)(packet_length & 0xFF);
+	to_con->txBuffer[3] = (uint8_t)((packet_length >> 8) & 0xFF);
+	to_con->txBuffer[4] = (uint8_t)(iproc->objId & 0xFF);
+	to_con->txBuffer[5] = (uint8_t)((iproc->objId >> 8) & 0xFF);
+	to_con->txBuffer[6] = (uint8_t)((iproc->objId >> 16) & 0xFF);
+	to_con->txBuffer[7] = (uint8_t)((iproc->objId >> 24) & 0xFF);
+
+	// Data offset is packet length - data length
+	dataOffset = packet_length - length;
+
+	// Setup instance ID if one is required
+	// Packet contains an instance ID if the data offset is 10
+	if (dataOffset == 10)
+	{
+		to_con->txBuffer[8] = (uint8_t)(iproc->instId & 0xFF);
+		to_con->txBuffer[9] = (uint8_t)((iproc->instId >> 8) & 0xFF);
+	}
+	
+	// Copy data (if any)
+	if (length > 0)
+		memcpy(to_con->txBuffer + dataOffset, from_con->rxBuffer, length);
+	
+	// Calculate checksum
+	to_con->txBuffer[packet_length] = PIOS_CRC_updateCRC(0, to_con->txBuffer, packet_length);
 
 	// Send buffer (partially if needed)
 	uint32_t sent=0;
-	while (sent < packet_length) {
-		uint32_t sending = packet_length - sent;
+	while (sent < packet_length+UAVTALK_CHECKSUM_LENGTH) {
+		uint32_t sending = packet_length+UAVTALK_CHECKSUM_LENGTH - sent;
 		if ( sending > to_con->txSize ) sending = to_con->txSize;
 		if ( to_con->outStream != NULL ) {
-			(*to_con->outStream)(from_con->rxBuffer+sent, sending);
+			(*to_con->outStream)(to_con->txBuffer+sent, sending);
 		}
 		sent += sending;
 	}
 	
 	// Update stats
 	++to_con->stats.txObjects;
-	to_con->stats.txBytes += packet_length;
-	to_con->stats.txObjectBytes += packet_length - UAVTALK_CHECKSUM_LENGTH - 8; // An estimate.
+	to_con->stats.txBytes += packet_length+UAVTALK_CHECKSUM_LENGTH;
+	to_con->stats.txObjectBytes += length;
 
 	// Release lock
 	xSemaphoreGiveRecursive(to_con->lock);
-
+	
 	// Done
 	return 0;
 }
