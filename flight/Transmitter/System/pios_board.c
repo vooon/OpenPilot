@@ -555,10 +555,8 @@ void PIOS_Board_Init(void) {
 	PIOS_ADC_Init();
 	PIOS_GPIO_Init();
 
-#if defined(PIOS_INCLUDE_USB_HID)
 	uint32_t pios_usb_hid_id;
 	PIOS_USB_HID_Init(&pios_usb_hid_id, &pios_usb_hid_main_cfg);
-#if defined(PIOS_INCLUDE_COM)
 	uint8_t * rx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_TELEM_USB_RX_BUF_LEN);
 	uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_TELEM_USB_TX_BUF_LEN);
 	PIOS_Assert(rx_buffer);
@@ -568,8 +566,6 @@ void PIOS_Board_Init(void) {
 			  tx_buffer, PIOS_COM_TELEM_USB_TX_BUF_LEN)) {
 		PIOS_Assert(0);
 	}
-#endif	/* PIOS_INCLUDE_COM */
-#endif	/* PIOS_INCLUDE_USB_HID */
 
 	PIOS_IAP_Init();
 	PIOS_WDG_Init();
