@@ -443,7 +443,7 @@ extern const struct pios_com_driver pios_usb_com_driver;
 uint32_t pios_com_usart1_id;
 uint32_t pios_com_usart2_id;
 uint32_t pios_com_usart3_id;
-uint32_t pios_com_usb_id;
+uint32_t pios_com_telem_usb_id;
 
 /**
  * PIOS_Board_Init()
@@ -561,7 +561,7 @@ void PIOS_Board_Init(void) {
 	uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_TELEM_USB_TX_BUF_LEN);
 	PIOS_Assert(rx_buffer);
 	PIOS_Assert(tx_buffer);
-	if (PIOS_COM_Init(&pios_com_usb_id, &pios_usb_com_driver, pios_usb_hid_id,
+	if (PIOS_COM_Init(&pios_com_telem_usb_id, &pios_usb_com_driver, pios_usb_hid_id,
 			  rx_buffer, PIOS_COM_TELEM_USB_RX_BUF_LEN,
 			  tx_buffer, PIOS_COM_TELEM_USB_TX_BUF_LEN)) {
 		PIOS_Assert(0);

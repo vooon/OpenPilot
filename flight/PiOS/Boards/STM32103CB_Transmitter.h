@@ -151,10 +151,10 @@ extern uint32_t pios_i2c_main_adapter_id;
 extern uint32_t pios_com_usart1_id;
 extern uint32_t pios_com_usart2_id;
 extern uint32_t pios_com_usart3_id;
-extern uint32_t pios_com_usb_id;
+extern uint32_t pios_com_telem_usb_id;
 #ifdef MOVECOPTER
 #define PIOS_COM_TELEM_GCS              (pios_com_usb_id)
-#define PIOS_COM_TELEM_OUT              (pios_com_usart1_id)
+#define PIOS_COM_TELEM_OUT              (pios_com_telem_usb_id)
 #else
 #define PIOS_COM_TELEM_GCS              (pios_com_usart1_id)
 #define PIOS_COM_TELEM_OUT              (pios_com_usart2_id)
@@ -166,7 +166,7 @@ extern uint32_t pios_com_gps_id;
 #define PIOS_COM_GPS                    (pios_com_gps_id)
 #endif	/* PIOS_INCLUDE_GPS */
 
-#define PIOS_COM_TELEM_USB              (pios_com_usb_id)
+#define PIOS_COM_TELEM_USB              (pios_com_telem_usb_id)
 
 //-------------------------
 // ADC
