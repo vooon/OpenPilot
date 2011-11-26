@@ -52,6 +52,8 @@
 #include "pios.h"
 #include "manualcontrolcommand.h"
 #include "transmittercontrols.h"
+#include "manualcontrolsettings.h"
+#include "gcsreceiver.h"
 
 // Private constants
 #define STACK_SIZE_BYTES 540
@@ -62,6 +64,8 @@
 
 #define REQ_TIMEOUT_MS 250
 #define MAX_RETRIES 2
+
+#define STATS_UPDATE_PERIOD_MS 10
 
 // Private types
 struct RouterCommsStruct {
@@ -123,6 +127,9 @@ int32_t TransmitterControlsStart(void) {
  */
 int32_t TransmitterControlsInitialize(void) {
 
+	// Initialize the GCSReceiver object.
+	GCSReceiverInitialize();
+
 	// Set the comm number
 	comms[0].num = 0;
 	comms[1].num = 1;
@@ -149,11 +156,24 @@ int32_t TransmitterControlsInitialize(void) {
 
 	//TransmitterControlsSettingsConnectCallback(&settingsUpdatedCb);
 
-	// Create queue for passing control data, allow 2 back samples in case
+	// Create periodic event that will be used to send transmitter state.
+	UAVObjEvent ev;
+	memset(&ev, 0, sizeof(UAVObjEvent));
+	EventPeriodicQueueCreate(&ev, comms[1].txqueue, STATS_UPDATE_PERIOD_MS);
+
+	// Create queue for reading ADC values.
 	adc_queue = xQueueCreate(1, sizeof(float) * 7);
 	if(adc_queue == NULL)
 		return -1;
 	PIOS_ADC_SetQueue(adc_queue);
+
+	/*
+	// Add object for periodic updates
+	ev.obj = GCSReceiverHandle();
+	ev.instId = UAVOBJ_ALL_INSTANCES;
+	ev.event = EV_UPDATED_MANUAL;
+	return EventPeriodicQueueCreate(&ev, comms[1].txqueue, 0);
+	*/
 
 	return 0;
 }
@@ -183,37 +203,42 @@ static void transmitterControlsTask(void *parameters)
 	uint16_t cntr = 0;
 	while (1) {
 		PIOS_WDG_UpdateFlag(PIOS_WDG_ATTITUDE);
+		++cntr;
 
 		// Only wait the time for two nominal updates before setting an alarm
 		float gyro[PIOS_ADC_NUM_CHANNELS];
 		if(xQueueReceive(adc_queue, (void * const) gyro, UPDATE_RATE * 2) == errQUEUE_EMPTY)
 			AlarmsSet(SYSTEMALARMS_ALARM_ATTITUDE, SYSTEMALARMS_ALARM_ERROR);
 		else {
-			++cntr;
 			//ManualControlCommandGet(&mcc);
 			//mcc.Channel[0] = gyro[1];
 			//mcc.Channel[1] = gyro[2];
 			//mcc.Channel[2] = gyro[3];
 			//mcc.Channel[3] = gyro[4];
 			//ManualControlCommandSet(&mcc);
-			if((cntr % 1000) == 0) {
-				char buf[15];
-				int i;
-				PIOS_COM_SendString(PIOS_COM_DEBUG, "ACD: ");
-				for(i = 0; i < PIOS_ADC_NUM_CHANNELS; ++i) {
-					sprintf(buf, "%x ", (unsigned int)gyro[i]);
-					PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
-				}
-				PIOS_COM_SendString(PIOS_COM_DEBUG, "\n\r");
-				PIOS_COM_SendString(PIOS_COM_DEBUG, "ACD Read: ");
-				for(i = 0; i < PIOS_ADC_NUM_CHANNELS; ++i) {
-					sprintf(buf, "%x ", (unsigned int)PIOS_ADC_PinGet(i));
-					PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
-				}
-				PIOS_COM_SendString(PIOS_COM_DEBUG, "\n\r");
-				cntr = 0;
-			}
 			AlarmsClear(SYSTEMALARMS_ALARM_ATTITUDE);
+		}
+
+		if((cntr % 1000) == 0) {
+
+			/*
+			char buf[15];
+			int i;
+			PIOS_COM_SendString(PIOS_COM_DEBUG, "ACD: ");
+			for(i = 0; i < PIOS_ADC_NUM_CHANNELS; ++i) {
+				sprintf(buf, "%x ", (unsigned int)gyro[i]);
+				PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
+			}
+			PIOS_COM_SendString(PIOS_COM_DEBUG, "\n\r");
+			PIOS_COM_SendString(PIOS_COM_DEBUG, "ACD Read: ");
+			for(i = 0; i < PIOS_ADC_NUM_CHANNELS; ++i) {
+				sprintf(buf, "%x ", (unsigned int)PIOS_ADC_PinGet(i));
+				PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
+			}
+			PIOS_COM_SendString(PIOS_COM_DEBUG, "\n\r");
+			*/
+
+			cntr = 0;
 		}
 	}
 }
@@ -227,34 +252,66 @@ static void processObjEvent(UAVObjEvent * ev, RouterComms *comm)
 	int32_t retries;
 	int32_t success;
 
-	// Get object metadata
-	UAVObjGetMetadata(ev->obj, &metadata);
-	// Act on event
-	retries = 0;
-	success = -1;
-	if (ev->event == EV_UPDATED || ev->event == EV_UPDATED_MANUAL) {
-		PIOS_COM_SendString(PIOS_COM_DEBUG, "trans update\n\r");
+	if (ev->obj == 0) {
+		GCSReceiverData rcvr;
+		//char buf[15];
+		int i;
+
+		// Read the receiver channels.
+		//PIOS_COM_SendString(PIOS_COM_DEBUG, "Rcvr: ");
+		for (i = 0; i < GCSRECEIVER_CHANNEL_NUMELEM; ++i) {
+			extern uint32_t pios_rcvr_group_map[];
+			uint32_t val = PIOS_RCVR_Read(pios_rcvr_group_map[MANUALCONTROLSETTINGS_CHANNELGROUPS_PPM],	i+1);
+			rcvr.Channel[i] = val;
+			//sprintf(buf, "%x ", (unsigned int)val);
+			//PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
+		}
+		//PIOS_COM_SendString(PIOS_COM_DEBUG, "\n\r");
+
+		// Set the GCSReceiverData object.
+		GCSReceiverSet(&rcvr);
+
 		// Send update (with retries)
+		retries = 0;
+		success = -1;
 		while (retries < MAX_RETRIES && success == -1) {
-			success = UAVTalkSendObject(&(comm->com), ev->obj, ev->instId, metadata.telemetryAcked, REQ_TIMEOUT_MS);	// call blocks until ack is received or timeout
+			success = UAVTalkSendObject(&(comm->com), GCSReceiverHandle(), 0, 0, REQ_TIMEOUT_MS);
 			++retries;
 		}
 		// Update stats
 		txRetries += (retries - 1);
-		if (success == -1) {
-			++txErrors;
-		}
-	} else if (ev->event == EV_UPDATE_REQ) {
-		PIOS_COM_SendString(PIOS_COM_DEBUG, "trans req\n\r");
-		// Request object update from GCS (with retries)
-		while (retries < MAX_RETRIES && success == -1) {
-			success = UAVTalkSendObjectRequest(&(comm->com), ev->obj, ev->instId, REQ_TIMEOUT_MS);	// call blocks until update is received or timeout
-			++retries;
-		}
-		// Update stats
-		txRetries += (retries - 1);
-		if (success == -1) {
-			++txErrors;
+
+	} else {
+
+		// Get object metadata
+		UAVObjGetMetadata(ev->obj, &metadata);
+		// Act on event
+		retries = 0;
+		success = -1;
+		if (ev->event == EV_UPDATED || ev->event == EV_UPDATED_MANUAL) {
+			PIOS_COM_SendString(PIOS_COM_DEBUG, "trans update\n\r");
+			// Send update (with retries)
+			while (retries < MAX_RETRIES && success == -1) {
+				success = UAVTalkSendObject(&(comm->com), ev->obj, ev->instId, metadata.telemetryAcked, REQ_TIMEOUT_MS);	// call blocks until ack is received or timeout
+				++retries;
+			}
+			// Update stats
+			txRetries += (retries - 1);
+			if (success == -1) {
+				++txErrors;
+			}
+		} else if (ev->event == EV_UPDATE_REQ) {
+			PIOS_COM_SendString(PIOS_COM_DEBUG, "trans req\n\r");
+			// Request object update from GCS (with retries)
+			while (retries < MAX_RETRIES && success == -1) {
+				success = UAVTalkSendObjectRequest(&(comm->com), ev->obj, ev->instId, REQ_TIMEOUT_MS);	// call blocks until update is received or timeout
+				++retries;
+			}
+			// Update stats
+			txRetries += (retries - 1);
+			if (success == -1) {
+				++txErrors;
+			}
 		}
 	}
 }
