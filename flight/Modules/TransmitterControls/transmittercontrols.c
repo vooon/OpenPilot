@@ -135,8 +135,8 @@ int32_t TransmitterControlsInitialize(void) {
 	comms[1].num = 1;
 
 	// Initialize the telemetry ports
-	comms[0].port = PIOS_COM_TELEM_RF;
-	comms[1].port = PIOS_COM_USART2;
+	comms[0].port = PIOS_COM_TELEM_GCS;
+	comms[1].port = PIOS_COM_TELEM_OUT;
 
 	// Create the semaphores
 	comms[0].sem = xSemaphoreCreateRecursiveMutex();

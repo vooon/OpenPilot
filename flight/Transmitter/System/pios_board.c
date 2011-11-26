@@ -310,6 +310,20 @@ static const struct pios_tim_clock_cfg tim_4_cfg = {
 };
 
 static const struct pios_tim_channel pios_tim_rcvrport_all_channels[] = {
+#ifdef MOVECOPTER
+	{
+		.timer = TIM4,
+		.timer_chan = TIM_Channel_1,
+		.pin = {
+			.gpio = GPIOE,
+			.init = {
+				.GPIO_Pin   = GPIO_Pin_12,
+				.GPIO_Mode  = GPIO_Mode_IPD,
+				.GPIO_Speed = GPIO_Speed_2MHz,
+			},
+		},
+	},
+#else
 	{
 		.timer = TIM4,
 		.timer_chan = TIM_Channel_1,
@@ -322,6 +336,7 @@ static const struct pios_tim_channel pios_tim_rcvrport_all_channels[] = {
 			},
 		},
 	},
+#endif
 	{
 		.timer = TIM3,
 		.timer_chan = TIM_Channel_2,
@@ -425,11 +440,10 @@ static const struct pios_usb_hid_cfg pios_usb_hid_main_cfg = {
 
 extern const struct pios_com_driver pios_usb_com_driver;
 
-uint32_t pios_com_telem_rf_id;
-uint32_t pios_com_debug_id;
+uint32_t pios_com_usart1_id;
 uint32_t pios_com_usart2_id;
-uint32_t pios_com_telem_usb_id;
-uint32_t pios_com_gps_id;
+uint32_t pios_com_usart3_id;
+uint32_t pios_com_usb_id;
 
 /**
  * PIOS_Board_Init()
@@ -467,8 +481,8 @@ void PIOS_Board_Init(void) {
 
 	/* Configure USART1 */
 	{
-		uint32_t pios_usart_telem_rf_id;
-		if (PIOS_USART_Init(&pios_usart_telem_rf_id, &pios_usart_telem_main_cfg)) {
+		uint32_t pios_usart1_id;
+		if (PIOS_USART_Init(&pios_usart1_id, &pios_usart_telem_main_cfg)) {
 			PIOS_Assert(0);
 		}
 
@@ -476,18 +490,17 @@ void PIOS_Board_Init(void) {
 		uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_TELEM_RF_TX_BUF_LEN);
 		PIOS_Assert(rx_buffer);
 		PIOS_Assert(tx_buffer);
-		if (PIOS_COM_Init(&pios_com_telem_rf_id, &pios_usart_com_driver, pios_usart_telem_rf_id,
+		if (PIOS_COM_Init(&pios_com_usart1_id, &pios_usart_com_driver, pios_usart1_id,
 											rx_buffer, PIOS_COM_TELEM_RF_RX_BUF_LEN,
 											tx_buffer, PIOS_COM_TELEM_RF_TX_BUF_LEN)) {
 			PIOS_Assert(0);
 		}
 	}
-	PIOS_COM_SendString(PIOS_COM_TELEM_RF, "Hello Telem!\n\r");
 
 	/* Configure USART2 */
 	{
-		uint32_t pios_usart_usart2_id;
-		if (PIOS_USART_Init(&pios_usart_usart2_id, &pios_usart_usart2_cfg)) {
+		uint32_t pios_usart2_id;
+		if (PIOS_USART_Init(&pios_usart2_id, &pios_usart_usart2_cfg)) {
 			PIOS_Assert(0);
 		}
 
@@ -495,25 +508,24 @@ void PIOS_Board_Init(void) {
 		uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_TELEM_RF_TX_BUF_LEN);
 		PIOS_Assert(rx_buffer);
 		PIOS_Assert(tx_buffer);
-		if (PIOS_COM_Init(&pios_com_usart2_id, &pios_usart_com_driver, pios_usart_usart2_id,
+		if (PIOS_COM_Init(&pios_com_usart2_id, &pios_usart_com_driver, pios_usart2_id,
 											rx_buffer, PIOS_COM_TELEM_RF_RX_BUF_LEN,
 											tx_buffer, PIOS_COM_TELEM_RF_TX_BUF_LEN)) {
 			PIOS_Assert(0);
 		}
 	}
-	//PIOS_COM_SendString(PIOS_COM_USART2, "Hello World!\n\r");
 
 	/* Configure USART3 */
 	{
-		uint32_t pios_usart_debug_id;
-		if (PIOS_USART_Init(&pios_usart_debug_id, &pios_usart_telem_flexi_cfg)) {
+		uint32_t pios_usart3_id;
+		if (PIOS_USART_Init(&pios_usart3_id, &pios_usart_telem_flexi_cfg)) {
 			PIOS_Assert(0);
 		}
 		uint8_t * rx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_TELEM_RF_RX_BUF_LEN);
 		uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_TELEM_RF_TX_BUF_LEN);
 		PIOS_Assert(rx_buffer);
 		PIOS_Assert(tx_buffer);
-		if (PIOS_COM_Init(&pios_com_debug_id, &pios_usart_com_driver, pios_usart_debug_id,
+		if (PIOS_COM_Init(&pios_com_usart3_id, &pios_usart_com_driver, pios_usart3_id,
 											rx_buffer, PIOS_COM_TELEM_RF_RX_BUF_LEN,
 											tx_buffer, PIOS_COM_TELEM_RF_TX_BUF_LEN)) {
 			PIOS_Assert(0);
@@ -551,7 +563,7 @@ void PIOS_Board_Init(void) {
 	uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_TELEM_USB_TX_BUF_LEN);
 	PIOS_Assert(rx_buffer);
 	PIOS_Assert(tx_buffer);
-	if (PIOS_COM_Init(&pios_com_telem_usb_id, &pios_usb_com_driver, pios_usb_hid_id,
+	if (PIOS_COM_Init(&pios_com_usb_id, &pios_usb_com_driver, pios_usb_hid_id,
 			  rx_buffer, PIOS_COM_TELEM_USB_RX_BUF_LEN,
 			  tx_buffer, PIOS_COM_TELEM_USB_TX_BUF_LEN)) {
 		PIOS_Assert(0);
@@ -561,8 +573,6 @@ void PIOS_Board_Init(void) {
 
 	PIOS_IAP_Init();
 	PIOS_WDG_Init();
-
-	PIOS_COM_SendString(PIOS_COM_DEBUG, "Hello pios_board!\n\r");
 }
 
 /**

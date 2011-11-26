@@ -137,22 +137,25 @@ extern uint32_t pios_i2c_main_adapter_id;
 //-------------------------
 #define PIOS_COM_MAX_DEVS			4
 
-extern uint32_t pios_com_telem_rf_id;
-extern uint32_t pios_com_debug_id;
+extern uint32_t pios_com_usart1_id;
 extern uint32_t pios_com_usart2_id;
-#define PIOS_COM_TELEM_RF               (pios_com_telem_rf_id)
-#define PIOS_COM_DEBUG                  (pios_com_debug_id)
-#define PIOS_COM_USART2                 (pios_com_usart2_id)
-//#define PIOS_COM_LINK_USB               (pios_com_telem_usb_id)
-#define PIOS_COM_LINK_USB               (pios_com_telem_rf_id)
+extern uint32_t pios_com_usart3_id;
+extern uint32_t pios_com_usb_id;
+#ifdef MOVECOPTER
+#define PIOS_COM_TELEM_GCS              (pios_com_usb_id)
+#define PIOS_COM_TELEM_OUT              (pios_com_usart1_id)
+#else
+#define PIOS_COM_TELEM_GCS              (pios_com_usart1_id)
+#define PIOS_COM_TELEM_OUT              (pios_com_usart2_id)
+#endif
+#define PIOS_COM_DEBUG                  (pios_com_usart3_id)
 
 #if defined(PIOS_INCLUDE_GPS)
 extern uint32_t pios_com_gps_id;
 #define PIOS_COM_GPS                    (pios_com_gps_id)
 #endif	/* PIOS_INCLUDE_GPS */
 
-extern uint32_t pios_com_telem_usb_id;
-#define PIOS_COM_TELEM_USB              (pios_com_telem_usb_id)
+#define PIOS_COM_TELEM_USB              (pios_com_usb_id)
 
 //-------------------------
 // ADC
