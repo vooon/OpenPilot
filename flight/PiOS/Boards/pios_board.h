@@ -13,6 +13,8 @@
 #include "STM3210E_INS.h"
 #elif USE_STM32103CB_Transmitter
 #include "STM32103CB_Transmitter.h"
+#elif USE_STM32103C8_Transmitter
+#include "STM32103C8_Transmitter.h"
 #else
 #error Board definition has not been provided.
 #endif

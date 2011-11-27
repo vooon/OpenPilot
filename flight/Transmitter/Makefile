@@ -66,7 +66,7 @@ FLASH_TOOL = OPENOCD
 
 # List of modules to include
 OPTMODULES = 
-MODULES = TransmitterControls ManualControl
+MODULES = TransmitterControls
 # Telemetry must be last to grab the optional modules
 #MODULES += Telemetry
 
