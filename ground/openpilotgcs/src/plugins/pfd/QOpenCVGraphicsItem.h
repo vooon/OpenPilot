@@ -50,7 +50,7 @@ public slots:
     void start();
     void stop();
 
-    void updateCamera();
+private slots:
     void updateFrame(const QImage &);
 
 private:
@@ -63,6 +63,7 @@ private:
     QGLContext *m_context;
     QSizeF m_size;
     GLuint m_texture;
+    bool m_textureDirty;
 
     QTime t;
 }; 
