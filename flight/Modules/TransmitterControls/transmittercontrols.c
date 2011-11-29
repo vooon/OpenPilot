@@ -66,6 +66,7 @@
 #define MAX_RETRIES 2
 
 #define STATS_UPDATE_PERIOD_MS 10
+//#define STATS_UPDATE_PERIOD_MS 2000
 
 // Private types
 struct RouterCommsStruct {
@@ -167,14 +168,6 @@ int32_t TransmitterControlsInitialize(void) {
 		return -1;
 	PIOS_ADC_SetQueue(adc_queue);
 
-	/*
-	// Add object for periodic updates
-	ev.obj = GCSReceiverHandle();
-	ev.instId = UAVOBJ_ALL_INSTANCES;
-	ev.event = EV_UPDATED_MANUAL;
-	return EventPeriodicQueueCreate(&ev, comms[1].txqueue, 0);
-	*/
-
 	return 0;
 }
 
@@ -248,25 +241,38 @@ static void transmitterControlsTask(void *parameters)
  */
 static void processObjEvent(UAVObjEvent * ev, RouterComms *comm)
 {
+	static uint32_t cntr = 0;
 	UAVObjMetadata metadata;
 	int32_t retries;
 	int32_t success;
 
 	if (ev->obj == 0) {
 		GCSReceiverData rcvr;
-		//char buf[15];
+		char buf[15];
 		int i;
+		bool debug = false;
+
+		if(cntr == 400) {
+			debug = true;
+			cntr = 0;
+		}
+		++cntr;
+
+		if(debug)
+			PIOS_COM_SendString(PIOS_COM_DEBUG, "Rcvr: ");
 
 		// Read the receiver channels.
-		//PIOS_COM_SendString(PIOS_COM_DEBUG, "Rcvr: ");
 		for (i = 0; i < GCSRECEIVER_CHANNEL_NUMELEM; ++i) {
 			extern uint32_t pios_rcvr_group_map[];
 			uint32_t val = PIOS_RCVR_Read(pios_rcvr_group_map[MANUALCONTROLSETTINGS_CHANNELGROUPS_PPM],	i+1);
 			rcvr.Channel[i] = val;
-			//sprintf(buf, "%x ", (unsigned int)val);
-			//PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
+			if(debug) {
+				sprintf(buf, "%x ", (unsigned int)val);
+				PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
+			}
 		}
-		//PIOS_COM_SendString(PIOS_COM_DEBUG, "\n\r");
+		if(debug)
+			PIOS_COM_SendString(PIOS_COM_DEBUG, "\n\r");
 
 		// Set the GCSReceiverData object.
 		GCSReceiverSet(&rcvr);
@@ -354,8 +360,12 @@ static void transmitterRxTask(void *parameters)
 				for (uint8_t i = 0; i < bytes_to_process; i++) {
 					UAVTalkProcessInputStream(&(comm->com), serial_data[i]);
 					UAVTalkRxState state = UAVTalkProcessInputStream(comm->com, serial_data[i]);
-					if(state == UAVTALK_STATE_COMPLETE)
+					if(state == UAVTALK_STATE_COMPLETE) {
+						//char buf[16];
+						//sprintf(buf, "Rcvd from %d\n\r", (unsigned int)comm->num);
+						//PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
 						UAVTalkRelay(comm->com, comm->relay_comm->com);
+					}
 				}
 			}
 		} else {
