@@ -2986,6 +2986,9 @@
 		65E8F0EE11EFF25C00BBF654 /* startup_stm32f10x_HD.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; name = startup_stm32f10x_HD.S; path = ../../PiOS/STM32F10x/startup_stm32f10x_HD.S; sourceTree = SOURCE_ROOT; };
 		65E8F0F111EFF25C00BBF654 /* startup_stm32f10x_MD.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; name = startup_stm32f10x_MD.S; path = ../../PiOS/STM32F10x/startup_stm32f10x_MD.S; sourceTree = SOURCE_ROOT; };
 		65EA2E171273C55200636061 /* ratedesired.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = ratedesired.xml; sourceTree = "<group>"; };
+		65F7ABFD1486EEDE00D21BCB /* esc_settings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = esc_settings.h; sourceTree = "<group>"; };
+		65F7ABFE1486EF7C00D21BCB /* esc_settings.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = esc_settings.c; path = ../../ESC/esc_settings.c; sourceTree = "<group>"; };
+		65F7AC0014875F8200D21BCB /* pios_bl_helper.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pios_bl_helper.c; sourceTree = "<group>"; };
 		65F93C3912EE09280047DB36 /* aes.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = aes.c; sourceTree = "<group>"; };
 		65F93C3B12EE09280047DB36 /* aes.lst */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = aes.lst; sourceTree = "<group>"; };
 		65F93C3C12EE09280047DB36 /* aes.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = aes.o; sourceTree = "<group>"; };
@@ -3613,10 +3616,11 @@
 		6526C2B513493562006FF712 /* ESC */ = {
 			isa = PBXGroup;
 			children = (
+				6526C2BC1349D595006FF712 /* Makefile */,
 				6526C2CD1349D898006FF712 /* inc */,
 				6526C2BB1349D595006FF712 /* esc.c */,
 				6523559713A78C8C0064F844 /* esc_fsm.c */,
-				6526C2BC1349D595006FF712 /* Makefile */,
+				65F7ABFE1486EF7C00D21BCB /* esc_settings.c */,
 				6526C2BD1349D595006FF712 /* pios_board.c */,
 			);
 			name = ESC;
@@ -3628,6 +3632,7 @@
 				6526C2CE1349D898006FF712 /* esc.h */,
 				6523559813A78C970064F844 /* esc_fsm.h */,
 				6526C2CF1349D898006FF712 /* pios_config.h */,
+				65F7ABFD1486EEDE00D21BCB /* esc_settings.h */,
 			);
 			name = inc;
 			path = ../../ESC/inc;
@@ -7910,6 +7915,7 @@
 		65E8F03011EFF25C00BBF654 /* Common */ = {
 			isa = PBXGroup;
 			children = (
+				65F7AC0014875F8200D21BCB /* pios_bl_helper.c */,
 				654612D812B5E9A900B719D0 /* pios_iap.c */,
 				65E8F03111EFF25C00BBF654 /* pios_bmp085.c */,
 				65E8F03211EFF25C00BBF654 /* pios_com.c */,
