@@ -2986,6 +2986,8 @@
 		65E8F0EE11EFF25C00BBF654 /* startup_stm32f10x_HD.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; name = startup_stm32f10x_HD.S; path = ../../PiOS/STM32F10x/startup_stm32f10x_HD.S; sourceTree = SOURCE_ROOT; };
 		65E8F0F111EFF25C00BBF654 /* startup_stm32f10x_MD.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; name = startup_stm32f10x_MD.S; path = ../../PiOS/STM32F10x/startup_stm32f10x_MD.S; sourceTree = SOURCE_ROOT; };
 		65EA2E171273C55200636061 /* ratedesired.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = ratedesired.xml; sourceTree = "<group>"; };
+		65F4C83D14899BD0004EC03B /* esc_logger.c */ = {isa = PBXFileReference; fileEncoding = 4; name = esc_logger.c; path = ../../ESC/esc_logger.c; sourceTree = "<group>"; };
+		65F4C83E14899D03004EC03B /* esc_logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = esc_logger.h; sourceTree = "<group>"; };
 		65F7ABFD1486EEDE00D21BCB /* esc_settings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = esc_settings.h; sourceTree = "<group>"; };
 		65F7ABFE1486EF7C00D21BCB /* esc_settings.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = esc_settings.c; path = ../../ESC/esc_settings.c; sourceTree = "<group>"; };
 		65F7AC0014875F8200D21BCB /* pios_bl_helper.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pios_bl_helper.c; sourceTree = "<group>"; };
@@ -3624,6 +3626,7 @@
 				65F7ABFE1486EF7C00D21BCB /* esc_settings.c */,
 				6526C2BD1349D595006FF712 /* pios_board.c */,
 				65FCBEC81488338600E8BE01 /* esc_serial.c */,
+				65F4C83D14899BD0004EC03B /* esc_logger.c */,
 			);
 			name = ESC;
 			sourceTree = "<group>";
@@ -3636,6 +3639,7 @@
 				6526C2CF1349D898006FF712 /* pios_config.h */,
 				65F7ABFD1486EEDE00D21BCB /* esc_settings.h */,
 				65FCBEC91488479B00E8BE01 /* esc_serial.h */,
+				65F4C83E14899D03004EC03B /* esc_logger.h */,
 			);
 			name = inc;
 			path = ../../ESC/inc;
