@@ -37,6 +37,9 @@ OUTDIR := $(TOP)/build/$(TARGET)
 # Set to YES to compile for debugging
 DEBUG ?= NO
 
+# Include objects that are just nice information to show
+DIAGNOSTICS ?= NO
+
 # Set to YES to build a FW version that will erase all flash memory
 ERASE_FLASH ?= NO
 # Set to YES to use the Servo output pins for debugging via scope or logic analyser
@@ -45,7 +48,7 @@ ENABLE_DEBUG_PINS ?= NO
 # Set to Yes to enable the AUX UART which is mapped on the S1 (Tx) and S2 (Rx) servo outputs
 ENABLE_AUX_UART ?= NO
 
-USE_SPEKTRUM ?= NO
+USE_GPS ?= YES
 
 USE_I2C ?= NO
 
@@ -62,7 +65,14 @@ endif
 FLASH_TOOL = OPENOCD
 
 # List of modules to include
-MODULES = Telemetry Attitude Stabilization Actuator ManualControl FirmwareIAP
+OPTMODULES = CameraStab
+ifeq ($(USE_GPS), YES)
+OPTMODULES += GPS
+endif
+
+MODULES = Attitude Stabilization Actuator ManualControl FirmwareIAP
+# Telemetry must be last to grab the optional modules (why?)
+MODULES += Telemetry
 
 # Paths
 OPSYSTEM = ./System
@@ -113,12 +123,10 @@ OPUAVSYNTHDIR = $(OUTDIR)/../uavobject-synthetics/flight
 # List C source files here. (C dependencies are automatically generated.)
 # use file-extension c for "c-only"-files
 
-MODNAMES = $(notdir ${MODULES})
-
 ifndef TESTAPP
 ## MODULES
+SRC += ${foreach MOD, ${OPTMODULES}, ${wildcard ${OPMODULEDIR}/${MOD}/*.c}}
 SRC += ${foreach MOD, ${MODULES}, ${wildcard ${OPMODULEDIR}/${MOD}/*.c}}
-SRC += ${OUTDIR}/InitMods.c
 ## OPENPILOT CORE:
 SRC += ${OPMODULEDIR}/System/systemmod.c
 SRC += $(OPSYSTEM)/coptercontrol.c
@@ -128,7 +136,6 @@ SRC += $(OPSYSTEM)/taskmonitor.c
 SRC += $(OPUAVTALK)/uavtalk.c
 SRC += $(OPUAVOBJ)/uavobjectmanager.c
 SRC += $(OPUAVOBJ)/eventdispatcher.c
-SRC += $(OPUAVOBJ)/uavobjectsinit_linker.c
 SRC += $(OPSYSTEM)/pios_usb_hid_desc.c
 else
 ## TESTCODE
@@ -140,6 +147,7 @@ endif
 
 ## UAVOBJECTS
 ifndef TESTAPP
+SRC += $(OPUAVSYNTHDIR)/accessorydesired.c
 SRC += $(OPUAVSYNTHDIR)/objectpersistence.c
 SRC += $(OPUAVSYNTHDIR)/gcstelemetrystats.c
 SRC += $(OPUAVSYNTHDIR)/flighttelemetrystats.c
@@ -155,20 +163,22 @@ SRC += $(OPUAVSYNTHDIR)/actuatorsettings.c
 SRC += $(OPUAVSYNTHDIR)/attituderaw.c
 SRC += $(OPUAVSYNTHDIR)/attitudeactual.c
 SRC += $(OPUAVSYNTHDIR)/manualcontrolcommand.c
-SRC += $(OPUAVSYNTHDIR)/taskinfo.c
 SRC += $(OPUAVSYNTHDIR)/i2cstats.c
 SRC += $(OPUAVSYNTHDIR)/watchdogstatus.c
-SRC += $(OPUAVSYNTHDIR)/telemetrysettings.c
-SRC += $(OPUAVSYNTHDIR)/ratedesired.c
 SRC += $(OPUAVSYNTHDIR)/manualcontrolsettings.c
 SRC += $(OPUAVSYNTHDIR)/mixersettings.c
-SRC += $(OPUAVSYNTHDIR)/mixerstatus.c
 SRC += $(OPUAVSYNTHDIR)/firmwareiapobj.c
 SRC += $(OPUAVSYNTHDIR)/attitudesettings.c
-#${wildcard ${OBJ}/$(shell echo $(VAR) | tr A-Z a-z)/*.c}
-#SRC += ${foreach OBJ, ${UAVOBJECTS}, $(UAVOBJECTS)/$(OBJ).c}
-# Cant use until i can automatically generate list of UAVObjects
-#SRC += ${OUTDIR}/InitObjects.c
+SRC += $(OPUAVSYNTHDIR)/camerastabsettings.c
+SRC += $(OPUAVSYNTHDIR)/cameradesired.c
+SRC += $(OPUAVSYNTHDIR)/gpsposition.c
+SRC += $(OPUAVSYNTHDIR)/hwsettings.c
+SRC += $(OPUAVSYNTHDIR)/gcsreceiver.c
+SRC += $(OPUAVSYNTHDIR)/receiveractivity.c
+SRC += $(OPUAVSYNTHDIR)/taskinfo.c
+SRC += $(OPUAVSYNTHDIR)/mixerstatus.c
+SRC += $(OPUAVSYNTHDIR)/ratedesired.c
+
 endif
 
 ## PIOS Hardware (STM32F10x)
@@ -183,11 +193,14 @@ SRC += $(PIOSSTM32F10X)/pios_i2c.c
 SRC += $(PIOSSTM32F10X)/pios_spi.c
 SRC += $(PIOSSTM32F10X)/pios_ppm.c
 SRC += $(PIOSSTM32F10X)/pios_pwm.c
-SRC += $(PIOSSTM32F10X)/pios_spektrum.c
+SRC += $(PIOSSTM32F10X)/pios_dsm.c
+SRC += $(PIOSSTM32F10X)/pios_sbus.c
 SRC += $(PIOSSTM32F10X)/pios_debug.c
 SRC += $(PIOSSTM32F10X)/pios_gpio.c
 SRC += $(PIOSSTM32F10X)/pios_exti.c
+SRC += $(PIOSSTM32F10X)/pios_rtc.c
 SRC += $(PIOSSTM32F10X)/pios_wdg.c
+SRC += $(PIOSSTM32F10X)/pios_tim.c
 
 
 # PIOS USB related files (seperated to make code maintenance more easy)
@@ -197,6 +210,7 @@ SRC += $(PIOSSTM32F10X)/pios_usb_hid_prop.c
 SRC += $(PIOSSTM32F10X)/pios_usb_hid_pwr.c
 
 ## PIOS Hardware (Common)
+SRC += $(PIOSCOMMON)/pios_crc.c
 SRC += $(PIOSCOMMON)/pios_flashfs_objlist.c
 SRC += $(PIOSCOMMON)/pios_flash_w25x.c
 SRC += $(PIOSCOMMON)/pios_adxl345.c
@@ -204,6 +218,8 @@ SRC += $(PIOSCOMMON)/pios_com.c
 SRC += $(PIOSCOMMON)/pios_i2c_esc.c
 SRC += $(PIOSCOMMON)/pios_iap.c
 SRC += $(PIOSCOMMON)/pios_bl_helper.c
+SRC += $(PIOSCOMMON)/pios_rcvr.c
+SRC += $(PIOSCOMMON)/pios_gcsrcvr.c
 SRC += $(PIOSCOMMON)/printf-stdarg.c
 ## Libraries for flight calculations
 SRC += $(FLIGHTLIB)/fifo_buffer.c
@@ -322,7 +338,7 @@ EXTRAINCDIRS  += $(RTOSSRCDIR)/portable/GCC/ARM_CM3
 EXTRAINCDIRS  += $(AHRSBOOTLOADERINC)
 EXTRAINCDIRS  += $(PYMITEINC)
 
-EXTRAINCDIRS += ${foreach MOD, ${MODULES}, ${OPMODULEDIR}/${MOD}/inc} ${OPMODULEDIR}/System/inc
+EXTRAINCDIRS += ${foreach MOD, ${OPTMODULES} ${MODULES}, ${OPMODULEDIR}/${MOD}/inc} ${OPMODULEDIR}/System/inc
 
 
 # List any extra directories to look for library files here.
@@ -376,14 +392,14 @@ endif
 ifeq ($(ERASE_FLASH), YES)
 CDEFS += -DERASE_FLASH
 endif
-ifeq ($(USE_SPEKTRUM), YES)
-CDEFS += -DUSE_SPEKTRUM
+
+ifneq ($(USE_GPS), NO)
+CDEFS += -DUSE_GPS
 endif
 
 ifeq ($(USE_I2C), YES)
 CDEFS += -DUSE_I2C
 endif
-
 
 # Place project-specific -D and/or -U options for
 # Assembler with preprocessor here.
@@ -414,6 +430,10 @@ ifeq ($(DEBUG),YES)
 CFLAGS = -DDEBUG
 endif
 
+ifeq ($(DIAGNOSTICS),YES)
+CFLAGS = -DDIAGNOSTICS
+endif
+
 CFLAGS += -g$(DEBUGF)
 CFLAGS += -O$(OPT)
 CFLAGS += -mcpu=$(MCU)
@@ -422,14 +442,16 @@ CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS)) -I.
 
 #CFLAGS += -fno-cprop-registers -fno-defer-pop -fno-guess-branch-probability -fno-section-anchors
 #CFLAGS += -fno-if-conversion -fno-if-conversion2 -fno-ipa-pure-const -fno-ipa-reference -fno-merge-constants
-#CFLAGS += -fno-split-wide-types -fno-tree-ccp -fno-tree-ch -fno-tree-copy-prop -fno-tree-copyrename 
+#CFLAGS += -fno-split-wide-types -fno-tree-ccp -fno-tree-ch -fno-tree-copy-prop -fno-tree-copyrename
 #CFLAGS += -fno-tree-dce -fno-tree-dominator-opts -fno-tree-dse -fno-tree-fre -fno-tree-sink -fno-tree-sra
 #CFLAGS += -fno-tree-ter
 #CFLAGS += -g$(DEBUGF) -DDEBUG
 
 CFLAGS += -mapcs-frame
 CFLAGS += -fomit-frame-pointer
+ifeq ($(CODE_SOURCERY), YES)
 CFLAGS += -fpromote-loop-indices
+endif
 
 CFLAGS += -Wall
 CFLAGS += -Werror
@@ -484,7 +506,7 @@ LSTFILES   = $(addprefix $(OUTDIR)/, $(addsuffix .lst, $(ALLSRCBASE)))
 DEPFILES   = $(addprefix $(OUTDIR)/dep/, $(addsuffix .o.d, $(ALLSRCBASE)))
 
 # Default target.
-all: gencode build
+all: build
 
 ifeq ($(LOADFORMAT),ihex)
 build: elf hex lss sym
@@ -500,20 +522,8 @@ endif
 endif
 endif
 
-# Generate intermediate code for objects
-gencode: ${OUTDIR}/InitMods.c
-
-# Generate code for module initialization
-${OUTDIR}/InitMods.c: Makefile
-	@echo $(MSG_MODINIT) $(call toprel, $@)
-	@echo ${quote}// Autogenerated file${quote} > ${OUTDIR}/InitMods.c
-	@echo ${quote}${foreach MOD, ${MODNAMES}, extern unsigned int ${MOD}Initialize(void);}${quote}  >> ${OUTDIR}/InitMods.c
-	@echo ${quote}void InitModules() {${quote} >> ${OUTDIR}/InitMods.c
-	@echo ${quote}${foreach MOD, ${MODNAMES}, ${MOD}Initialize();}${quote}  >> ${OUTDIR}/InitMods.c
-	@echo ${quote}}${quote} >> ${OUTDIR}/InitMods.c
-
 # Generate code for PyMite
-#$(OUTDIR)/pmlib_img.c $(OUTDIR)/pmlib_nat.c $(OUTDIR)/pmlibusr_img.c $(OUTDIR)/pmlibusr_nat.c $(OUTDIR)/pmfeatures.h: $(wildcard $(PYMITELIB)/*.py) $(wildcard $(PYMITEPLAT)/*.py) $(wildcard $(FLIGHTPLANLIB)/*.py) $(wildcard $(FLIGHTPLANS)/*.py) 
+#$(OUTDIR)/pmlib_img.c $(OUTDIR)/pmlib_nat.c $(OUTDIR)/pmlibusr_img.c $(OUTDIR)/pmlibusr_nat.c $(OUTDIR)/pmfeatures.h: $(wildcard $(PYMITELIB)/*.py) $(wildcard $(PYMITEPLAT)/*.py) $(wildcard $(FLIGHTPLANLIB)/*.py) $(wildcard $(FLIGHTPLANS)/*.py)
 #	@echo $(MSG_PYMITEINIT) $(call toprel, $@)
 #	@$(PYTHON) $(PYMITETOOLS)/pmImgCreator.py -f $(PYMITEPLAT)/pmfeatures.py -c -s --memspace=flash -o $(OUTDIR)/pmlib_img.c --native-file=$(OUTDIR)/pmlib_nat.c $(PYMITELIB)/list.py $(PYMITELIB)/dict.py $(PYMITELIB)/__bi.py $(PYMITELIB)/sys.py $(PYMITELIB)/string.py $(wildcard $(FLIGHTPLANLIB)/*.py)
 #	@$(PYTHON) $(PYMITETOOLS)/pmGenPmFeatures.py $(PYMITEPLAT)/pmfeatures.py > $(OUTDIR)/pmfeatures.h
@@ -551,7 +561,7 @@ $(OUTDIR)/$(TARGET).bin.o: $(OUTDIR)/$(TARGET).bin
 $(eval $(call OPFW_TEMPLATE,$(OUTDIR)/$(TARGET).bin,$(BOARD_TYPE),$(BOARD_REVISION)))
 
 # Add jtag targets (program and wipe)
-$(eval $(call JTAG_TEMPLATE,$(OUTDIR)/$(TARGET).bin,$(FW_BANK_BASE),$(FW_BANK_SIZE)))
+$(eval $(call JTAG_TEMPLATE,$(OUTDIR)/$(TARGET).bin,$(FW_BANK_BASE),$(FW_BANK_SIZE),$(OPENOCD_CONFIG)))
 
 .PHONY: elf lss sym hex bin bino opfw
 elf: $(OUTDIR)/$(TARGET).elf
@@ -618,4 +628,4 @@ else
 endif
 
 # Listing of phony targets.
-.PHONY : all build clean clean_list gencode install
+.PHONY : all build clean clean_list install

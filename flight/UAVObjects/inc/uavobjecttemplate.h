@@ -67,7 +67,7 @@
 #define $(NAME)InstUpdated(instId) UAVObjUpdated($(NAME)Handle(), instId)
 #define $(NAME)GetMetadata(dataOut) UAVObjGetMetadata($(NAME)Handle(), dataOut)
 #define $(NAME)SetMetadata(dataIn) UAVObjSetMetadata($(NAME)Handle(), dataIn)
-#define $(NAME)ReadOnly(dataIn) UAVObjReadOnly($(NAME)Handle())
+#define $(NAME)ReadOnly() UAVObjReadOnly($(NAME)Handle())
 
 // Object data
 typedef struct {
@@ -81,6 +81,9 @@ $(DATAFIELDINFO)
 int32_t $(NAME)Initialize();
 UAVObjHandle $(NAME)Handle();
 void $(NAME)SetDefaults(UAVObjHandle obj, uint16_t instId);
+
+// set/Get functions
+$(SETGETFIELDSEXTERN)
 
 #endif // $(NAMEUC)_H
 

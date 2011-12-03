@@ -28,8 +28,11 @@
 #define UAVSETTINGSIMPORTEXPORT_H 
 
 #include <extensionsystem/iplugin.h> 
-
-class UAVSettingsImportExportPlugin : public ExtensionSystem::IPlugin 
+#include "uavobjectutil/uavobjectutilmanager.h"
+#include "uavsettingsimportexport_global.h"
+#include "../../../../../build/ground/openpilotgcs/gcsversioninfo.h"
+#include "uavsettingsimportexportfactory.h"
+class UAVSETTINGSIMPORTEXPORT_EXPORT UAVSettingsImportExportPlugin : public ExtensionSystem::IPlugin
 { 
     Q_OBJECT
 
@@ -40,9 +43,10 @@ public:
    void extensionsInitialized(); 
    bool initialize(const QStringList & arguments, QString * errorString); 
    void shutdown(); 
+private:
+   UAVSettingsImportExportFactory *mf;
 
-private slots:
-    void importExport();
+
 
 }; 
 

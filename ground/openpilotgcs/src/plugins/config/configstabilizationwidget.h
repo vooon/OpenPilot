@@ -51,10 +51,10 @@ private:
     QTimer updateTimer;
 
 private slots:
-    void requestStabilizationUpdate();
-    void sendStabilizationUpdate();
-    void saveStabilizationUpdate();
+    virtual void refreshWidgetsValues();
+    void updateObjectsFromWidgets();
     void realtimeUpdateToggle(bool);
+    void openHelp();
 
     void updateRateRollKP(double);
     void updateRateRollKI(double);

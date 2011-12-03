@@ -179,17 +179,6 @@ SECTIONS
         . = ALIGN(4);
     } > BL_FLASH
  
-    
-    /* init sections */
-    .initcalluavobj.init :
-    {
-        . = ALIGN(4);
-	__uavobj_initcall_start = .;
-        KEEP(*(.initcalluavobj.init))
-	. = ALIGN(4);
-	__uavobj_initcall_end   = .;
-    } > BL_FLASH
-
     /* the program code is stored in the .text section, which goes to Flash */
     .text :
     {
@@ -223,6 +212,7 @@ SECTIONS
          . = . + _irq_stack_size ;
          . = ALIGN(4);
          _irq_stack_top = . - 4 ;
+         _init_stack_top = _irq_stack_top;
          . = ALIGN(4);
     } >RAM
 	
@@ -364,5 +354,3 @@ SECTIONS
     .debug_typenames 0 : { *(.debug_typenames) }
     .debug_varnames  0 : { *(.debug_varnames) }
 }
-
-

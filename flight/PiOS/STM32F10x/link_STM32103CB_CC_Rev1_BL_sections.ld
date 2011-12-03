@@ -3,7 +3,8 @@ PROVIDE (   vPortSVCHandler = 0 ) ;
 PROVIDE (   xPortPendSVHandler = 0 ) ;
 PROVIDE (   xPortSysTickHandler = 0 ) ;
 
-_estack = 0x20004FF0;
+/* This is the size of the stack for early init and for all FreeRTOS IRQs */
+_irq_stack_size = 0x400;
 
 /* Section Definitions */
 SECTIONS
@@ -15,16 +16,6 @@ SECTIONS
         *(.text .text.* .gnu.linkonce.t.*)
         *(.glue_7t) *(.glue_7)
         *(.rodata .rodata* .gnu.linkonce.r.*)
-    } > BL_FLASH
-
-    /* init sections */
-    .initcalluavobj.init :
-    {
-        . = ALIGN(4);
-	__uavobj_initcall_start = .;
-        KEEP(*(.initcalluavobj.init))
-	. = ALIGN(4);
-	__uavobj_initcall_end   = .;
     } > BL_FLASH
 
     .ARM.extab :
@@ -59,6 +50,24 @@ SECTIONS
         _ebss = . ;
     } > SRAM
 
+    /* 
+     * This stack is used both as the initial sp during early init as well as ultimately
+     * being used as the STM32's MSP (Main Stack Pointer) which is the same stack that
+     * is used for _all_ interrupt handlers.  The end of this stack should be placed
+     * against the lowest address in RAM so that a stack overrun results in a hard fault
+     * at the first access beyond the end of the stack.
+     */
+    .irq_stack :
+    {
+         . = ALIGN(4);
+         _irq_stack_end = . ;
+         . = . + _irq_stack_size ;
+         . = ALIGN(4);
+         _irq_stack_top = . - 4 ;
+         _init_stack_top = _irq_stack_top;
+         . = ALIGN(4);
+    } > SRAM
+    
     . = ALIGN(4);
     _end = . ;
 

@@ -282,9 +282,15 @@ bool UAVTalk::processInputByte(quint8 rxbyte)
 
                 // Determine data length
                 if (rxType == TYPE_OBJ_REQ || rxType == TYPE_ACK || rxType == TYPE_NACK)
+                {
                     rxLength = 0;
+                    rxInstanceLength = 0;
+                }
                 else
+                {
                     rxLength = rxObj->getNumBytes();
+                    rxInstanceLength = (rxObj->isSingleInstance() ? 0 : 2);
+                }
 
                 // Check length and determine next state
                 if (rxLength >= MAX_PAYLOAD_LENGTH)
@@ -295,7 +301,7 @@ bool UAVTalk::processInputByte(quint8 rxbyte)
                 }
 
                 // Check the lengths match
-                if ((rxPacketLength + rxLength) != packetSize)
+                if ((rxPacketLength + rxInstanceLength + rxLength) != packetSize)
                 {   // packet error - mismatched packet size
                     stats.rxErrors++;
                     rxState = STATE_SYNC;
@@ -805,17 +811,3 @@ quint8 UAVTalk::updateCRC(quint8 crc, const quint8* data, qint32 length)
         crc = crc_table[crc ^ *data++];
     return crc;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

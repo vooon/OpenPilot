@@ -94,8 +94,6 @@ DOXYGENDIR = ../Doc/Doxygen
 SRC += $(OPSYSTEM)/main.c
 SRC += $(OPSYSTEM)/pios_board.c
 SRC += $(OPSYSTEM)/op_dfu.c
-SRC += $(FLIGHTLIB)/stopwatch.c
-
 
 ## PIOS Hardware (STM32F10x)
 SRC += $(PIOSSTM32F10X)/pios_sys.c
@@ -139,7 +137,6 @@ SRC += $(STMSPDSRCDIR)/stm32f10x_pwr.c
 SRC += $(STMSPDSRCDIR)/stm32f10x_rcc.c
 SRC += $(STMSPDSRCDIR)/stm32f10x_rtc.c
 SRC += $(STMSPDSRCDIR)/stm32f10x_spi.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_tim.c
 SRC += $(STMSPDSRCDIR)/stm32f10x_usart.c
 SRC += $(STMSPDSRCDIR)/stm32f10x_dbgmcu.c
 SRC += $(STMSPDSRCDIR)/misc.c
@@ -303,7 +300,9 @@ CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS)) -I.
 
 CFLAGS += -mapcs-frame 
 CFLAGS += -fomit-frame-pointer
+ifeq ($(CODE_SOURCERY), YES)
 CFLAGS += -fpromote-loop-indices
+endif
 
 CFLAGS += -Wall 
 CFLAGS += -Werror
@@ -414,7 +413,7 @@ $(eval $(call PARTIAL_COMPILE_ARM_TEMPLATE, SRCARM))
 $(OUTDIR)/$(TARGET).bin.o: $(OUTDIR)/$(TARGET).bin
 
 # Add jtag targets (program and wipe)
-$(eval $(call JTAG_TEMPLATE,$(OUTDIR)/$(TARGET).bin,$(BL_BANK_BASE),$(BL_BANK_SIZE)))
+$(eval $(call JTAG_TEMPLATE,$(OUTDIR)/$(TARGET).bin,$(BL_BANK_BASE),$(BL_BANK_SIZE),$(OPENOCD_CONFIG)))
 
 .PHONY: elf lss sym hex bin bino
 elf: $(OUTDIR)/$(TARGET).elf

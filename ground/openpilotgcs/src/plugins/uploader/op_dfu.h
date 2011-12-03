@@ -4,6 +4,7 @@
 #include <QByteArray>
 #include <rawhid/pjrc_rawhid.h>
 #include <rawhid/usbmonitor.h>
+#include <rawhid/usbsignalfilter.h>
 #include <QDebug>
 #include <QFile>
 #include <QThread>
@@ -17,6 +18,7 @@
 #include "delay.h"
 #include <qextserialport/src/qextserialport.h>
 #include <QTime>
+#include <QTimer>
 #include "SSP/qssp.h"
 #include "SSP/port.h"
 #include "SSP/qsspt.h"
@@ -91,6 +93,16 @@ namespace OP_DFU {
 
     };
 
+    enum eBoardType
+    {
+        eBoardUnkwn = 0,
+        eBoardMainbrd = 1,
+        eBoardINS,
+        eBoardPip,
+        eBoardCC,
+        eBoardPro,
+    };
+
     struct device
     {
             int ID;
@@ -108,7 +120,7 @@ namespace OP_DFU {
         Q_OBJECT;
 
         public:
-
+        static quint32 CRCFromQBArray(QByteArray array, quint32 Size);
         //DFUObject(bool debug);
         DFUObject(bool debug,bool use_serial,QString port);
 
@@ -152,7 +164,8 @@ namespace OP_DFU {
 
         // Helper functions:
         QString StatusToString(OP_DFU::Status  const & status);
-        quint32 CRC32WideFast(quint32 Crc, quint32 Size, quint32 *Buffer);
+        static quint32 CRC32WideFast(quint32 Crc, quint32 Size, quint32 *Buffer);
+        OP_DFU::eBoardType GetBoardType(int boardNum);
 
 
 
@@ -179,7 +192,7 @@ namespace OP_DFU {
         // USB Bootloader:
         pjrc_rawhid hidHandle;
         int setStartBit(int command){ return command|0x20; }
-        quint32 CRCFromQBArray(QByteArray array, quint32 Size);
+
         void CopyWords(char * source, char* destination, int count);
         void printProgBar( int const & percent,QString const& label);
         bool StartUpload(qint32  const &numberOfBytes, TransferTypes const & type,quint32 crc);

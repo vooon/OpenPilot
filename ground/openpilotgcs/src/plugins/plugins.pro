@@ -19,6 +19,11 @@ plugin_emptygadget.subdir = emptygadget
 plugin_emptygadget.depends = plugin_coreplugin
 SUBDIRS += plugin_emptygadget
 
+# Debug Gadget plugin
+plugin_debuggadget.subdir = debuggadget
+plugin_debuggadget.depends = plugin_coreplugin
+SUBDIRS += plugin_debuggadget
+
 # Welcome plugin
 plugin_welcome.subdir = welcome
 plugin_welcome.depends = plugin_coreplugin
@@ -64,11 +69,19 @@ plugin_uavobjectbrowser.depends = plugin_coreplugin
 plugin_uavobjectbrowser.depends += plugin_uavobjects
 SUBDIRS += plugin_uavobjectbrowser
 
+!contains(QT_VERSION, ^4\\.8\\..*) {
 # ModelView UAVGadget
 plugin_modelview.subdir = modelview
 plugin_modelview.depends = plugin_coreplugin
 plugin_modelview.depends += plugin_uavobjects
 SUBDIRS += plugin_modelview
+
+#Notify gadget
+plugin_notify.subdir = notify
+plugin_notify.depends = plugin_coreplugin
+plugin_notify.depends += plugin_uavobjects
+SUBDIRS += plugin_notify
+}
 
 #Uploader gadget
 plugin_uploader.subdir = uploader
@@ -95,16 +108,11 @@ plugin_systemhealth.depends = plugin_coreplugin
 plugin_systemhealth.depends += plugin_uavobjects
 SUBDIRS += plugin_systemhealth
 
-#Notify gadget
-plugin_notify.subdir = notify
-plugin_notify.depends = plugin_coreplugin
-plugin_notify.depends += plugin_uavobjects
-SUBDIRS += plugin_notify
-
 #Config gadget
 plugin_config.subdir = config
 plugin_config.depends = plugin_coreplugin
 plugin_config.depends += plugin_uavobjects
+plugin_config.depends += plugin_uavsettingsimportexport
 SUBDIRS += plugin_config
 
 #GPS Display gadget

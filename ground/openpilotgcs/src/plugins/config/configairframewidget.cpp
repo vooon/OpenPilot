@@ -34,7 +34,12 @@
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QPushButton>
 #include <math.h>
-#include <QSignalMapper>
+#include <QDesktopServices>
+#include <QUrl>
+#include "systemsettings.h"
+#include "mixersettings.h"
+#include "actuatorsettings.h"
+#include <QEventLoop>
 
 /**
   Helper delegate for the custom mixer editor table.
@@ -90,13 +95,23 @@ ConfigAirframeWidget::ConfigAirframeWidget(QWidget *parent) : ConfigTaskWidget(p
     m_aircraft = new Ui_AircraftWidget();
     m_aircraft->setupUi(this);
 
+    setupButtons(m_aircraft->saveAircraftToRAM,m_aircraft->saveAircraftToSD);
+
+    addUAVObject("SystemSettings");
+    addUAVObject("MixerSettings");
+    addUAVObject("ActuatorSettings");
+
+
     ffTuningInProgress = false;
     ffTuningPhase = false;
 
-    mixerTypes << "Mixer1Type" << "Mixer2Type" << "Mixer3Type"
-            << "Mixer4Type" << "Mixer5Type" << "Mixer6Type" << "Mixer7Type" << "Mixer8Type";
-    mixerVectors << "Mixer1Vector" << "Mixer2Vector" << "Mixer3Vector"
-            << "Mixer4Vector" << "Mixer5Vector" << "Mixer6Vector" << "Mixer7Vector" << "Mixer8Vector";
+    QStringList channels;
+    channels << "None";
+    for (int i = 0; i < ActuatorSettings::CHANNELADDR_NUMELEM; i++) {
+        mixerTypes << QString("Mixer%1Type").arg(i+1);
+        mixerVectors << QString("Mixer%1Vector").arg(i+1);
+        channels << QString("Channel%1").arg(i+1);
+    }
 
     QStringList airframeTypes;
     airframeTypes << "Fixed Wing" << "Multirotor" << "Helicopter" << "Custom";
@@ -112,11 +127,6 @@ ConfigAirframeWidget::ConfigAirframeWidget(QWidget *parent) : ConfigTaskWidget(p
             << "Octo Coax X" << "Hexacopter Y6" << "Tricopter Y";
     m_aircraft->multirotorFrameType->addItems(multiRotorTypes);
 
-
-
-    QStringList channels;
-    channels << "None" << "Channel1" << "Channel2" << "Channel3" <<
-            "Channel4" << "Channel5" << "Channel6" << "Channel7" << "Channel8";
     // Now load all the channel assignements for fixed wing
     m_aircraft->fwElevator1Channel->addItems(channels);
     m_aircraft->fwElevator2Channel->addItems(channels);
@@ -163,16 +173,9 @@ ConfigAirframeWidget::ConfigAirframeWidget(QWidget *parent) : ConfigTaskWidget(p
         m_aircraft->customMixerTable->setItemDelegateForRow(i, sbd);
     }
 
-    connect(m_aircraft->saveAircraftToSD, SIGNAL(clicked()), this, SLOT(saveAircraftUpdate()));
-    connect(m_aircraft->saveAircraftToRAM, SIGNAL(clicked()), this, SLOT(sendAircraftUpdate()));
-    connect(m_aircraft->getAircraftCurrent, SIGNAL(clicked()), this, SLOT(requestAircraftUpdate()));
-    connect(m_aircraft->ffSave, SIGNAL(clicked()), this, SLOT(saveAircraftUpdate()));
-    connect(m_aircraft->ffApply, SIGNAL(clicked()), this, SLOT(sendAircraftUpdate()));
-    connect(m_aircraft->ffGetCurrent, SIGNAL(clicked()), this, SLOT(requestAircraftUpdate()));
     connect(m_aircraft->fixedWingType, SIGNAL(currentIndexChanged(QString)), this, SLOT(setupAirframeUI(QString)));
     connect(m_aircraft->multirotorFrameType, SIGNAL(currentIndexChanged(QString)), this, SLOT(setupAirframeUI(QString)));
     connect(m_aircraft->aircraftType, SIGNAL(currentIndexChanged(int)), this, SLOT(switchAirframeType(int)));
-    requestAircraftUpdate();
 
     connect(m_aircraft->fwThrottleReset, SIGNAL(clicked()), this, SLOT(resetFwMixer()));
     connect(m_aircraft->mrThrottleCurveReset, SIGNAL(clicked()), this, SLOT(resetMrMixer()));
@@ -191,34 +194,13 @@ ConfigAirframeWidget::ConfigAirframeWidget(QWidget *parent) : ConfigTaskWidget(p
     connect(m_aircraft->ffTestBox2, SIGNAL(clicked(bool)), this, SLOT(enableFFTest()));
     connect(m_aircraft->ffTestBox3, SIGNAL(clicked(bool)), this, SLOT(enableFFTest()));
 
-    connect(parent, SIGNAL(autopilotConnected()),this, SLOT(requestAircraftUpdate()));
+    enableControls(false);
+    refreshWidgetsValues();
 
-    // Connect all the help buttons to signal mapper that passes button name to SLOT function
-    QSignalMapper* signalMapper = new QSignalMapper(this);
-    connect( m_aircraft->acftTypeHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
-    signalMapper->setMapping(m_aircraft->acftTypeHelp, m_aircraft->acftTypeHelp->objectName());
-    connect( m_aircraft->airplaneTypeHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
-    signalMapper->setMapping(m_aircraft->airplaneTypeHelp, m_aircraft->airplaneTypeHelp->objectName());
-    connect( m_aircraft->channelAssignmentHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
-    signalMapper->setMapping(m_aircraft->channelAssignmentHelp, m_aircraft->channelAssignmentHelp->objectName());
-    connect( m_aircraft->commandHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
-    signalMapper->setMapping(m_aircraft->commandHelp, QString("commandHelp"));
-    connect( m_aircraft->throttleCurveHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
-    signalMapper->setMapping(m_aircraft->throttleCurveHelp, QString("throttleCurveHelp"));
-    connect( m_aircraft->multiFrameTypeHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
-    signalMapper->setMapping(m_aircraft->multiFrameTypeHelp, m_aircraft->multiFrameTypeHelp->objectName());
-    connect( m_aircraft->throttleCurveHelp_2, SIGNAL(clicked()), signalMapper, SLOT(map()) );
-    signalMapper->setMapping(m_aircraft->throttleCurveHelp_2, QString("throttleCurveHelp"));
-    connect( m_aircraft->tricopterYawHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
-    signalMapper->setMapping(m_aircraft->tricopterYawHelp, m_aircraft->tricopterYawHelp->objectName());
-    connect( m_aircraft->motorOutputChanHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
-    signalMapper->setMapping(m_aircraft->motorOutputChanHelp, m_aircraft->motorOutputChanHelp->objectName());
-    connect( m_aircraft->feedForwardHelp, SIGNAL(clicked()), signalMapper, SLOT(map()) );
-    signalMapper->setMapping(m_aircraft->feedForwardHelp, m_aircraft->feedForwardHelp->objectName());
-    connect( m_aircraft->commandHelp_2, SIGNAL(clicked()), signalMapper, SLOT(map()) );
-    signalMapper->setMapping(m_aircraft->commandHelp_2, QString("commandHelp"));
 
-    connect(signalMapper, SIGNAL(mapped(const QString &)), parent, SLOT(showHelp(const QString &)));
+    // Connect the help button
+    connect(m_aircraft->airframeHelp, SIGNAL(clicked()), this, SLOT(openHelp()));
+    addToDirtyMonitor();
 }
 
 ConfigAirframeWidget::~ConfigAirframeWidget()
@@ -375,7 +357,7 @@ void ConfigAirframeWidget::resetFwMixer()
 {
     UAVDataObject* obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("MixerSettings")));
     UAVObjectField* field = obj->getField(QString("ThrottleCurve1"));
-    resetMixer(m_aircraft->fixedWingThrottle, field->getNumElements());
+    resetMixer(m_aircraft->fixedWingThrottle, field->getNumElements(),1);
 }
 
 /**
@@ -385,7 +367,7 @@ void ConfigAirframeWidget::resetMrMixer()
 {
     UAVDataObject* obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("MixerSettings")));
     UAVObjectField* field = obj->getField(QString("ThrottleCurve1"));
-    resetMixer(m_aircraft->multiThrottleCurve, field->getNumElements());
+    resetMixer(m_aircraft->multiThrottleCurve, field->getNumElements(),0.9);
 }
 
 /**
@@ -395,7 +377,7 @@ void ConfigAirframeWidget::resetCt1Mixer()
 {
     UAVDataObject* obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("MixerSettings")));
     UAVObjectField* field = obj->getField(QString("ThrottleCurve1"));
-    resetMixer(m_aircraft->customThrottle1Curve, field->getNumElements());
+    resetMixer(m_aircraft->customThrottle1Curve, field->getNumElements(),1);
 }
 
 /**
@@ -405,21 +387,17 @@ void ConfigAirframeWidget::resetCt2Mixer()
 {
     UAVDataObject* obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("MixerSettings")));
     UAVObjectField* field = obj->getField(QString("ThrottleCurve2"));
-    resetMixer(m_aircraft->customThrottle2Curve, field->getNumElements());
+    resetMixer(m_aircraft->customThrottle2Curve, field->getNumElements(),1);
 }
 
 
 /**
   Resets a mixer curve
   */
-void ConfigAirframeWidget::resetMixer(MixerCurveWidget *mixer, int numElements)
+void ConfigAirframeWidget::resetMixer(MixerCurveWidget *mixer, int numElements, double maxvalue)
 {
-    QList<double> curveValues;
-    for (double i=0; i<numElements; i++) {
-        curveValues.append(i/(numElements-1));
-    }
     // Setup all Throttle1 curves for all types of airframes
-    mixer->initCurve(curveValues);
+    mixer->initLinearCurve((quint32)numElements,maxvalue);
 }
 
 /**
@@ -463,14 +441,16 @@ void ConfigAirframeWidget::updateCustomThrottle2CurveValue(QList<double> list, d
   * Aircraft settings
   **************************/
 /**
-  Request the current value of the SystemSettings which holds the aircraft type
+  Refreshes the current value of the SystemSettings which holds the aircraft type
   */
-void ConfigAirframeWidget::requestAircraftUpdate()
+void ConfigAirframeWidget::refreshWidgetsValues()
 {
+    if(!allObjectsUpdated())
+        return;
+    bool dirty=isDirty();
     // Get the Airframe type from the system settings:
     UAVDataObject* obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("SystemSettings")));
     Q_ASSERT(obj);
-    obj->requestUpdate();
     UAVObjectField *field = obj->getField(QString("AirframeType"));
     Q_ASSERT(field);
     // At this stage, we will need to have some hardcoded settings in this code, this
@@ -480,25 +460,35 @@ void ConfigAirframeWidget::requestAircraftUpdate()
 
     obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("MixerSettings")));
     Q_ASSERT(obj);
-    obj->requestUpdate();
     field = obj->getField(QString("ThrottleCurve1"));
     Q_ASSERT(field);
     QList<double> curveValues;
     // If the 1st element of the curve is <= -10, then the curve
     // is a straight line (that's how the mixer works on the mainboard):
     if (field->getValue(0).toInt() <= -10) {
-        for (double i=0; i<field->getNumElements(); i++) {
-            curveValues.append(i/(field->getNumElements()-1));
-        }
-    } else {
+        m_aircraft->multiThrottleCurve->initLinearCurve(field->getNumElements(),(double)1);
+        m_aircraft->fixedWingThrottle->initLinearCurve(field->getNumElements(),(double)1);
+    }
+    else {
+        double temp=0;
+        double value;
         for (unsigned int i=0; i < field->getNumElements(); i++) {
-            curveValues.append(field->getValue(i).toDouble());
+            value=field->getValue(i).toDouble();
+            temp+=value;
+            curveValues.append(value);
+        }
+        if(temp==0)
+        {
+            m_aircraft->multiThrottleCurve->initLinearCurve(field->getNumElements(),0.9);;
+            m_aircraft->fixedWingThrottle->initLinearCurve(field->getNumElements(),(double)1);
+        }
+        else
+        {
+            m_aircraft->multiThrottleCurve->initCurve(curveValues);
+            m_aircraft->fixedWingThrottle->initCurve(curveValues);
         }
     }
     // Setup all Throttle1 curves for all types of airframes
-    m_aircraft->fixedWingThrottle->initCurve(curveValues);
-    m_aircraft->multiThrottleCurve->initCurve(curveValues);
-
     // Load the Settings for fixed wing frames:
     if (frameType.startsWith("FixedWing")) {
          // Then retrieve how channels are setup
@@ -661,10 +651,13 @@ void ConfigAirframeWidget::requestAircraftUpdate()
                 val = floor(-field->getDouble(i)/1.27);
                 m_aircraft->mrYawMixLevel->setValue(val);
                 eng = m_aircraft->multiMotor2->currentIndex()-1;
-                field = obj->getField(mixerVectors.at(eng));
-                i = field->getElementNames().indexOf("Roll");
-                val = floor(1-field->getDouble(i)/1.27);
-                m_aircraft->mrRollMixLevel->setValue(val);
+                if(eng>-1)
+                {
+                    field = obj->getField(mixerVectors.at(eng));
+                    i = field->getElementNames().indexOf("Roll");
+                    val = floor(1-field->getDouble(i)/1.27);
+                    m_aircraft->mrRollMixLevel->setValue(val);
+                }
             }
         } else if (frameType == "HexaX") {
             // Motors 1/2/3 4/5/6 are: NE / E / SE / SW / W / NW
@@ -906,6 +899,7 @@ void ConfigAirframeWidget::requestAircraftUpdate()
      }
 
     updateCustomAirframeUI();
+    setDirty(dirty);
 }
 
 /**
@@ -914,6 +908,7 @@ void ConfigAirframeWidget::requestAircraftUpdate()
   */
 void ConfigAirframeWidget::setupAirframeUI(QString frameType)
 {
+    bool dirty=isDirty();
     if (frameType == "FixedWing" || frameType == "Elevator aileron rudder") {
         // Setup the UI
         m_aircraft->aircraftType->setCurrentIndex(m_aircraft->aircraftType->findText("Fixed Wing"));
@@ -1111,6 +1106,7 @@ void ConfigAirframeWidget::setupAirframeUI(QString frameType)
     }
     m_aircraft->quadShape->setSceneRect(quad->boundingRect());
     m_aircraft->quadShape->fitInView(quad, Qt::KeepAspectRatio);
+    setDirty(dirty);
 }
 
 /**
@@ -1524,6 +1520,16 @@ bool ConfigAirframeWidget::setupFrameVtail()
   */
 bool ConfigAirframeWidget::setupMixer(double mixerFactors[8][3])
 {
+    qDebug()<<"Mixer factors";
+    qDebug()<<mixerFactors[0][0]<<" "<<mixerFactors[0][1]<<" "<<mixerFactors[0][2];
+    qDebug()<<mixerFactors[1][0]<<" "<<mixerFactors[1][1]<<" "<<mixerFactors[1][2];
+    qDebug()<<mixerFactors[2][0]<<" "<<mixerFactors[2][1]<<" "<<mixerFactors[2][2];
+    qDebug()<<mixerFactors[3][0]<<" "<<mixerFactors[3][1]<<" "<<mixerFactors[3][2];
+    qDebug()<<mixerFactors[4][0]<<" "<<mixerFactors[4][1]<<" "<<mixerFactors[4][2];
+    qDebug()<<mixerFactors[5][0]<<" "<<mixerFactors[5][1]<<" "<<mixerFactors[5][2];
+    qDebug()<<mixerFactors[6][0]<<" "<<mixerFactors[6][1]<<" "<<mixerFactors[6][2];
+    qDebug()<<mixerFactors[7][0]<<" "<<mixerFactors[7][1]<<" "<<mixerFactors[7][2];
+
     UAVObjectField *field;
     QList<QComboBox*> mmList;
     mmList << m_aircraft->multiMotor1 << m_aircraft->multiMotor2 << m_aircraft->multiMotor3
@@ -1541,13 +1547,17 @@ bool ConfigAirframeWidget::setupMixer(double mixerFactors[8][3])
     double pFactor = (double)m_aircraft->mrPitchMixLevel->value()/100;
     double rFactor = (double)m_aircraft->mrRollMixLevel->value()/100;
     double yFactor = (double)m_aircraft->mrYawMixLevel->value()/100;
+    qDebug()<<QString("pFactor=%0 rFactor=%1 yFactor=%2").arg(pFactor).arg(rFactor).arg(yFactor);
     for (int i=0 ; i<8; i++) {
-        int channel = mmList.at(i)->currentIndex()-1;
-        if (channel > -1)
-            setupQuadMotor(channel, mixerFactors[i][0]*pFactor,
-                       rFactor*mixerFactors[i][1], yFactor*mixerFactors[i][2]);
+        if(mmList.at(i)->isEnabled())
+        {
+            int channel = mmList.at(i)->currentIndex()-1;
+            if (channel > -1)
+                setupQuadMotor(channel, mixerFactors[i][0]*pFactor,
+                           rFactor*mixerFactors[i][1], yFactor*mixerFactors[i][2]);
+        }
     }
-    obj->updated();
+//    obj->updated();
     return true;
 }
 
@@ -1557,6 +1567,7 @@ bool ConfigAirframeWidget::setupMixer(double mixerFactors[8][3])
   */
 void ConfigAirframeWidget::setupQuadMotor(int channel, double pitch, double roll, double yaw)
 {
+    qDebug()<<QString("Setup quad motor channel=%0 pitch=%1 roll=%2 yaw=%3").arg(channel).arg(pitch).arg(roll).arg(yaw);
     UAVDataObject* obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("MixerSettings")));
     Q_ASSERT(obj);
     UAVObjectField *field = obj->getField(mixerTypes.at(channel));
@@ -1568,10 +1579,13 @@ void ConfigAirframeWidget::setupQuadMotor(int channel, double pitch, double roll
     field->setValue(127, ti);
     ti = field->getElementNames().indexOf("Roll");
     field->setValue(roll*127,ti);
+    qDebug()<<"Set roll="<<roll*127;
     ti = field->getElementNames().indexOf("Pitch");
     field->setValue(pitch*127,ti);
+    qDebug()<<"Set pitch="<<pitch*127;
     ti = field->getElementNames().indexOf("Yaw");
     field->setValue(yaw*127,ti);
+    qDebug()<<"Set yaw="<<yaw*127;
 }
 
 /**
@@ -1591,7 +1605,7 @@ void ConfigAirframeWidget::setupMotors(QList<QString> motorList)
         field = obj->getField(motor);
         field->setValue(mmList.takeFirst()->currentText());
     }
-    obj->updated(); // Save...
+    //obj->updated(); // Save...
 }
 
 
@@ -1757,40 +1771,32 @@ void ConfigAirframeWidget::updateCustomAirframeUI()
     // If the 1st element of the curve is <= -10, then the curve
     // is a straight line (that's how the mixer works on the mainboard):
     if (field->getValue(0).toInt() <= -10) {
-        for (double i=0; i<field->getNumElements(); i++) {
-            curveValues.append(i/(field->getNumElements()-1));
-        }
+        m_aircraft->customThrottle1Curve->initLinearCurve(field->getNumElements(),(double)1);
     } else {
+        double temp=0;
+        double value;
         for (unsigned int i=0; i < field->getNumElements(); i++) {
-            curveValues.append(field->getValue(i).toDouble());
+            value=field->getValue(i).toDouble();
+            temp+=value;
+            curveValues.append(value);
         }
+        if(temp==0)
+            m_aircraft->customThrottle1Curve->initLinearCurve(field->getNumElements(),(double)1);
+        else
+            m_aircraft->customThrottle1Curve->initCurve(curveValues);
     }
-    m_aircraft->customThrottle1Curve->initCurve(curveValues);
-
     field = obj->getField(QString("ThrottleCurve2"));
     curveValues.clear();;
     // If the 1st element of the curve is <= -10, then the curve
     // is a straight line (that's how the mixer works on the mainboard):
     if (field->getValue(0).toInt() <= -10) {
-        for (double i=0; i<field->getNumElements(); i++) {
-            curveValues.append(i/(field->getNumElements()-1));
-        }
+        m_aircraft->customThrottle2Curve->initLinearCurve(field->getNumElements(),(double)1);
     } else {
         for (unsigned int i=0; i < field->getNumElements(); i++) {
             curveValues.append(field->getValue(i).toDouble());
         }
+        m_aircraft->customThrottle2Curve->initCurve(curveValues);
     }
-    m_aircraft->customThrottle2Curve->initCurve(curveValues);
-
-    // Retrieve Feed Forward:
-    field = obj->getField(QString("FeedForward"));
-    m_aircraft->customFFSlider->setValue(field->getDouble()*100);
-    field = obj->getField(QString("AccelTime"));
-    m_aircraft->customFFaccel->setValue(field->getDouble());
-    field = obj->getField(QString("DecelTime"));
-    m_aircraft->customFFdecel->setValue(field->getDouble());
-    field = obj->getField(QString("MaxAccel"));
-    m_aircraft->customFFMaxAccel->setValue(field->getDouble());
 
     // Update the table:
     for (int i=0; i<8; i++) {
@@ -1821,8 +1827,9 @@ void ConfigAirframeWidget::updateCustomAirframeUI()
   we call additional methods for specific frames, so that we do not have a code
   that is too heavy.
 */
-void ConfigAirframeWidget::sendAircraftUpdate()
+void ConfigAirframeWidget::updateObjectsFromWidgets()
 {
+    qDebug()<<"updateObjectsFromWidgets";
     QString airframeType = "Custom";
     if (m_aircraft->aircraftType->currentText() == "Fixed Wing") {
         // Save the curve (common to all Fixed wing frames)
@@ -2049,14 +2056,12 @@ void ConfigAirframeWidget::sendAircraftUpdate()
                 m_aircraft->mrStatusLabel->setText("Error: Assign a Yaw channel");
                 return;
             }
+            motorList << "VTOLMotorNW" << "VTOLMotorNE" << "VTOLMotorS";
+            setupMotors(motorList);
             obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("ActuatorSettings")));
             Q_ASSERT(obj);
             field = obj->getField("FixedWingYaw1");
             field->setValue(m_aircraft->triYawChannel->currentText());
-            // No need to send a obj->updated() here because setupMotors
-            // will do it.
-            motorList << "VTOLMotorNW" << "VTOLMotorNE" << "VTOLMotorS";
-            setupMotors(motorList);
 
             // Motor 1 to 6, Y6 Layout:
             //     pitch   roll    yaw
@@ -2095,13 +2100,6 @@ void ConfigAirframeWidget::sendAircraftUpdate()
 
         UAVDataObject* obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("MixerSettings")));
         UAVObjectField* field = obj->getField(QString("FeedForward"));
-        field->setDouble((double)m_aircraft->customFFSlider->value()/100);
-        field = obj->getField(QString("AccelTime"));
-        field->setDouble(m_aircraft->customFFaccel->value());
-        field = obj->getField(QString("DecelTime"));
-        field->setDouble(m_aircraft->customFFdecel->value());
-        field = obj->getField(QString("MaxAccel"));
-        field->setDouble(m_aircraft->customFFMaxAccel->value());
 
         // Curve is also common to all quads:
         field = obj->getField("ThrottleCurve1");
@@ -2135,29 +2133,90 @@ void ConfigAirframeWidget::sendAircraftUpdate()
             field->setValue(m_aircraft->customMixerTable->item(5,i)->text(),ti);
         }
 
-        obj->updated();
     }
-
     UAVDataObject* obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("SystemSettings")));
     UAVObjectField* field = obj->getField(QString("AirframeType"));
     field->setValue(airframeType);
-    obj->updated();
+
 }
 
-/**
-  Send airframe type to the board and request saving to SD card
-  */
-void ConfigAirframeWidget::saveAircraftUpdate()
+void ConfigAirframeWidget::openHelp()
 {
-    // Send update so that the latest value is saved
-    sendAircraftUpdate();
-    UAVDataObject* obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("SystemSettings")));
-    Q_ASSERT(obj);
-    saveObjectToSD(obj);
-    obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("MixerSettings")));
-    saveObjectToSD(obj);
-    obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("ActuatorSettings")));
-    saveObjectToSD(obj);
 
+    QDesktopServices::openUrl( QUrl("http://wiki.openpilot.org/display/Doc/Airframe+configuration", QUrl::StrictMode) );
+}
+
+void ConfigAirframeWidget::addToDirtyMonitor()
+{
+    addWidget(m_aircraft->customMixerTable);
+    addWidget(m_aircraft->customThrottle2Curve);
+    addWidget(m_aircraft->customThrottle1Curve);
+    addWidget(m_aircraft->multiThrottleCurve);
+    addWidget(m_aircraft->fixedWingThrottle);
+    addWidget(m_aircraft->fixedWingType);
+    addWidget(m_aircraft->feedForwardSlider);
+    addWidget(m_aircraft->accelTime);
+    addWidget(m_aircraft->decelTime);
+    addWidget(m_aircraft->maxAccelSlider);
+    addWidget(m_aircraft->multirotorFrameType);
+    addWidget(m_aircraft->multiMotor1);
+    addWidget(m_aircraft->multiMotor2);
+    addWidget(m_aircraft->multiMotor3);
+    addWidget(m_aircraft->multiMotor4);
+    addWidget(m_aircraft->multiMotor5);
+    addWidget(m_aircraft->multiMotor6);
+    addWidget(m_aircraft->multiMotor7);
+    addWidget(m_aircraft->multiMotor8);
+    addWidget(m_aircraft->triYawChannel);
+    addWidget(m_aircraft->aircraftType);
+    addWidget(m_aircraft->fwEngineChannel);
+    addWidget(m_aircraft->fwAileron1Channel);
+    addWidget(m_aircraft->fwAileron2Channel);
+    addWidget(m_aircraft->fwElevator1Channel);
+    addWidget(m_aircraft->fwElevator2Channel);
+    addWidget(m_aircraft->fwRudder1Channel);
+    addWidget(m_aircraft->fwRudder2Channel);
+    addWidget(m_aircraft->elevonSlider1);
+    addWidget(m_aircraft->elevonSlider2);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmType);
+    addWidget(m_aircraft->widget_3->m_ccpm->TabObject);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmTailChannel);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmEngineChannel);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmServoWChannel);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmServoXChannel);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmServoYChannel);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmSingleServo);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmServoZChannel);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmAngleW);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmAngleX);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmCorrectionAngle);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmAngleZ);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmAngleY);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmCollectivePassthrough);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmLinkRoll);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmLinkCyclic);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmRevoSlider);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmREVOspinBox);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmCollectiveSlider);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmCollectivespinBox);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmCollectiveScale);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmCollectiveScaleBox);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmCyclicScale);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmPitchScale);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmPitchScaleBox);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmRollScale);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmRollScaleBox);
+    addWidget(m_aircraft->widget_3->m_ccpm->SwashLvlPositionSlider);
+    addWidget(m_aircraft->widget_3->m_ccpm->SwashLvlPositionSpinBox);
+    addWidget(m_aircraft->widget_3->m_ccpm->CurveType);
+    addWidget(m_aircraft->widget_3->m_ccpm->NumCurvePoints);
+    addWidget(m_aircraft->widget_3->m_ccpm->CurveValue1);
+    addWidget(m_aircraft->widget_3->m_ccpm->CurveValue2);
+    addWidget(m_aircraft->widget_3->m_ccpm->CurveValue3);
+    addWidget(m_aircraft->widget_3->m_ccpm->CurveToGenerate);
+    addWidget(m_aircraft->widget_3->m_ccpm->CurveSettings);
+    addWidget(m_aircraft->widget_3->m_ccpm->ThrottleCurve);
+    addWidget(m_aircraft->widget_3->m_ccpm->PitchCurve);
+    addWidget(m_aircraft->widget_3->m_ccpm->ccpmAdvancedSettingsTable);
 }
 

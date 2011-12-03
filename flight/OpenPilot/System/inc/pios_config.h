@@ -42,12 +42,14 @@
 #define PIOS_INCLUDE_IRQ
 #define PIOS_INCLUDE_LED
 
-#if defined(USE_SPEKTRUM)
-#define PIOS_INCLUDE_SPEKTRUM
-#else
-//#define PIOS_INCLUDE_PPM
+#define PIOS_INCLUDE_RCVR
+
+#define PIOS_INCLUDE_DSM
+//#define PIOS_INCLUDE_SBUS
 #define PIOS_INCLUDE_PWM
-#endif
+#define PIOS_INCLUDE_PPM
+
+#define PIOS_INCLUDE_TELEMETRY_RF
 
 #define PIOS_INCLUDE_SERVO
 #define PIOS_INCLUDE_SPI
@@ -58,6 +60,7 @@
 //#define PIOS_INCLUDE_HCSR04
 #define PIOS_INCLUDE_OPAHRS
 #define PIOS_INCLUDE_COM
+#define PIOS_INCLUDE_GPS
 #define PIOS_INCLUDE_SDCARD
 #define PIOS_INCLUDE_SETTINGS
 #define PIOS_INCLUDE_FREERTOS
@@ -75,15 +78,11 @@
 /* Enable a priority queue in telemetry */
 #define PIOS_TELEM_PRIORITY_QUEUE
 
-/* COM Module */
-#define GPS_BAUDRATE			19200
-#define TELEM_BAUDRATE			19200
-#define AUXUART_ENABLED			0
-#define AUXUART_BAUDRATE		19200
-
 /* Alarm Thresholds */
 #define HEAP_LIMIT_WARNING		4000
 #define HEAP_LIMIT_CRITICAL		1000
+#define IRQSTACK_LIMIT_WARNING		150
+#define IRQSTACK_LIMIT_CRITICAL		80
 #define CPULOAD_LIMIT_WARNING		80
 #define CPULOAD_LIMIT_CRITICAL		95
 
@@ -93,6 +92,8 @@
 /* GPS options */
 #define PIOS_GPS_SETS_HOMELOCATION
 
+/* PIOS Initcall infrastructure */
+#define PIOS_INCLUDE_INITCALL
 
 #endif /* PIOS_CONFIG_H */
 /**
