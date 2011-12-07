@@ -80,6 +80,9 @@
 
 #define PIOS_INCLUDE_BMP085
 
+/* Supported ESC interface */
+#define PIOS_INCLUDE_ESC_SERIAL
+
 /* A really shitty setting saving implementation */
 #define PIOS_INCLUDE_FLASH_SECTOR_SETTINGS
 

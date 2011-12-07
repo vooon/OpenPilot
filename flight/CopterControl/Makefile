@@ -69,6 +69,7 @@ OPTMODULES = CameraStab ComUsbBridge Altitude
 ifeq ($(USE_GPS), YES)
 OPTMODULES += GPS
 endif
+OPTMODULES += ESC
 
 ifeq ($(TEST_FAULTS), YES)
 OPTMODULES += Fault
@@ -183,6 +184,8 @@ SRC += $(OPUAVSYNTHDIR)/taskinfo.c
 SRC += $(OPUAVSYNTHDIR)/mixerstatus.c
 SRC += $(OPUAVSYNTHDIR)/ratedesired.c
 SRC += $(OPUAVSYNTHDIR)/baroaltitude.c
+SRC += $(OPUAVSYNTHDIR)/escstatus.c
+SRC += $(OPUAVSYNTHDIR)/escsettings.c
 
 endif
 
