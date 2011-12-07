@@ -65,6 +65,7 @@ uint32_t pios_com_telem_usb_id;
 uint32_t pios_com_vcp_id;
 uint32_t pios_com_gps_id;
 uint32_t pios_com_bridge_id;
+uint32_t pios_com_esc_id;
 
 /**
  * PIOS_Board_Init()
@@ -369,6 +370,27 @@ void PIOS_Board_Init(void) {
 		}
 #endif	/* PIOS_INCLUDE_DSM */
 		break;
+	case HWSETTINGS_CC_MAINPORT_ESC:
+#if defined(PIOS_INCLUDE_ESC_SERIAL)
+		{
+			uint32_t pios_usart_esc_id;
+			if (PIOS_USART_Init(&pios_usart_esc_id, &pios_usart_esc_main_cfg)) {
+				PIOS_Assert(0);
+			}
+
+			const uint32_t esc_buffer_size = 64;
+			uint8_t * rx_buffer = (uint8_t *) pvPortMalloc(esc_buffer_size);
+			uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(esc_buffer_size);
+			PIOS_Assert(rx_buffer);
+			PIOS_Assert(tx_buffer);
+			if (PIOS_COM_Init(&pios_com_esc_id, &pios_usart_com_driver, pios_usart_esc_id,
+							  rx_buffer, esc_buffer_size,
+							  tx_buffer, esc_buffer_size)) {
+				PIOS_Assert(0);
+			}
+		}
+#endif
+				break;
 	case HWSETTINGS_CC_MAINPORT_COMAUX:
 		break;
 	case HWSETTINGS_CC_MAINPORT_COMBRIDGE:
