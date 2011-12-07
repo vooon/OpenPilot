@@ -69,6 +69,7 @@ OPTMODULES = CameraStab
 ifeq ($(USE_GPS), YES)
 OPTMODULES += GPS
 endif
+OPTMODULES += ESC
 
 MODULES = Attitude Stabilization Actuator ManualControl FirmwareIAP
 # Telemetry must be last to grab the optional modules (why?)
@@ -178,6 +179,8 @@ SRC += $(OPUAVSYNTHDIR)/receiveractivity.c
 SRC += $(OPUAVSYNTHDIR)/taskinfo.c
 SRC += $(OPUAVSYNTHDIR)/mixerstatus.c
 SRC += $(OPUAVSYNTHDIR)/ratedesired.c
+SRC += $(OPUAVSYNTHDIR)/escstatus.c
+SRC += $(OPUAVSYNTHDIR)/escsettings.c
 
 endif
 

@@ -2988,6 +2988,8 @@
 		65EA2E171273C55200636061 /* ratedesired.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = ratedesired.xml; sourceTree = "<group>"; };
 		65F4C83D14899BD0004EC03B /* esc_logger.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = esc_logger.c; path = ../../ESC/esc_logger.c; sourceTree = "<group>"; };
 		65F4C83E14899D03004EC03B /* esc_logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = esc_logger.h; sourceTree = "<group>"; };
+		65F67140148FEC8D00655F92 /* esc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = esc.c; sourceTree = "<group>"; };
+		65F67142148FEC8D00655F92 /* esc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = esc.h; sourceTree = "<group>"; };
 		65F7ABFD1486EEDE00D21BCB /* esc_settings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = esc_settings.h; sourceTree = "<group>"; };
 		65F7ABFE1486EF7C00D21BCB /* esc_settings.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = esc_settings.c; path = ../../ESC/esc_settings.c; sourceTree = "<group>"; };
 		65F7AC0014875F8200D21BCB /* pios_bl_helper.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pios_bl_helper.c; sourceTree = "<group>"; };
@@ -3283,6 +3285,7 @@
 				650D8E2E12DFE16400D05CC9 /* Battery */,
 				65C9903B13A871B90082BD60 /* CameraStab */,
 				650D8E3212DFE16400D05CC9 /* Example */,
+				65F6713F148FEC8D00655F92 /* ESC */,
 				650D8E3B12DFE16400D05CC9 /* FirmwareIAP */,
 				650D8E3F12DFE16400D05CC9 /* FlightPlan */,
 				650D8E4712DFE16400D05CC9 /* GPS */,
@@ -8360,6 +8363,23 @@
 			name = src;
 			path = ../../PiOS/STM32F10x/Libraries/STM32F10x_StdPeriph_Driver/src;
 			sourceTree = SOURCE_ROOT;
+		};
+		65F6713F148FEC8D00655F92 /* ESC */ = {
+			isa = PBXGroup;
+			children = (
+				65F67140148FEC8D00655F92 /* esc.c */,
+				65F67141148FEC8D00655F92 /* inc */,
+			);
+			path = ESC;
+			sourceTree = "<group>";
+		};
+		65F67141148FEC8D00655F92 /* inc */ = {
+			isa = PBXGroup;
+			children = (
+				65F67142148FEC8D00655F92 /* esc.h */,
+			);
+			path = inc;
+			sourceTree = "<group>";
 		};
 		65F93B9012EE09280047DB36 /* PipXtreme */ = {
 			isa = PBXGroup;

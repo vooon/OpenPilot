@@ -74,6 +74,9 @@
 #define PIOS_INCLUDE_ADXL345
 #define PIOS_INCLUDE_FLASH
 
+/* Supported ESC interface */
+#define PIOS_INCLUDE_ESC_SERIAL
+
 /* A really shitty setting saving implementation */
 #define PIOS_INCLUDE_FLASH_SECTOR_SETTINGS
 
