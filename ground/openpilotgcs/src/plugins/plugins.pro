@@ -171,6 +171,13 @@ plugin_pipxtreme.depends += plugin_uavobjects
 plugin_pipxtreme.depends += plugin_rawhid
 SUBDIRS += plugin_pipxtreme
 
+#ESC gadget
+plugin_esc.subdir = esc
+plugin_esc.depends = plugin_coreplugin
+plugin_esc.depends += plugin_uavobjects
+plugin_esc.depends += plugin_rawhid
+SUBDIRS += plugin_esc
+
 #Scope OpenGL Gadget
 #plugin_scopeogl.subdir = scopeogl
 #plugin_scopeogl.depends = plugin_coreplugin
