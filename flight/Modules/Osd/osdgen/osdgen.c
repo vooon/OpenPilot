@@ -42,8 +42,9 @@ static void osdgenTask(void *parameters);
 
 // ****************
 // Private constants
+xSemaphoreHandle osdSemaphore;
 
-#define STACK_SIZE_BYTES            400
+#define STACK_SIZE_BYTES            1024
 
 #define TASK_PRIORITY               (tskIDLE_PRIORITY + 4)
 #define UPDATE_PERIOD 100
@@ -65,6 +66,7 @@ static xTaskHandle osdgenTaskHandle;
 int32_t osdgenStart(void)
 {
 	// Start gps task
+	vSemaphoreCreateBinary( osdSemaphore);
 	xTaskCreate(osdgenTask, (signed char *)"OSDGEN", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &osdgenTaskHandle);
 	TaskMonitorAdd(TASKINFO_RUNNING_GPS, osdgenTaskHandle);
 
@@ -106,15 +108,15 @@ static void osdgenTask(void *parameters)
 	lastSysTime = xTaskGetTickCount();
 	while (1)
 	{
-		AttitudeActualData attitude;
-		AttitudeActualGet(&attitude);
-		setAttitudeOsd((int16_t)attitude.Pitch,(int16_t)attitude.Roll);
-		if (gUpdateScreenData == 1) {
-			gUpdateScreenData = 0;
+		//if (gUpdateScreenData==1) {
+			AttitudeActualData attitude;
+			AttitudeActualGet(&attitude);
+			setAttitudeOsd((int16_t)attitude.Pitch,(int16_t)attitude.Roll,(int16_t)attitude.Yaw);
 			updateOnceEveryFrame();
-		}
-		while(gUpdateScreenData==0)
-			vTaskDelayUntil(&lastSysTime, 1 / portTICK_RATE_MS);
+			gUpdateScreenData=0;
+		//}
+		xSemaphoreTake(osdSemaphore, portMAX_DELAY);
+		//vTaskDelayUntil(&lastSysTime, 10 / portTICK_RATE_MS);
 	}
 }
 

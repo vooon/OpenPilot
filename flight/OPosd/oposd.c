@@ -214,16 +214,16 @@ int main()
 
     // *************
     // Main executive loop
-	/*clearGraphics();
+	clearGraphics();
 	introGraphics();
 	PIOS_DELAY_WaitmS(1000);
-	clearText();
+	//clearText();
 	introText();
-	for(int i=0;i<10000;i++){
+	PIOS_DELAY_WaitmS(1000);
+	/*for(int i=0;i<10000;i++){
 		updateTextPixmap(activeTextId);
 		PIOS_DELAY_WaituS(10);
-	}
-*/
+	}*/
 
 	/* swap the stack to use the IRQ stack */
 	Stack_Change();

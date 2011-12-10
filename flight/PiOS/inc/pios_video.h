@@ -41,6 +41,121 @@
 #define LEFT_MARGIN 3
 #define TOP_MARGIN 2
 
+// Size of an array (num items.)
+#define SIZEOF_ARRAY(x) (sizeof(x) / sizeof((x)[0]))
+
+
+#define DISP_HEIGHT GRAPHICS_HEIGHT
+#define DISP_WIDTH GRAPHICS_WIDTH_REAL
+#define HUD_VSCALE_FLAG_CLEAR                   1
+#define HUD_VSCALE_FLAG_NO_NEGATIVE             2
+
+// Macros for computing addresses and bit positions.
+// NOTE: /16 in y is because we are addressing by word not byte.
+#define CALC_BUFF_ADDR(x, y)    (((x) / 16) + ((y) * (DISP_WIDTH / 16)))
+#define CALC_BIT_IN_WORD(x)             ((x) & 15)
+#define DEBUG_DELAY
+// Macro for writing a word with a mode (NAND = clear, OR = set, XOR = toggle)
+// at a given position
+#define WRITE_WORD_MODE(buff, addr, mask, mode) \
+        switch(mode) { \
+                case 0: buff[addr] &= ~mask; break; \
+                case 1: buff[addr] |= mask; break; \
+                case 2: buff[addr] ^= mask; break; }
+
+#define WRITE_WORD_NAND(buff, addr, mask) { buff[addr] &= ~mask; DEBUG_DELAY; }
+#define WRITE_WORD_OR(buff, addr, mask)   { buff[addr] |= mask; DEBUG_DELAY; }
+#define WRITE_WORD_XOR(buff, addr, mask)  { buff[addr] ^= mask; DEBUG_DELAY; }
+
+// Horizontal line calculations.
+// Edge cases.
+#define COMPUTE_HLINE_EDGE_L_MASK(b) ((1 << (16 - (b))) - 1)
+#define COMPUTE_HLINE_EDGE_R_MASK(b) (~((1 << (15 - (b))) - 1))
+// This computes an island mask.
+#define COMPUTE_HLINE_ISLAND_MASK(b0, b1) (COMPUTE_HLINE_EDGE_L_MASK(b0) ^ COMPUTE_HLINE_EDGE_L_MASK(b1));
+
+// Macro for initializing stroke/fill modes. Add new modes here
+// if necessary.
+#define SETUP_STROKE_FILL(stroke, fill, mode) \
+        stroke = 0; fill = 0; \
+        if(mode == 0) { stroke = 0; fill = 1; } \
+        if(mode == 1) { stroke = 1; fill = 0; } \
+
+// Line endcaps (for horizontal and vertical lines.)
+#define ENDCAP_NONE             0
+#define ENDCAP_ROUND    1
+#define ENDCAP_FLAT     2
+
+#define DRAW_ENDCAP_HLINE(e, x, y, s, f, l) \
+        if((e) == ENDCAP_ROUND) /* single pixel endcap */ \
+        { write_pixel_lm(x, y, f, l); } \
+        else if((e) == ENDCAP_FLAT) /* flat endcap: FIXME, quicker to draw a vertical line(?) */ \
+        { write_pixel_lm(x, y - 1, s, l); write_pixel_lm(x, y, s, l); write_pixel_lm(x, y + 1, s, l); }
+
+#define DRAW_ENDCAP_VLINE(e, x, y, s, f, l) \
+        if((e) == ENDCAP_ROUND) /* single pixel endcap */ \
+        { write_pixel_lm(x, y, f, l); } \
+        else if((e) == ENDCAP_FLAT) /* flat endcap: FIXME, quicker to draw a horizontal line(?) */ \
+        { write_pixel_lm(x - 1, y, s, l); write_pixel_lm(x, y, s, l); write_pixel_lm(x + 1, y, s, l); }
+
+// Macros for writing pixels in a midpoint circle algorithm.
+#define CIRCLE_PLOT_8(buff, cx, cy, x, y, mode) \
+        CIRCLE_PLOT_4(buff, cx, cy, x, y, mode); \
+        if((x) != (y)) CIRCLE_PLOT_4(buff, cx, cy, y, x, mode);
+
+#define CIRCLE_PLOT_4(buff, cx, cy, x, y, mode) \
+        write_pixel(buff, (cx) + (x), (cy) + (y), mode); \
+        write_pixel(buff, (cx) - (x), (cy) + (y), mode); \
+        write_pixel(buff, (cx) + (x), (cy) - (y), mode); \
+        write_pixel(buff, (cx) - (x), (cy) - (y), mode);
+
+
+
+// Font flags.
+#define FONT_BOLD               1               // bold text (no outline)
+#define FONT_INVERT             2               // invert: border white, inside black
+
+// Text alignments.
+#define TEXT_VA_TOP             0
+#define TEXT_VA_MIDDLE  1
+#define TEXT_VA_BOTTOM  2
+#define TEXT_HA_LEFT    0
+#define TEXT_HA_CENTER  1
+#define TEXT_HA_RIGHT   2
+
+// Text dimension structures.
+struct FontDimensions
+{
+        int width, height;
+};
+
+
+// Max/Min macros.
+//#define MAX(a, b)               ((a) > (b) ? (a) : (b))
+#define MIN(a, b)               ((a) < (b) ? (a) : (b))
+#define MAX3(a, b, c)   MAX(a, MAX(b, c))
+#define MIN3(a, b, c)   MIN(a, MIN(b, c))
+
+// Check if coordinates are valid. If not, return.
+#define CHECK_COORDS(x, y) if(x < 0 || x >= DISP_WIDTH || y < 0 || y >= DISP_HEIGHT) return;
+#define CHECK_COORD_X(x) if(x < 0 || x >= DISP_WIDTH) return;
+#define CHECK_COORD_Y(y) if(y < 0 || y >= DISP_HEIGHT) return;
+
+// Clip coordinates out of range.
+#define CLIP_COORD_X(x) { x = MAX(0, MIN(x, DISP_WIDTH)); }
+#define CLIP_COORD_Y(y) { y = MAX(0, MIN(y, DISP_HEIGHT)); }
+#define CLIP_COORDS(x, y) { CLIP_COORD_X(x); CLIP_COORD_Y(y); }
+
+// Macro to swap buffers given a temporary pointer.
+#define SWAP_BUFFS(tmp, a, b) { tmp = a; a = b; b = tmp; }
+
+// Macro to swap two variables using XOR swap.
+#define SWAP(a, b) { a ^= b; b ^= a; a ^= b; }
+
+
+
+
+
 // Line triggering
 #define MAX(a, b)  (((a) > (b)) ? (a) : (b))
 #define LAST_LINE 312 //625/2 //PAL
@@ -92,8 +207,8 @@ void drawBox(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
 void drawArrow(uint16_t x, uint16_t y, uint16_t angle, uint16_t size);
 void drawAttitude(uint16_t x, uint16_t y, int16_t pitch, int16_t roll, uint16_t size);
 void introGraphics();
-void updateGrapics();
-void drawGrapicsLine();
+void updateGraphics();
+void drawGraphicsLine();
 
 extern volatile uint16_t gActiveLine;
 extern volatile uint16_t gActivePixmapLine;
@@ -104,7 +219,8 @@ extern volatile uint8_t gLineType;
 void initLine();
 void updateLine();
 
-void setAttitudeOsd(int16_t pitch, int16_t roll);
+void setAttitudeOsd(int16_t pitch, int16_t roll, int16_t yaw);
 void updateOnceEveryFrame();
+bool isOutOfGraphics(void);
 
 #endif /* VIDEOCONF_H_ */

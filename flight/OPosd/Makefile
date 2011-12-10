@@ -103,6 +103,9 @@ SRC += pios_board.c
 #SRC += textdriver.c
 #SRC += graphicdriver.c
 #SRC += watchdog.c
+SRC += fonts.c
+SRC += font_outlined8x14.c
+SRC += font_outlined8x8.c
 SRC += $(FLIGHTLIB)/fifo_buffer.c
 SRC += $(OPSYSTEM)/alarms.c
 SRC += $(OPSYSTEM)/taskmonitor.c
@@ -229,6 +232,7 @@ ASRCARM =
 # List any extra directories to look for include files here.
 #    Each directory must be seperated by a space.
 EXTRAINCDIRS  =  $(OPSYSTEM)
+EXTRAINCDIRS  += $(AHRSINC)
 EXTRAINCDIRS  += $(OPSYSTEMINC)
 EXTRAINCDIRS  += $(OPUAVTALK)
 EXTRAINCDIRS  += $(OPUAVTALKINC)
@@ -337,7 +341,7 @@ CFLAGS += -fpromote-loop-indices
 endif
 
 CFLAGS += -Wall
-CFLAGS += -Werror
+#CFLAGS += -Werror
 CFLAGS += -Wa,-adhlns=$(addprefix $(OUTDIR)/, $(notdir $(addsuffix .lst, $(basename $<))))
 # Compiler flags to generate dependency files:
 CFLAGS += -MD -MP -MF $(OUTDIR)/dep/$(@F).d

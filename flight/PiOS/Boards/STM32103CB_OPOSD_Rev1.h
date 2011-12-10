@@ -395,7 +395,8 @@ extern uint32_t pios_com_telem_usb_id;
 #define PIOS_VIDEO_SYNC_CLK			RCC_APB2Periph_GPIOB
 #define PIOS_VIDEO_SYNC_EXTI_LINE		EXTI_Line12
 #define PIOS_VIDEO_SYNC_IRQn			EXTI15_10_IRQn
-#define PIOS_VIDEO_SYNC_PRIO			PIOS_IRQ_PRIO_HIGHEST
+//#define PIOS_VIDEO_SYNC_PRIO			PIOS_IRQ_PRIO_HIGHEST
+#define PIOS_VIDEO_SYNC_PRIO			1
 
 // *****************************************************************
 
