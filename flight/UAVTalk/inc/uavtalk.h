@@ -58,16 +58,18 @@ typedef enum {UAVTALK_STATE_SYNC, UAVTALK_STATE_TYPE, UAVTALK_STATE_SIZE, UAVTAL
 
 // Public functions
 UAVTalkConnection UAVTalkInitialize(UAVTalkOutputStream outputStream, uint32_t maxPacketSize);
+UAVTalkConnection UAVTalkInitializeMultiBuffer(UAVTalkOutputStream outputStream, uint32_t maxPacketSize, uint8_t numRxBuffers);
 int32_t UAVTalkSetOutputStream(UAVTalkConnection connection, UAVTalkOutputStream outputStream);
 UAVTalkOutputStream UAVTalkGetOutputStream(UAVTalkConnection connection);
 int32_t UAVTalkSendObject(UAVTalkConnection connection, UAVObjHandle obj, uint16_t instId, uint8_t acked, int32_t timeoutMs);
 int32_t UAVTalkSendObjectRequest(UAVTalkConnection connection, UAVObjHandle obj, uint16_t instId, int32_t timeoutMs);
+int32_t UAVTalkSendPacket(UAVTalkConnection connection, uint8_t *packet);
 UAVTalkRxState UAVTalkProcessInputStream(UAVTalkConnection connection, uint8_t rxbyte);
 void UAVTalkGetStats(UAVTalkConnection connection, UAVTalkStats *stats);
 void UAVTalkResetStats(UAVTalkConnection connection);
 uint32_t UAVTalkGetPacketType(UAVTalkConnection connection);
 uint32_t UAVTalkGetObjectID(UAVTalkConnection connection);
-int32_t UAVTalkRelay(UAVTalkConnection from_connection, UAVTalkConnection to_connection);
+uint8_t *UAVTalkGetPacket(UAVTalkConnection connection);
 
 #endif // UAVTALK_H
 /**
