@@ -76,9 +76,10 @@ typedef struct {
  */
 typedef enum {
 	EV_UNPACKED = 0x01, /** Object data updated by unpacking */
-    EV_UPDATED = 0x02, /** Object data updated by changing the data structure */
-    EV_UPDATED_MANUAL = 0x04, /** Object update event manually generated */
-    EV_UPDATE_REQ = 0x08 /** Request to update object data */
+	EV_UPDATED = 0x02, /** Object data updated by changing the data structure */
+	EV_UPDATED_MANUAL = 0x04, /** Object update event manually generated */
+	EV_UPDATE_REQ = 0x08, /** Request to update object data */
+	EV_TRANSMIT_REQ = 0x0f /** Request to transmit object data */
 } UAVObjEventType;
 
 /**
