@@ -533,7 +533,7 @@ void PIOS_Board_Init(void) {
 			PIOS_Assert(0);
 		}
 	}
-	PIOS_COM_SendString(pios_com_usart3_id, "Hello USART3\n\r");
+	//PIOS_COM_SendString(pios_com_usart3_id, "Hello USART3\n\r");
 
 	/* Configure the rcvr port */
 	uint8_t hwsettings_rcvrport;

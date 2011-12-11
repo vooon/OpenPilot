@@ -95,8 +95,10 @@ TIM4  |  RC In 1  |  Servo 3  |  Servo 2  |  Servo 1
 #define PIOS_LED_PINS				{ PIOS_LED_LED1_GPIO_PIN }
 #define PIOS_LED_CLKS				{ PIOS_LED_LED1_GPIO_CLK }
 #else
+//#define PIOS_LED_LED1_GPIO_PORT			GPIOB
+//#define PIOS_LED_LED1_GPIO_PIN			GPIO_Pin_8
 #define PIOS_LED_LED1_GPIO_PORT			GPIOB
-#define PIOS_LED_LED1_GPIO_PIN			GPIO_Pin_8
+#define PIOS_LED_LED1_GPIO_PIN			GPIO_Pin_1
 #define PIOS_LED_LED1_GPIO_CLK			RCC_APB2Periph_GPIOB
 #define PIOS_LED_LED2_GPIO_PORT                 GPIOB
 #define PIOS_LED_LED2_GPIO_PIN                  GPIO_Pin_9
@@ -157,9 +159,16 @@ extern uint32_t pios_com_telem_usb_id;
 #define PIOS_COM_TELEM_OUT              (pios_com_telem_usb_id)
 #define PIOS_COM_DEBUG                  (pios_com_usart1_id)
 #else
-#define PIOS_COM_TELEM_GCS              (pios_com_usart1_id)
-#define PIOS_COM_TELEM_OUT              (pios_com_usart2_id)
-#define PIOS_COM_DEBUG                  (pios_com_usart3_id)
+// 1 = Xbee, 2 = Extra, 3 = USB
+// Debug mode
+//#define PIOS_COM_TELEM_GCS              (pios_com_usart1_id)
+//#define PIOS_COM_TELEM_OUT              (pios_com_usart2_id)
+//#define PIOS_COM_DEBUG                  (pios_com_usart3_id)
+
+// Normal mode
+#define PIOS_COM_TELEM_GCS              (pios_com_usart3_id)
+#define PIOS_COM_TELEM_OUT              (pios_com_usart1_id)
+#define PIOS_COM_DEBUG                  (pios_com_usart2_id)
 #endif
 
 #if defined(PIOS_INCLUDE_GPS)

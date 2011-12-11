@@ -65,8 +65,7 @@
 #define REQ_TIMEOUT_MS 250
 #define MAX_RETRIES 2
 
-#define STATS_UPDATE_PERIOD_MS 10
-//#define STATS_UPDATE_PERIOD_MS 2000
+#define STATS_UPDATE_PERIOD_MS 50
 
 // Private types
 struct RouterCommsStruct {
@@ -152,8 +151,8 @@ int32_t TransmitterControlsInitialize(void) {
 	comms[1].txqueue = xQueueCreate(TELEM_QUEUE_SIZE, sizeof(UAVObjEvent));
 
 	// Initialise UAVTalk
-	comms[0].com = UAVTalkInitialize(&transmitData1, 256);
-	comms[1].com = UAVTalkInitialize(&transmitData2, 256);
+	comms[0].com = UAVTalkInitializeMultiBuffer(&transmitData1, 256, 3);
+	comms[1].com = UAVTalkInitializeMultiBuffer(&transmitData2, 256, 3);
 
 	//TransmitterControlsSettingsConnectCallback(&settingsUpdatedCb);
 
@@ -248,7 +247,7 @@ static void processObjEvent(UAVObjEvent * ev, RouterComms *comm)
 
 	if (ev->obj == 0) {
 		GCSReceiverData rcvr;
-		char buf[15];
+		char buf[50];
 		int i;
 		bool debug = false;
 
@@ -265,23 +264,30 @@ static void processObjEvent(UAVObjEvent * ev, RouterComms *comm)
 		for (i = 0; i < GCSRECEIVER_CHANNEL_NUMELEM; ++i) {
 			extern uint32_t pios_rcvr_group_map[];
 			uint32_t val = PIOS_RCVR_Read(pios_rcvr_group_map[MANUALCONTROLSETTINGS_CHANNELGROUPS_PPM],	i+1);
-			rcvr.Channel[i] = val;
 			if(debug) {
-				sprintf(buf, "%x ", (unsigned int)val);
+				sprintf(buf, "%x %x  ", (unsigned int)rcvr.Channel[i], (unsigned int)val);
 				PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
+				xPortGetFreeHeapSize();
 			}
+			rcvr.Channel[i] = val;
 		}
 		if(debug)
 			PIOS_COM_SendString(PIOS_COM_DEBUG, "\n\r");
 
 		// Set the GCSReceiverData object.
+		{
+			UAVObjMetadata metadata;
+			UAVObjGetMetadata(GCSReceiverHandle(), &metadata);
+			metadata.access = ACCESS_READWRITE;
+			UAVObjSetMetadata(GCSReceiverHandle(), &metadata);
+		}
 		GCSReceiverSet(&rcvr);
 
 		// Send update (with retries)
 		retries = 0;
 		success = -1;
 		while (retries < MAX_RETRIES && success == -1) {
-			success = UAVTalkSendObject(&(comm->com), GCSReceiverHandle(), 0, 0, REQ_TIMEOUT_MS);
+			success = UAVTalkSendObject(comm->com, GCSReceiverHandle(), 0, 0, REQ_TIMEOUT_MS);
 			++retries;
 		}
 		// Update stats
@@ -290,15 +296,17 @@ static void processObjEvent(UAVObjEvent * ev, RouterComms *comm)
 	} else {
 
 		// Get object metadata
-		UAVObjGetMetadata(ev->obj, &metadata);
+		//UAVObjGetMetadata(ev->obj, &metadata);
 		// Act on event
 		retries = 0;
 		success = -1;
-		if (ev->event == EV_UPDATED || ev->event == EV_UPDATED_MANUAL) {
-			PIOS_COM_SendString(PIOS_COM_DEBUG, "trans update\n\r");
+		switch (ev->event)
+		{
+		case EV_UPDATED:
+		case EV_UPDATED_MANUAL:
 			// Send update (with retries)
 			while (retries < MAX_RETRIES && success == -1) {
-				success = UAVTalkSendObject(&(comm->com), ev->obj, ev->instId, metadata.telemetryAcked, REQ_TIMEOUT_MS);	// call blocks until ack is received or timeout
+				success = UAVTalkSendObject(comm->com, ev->obj, ev->instId, metadata.telemetryAcked, REQ_TIMEOUT_MS);	// call blocks until ack is received or timeout
 				++retries;
 			}
 			// Update stats
@@ -306,11 +314,11 @@ static void processObjEvent(UAVObjEvent * ev, RouterComms *comm)
 			if (success == -1) {
 				++txErrors;
 			}
-		} else if (ev->event == EV_UPDATE_REQ) {
-			PIOS_COM_SendString(PIOS_COM_DEBUG, "trans req\n\r");
+			break;
+		case EV_UPDATE_REQ:
 			// Request object update from GCS (with retries)
 			while (retries < MAX_RETRIES && success == -1) {
-				success = UAVTalkSendObjectRequest(&(comm->com), ev->obj, ev->instId, REQ_TIMEOUT_MS);	// call blocks until update is received or timeout
+				success = UAVTalkSendObjectRequest(comm->com, ev->obj, ev->instId, REQ_TIMEOUT_MS);	// call blocks until update is received or timeout
 				++retries;
 			}
 			// Update stats
@@ -318,6 +326,22 @@ static void processObjEvent(UAVObjEvent * ev, RouterComms *comm)
 			if (success == -1) {
 				++txErrors;
 			}
+			break;
+		case EV_TRANSMIT_REQ:
+			// Send packet (with retries)
+			while (retries < MAX_RETRIES && success == -1) {
+				success = UAVTalkSendPacket(comm->com, ev->obj);
+				*((char*)ev->obj) = 0;
+				++retries;
+			}
+			// Update stats
+			txRetries += (retries - 1);
+			if (success == -1) {
+				++txErrors;
+			}
+			break;
+		default:
+			break;
 		}
 	}
 }
@@ -364,7 +388,14 @@ static void transmitterRxTask(void *parameters)
 						//char buf[16];
 						//sprintf(buf, "Rcvd from %d\n\r", (unsigned int)comm->num);
 						//PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
-						UAVTalkRelay(comm->com, comm->relay_comm->com);
+						// Send an event to the other connection to transmit the packet.
+						UAVObjEvent ev;
+						ev.obj = UAVTalkGetPacket(comm->com);
+						ev.instId = 0;
+						ev.event = EV_TRANSMIT_REQ;
+						// will not block if queue is full
+						if(xQueueSend(comm->relay_comm->txqueue, &ev, 0) != pdTRUE)
+							*((char*)ev.obj) = 0;
 					}
 				}
 			}
