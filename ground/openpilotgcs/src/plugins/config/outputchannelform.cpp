@@ -199,7 +199,7 @@ void OutputChannelForm::setChannelRange()
     int oldMini = ui.actuatorNeutral->minimum();
 //    int oldMaxi = ui.actuatorNeutral->maximum();
 
-    if (ui.actuatorMin->value() < ui.actuatorMax->value())
+    if (ui.actuatorMin->value() <= ui.actuatorMax->value())
     {
         ui.actuatorNeutral->setRange(ui.actuatorMin->value(), ui.actuatorMax->value());
         ui.actuatorRev->setChecked(false);
@@ -228,6 +228,13 @@ void OutputChannelForm::reverseChannel(bool state)
         return;
     if (!state && (ui.actuatorMax->value() > ui.actuatorMin->value()))
         return;
+
+    // Define equal as not reversed
+    if (state && (ui.actuatorMax->value() == ui.actuatorMin->value())) {
+        ui.actuatorRev->setChecked(false);
+        return;
+    }
+
 
     // Now, swap the min & max values (only on the spinboxes, the slider
     // does not change!
