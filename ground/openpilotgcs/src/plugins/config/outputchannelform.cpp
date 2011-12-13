@@ -190,31 +190,23 @@ void OutputChannelForm::setAssignment(const QString &assignment)
 /**
  * Sets the minimum/maximum value of the channel output sliders.
  * Have to do it here because setMinimum is not a slot.
- *
- * One added trick: if the slider is at its min when the value
- * is changed, then keep it on the min.
  */
 void OutputChannelForm::setChannelRange()
 {
-    int oldMini = ui.actuatorNeutral->minimum();
-//    int oldMaxi = ui.actuatorNeutral->maximum();
-
-    if (ui.actuatorMin->value() <= ui.actuatorMax->value())
-    {
-        ui.actuatorNeutral->setRange(ui.actuatorMin->value(), ui.actuatorMax->value());
-        ui.actuatorRev->setChecked(false);
-    }
-    else
-    {
+    bool reversed = ui.actuatorMin->value() > ui.actuatorMax->value();
+    if (reversed)
         ui.actuatorNeutral->setRange(ui.actuatorMax->value(), ui.actuatorMin->value());
-        ui.actuatorRev->setChecked(true);
-    }
+    else
+        ui.actuatorNeutral->setRange(ui.actuatorMin->value(), ui.actuatorMax->value());
 
-    if (ui.actuatorNeutral->value() == oldMini)
-        ui.actuatorNeutral->setValue(ui.actuatorNeutral->minimum());
+    ui.actuatorRev->setChecked(reversed);
+    ui.actuatorNeutral->setInvertedAppearance(reversed);
+    ui.actuatorNeutral->setInvertedControls(reversed);
 
-//    if (ui.actuatorNeutral->value() == oldMaxi)
-//        ui.actuatorNeutral->setValue(ui.actuatorNeutral->maximum());  // this can be dangerous if it happens to be controlling a motor at the time!
+    //if the slider is at its min when the value
+    //is changed, then keep it on the min
+    if (ui.actuatorNeutral->value() == min())
+        ui.actuatorNeutral->setValue(min());
 }
 
 /**
@@ -235,12 +227,8 @@ void OutputChannelForm::reverseChannel(bool state)
         return;
     }
 
-
-    // Now, swap the min & max values (only on the spinboxes, the slider
-    // does not change!
-    int temp = ui.actuatorMax->value();
-    ui.actuatorMax->setValue(ui.actuatorMin->value());
-    ui.actuatorMin->setValue(temp);
+    // Now, swap the min & max values.  This updates the slider too.
+    minmax(max(),min());
 
     // Also update the channel value
     // This is a trick to force the slider to update its value and
@@ -259,8 +247,8 @@ void OutputChannelForm::reverseChannel(bool state)
 }
 
 /**
+ * Updates the label.  Then if in testing mode set that output value.
  * Emits the channel value which will be send to the UAV to move the servo.
- * Returns immediately if we are not in testing mode.
  */
 void OutputChannelForm::sendChannelTest(int value)
 {
@@ -268,9 +256,6 @@ void OutputChannelForm::sendChannelTest(int value)
 
     QSlider *ob = (QSlider *)QObject::sender();
     if (!ob) return;
-
-    if (ui.actuatorRev->isChecked())
-            value = ui.actuatorMin->value() - value + ui.actuatorMax->value();	// the channel is reversed
 
     // update the label
     ui.actuatorValue->setText(QString::number(value));
