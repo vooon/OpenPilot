@@ -40,23 +40,6 @@
 #include "notificationitem.h"
 #include "notifylogging.h"
 
-
-static const QString cStrNever(QT_TR_NOOP("Never"));
-static const QString cStrBefore1st(QT_TR_NOOP("Before first"));
-static const QString cStrBefore2nd(QT_TR_NOOP("Before second"));
-static const QString cStrAfter2nd(QT_TR_NOOP("After second"));
-
-static const QString cStrRetryOnce(QT_TR_NOOP("Repeat Once"));
-static const QString cStrRetryInstantly(QT_TR_NOOP("Repeat Instantly"));
-static const QString cStrRetry10sec(QT_TR_NOOP("Repeat 10 seconds"));
-static const QString cStrRetry30sec(QT_TR_NOOP("Repeat 30 seconds"));
-static const QString cStrRetry1min(QT_TR_NOOP("Repeat 1 minute"));
-
-static const QString cStrEqualTo(QT_TR_NOOP("is equal to"));
-static const QString cStrLargeThan(QT_TR_NOOP("is greater than"));
-static const QString cStrLowerThan(QT_TR_NOOP("is less than"));
-static const QString cStrInRange(QT_TR_NOOP("is in range"));
-
 QMap<QString, NotificationItem::ESayOrder> NotificationItem::sayOrderValues;
 QMap<QString, NotificationItem::ERetryValues> NotificationItem::retryValues;
 QMap<QString, NotificationItem::ERange> NotificationItem::rangeValues;
@@ -85,23 +68,23 @@ NotificationItem::NotificationItem(QObject *parent)
     , _previousTriggerValue()
 {
     NotificationItem::sayOrderValues.clear();
-    NotificationItem::sayOrderValues[cStrNever] = eNever;
-    NotificationItem::sayOrderValues[cStrBefore1st] = eBeforeFirst;
-    NotificationItem::sayOrderValues[cStrBefore2nd] = eBeforeSecond;
-    NotificationItem::sayOrderValues[cStrAfter2nd] = eAfterSecond;
+    NotificationItem::sayOrderValues[QString(tr("Never"))] = eNever;
+    NotificationItem::sayOrderValues[QString(tr("Before first"))] = eBeforeFirst;
+    NotificationItem::sayOrderValues[QString(tr("Before second"))] = eBeforeSecond;
+    NotificationItem::sayOrderValues[QString(tr("After second"))] = eAfterSecond;
 
     NotificationItem::retryValues.clear();
-    NotificationItem::retryValues[cStrRetryOnce] = eOnce;
-    NotificationItem::retryValues[cStrRetryInstantly] = eInstantly;
-    NotificationItem::retryValues[cStrRetry10sec] = eRepeatTenSec;
-    NotificationItem::retryValues[cStrRetry30sec] = eRepeatThirtySec;
-    NotificationItem::retryValues[cStrRetry1min] = eRepeatOneMin;
+    NotificationItem::retryValues[QString(tr("Repeat Once"))] = eOnce;
+    NotificationItem::retryValues[QString(tr("Repeat Instantly"))] = eInstantly;
+    NotificationItem::retryValues[QString(tr("Repeat 10 seconds"))] = eRepeatTenSec;
+    NotificationItem::retryValues[QString(tr("Repeat 30 seconds"))] = eRepeatThirtySec;
+    NotificationItem::retryValues[QString(tr("Repeat 1 minute"))] = eRepeatOneMin;
 
     NotificationItem::rangeValues.clear();
-    NotificationItem::rangeValues[cStrEqualTo] = eEqualTo;
-    NotificationItem::rangeValues[cStrLargeThan] = eGreaterThan;
-    NotificationItem::rangeValues[cStrLowerThan] = eLessThan;
-    NotificationItem::rangeValues[cStrInRange] = eInRange;
+    NotificationItem::rangeValues[QString(tr("is equal to"))] = eEqualTo;
+    NotificationItem::rangeValues[QString(tr("is greater than"))] = eGreaterThan;
+    NotificationItem::rangeValues[QString(tr("is less than"))] = eLessThan;
+    NotificationItem::rangeValues[QString(tr("is in range"))] = eInRange;
 
 }
 
@@ -295,10 +278,20 @@ QString NotificationItem::checkSoundExists(QString fileName)
 
 QStringList valueToSoundList(QString value)
 {
+    qNotifyDebug()<<"notificationItem valueToSoundList input param"<<value;
+
     // replace point chr if exists
     value = value.replace(',', '.');
     QStringList numberParts = value.trimmed().split(".");
     QStringList digitWavs;
+    bool negative=false;
+
+    if(numberParts.at(0).toInt()<0)
+    {
+        negative=true;
+        digitWavs.append("minus");
+        numberParts[0]=QString::number(numberParts.at(0).toInt()*-1);
+    }
 
     if ( (numberParts.at(0).size() == 1) || (numberParts.at(0).toInt() < 20) ) {
         // [1] check, is this number < 20, these numbers played by one wav file
@@ -315,17 +308,20 @@ QStringList valueToSoundList(QString value)
         // [3] prepend 100 and 1000 digits of number
         for (;i<numberParts.at(0).size();i++)
         {
-            digitWavs.prepend(numberParts.at(0).at(numberParts.at(0).size()-i-1));
-            if(digitWavs.first()==QString("0")) {
-                digitWavs.removeFirst();
+            int offset=0;
+            if(negative)
+                offset=1;
+            digitWavs.insert(offset,numberParts.at(0).at(numberParts.at(0).size()-i-1));
+            if(digitWavs.at(offset)==QString("0")) {
+                digitWavs.removeAt(offset);
                 continue;
             }
             if (i==1)
-                digitWavs.replace(0,digitWavs.first()+'0');
+                digitWavs.replace(0+offset,digitWavs.at(offset)+'0');
             if (i==2)
-                digitWavs.insert(1,"100");
+                digitWavs.insert(1+offset,"100");
             if (i==3)
-                digitWavs.insert(1,"1000");
+                digitWavs.insert(1+offset,"1000");
         }
     }
     // check, is there fractional part of number?
@@ -341,6 +337,7 @@ QStringList valueToSoundList(QString value)
             digitWavs.append(numberParts.at(1).right(1));
         }
     }
+    qNotifyDebug()<<"notificationItem valueToSoundList return value"<<digitWavs;
     return digitWavs;
 }
 

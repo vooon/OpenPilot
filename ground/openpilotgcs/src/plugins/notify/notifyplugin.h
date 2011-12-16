@@ -33,21 +33,16 @@
 #include "uavobjectmanager.h"
 #include "uavobject.h"
 #include "notificationitem.h"
+#include "notifyaudiowrapper.h"
 
 #include <QSettings>
-#include <phonon/MediaObject>
-#include <phonon/Path>
-#include <phonon/AudioOutput>
-#include <phonon/Global>
+#include <QThread>
+//#include <phonon/MediaObject>
+//#include <phonon/Path>
+//#include <phonon/AudioOutput>
+//#include <phonon/Global>
 
 class NotifyPluginOptionsPage;
-
-typedef struct {
-	Phonon::MediaObject* mo;
-	NotificationItem* notify;
-	bool firstPlay;
-} PhononObject, *pPhononObject;
-
 
 class SoundNotifyPlugin : public Core::IConfigurablePlugin
 {
@@ -68,6 +63,9 @@ public:
 
     bool getEnableSound() const { return enableSound; }
     void setEnableSound(bool value) {enableSound = value; }
+
+signals:
+    void playAudio(QString soundList);
 
 private:
     Q_DISABLE_COPY(SoundNotifyPlugin)
@@ -90,9 +88,7 @@ private slots:
 
 private:
     bool enableSound;
-    QList< QList<Phonon::MediaSource>* > lstMediaSource;
     QStringList mediaSource;
-    QMultiMap<QString, PhononObject> mapMediaObjects;
     QSettings* settings;
 
     QList<UAVDataObject*> lstNotifiedUAVObjects;
@@ -103,10 +99,11 @@ private:
     NotificationItem currentNotification;
     NotificationItem* _nowPlayingNotification;
 
-    PhononObject phonon;
     NotifyPluginOptionsPage* mop;
     TelemetryManager* telMngr;
     QMutex _mutex;
+    NotifyAudioWrapper* _audioWrapper;
+    QThread* _audioThread;
 }; 
 
 #endif // SOUNDNOTIFYPLUGIN_H

@@ -304,14 +304,14 @@ void NotifyPluginOptionsPage::addDynamicFieldWidget(UAVObjectField* objField)
         {
             _dynamicFieldWidget = new QLineEdit(_form);
 
-            (static_cast<QLineEdit*>(_dynamicFieldWidget))->setInputMask("999.99 - 999.99;");
+            (static_cast<QLineEdit*>(_dynamicFieldWidget))->setInputMask("#999.99 : #999.99;");
             (static_cast<QLineEdit*>(_dynamicFieldWidget))->setText("0000000000");
             (static_cast<QLineEdit*>(_dynamicFieldWidget))->setCursorPosition(0);
         }
         else
         {
             _dynamicFieldWidget = new QDoubleSpinBox(_form);
-            (dynamic_cast<QDoubleSpinBox*>(_dynamicFieldWidget))->setRange(000.00, 999.99);
+            (dynamic_cast<QDoubleSpinBox*>(_dynamicFieldWidget))->setRange(-999.99, 999.99);
         }
         break;
     };
@@ -367,7 +367,7 @@ void NotifyPluginOptionsPage::getOptionsPageValues(NotificationItem* notificatio
         else {
             if (QLineEdit* rangeValue = dynamic_cast<QLineEdit*>(_dynamicFieldWidget)) {
                 QString str = rangeValue->text();
-                QStringList range = str.split('-');
+                QStringList range = str.split(':');
                 notification->setSingleValue(range.at(0).toDouble());
                 notification->setValueRange2(range.at(1).toDouble());
             }
@@ -513,6 +513,7 @@ void NotifyPluginOptionsPage::on_changedIndex_soundLanguage(int index)
     _optionsPage->Sound1->clear();
     _optionsPage->Sound2->clear();
     _optionsPage->Sound3->clear();
+    _optionsPage->Sound1->addItem("");
     _optionsPage->Sound1->addItems(listSoundFiles);
     _optionsPage->Sound2->addItem("");
     _optionsPage->Sound2->addItems(listSoundFiles);
