@@ -1,19 +1,20 @@
+/* -*- Mode: c; c-basic-offset: 2; tab-width: 2; indent-tabs-mode: t -*- */
 /**
- ******************************************************************************
- * @addtogroup OpenPilotModules OpenPilot Modules
- * @{
- * @addtogroup BatteryModule Battery Module
- * @brief Measures battery voltage and current
- * Updates the FlightBatteryState object
- * @{
- *
- * @file       battery.c
- * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2010.
- * @brief      Module to read the battery Voltage and Current periodically and set alarms appropriately.
- *
- * @see        The GNU Public License (GPL) Version 3
- *
- *****************************************************************************/
+******************************************************************************
+* @addtogroup OpenPilotModules OpenPilot Modules
+* @{
+* @addtogroup BatteryModule Battery Module
+* @brief Measures battery voltage and current
+* Updates the FlightBatteryState object
+* @{
+*
+* @file       battery.c
+* @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2010.
+* @brief      Module to read the battery Voltage and Current periodically and set alarms appropriately.
+*
+* @see        The GNU Public License (GPL) Version 3
+*
+*****************************************************************************/
 /*
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,15 +56,6 @@
 //
 #define SAMPLE_PERIOD_MS		500
 
-//#define ENABLE_DEBUG_MSG
-
-#ifdef ENABLE_DEBUG_MSG
-#define DEBUG_PORT			PIOS_COM_GPS
-#define DEBUG_MSG(format, ...) PIOS_COM_SendFormattedString(DEBUG_PORT, format, ## __VA_ARGS__)
-#else
-#define DEBUG_MSG(format, ...)
-#endif
-
 // Private types
 
 // Private variables
@@ -71,16 +63,10 @@
 // Private functions
 static void onTimer(UAVObjEvent* ev);
 
-/**
- * Initialise the module, called on startup
- * \returns 0 on success or -1 if initialisation failed
- */
-MODULE_INITCALL(BatteryInitialize, 0)
-
 int32_t BatteryInitialize(void)
 {
-	BatteryStateInitialze();
-	BatterySettingsInitialize();
+	FlightBatteryStateInitialize();
+	FlightBatterySettingsInitialize();
 	
 	static UAVObjEvent ev;
 
@@ -90,6 +76,12 @@ int32_t BatteryInitialize(void)
 	return 0;
 }
 
+/**
+ * Initialise the module, called on startup
+ * \returns 0 on success or -1 if initialisation failed
+ */
+MODULE_INITCALL(BatteryInitialize, 0)
+
 static void onTimer(UAVObjEvent* ev)
 {
 	static portTickType lastSysTime;
@@ -97,39 +89,33 @@ static void onTimer(UAVObjEvent* ev)
 
 	static FlightBatteryStateData flightBatteryData;
 
-	if (firstRun) {
-		#ifdef ENABLE_DEBUG_MSG
-			PIOS_COM_ChangeBaud(DEBUG_PORT, 57600);
-		#endif
-		lastSysTime = xTaskGetTickCount();
-		//FlightBatteryStateGet(&flightBatteryData);
-
-		firstRun = false;
-	}
-
-
-	AlarmsSet(SYSTEMALARMS_ALARM_BATTERY, SYSTEMALARMS_ALARM_ERROR);
-
-
 	portTickType thisSysTime;
 	FlightBatterySettingsData batterySettings;
 	static float dT = SAMPLE_PERIOD_MS / 1000;
-	float Bob;
 	float energyRemaining;
 
+	if (firstRun) {
+		lastSysTime = xTaskGetTickCount();
+		firstRun = false;
+	}
+
+	AlarmsSet(SYSTEMALARMS_ALARM_BATTERY, SYSTEMALARMS_ALARM_ERROR);
 
 	// Check how long since last update
 	thisSysTime = xTaskGetTickCount();
 	if(thisSysTime > lastSysTime) // reuse dt in case of wraparound
 		dT = (float)(thisSysTime - lastSysTime) / (float)(portTICK_RATE_MS * 1000.0f);
-	//lastSysTime = thisSysTime;
 
+	// Get the FlightBatterySettings
 	FlightBatterySettingsGet(&batterySettings);
 
 	//calculate the battery parameters
-	flightBatteryData.Voltage = ((float)PIOS_ADC_PinGet(2)) * batterySettings.SensorCalibrations[FLIGHTBATTERYSETTINGS_SENSORCALIBRATIONS_VOLTAGEFACTOR]; //in Volts
-	flightBatteryData.Current = ((float)PIOS_ADC_PinGet(1)) * batterySettings.SensorCalibrations[FLIGHTBATTERYSETTINGS_SENSORCALIBRATIONS_CURRENTFACTOR]; //in Amps
-Bob =dT; // FIXME: something funky happens if I don't do this... Andrew
+#ifdef PIOS_BATTERY_VOLTAGE_CHANNEL
+	flightBatteryData.Voltage = ((float)PIOS_ADC_PinGet(PIOS_BATTERY_VOLTAGE_CHANNEL)) * batterySettings.SensorCalibrations[FLIGHTBATTERYSETTINGS_SENSORCALIBRATIONS_VOLTAGEFACTOR]; //in Volts
+#endif
+#ifdef PIOS_BATTERY_CURRENT_CHANNEL
+	flightBatteryData.Current = ((float)PIOS_ADC_PinGet(PIOS_BATTERY_CURRENT_CHANNEL)) * batterySettings.SensorCalibrations[FLIGHTBATTERYSETTINGS_SENSORCALIBRATIONS_CURRENTFACTOR]; //in Amps
+#endif
 	flightBatteryData.ConsumedEnergy += (flightBatteryData.Current * 1000.0 * dT / 3600.0) ;//in mAh
 
 	if (flightBatteryData.Current > flightBatteryData.PeakCurrent)flightBatteryData.PeakCurrent = flightBatteryData.Current; //in Amps
@@ -144,13 +130,10 @@ Bob =dT; // FIXME: something funky happens if I don't do this... Andrew
 	flightBatteryData.EstimatedFlightTime = ((energyRemaining / (flightBatteryData.AvgCurrent*1000.0))*3600.0);//in Sec
 
 	//generate alarms where needed...
-	if ((flightBatteryData.Voltage<=0)&&(flightBatteryData.Current<=0))
-	{
+	if ((flightBatteryData.Voltage<=0)&&(flightBatteryData.Current<=0))	{
 		AlarmsSet(SYSTEMALARMS_ALARM_BATTERY, SYSTEMALARMS_ALARM_ERROR);
 		AlarmsSet(SYSTEMALARMS_ALARM_FLIGHTTIME, SYSTEMALARMS_ALARM_ERROR);
-	}
-	else
-	{
+	}	else {
 		if (flightBatteryData.EstimatedFlightTime < 30) AlarmsSet(SYSTEMALARMS_ALARM_FLIGHTTIME, SYSTEMALARMS_ALARM_CRITICAL);
 		else if (flightBatteryData.EstimatedFlightTime < 60) AlarmsSet(SYSTEMALARMS_ALARM_FLIGHTTIME, SYSTEMALARMS_ALARM_WARNING);
 		else AlarmsClear(SYSTEMALARMS_ALARM_FLIGHTTIME);
@@ -168,8 +151,8 @@ Bob =dT; // FIXME: something funky happens if I don't do this... Andrew
 }
 
 /**
-  * @}
-  */
+ * @}
+ */
 
 /**
  * @}
