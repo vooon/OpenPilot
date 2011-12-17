@@ -65,7 +65,7 @@
 #define REQ_TIMEOUT_MS 250
 #define MAX_RETRIES 2
 
-#define STATS_UPDATE_PERIOD_MS 50
+#define RECEIVER_READ_PERIOD_MS 50
 
 // Private types
 struct RouterCommsStruct {
@@ -159,7 +159,7 @@ int32_t TransmitterControlsInitialize(void) {
 	// Create periodic event that will be used to send transmitter state.
 	UAVObjEvent ev;
 	memset(&ev, 0, sizeof(UAVObjEvent));
-	EventPeriodicQueueCreate(&ev, comms[1].txqueue, STATS_UPDATE_PERIOD_MS);
+	EventPeriodicQueueCreate(&ev, comms[1].txqueue, RECEIVER_READ_PERIOD_MS);
 
 	// Create queue for reading ADC values.
 	adc_queue = xQueueCreate(1, sizeof(float) * 7);
@@ -177,17 +177,6 @@ MODULE_INITCALL(TransmitterControlsInitialize, TransmitterControlsStart)
  */
 static void transmitterControlsTask(void *parameters)
 {
-	//ManualControlCommandData mcc;
-	/*
-    uint8_t Connected;
-    float Roll;
-    float Pitch;
-    float Yaw;
-    float Throttle;
-    uint16_t Channel[8];
-	*/
-
-	AlarmsClear(SYSTEMALARMS_ALARM_ATTITUDE);
 
 	PIOS_ADC_Config((PIOS_ADC_RATE / 1000.0f) * UPDATE_RATE);
 
@@ -197,40 +186,31 @@ static void transmitterControlsTask(void *parameters)
 		PIOS_WDG_UpdateFlag(PIOS_WDG_ATTITUDE);
 		++cntr;
 
+
 		// Only wait the time for two nominal updates before setting an alarm
 		float gyro[PIOS_ADC_NUM_CHANNELS];
-		if(xQueueReceive(adc_queue, (void * const) gyro, UPDATE_RATE * 2) == errQUEUE_EMPTY)
-			AlarmsSet(SYSTEMALARMS_ALARM_ATTITUDE, SYSTEMALARMS_ALARM_ERROR);
-		else {
-			//ManualControlCommandGet(&mcc);
-			//mcc.Channel[0] = gyro[1];
-			//mcc.Channel[1] = gyro[2];
-			//mcc.Channel[2] = gyro[3];
-			//mcc.Channel[3] = gyro[4];
-			//ManualControlCommandSet(&mcc);
-			AlarmsClear(SYSTEMALARMS_ALARM_ATTITUDE);
-		}
+		if(xQueueReceive(adc_queue, (void * const) gyro, UPDATE_RATE * 2) != errQUEUE_EMPTY) {
+			if((cntr % 1000) == 0) {
 
-		if((cntr % 1000) == 0) {
+				/*
+					char buf[15];
+					int i;
+					PIOS_COM_SendString(PIOS_COM_DEBUG, "ACD: ");
+					for(i = 0; i < PIOS_ADC_NUM_CHANNELS; ++i) {
+					sprintf(buf, "%x ", (unsigned int)gyro[i]);
+					PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
+					}
+					PIOS_COM_SendString(PIOS_COM_DEBUG, "\n\r");
+					PIOS_COM_SendString(PIOS_COM_DEBUG, "ACD Read: ");
+					for(i = 0; i < PIOS_ADC_NUM_CHANNELS; ++i) {
+					sprintf(buf, "%x ", (unsigned int)PIOS_ADC_PinGet(i));
+					PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
+					}
+					PIOS_COM_SendString(PIOS_COM_DEBUG, "\n\r");
+				*/
 
-			/*
-			char buf[15];
-			int i;
-			PIOS_COM_SendString(PIOS_COM_DEBUG, "ACD: ");
-			for(i = 0; i < PIOS_ADC_NUM_CHANNELS; ++i) {
-				sprintf(buf, "%x ", (unsigned int)gyro[i]);
-				PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
+				cntr = 0;
 			}
-			PIOS_COM_SendString(PIOS_COM_DEBUG, "\n\r");
-			PIOS_COM_SendString(PIOS_COM_DEBUG, "ACD Read: ");
-			for(i = 0; i < PIOS_ADC_NUM_CHANNELS; ++i) {
-				sprintf(buf, "%x ", (unsigned int)PIOS_ADC_PinGet(i));
-				PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
-			}
-			PIOS_COM_SendString(PIOS_COM_DEBUG, "\n\r");
-			*/
-
-			cntr = 0;
 		}
 	}
 }
@@ -251,7 +231,7 @@ static void processObjEvent(UAVObjEvent * ev, RouterComms *comm)
 		int i;
 		bool debug = false;
 
-		if(cntr == 400) {
+		if(cntr == 20) {
 			debug = true;
 			cntr = 0;
 		}

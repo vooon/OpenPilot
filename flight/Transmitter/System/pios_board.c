@@ -496,7 +496,6 @@ void PIOS_Board_Init(void) {
 			PIOS_Assert(0);
 		}
 	}
-	//PIOS_COM_SendString(pios_com_usart1_id, "Hello USART1\n\r");
 
 	/* Configure USART2 */
 	{
@@ -515,7 +514,6 @@ void PIOS_Board_Init(void) {
 			PIOS_Assert(0);
 		}
 	}
-	//PIOS_COM_SendString(pios_com_usart2_id, "Hello USART2\n\r");
 
 	/* Configure USART3 */
 	{
@@ -533,7 +531,7 @@ void PIOS_Board_Init(void) {
 			PIOS_Assert(0);
 		}
 	}
-	//PIOS_COM_SendString(pios_com_usart3_id, "Hello USART3\n\r");
+	PIOS_COM_SendString(PIOS_COM_DEBUG, "Hello World\n\r");
 
 	/* Configure the rcvr port */
 	uint8_t hwsettings_rcvrport;
