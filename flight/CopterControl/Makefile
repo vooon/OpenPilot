@@ -65,7 +65,7 @@ endif
 FLASH_TOOL = OPENOCD
 
 # List of modules to include
-OPTMODULES = CameraStab
+OPTMODULES = CameraStab Battery
 ifeq ($(USE_GPS), YES)
 OPTMODULES += GPS
 endif
@@ -178,6 +178,8 @@ SRC += $(OPUAVSYNTHDIR)/receiveractivity.c
 SRC += $(OPUAVSYNTHDIR)/taskinfo.c
 SRC += $(OPUAVSYNTHDIR)/mixerstatus.c
 SRC += $(OPUAVSYNTHDIR)/ratedesired.c
+SRC += $(OPUAVSYNTHDIR)/flightbatterysettings.c
+SRC += $(OPUAVSYNTHDIR)/flightbatterystate.c
 
 endif
 

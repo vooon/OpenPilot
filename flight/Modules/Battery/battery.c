@@ -1,4 +1,3 @@
-/* -*- Mode: c; c-basic-offset: 2; tab-width: 2; indent-tabs-mode: t -*- */
 /**
 ******************************************************************************
 * @addtogroup OpenPilotModules OpenPilot Modules
@@ -50,6 +49,7 @@
 
 #include "flightbatterystate.h"
 #include "flightbatterysettings.h"
+#include "hwsettings.h"
 
 //
 // Configuration
@@ -59,19 +59,38 @@
 // Private types
 
 // Private variables
+static portTickType lastSysTime;
 
 // Private functions
 static void onTimer(UAVObjEvent* ev);
 
 int32_t BatteryInitialize(void)
 {
-	FlightBatteryStateInitialize();
-	FlightBatterySettingsInitialize();
-	
-	static UAVObjEvent ev;
+	bool batteryEnabled;
+	uint8_t optionalModules[HWSETTINGS_OPTIONALMODULES_NUMELEM];
 
-	memset(&ev,0,sizeof(UAVObjEvent));
-	EventPeriodicCallbackCreate(&ev, onTimer, SAMPLE_PERIOD_MS / portTICK_RATE_MS);
+	HwSettingsInitialize();
+	HwSettingsOptionalModulesGet(optionalModules);
+
+	if (optionalModules[HWSETTINGS_OPTIONALMODULES_BATTERY] == HWSETTINGS_OPTIONALMODULES_ENABLED)
+		batteryEnabled = true;
+	else
+		batteryEnabled = false;
+
+	if (batteryEnabled) {
+
+		// Initialize the UAVObjects
+		FlightBatteryStateInitialize();
+		FlightBatterySettingsInitialize();
+
+		// Initialize the last time we received a status event.
+		lastSysTime = xTaskGetTickCount();
+
+		// Setup a periodic event to update battery status.
+		UAVObjEvent ev;
+		memset(&ev,0,sizeof(UAVObjEvent));
+		EventPeriodicCallbackCreate(&ev, onTimer, SAMPLE_PERIOD_MS / portTICK_RATE_MS);
+	}
 
 	return 0;
 }
@@ -84,20 +103,11 @@ MODULE_INITCALL(BatteryInitialize, 0)
 
 static void onTimer(UAVObjEvent* ev)
 {
-	static portTickType lastSysTime;
-	static bool firstRun = true;
-
-	static FlightBatteryStateData flightBatteryData;
-
+	FlightBatteryStateData flightBatteryData;
 	portTickType thisSysTime;
 	FlightBatterySettingsData batterySettings;
-	static float dT = SAMPLE_PERIOD_MS / 1000;
+	float dT = (float)SAMPLE_PERIOD_MS / 1000.0;
 	float energyRemaining;
-
-	if (firstRun) {
-		lastSysTime = xTaskGetTickCount();
-		firstRun = false;
-	}
 
 	AlarmsSet(SYSTEMALARMS_ALARM_BATTERY, SYSTEMALARMS_ALARM_ERROR);
 
@@ -109,7 +119,7 @@ static void onTimer(UAVObjEvent* ev)
 	// Get the FlightBatterySettings
 	FlightBatterySettingsGet(&batterySettings);
 
-	//calculate the battery parameters
+	// Calculate the battery parameters
 #ifdef PIOS_BATTERY_VOLTAGE_CHANNEL
 	flightBatteryData.Voltage = ((float)PIOS_ADC_PinGet(PIOS_BATTERY_VOLTAGE_CHANNEL)) * batterySettings.SensorCalibrations[FLIGHTBATTERYSETTINGS_SENSORCALIBRATIONS_VOLTAGEFACTOR]; //in Volts
 #endif
@@ -119,21 +129,24 @@ static void onTimer(UAVObjEvent* ev)
 	flightBatteryData.ConsumedEnergy += (flightBatteryData.Current * 1000.0 * dT / 3600.0) ;//in mAh
 
 	if (flightBatteryData.Current > flightBatteryData.PeakCurrent)flightBatteryData.PeakCurrent = flightBatteryData.Current; //in Amps
-	flightBatteryData.AvgCurrent=(flightBatteryData.AvgCurrent*0.8)+(flightBatteryData.Current*0.2); //in Amps
+	flightBatteryData.AvgCurrent = (flightBatteryData.AvgCurrent * 0.8) + (flightBatteryData.Current * 0.2); //in Amps
 
-	//sanity checks
-	if (flightBatteryData.AvgCurrent<0)flightBatteryData.AvgCurrent=0.0;
-	if (flightBatteryData.PeakCurrent<0)flightBatteryData.PeakCurrent=0.0;
-	if (flightBatteryData.ConsumedEnergy<0)flightBatteryData.ConsumedEnergy=0.0;
+	// Sanity checks
+	if (flightBatteryData.AvgCurrent < 0) flightBatteryData.AvgCurrent = 0.0;
+	if (flightBatteryData.PeakCurrent < 0) flightBatteryData.PeakCurrent = 0.0;
+	if (flightBatteryData.ConsumedEnergy < 0) flightBatteryData.ConsumedEnergy = 0.0;
 
 	energyRemaining = batterySettings.Capacity - flightBatteryData.ConsumedEnergy; // in mAh
-	flightBatteryData.EstimatedFlightTime = ((energyRemaining / (flightBatteryData.AvgCurrent*1000.0))*3600.0);//in Sec
+	flightBatteryData.EstimatedFlightTime = ((energyRemaining / (flightBatteryData.AvgCurrent * 1000.0)) * 3600.0); //in Sec
 
-	//generate alarms where needed...
-	if ((flightBatteryData.Voltage<=0)&&(flightBatteryData.Current<=0))	{
+	// Generate alarms where needed...
+	if ((flightBatteryData.Voltage <= 0) && (flightBatteryData.Current <= 0))
+	{
 		AlarmsSet(SYSTEMALARMS_ALARM_BATTERY, SYSTEMALARMS_ALARM_ERROR);
 		AlarmsSet(SYSTEMALARMS_ALARM_FLIGHTTIME, SYSTEMALARMS_ALARM_ERROR);
-	}	else {
+	}
+	else
+	{
 		if (flightBatteryData.EstimatedFlightTime < 30) AlarmsSet(SYSTEMALARMS_ALARM_FLIGHTTIME, SYSTEMALARMS_ALARM_CRITICAL);
 		else if (flightBatteryData.EstimatedFlightTime < 60) AlarmsSet(SYSTEMALARMS_ALARM_FLIGHTTIME, SYSTEMALARMS_ALARM_WARNING);
 		else AlarmsClear(SYSTEMALARMS_ALARM_FLIGHTTIME);
