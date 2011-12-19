@@ -104,20 +104,23 @@ MODULE_INITCALL(BatteryInitialize, 0)
 static void onTimer(UAVObjEvent* ev)
 {
 	FlightBatteryStateData flightBatteryData;
-	portTickType thisSysTime;
 	FlightBatterySettingsData batterySettings;
-	float dT = (float)SAMPLE_PERIOD_MS / 1000.0;
 	float energyRemaining;
+	portTickType thisSysTime;
+	float dT;
 
 	AlarmsSet(SYSTEMALARMS_ALARM_BATTERY, SYSTEMALARMS_ALARM_ERROR);
 
 	// Check how long since last update
 	thisSysTime = xTaskGetTickCount();
-	if(thisSysTime > lastSysTime) // reuse dt in case of wraparound
-		dT = (float)(thisSysTime - lastSysTime) / (float)(portTICK_RATE_MS * 1000.0f);
+	dT = (thisSysTime > lastSysTime) ?
+		(thisSysTime - lastSysTime) / portTICK_RATE_MS :
+		(float)SAMPLE_PERIOD_MS / 1000.0f;
+	lastSysTime = thisSysTime;
 
-	// Get the FlightBatterySettings
+	// Get the FlightBatterySettings and flightBatteryState
 	FlightBatterySettingsGet(&batterySettings);
+	FlightBatteryStateGet(&flightBatteryData);
 
 	// Calculate the battery parameters
 #ifdef PIOS_BATTERY_VOLTAGE_CHANNEL
@@ -158,7 +161,6 @@ static void onTimer(UAVObjEvent* ev)
 			AlarmsSet(SYSTEMALARMS_ALARM_BATTERY, SYSTEMALARMS_ALARM_WARNING);
 		else AlarmsClear(SYSTEMALARMS_ALARM_BATTERY);
 	}
-	lastSysTime = thisSysTime;
 
 	FlightBatteryStateSet(&flightBatteryData);
 }
