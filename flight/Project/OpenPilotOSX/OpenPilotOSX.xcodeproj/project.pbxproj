@@ -119,6 +119,8 @@
 		657CEEBB121DBC63007A1FBE /* WorldMagModel.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = WorldMagModel.c; sourceTree = "<group>"; };
 		657CF024121F49CD007A1FBE /* WMMInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WMMInternal.h; sourceTree = "<group>"; };
 		657FF86A12EA8BFB00801617 /* pios_pwm_priv.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pios_pwm_priv.h; sourceTree = "<group>"; };
+		6581784514A3D02D0007885F /* escsettings.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = escsettings.xml; sourceTree = "<group>"; };
+		6581784614A3D02D0007885F /* escstatus.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = escstatus.xml; sourceTree = "<group>"; };
 		6589A972131DDE93006BD67C /* FreeRTOSConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FreeRTOSConfig.h; sourceTree = "<group>"; };
 		6589A983131DE24F006BD67C /* taskmonitor.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = taskmonitor.c; sourceTree = "<group>"; };
 		6589A9DB131DEE76006BD67C /* pios_rtc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pios_rtc.c; sourceTree = "<group>"; };
@@ -7684,6 +7686,8 @@
 				65E410AE12F65AEA00725888 /* attitudesettings.xml */,
 				65C35E5912EFB2F3004811C2 /* baroaltitude.xml */,
 				655B1A8E13B2FC0900B0E48D /* camerastabsettings.xml */,
+				6581784514A3D02D0007885F /* escsettings.xml */,
+				6581784614A3D02D0007885F /* escstatus.xml */,
 				652C8568132B632A00BFCC70 /* firmwareiapobj.xml */,
 				65C35E5C12EFB2F3004811C2 /* flightbatterystate.xml */,
 				65C35E5D12EFB2F3004811C2 /* flightplancontrol.xml */,
