@@ -67,6 +67,7 @@ NotificationItem::NotificationItem(QObject *parent)
     , _mute(false)
     , _previousTriggerValue()
 {
+
     NotificationItem::sayOrderValues.clear();
     NotificationItem::sayOrderValues[QString(tr("Never"))] = eNever;
     NotificationItem::sayOrderValues[QString(tr("Before first"))] = eBeforeFirst;
@@ -292,7 +293,6 @@ QStringList valueToSoundList(QString value)
         digitWavs.append("minus");
         numberParts[0]=QString::number(numberParts.at(0).toInt()*-1);
     }
-
     if ( (numberParts.at(0).size() == 1) || (numberParts.at(0).toInt() < 20) ) {
         // [1] check, is this number < 20, these numbers played by one wav file
         digitWavs.append(numberParts.at(0));

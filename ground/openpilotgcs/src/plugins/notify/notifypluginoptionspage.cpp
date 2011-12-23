@@ -51,7 +51,7 @@ NotifyPluginOptionsPage::NotifyPluginOptionsPage(QObject *parent)
     : IOptionsPage(parent)
     , _objManager(*ExtensionSystem::PluginManager::instance()->getObject<UAVObjectManager>())
     , _owner(qobject_cast<SoundNotifyPlugin*>(parent))
-    , _dynamicFieldLimit(NULL)
+    , _dynamicFieldCondition(NULL)
     , _dynamicFieldWidget(NULL)
     , _dynamicFieldType(-1)
     , _sayOrder(NULL)
@@ -68,7 +68,7 @@ QWidget *NotifyPluginOptionsPage::createPage(QWidget *parent)
     //main widget
     QWidget* optionsPageWidget = new QWidget;
     _dynamicFieldWidget = NULL;
-    _dynamicFieldLimit = NULL;
+    _dynamicFieldCondition = NULL;
     resetFieldType();
     //save ref to form, needed for binding dynamic fields in future
     _form = optionsPageWidget;
@@ -223,8 +223,8 @@ void NotifyPluginOptionsPage::addDynamicFieldLayout()
     labelValueIs->setSizePolicy(labelSizePolicy);
     _optionsPage->dynamicValueLayout->addWidget(labelValueIs);
 
-    _dynamicFieldLimit = new QComboBox(_form);
-    _optionsPage->dynamicValueLayout->addWidget(_dynamicFieldLimit);
+    _dynamicFieldCondition = new QComboBox(_form);
+    _optionsPage->dynamicValueLayout->addWidget(_dynamicFieldCondition);
     UAVObjectField* field = getObjectFieldFromSelected();
     addDynamicField(field);
 }
@@ -244,15 +244,15 @@ void NotifyPluginOptionsPage::addDynamicField(UAVObjectField* objField)
         return;
     }
 
-    disconnect(_dynamicFieldLimit, SIGNAL(currentIndexChanged(QString)),
+    disconnect(_dynamicFieldCondition, SIGNAL(currentIndexChanged(QString)),
         this, SLOT(on_changedIndex_rangeValue(QString)));
 
-    _dynamicFieldLimit->clear();
+    _dynamicFieldCondition->clear();
     if (UAVObjectField::ENUM == objField->getType())
     {
-        _dynamicFieldLimit->addItem(NotificationItem::rangeValues.key(NotificationItem::eEqualTo), NotificationItem::eEqualTo);
-        _dynamicFieldLimit->addItem(NotificationItem::rangeValues.key(NotificationItem::eInRange), NotificationItem::eInRange);
-        _dynamicFieldLimit->setCurrentIndex(_dynamicFieldLimit->findData(_selectedNotification->range()));
+        _dynamicFieldCondition->addItem(NotificationItem::rangeValues.key(NotificationItem::eEqualTo), NotificationItem::eEqualTo);
+        _dynamicFieldCondition->addItem(NotificationItem::rangeValues.key(NotificationItem::eInRange), NotificationItem::eInRange);
+        _dynamicFieldCondition->setCurrentIndex(_dynamicFieldCondition->findData(_selectedNotification->range()));
     }
     else
     {
@@ -260,9 +260,9 @@ void NotifyPluginOptionsPage::addDynamicField(UAVObjectField* objField)
             pItem != NotificationItem::rangeValues.end();
             ++pItem)
         {
-            _dynamicFieldLimit->addItem(pItem.key(), pItem.value());
+            _dynamicFieldCondition->addItem(pItem.key(), pItem.value());
         }
-        connect(_dynamicFieldLimit, SIGNAL(currentIndexChanged(QString)),
+        connect(_dynamicFieldCondition, SIGNAL(currentIndexChanged(QString)),
                 this, SLOT(on_changedIndex_rangeValue(QString)));
     }
 
@@ -299,8 +299,8 @@ void NotifyPluginOptionsPage::addDynamicFieldWidget(UAVObjectField* objField)
         break;
 
     default:
-        Q_ASSERT(_dynamicFieldLimit);
-        if (NotificationItem::eInRange == _dynamicFieldLimit->itemData(_dynamicFieldLimit->currentIndex()))
+        Q_ASSERT(_dynamicFieldCondition);
+        if (NotificationItem::eInRange == _dynamicFieldCondition->itemData(_dynamicFieldCondition->currentIndex()))
         {
             _dynamicFieldWidget = new QLineEdit(_form);
 
@@ -358,7 +358,7 @@ void NotifyPluginOptionsPage::getOptionsPageValues(NotificationItem* notificatio
     notification->setSound2(_optionsPage->Sound2->currentText());
     notification->setSound3(_optionsPage->Sound3->currentText());
     notification->setSayOrder((NotificationItem::ESayOrder)_sayOrder->itemData(_sayOrder->currentIndex()).toInt());
-    notification->setRange((NotificationItem::ERange)_dynamicFieldLimit->itemData(_dynamicFieldLimit->currentIndex()).toInt());
+    notification->setRange((NotificationItem::ERange)_dynamicFieldCondition->itemData(_dynamicFieldCondition->currentIndex()).toInt());
     if (QDoubleSpinBox* spinValue = dynamic_cast<QDoubleSpinBox*>(_dynamicFieldWidget))
         notification->setSingleValue(spinValue->value());
     else {
@@ -443,8 +443,8 @@ void NotifyPluginOptionsPage::updateConfigView(NotificationItem* notification)
         _optionsPage->Sound3->setCurrentIndex(_optionsPage->Sound3->findText(notification->getSound3()));
     }
 
-    if (-1 != _dynamicFieldLimit->findData(notification->range())) {
-        _dynamicFieldLimit->setCurrentIndex(_dynamicFieldLimit->findData(notification->range()));
+    if (-1 != _dynamicFieldCondition->findData(notification->range())) {
+        _dynamicFieldCondition->setCurrentIndex(_dynamicFieldCondition->findData(notification->range()));
     }
 
     int index = _sayOrder->findData(notification->getSayOrder());

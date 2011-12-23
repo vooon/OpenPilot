@@ -404,7 +404,6 @@ bool checkRange(double fieldValue, double min, double max, NotificationItem::ERa
         break;
 
     default:
-        Q_ASSERT(min < max);
         ret = (fieldValue > min) && (fieldValue < max);
         break;
     };
@@ -495,7 +494,7 @@ bool SoundNotifyPlugin::playNotification(NotificationItem* notification)
             _toRemoveNotifications.append(_notificationList.takeAt(_notificationList.indexOf(notification)));
         } else {
             if (notification->retryValue() != NotificationItem::eInstantly) {
-                int timer_value;
+                int timer_value=0;
 
                 // needs to correct repeat timer value,
                 // acording to message play duration,
