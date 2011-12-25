@@ -438,6 +438,35 @@ static const struct pios_usb_hid_cfg pios_usb_hid_main_cfg = {
 };
 #endif	/* PIOS_INCLUDE_USB_HID */
 
+#include <pios_pwm_priv.h>
+
+static const struct pios_tim_channel pios_tim_rssi_pwm_channel = {
+	.timer = TIM3,
+	.timer_chan = TIM_Channel_2,
+	.pin = {
+		.gpio = GPIOB,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_5,
+			.GPIO_Mode  = GPIO_Mode_IPD,
+			.GPIO_Speed = GPIO_Speed_2MHz,
+		},
+	},
+	.remap = GPIO_PartialRemap_TIM3,
+};
+
+const struct pios_pwm_cfg pios_pwm_cfg = {
+	.tim_ic_init = {
+		.TIM_ICPolarity = TIM_ICPolarity_Rising,
+		.TIM_ICSelection = TIM_ICSelection_DirectTI,
+		.TIM_ICPrescaler = TIM_ICPSC_DIV1,
+		.TIM_ICFilter = 0x0,
+	},
+	.channels = &pios_tim_rssi_pwm_channel,
+	.num_channels = 1,
+};
+
+uint32_t rssi_pwm_id;
+
 extern const struct pios_com_driver pios_usb_com_driver;
 
 uint32_t pios_com_usart1_id;
@@ -531,7 +560,10 @@ void PIOS_Board_Init(void) {
 			PIOS_Assert(0);
 		}
 	}
-	PIOS_COM_SendString(PIOS_COM_DEBUG, "Hello World\n\r");
+
+	PIOS_COM_SendString(PIOS_COM_TELEM_OUT, "Hello OUT\n\r");
+	PIOS_COM_SendString(PIOS_COM_TELEM_GCS, "Hello GCS\n\r");
+	PIOS_COM_SendString(PIOS_COM_DEBUG, "Hello Debug\n\r");
 
 	/* Configure the rcvr port */
 	uint8_t hwsettings_rcvrport;
@@ -550,7 +582,47 @@ void PIOS_Board_Init(void) {
 
 	/* Remap AFIO pin */
 	GPIO_PinRemapConfig( GPIO_Remap_SWJ_NoJTRST, ENABLE);
-	
+
+	// Initialize switch GPIO pins
+	{
+		GPIO_TypeDef *GPIO_GPIOxs[] = {
+			GPIOA, GPIOB, GPIOB, GPIOB, GPIOB,
+		};
+		GPIO_InitTypeDef GPIO_InitStructures[] = {
+			{
+				.GPIO_Speed = GPIO_Speed_2MHz,
+				.GPIO_Pin = GPIO_Pin_8,
+				.GPIO_Mode = GPIO_Mode_IN_FLOATING,
+			},
+			{
+				.GPIO_Speed = GPIO_Speed_2MHz,
+				.GPIO_Pin = GPIO_Pin_7,
+				.GPIO_Mode = GPIO_Mode_IN_FLOATING,
+			},
+			{
+				.GPIO_Speed = GPIO_Speed_2MHz,
+				.GPIO_Pin = GPIO_Pin_14,
+				.GPIO_Mode = GPIO_Mode_IN_FLOATING,
+			},
+			{
+				.GPIO_Speed = GPIO_Speed_2MHz,
+				.GPIO_Pin = GPIO_Pin_13,
+				.GPIO_Mode = GPIO_Mode_IN_FLOATING,
+			},
+			{
+				.GPIO_Speed = GPIO_Speed_2MHz,
+				.GPIO_Pin = GPIO_Pin_15,
+				.GPIO_Mode = GPIO_Mode_IN_FLOATING,
+			},
+		};
+		unsigned int i;
+		for (i = 0; i < sizeof(GPIO_GPIOxs) / sizeof(GPIO_TypeDef); ++i)
+			GPIO_Init(GPIO_GPIOxs[i], GPIO_InitStructures + i);
+	}
+
+	// Initialize the XBee RSSI PWM input.
+	PIOS_PWM_Init(&rssi_pwm_id, &pios_pwm_cfg);
+
 	PIOS_ADC_Init();
 	PIOS_GPIO_Init();
 

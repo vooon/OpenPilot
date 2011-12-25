@@ -55,9 +55,11 @@
 #include "manualcontrolsettings.h"
 #include "gcsreceiver.h"
 
+#define RECEIVER_INPUT
+//#define ANALOG_INPUT
+
 // Private constants
 #define STACK_SIZE_BYTES 540
-//#define STACK_SIZE_BYTES 320
 #define TASK_PRIORITY (tskIDLE_PRIORITY+3)
 
 #define UPDATE_RATE	 2.0f
@@ -66,6 +68,10 @@
 #define MAX_RETRIES 2
 
 #define RECEIVER_READ_PERIOD_MS 50
+
+// Global variables
+extern uint32_t rssi_pwm_id;
+extern struct pios_rcvr_driver pios_pwm_rcvr_driver;
 
 // Private types
 struct RouterCommsStruct {
@@ -82,17 +88,13 @@ typedef struct RouterCommsStruct RouterComms;
 typedef RouterComms *RouterCommsHandle;
 
 // Private variables
-static xTaskHandle taskHandle;
-static xQueueHandle adc_queue;
 static uint32_t txErrors;
 static uint32_t txRetries;
 static RouterComms comms[2];
 
 // Private functions
-static void transmitterControlsTask(void *parameters);
 static void transmitterTxTask(void *parameters);
 static void transmitterRxTask(void *parameters);
-//static void processObjEvent(UAVObjEvent * ev);
 static int32_t transmitData1(uint8_t * data, int32_t length);
 static int32_t transmitData2(uint8_t * data, int32_t length);
 
@@ -101,11 +103,9 @@ static int32_t transmitData2(uint8_t * data, int32_t length);
  * Initialise the module, called on startup
  * \returns 0 on success or -1 if initialisation failed
  */
-int32_t TransmitterControlsStart(void) {
+int32_t TransmitterControlsStart(void)
+{
 
-	// Start main task
-	xTaskCreate(transmitterControlsTask, (signed char *)"TransmitterControls", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &taskHandle);
-	//TaskMonitorAdd(TASKINFO_RUNNING_TRANSMITTERCONTROLS, taskHandle);
 	PIOS_WDG_RegisterFlag(PIOS_WDG_ATTITUDE);
 
 	// Start the Tx and Rx tasks
@@ -161,59 +161,35 @@ int32_t TransmitterControlsInitialize(void) {
 	memset(&ev, 0, sizeof(UAVObjEvent));
 	EventPeriodicQueueCreate(&ev, comms[1].txqueue, RECEIVER_READ_PERIOD_MS);
 
-	// Create queue for reading ADC values.
-	adc_queue = xQueueCreate(1, sizeof(float) * 7);
-	if(adc_queue == NULL)
-		return -1;
-	PIOS_ADC_SetQueue(adc_queue);
+	PIOS_ADC_Config((PIOS_ADC_RATE / 1000.0f) * UPDATE_RATE);
 
 	return 0;
 }
 
 MODULE_INITCALL(TransmitterControlsInitialize, TransmitterControlsStart)
 
+#ifdef ANALOG_INPUT
 /**
- * Module thread, should not return.
+ * Read the primary and trim ADC channels for a control stick and scale it appropriately
  */
-static void transmitterControlsTask(void *parameters)
-{
-
-	PIOS_ADC_Config((PIOS_ADC_RATE / 1000.0f) * UPDATE_RATE);
-
-	// Main task loop
-	uint16_t cntr = 0;
-	while (1) {
-		PIOS_WDG_UpdateFlag(PIOS_WDG_ATTITUDE);
-		++cntr;
-
-
-		// Only wait the time for two nominal updates before setting an alarm
-		float gyro[PIOS_ADC_NUM_CHANNELS];
-		if(xQueueReceive(adc_queue, (void * const) gyro, UPDATE_RATE * 2) != errQUEUE_EMPTY) {
-			if((cntr % 1000) == 0) {
-
-				/*
-					char buf[15];
-					int i;
-					PIOS_COM_SendString(PIOS_COM_DEBUG, "ACD: ");
-					for(i = 0; i < PIOS_ADC_NUM_CHANNELS; ++i) {
-					sprintf(buf, "%x ", (unsigned int)gyro[i]);
-					PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
-					}
-					PIOS_COM_SendString(PIOS_COM_DEBUG, "\n\r");
-					PIOS_COM_SendString(PIOS_COM_DEBUG, "ACD Read: ");
-					for(i = 0; i < PIOS_ADC_NUM_CHANNELS; ++i) {
-					sprintf(buf, "%x ", (unsigned int)PIOS_ADC_PinGet(i));
-					PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
-					}
-					PIOS_COM_SendString(PIOS_COM_DEBUG, "\n\r");
-				*/
-
-				cntr = 0;
-			}
-		}
-	}
+static uint16_t read_stick(uint8_t primary_pin, uint8_t trim_pin) {
+	return PIOS_ADC_PinGet(primary_pin) + PIOS_ADC_PinGet(trim_pin) / 10;
 }
+
+/**
+ * Read a switch and scale the value appropriately.
+ */
+static uint16_t read_switch(uint8_t val) {
+	return val ? 1900 : 1000;
+}
+
+/**
+ * Read a potentiometer and scale the value appropriately.
+ */
+static uint16_t read_potentiometer(uint8_t poten_pin) {
+	return PIOS_ADC_PinGet(poten_pin);
+}
+#endif
 
 /**
  * Processes queue events
@@ -224,6 +200,8 @@ static void processObjEvent(UAVObjEvent * ev, RouterComms *comm)
 	UAVObjMetadata metadata;
 	int32_t retries;
 	int32_t success;
+
+	PIOS_WDG_UpdateFlag(PIOS_WDG_ATTITUDE);
 
 	if (ev->obj == 0) {
 		GCSReceiverData rcvr;
@@ -237,6 +215,7 @@ static void processObjEvent(UAVObjEvent * ev, RouterComms *comm)
 		}
 		++cntr;
 
+#ifdef RECEIVER_INPUT
 		if(debug)
 			PIOS_COM_SendString(PIOS_COM_DEBUG, "Rcvr: ");
 
@@ -253,6 +232,70 @@ static void processObjEvent(UAVObjEvent * ev, RouterComms *comm)
 		}
 		if(debug)
 			PIOS_COM_SendString(PIOS_COM_DEBUG, "\n\r");
+
+#else
+
+		if(debug) {
+			static int32_t prev_adc[PIOS_ADC_NUM_CHANNELS];
+			PIOS_COM_SendString(PIOS_COM_DEBUG, "ADC: ");
+			for(i = 0; i < PIOS_ADC_NUM_CHANNELS; ++i) {
+				int32_t cur_adc = PIOS_ADC_PinGet(i);
+				int32_t diff = (int32_t)abs(prev_adc[i] - cur_adc);
+				//sprintf(buf, "%x ", (unsigned int)PIOS_ADC_PinGet(i));
+				if(diff > 20) {
+					sprintf(buf, "%x ", (unsigned int)PIOS_ADC_PinGet(i));
+					PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
+				} else
+					PIOS_COM_SendString(PIOS_COM_DEBUG, "--- ");
+				prev_adc[i] = cur_adc;
+			}
+			PIOS_COM_SendString(PIOS_COM_DEBUG, "  Switches: ");
+			sprintf(buf, "%x ", (unsigned int)GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_8));
+			PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
+			sprintf(buf, "%x ", (unsigned int)GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_7));
+			PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
+			sprintf(buf, "%x ", (unsigned int)GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_14));
+			PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
+			sprintf(buf, "%x ", (unsigned int)GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_13));
+			PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
+			sprintf(buf, "%x ", (unsigned int)GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_15));
+			PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
+			PIOS_COM_SendString(PIOS_COM_DEBUG, "  RSSI: ");
+			sprintf(buf, "%x ", (unsigned int)pios_pwm_rcvr_driver.read(rssi_pwm_id, 0));
+			PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
+		}
+
+		// Calculate Roll
+		rcvr.Channel[0] = read_stick(1, 2);
+		// Calculate Pitch
+		rcvr.Channel[1] = read_stick(3, 4);
+		// Calculate Throttle
+		rcvr.Channel[2] = read_stick(7, 8);
+		// Calculate Yaw
+		rcvr.Channel[3] = read_stick(6, 5);
+		// Read switch 1
+		rcvr.Channel[4] = read_switch(GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_8));
+		// Read switch 2
+		rcvr.Channel[5] = read_switch(GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_7));
+		// Read switch 3
+		rcvr.Channel[6] = read_switch(GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_14));
+		// Read switch 4
+		rcvr.Channel[7] = read_switch(GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_13));
+		// Read switch 5
+		rcvr.Channel[8] = read_switch(GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_15));
+		// Read the potentiometer.
+		rcvr.Channel[9] = read_potentiometer(9);
+
+		if(debug) {
+			PIOS_COM_SendString(PIOS_COM_DEBUG, "  Rcvr: ");
+			for(i = 0; i < 10; ++i) {
+				sprintf(buf, "%d ", (unsigned int)rcvr.Channel[i]);
+				PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
+			}
+			PIOS_COM_SendString(PIOS_COM_DEBUG, "\n\r");
+		}
+
+#endif
 
 		// Set the GCSReceiverData object.
 		{

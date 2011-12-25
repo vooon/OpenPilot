@@ -66,7 +66,7 @@ FLASH_TOOL = OPENOCD
 
 # List of modules to include
 OPTMODULES = 
-MODULES = TransmitterControls
+MODULES = TransmitterControls FirmwareIAP
 # Telemetry must be last to grab the optional modules
 #MODULES += Telemetry
 
@@ -192,6 +192,7 @@ SRC += $(PIOSSTM32F10X)/pios_exti.c
 SRC += $(PIOSSTM32F10X)/pios_rtc.c
 SRC += $(PIOSSTM32F10X)/pios_wdg.c
 SRC += $(PIOSSTM32F10X)/pios_tim.c
+SRC += $(PIOSSTM32F10X)/pios_pwm.c
 
 
 # PIOS USB related files (seperated to make code maintenance more easy)
