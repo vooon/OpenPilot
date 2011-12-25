@@ -93,7 +93,7 @@ void inputChannelForm::groupUpdated()
         count = 18;
         break;
     case ManualControlSettings::CHANNELGROUPS_GCS:
-        count = 5;
+        count = 10;
         break;
     case ManualControlSettings::CHANNELGROUPS_NONE:
         count = 0;
