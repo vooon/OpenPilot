@@ -34,6 +34,7 @@
 #include "configoutputwidget.h"
 #include "configstabilizationwidget.h"
 #include "configcamerastabilizationwidget.h"
+#include "configbandwidth.h"
 #include "config_pro_hw_widget.h"
 #include "config_cc_hw_widget.h"
 #include "defaultattitudewidget.h"
@@ -85,6 +86,8 @@ ConfigGadgetWidget::ConfigGadgetWidget(QWidget *parent) : QWidget(parent)
     qwd = new ConfigCameraStabilizationWidget(this);
     ftw->insertTab(ConfigGadgetWidget::camerastabilization, qwd, QIcon(":/configgadget/images/camera.png"), QString("Camera Stab"));
 
+    qwd = new ConfigBandwidth(this);
+    ftw->insertTab(ConfigGadgetWidget::bandwidth, qwd, QIcon(":/configgadget/images/bandwidth.svg"), QString("DataRate"));
 
 //    qwd = new ConfigPipXtremeWidget(this);
 //    ftw->insertTab(5, qwd, QIcon(":/configgadget/images/PipXtreme.png"), QString("PipXtreme"));

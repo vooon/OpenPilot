@@ -2,13 +2,14 @@
 
 smartSaveButton::smartSaveButton(QPushButton * update, QPushButton * save):bupdate(update),bsave(save)
 {
-    connect(bsave,SIGNAL(clicked()),this,SLOT(processClick()));
-    connect(bupdate,SIGNAL(clicked()),this,SLOT(processClick()));
-
+    if (bsave)
+        connect(bsave,SIGNAL(clicked()),this,SLOT(processClick()));
+    if (bupdate)
+        connect(bupdate,SIGNAL(clicked()),this,SLOT(processClick()));
 }
+
 void smartSaveButton::processClick()
 {
-    emit beginOp();
     bool save=false;
     QPushButton *button=bupdate;
     if(sender()==bsave)
@@ -16,6 +17,9 @@ void smartSaveButton::processClick()
         save=true;
         button=bsave;
     }
+    if (!button) return;
+
+    emit beginOp();
     emit preProcessOperations();
     button->setEnabled(false);
     button->setIcon(QIcon(":/uploader/images/system-run.svg"));
@@ -117,7 +121,7 @@ void smartSaveButton::transaction_finished(UAVObject* obj, bool result)
 
 void smartSaveButton::saving_finished(int id, bool result)
 {
-    if(id==current_objectID)
+    if((unsigned)id==current_objectID)
     {
         sv_result=result;
         //qDebug()<<"saving_finished result="<<result;
@@ -127,6 +131,8 @@ void smartSaveButton::saving_finished(int id, bool result)
 
 void smartSaveButton::enableControls(bool value)
 {
-    bupdate->setEnabled(value);
-    bsave->setEnabled(value);
+    if (bupdate)
+        bupdate->setEnabled(value);
+    if (bsave)
+        bsave->setEnabled(value);
 }
