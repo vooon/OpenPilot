@@ -353,12 +353,14 @@ uint32_t pios_com_telem_usb_id;
  */
 
 uint16_t frameBuffer[GRAPHICS_HEIGHT][GRAPHICS_WIDTH];
+uint16_t maskBuffer[GRAPHICS_HEIGHT][GRAPHICS_WIDTH];
 GPIO_InitTypeDef			GPIO_InitStructure;
 TIM_TimeBaseInitTypeDef		TIM_TimeBaseStructure;
 TIM_OCInitTypeDef			TIM_OCInitStructure;
 NVIC_InitTypeDef			NVIC_InitStructure;
 SPI_InitTypeDef				SPI_InitStructure;
 DMA_InitTypeDef				DMA_InitStructure;
+DMA_InitTypeDef				DMA_InitStructure2;
 USART_InitTypeDef			USART_InitStructure;
 EXTI_InitTypeDef			EXTI_InitStructure;
 
@@ -369,7 +371,8 @@ void SPI_Config(void)
 {
 	//Set up SPI port.  This acts as a pixel buffer.
 	SPI_InitStructure.SPI_Direction = SPI_Direction_1Line_Tx;
-	SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
+	//SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
+	SPI_InitStructure.SPI_Mode = SPI_Mode_Slave;
 	SPI_InitStructure.SPI_DataSize = SPI_DataSize_16b;
 	SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
 	SPI_InitStructure.SPI_CPHA = SPI_CPHA_2Edge;
@@ -378,7 +381,20 @@ void SPI_Config(void)
 	SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
 
 	SPI_Init(SPI2, &SPI_InitStructure);
+	//Set up SPI port.  This acts as a pixel buffer.
+	SPI_InitStructure.SPI_Direction = SPI_Direction_1Line_Tx;
+	SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
+	SPI_InitStructure.SPI_DataSize = SPI_DataSize_16b;
+	SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
+	SPI_InitStructure.SPI_CPHA = SPI_CPHA_2Edge;
+	SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
+	SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_8;
+	SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
 
+
+	SPI_Init(SPI1, &SPI_InitStructure);
+
+	SPI_Cmd(SPI1, ENABLE);
 	SPI_Cmd(SPI2, ENABLE);
 }
 
@@ -387,7 +403,7 @@ void DMA_Config(void)
 	//Set up the DMA to keep the SPI port fed from the framebuffer.
 	DMA_DeInit(DMA1_Channel5);
 	DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(SPI2->DR);
-	DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)frameBuffer[1];
+	DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)frameBuffer[0];
 	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralDST;
 	DMA_InitStructure.DMA_Priority = DMA_Priority_High;
 
@@ -400,7 +416,27 @@ void DMA_Config(void)
 	DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;
 
 	DMA_Init(DMA1_Channel5, &DMA_InitStructure);
+
+	//Set up the DMA to keep the SPI port fed from the framebuffer.
+	DMA_DeInit(DMA1_Channel3);
+	DMA_InitStructure2.DMA_PeripheralBaseAddr = (uint32_t)&(SPI1->DR);
+	DMA_InitStructure2.DMA_MemoryBaseAddr = (uint32_t)maskBuffer[0];
+	DMA_InitStructure2.DMA_DIR = DMA_DIR_PeripheralDST;
+	DMA_InitStructure2.DMA_Priority = DMA_Priority_High;
+
+	DMA_InitStructure2.DMA_BufferSize = BUFFER_LINE_LENGTH;
+	DMA_InitStructure2.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+	DMA_InitStructure2.DMA_MemoryInc = DMA_MemoryInc_Enable;
+	DMA_InitStructure2.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
+	DMA_InitStructure2.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
+	DMA_InitStructure2.DMA_Mode = DMA_Mode_Normal;
+	DMA_InitStructure2.DMA_M2M = DMA_M2M_Disable;
+
+	DMA_Init(DMA1_Channel3, &DMA_InitStructure2);
+
 }
+
+
 static void Clock(uint32_t spektrum_id);
 
 void initUSARTs(void)
@@ -557,14 +593,34 @@ void PIOS_Board_Init(void) {
 			  tx_buffer, PIOS_COM_TELEM_RF_TX_BUF_LEN)) {
 		PIOS_Assert(0);
 	}*/
-
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+	//SPI2 MISO
 	GPIO_InitTypeDef GPIO_InitStructure;
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz,
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
 	GPIO_Init(GPIOB, &GPIO_InitStructure);
 
+	//SPI2 SCK
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz,
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+	//SPI1 SCK
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz,
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+	//SPI1 MOSI
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz,
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
+
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI2, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, ENABLE);
 	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1 , ENABLE);
 	// ADC system
 	// PIOS_ADC_Init();
@@ -583,8 +639,8 @@ void PIOS_Board_Init(void) {
 	//uint8_t * rx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_HKOSD_RX_BUF_LEN);
 
 	//uint8_t test[16];
-	init_USART_dma();
-	initUSARTs();
+	//init_USART_dma();
+	//initUSARTs();
 	extern t_fifo_buffer rx;
 
 	fifoBuf_init(&rx,RxBuffer3,sizeof(RxBuffer3));

@@ -13,6 +13,7 @@
 extern xSemaphoreHandle osdSemaphore;
 
 extern uint16_t frameBuffer[GRAPHICS_HEIGHT*GRAPHICS_WIDTH];
+extern uint16_t maskBuffer[GRAPHICS_HEIGHT*GRAPHICS_WIDTH];
 
 extern GPIO_InitTypeDef			GPIO_InitStructure;
 extern TIM_TimeBaseInitTypeDef		TIM_TimeBaseStructure;
@@ -20,6 +21,7 @@ extern TIM_OCInitTypeDef			TIM_OCInitStructure;
 extern NVIC_InitTypeDef			NVIC_InitStructure;
 extern SPI_InitTypeDef				SPI_InitStructure;
 extern DMA_InitTypeDef				DMA_InitStructure;
+extern DMA_InitTypeDef				DMA_InitStructure2;
 extern USART_InitTypeDef			USART_InitStructure;
 extern EXTI_InitTypeDef			EXTI_InitStructure;
 
@@ -214,6 +216,7 @@ void clearGraphics() {
 	for (uint16_t x = 0; x < GRAPHICS_WIDTH*GRAPHICS_HEIGHT; ++x) {
 	  //for (uint16_t y = 0; y < GRAPHICS_HEIGHT; ++y) {
 		  frameBuffer[x] = 0x0000;
+		  maskBuffer[x] = 0x0000;
 		//}
 	}
 }
@@ -335,7 +338,7 @@ void write_pixel_lm(unsigned int x, unsigned int y, int mmode, int lmode)
         int wordnum = CALC_BUFF_ADDR(x, y);
         // Apply the masks.
         uint16_t mask = 1 << (15 - bitnum);
-        //WRITE_WORD_MODE(draw_buffer_mask, wordnum, mask, mmode);
+        WRITE_WORD_MODE(maskBuffer, wordnum, mask, mmode);
         WRITE_WORD_MODE(frameBuffer, wordnum, mask, lmode);
 }
 
@@ -401,7 +404,7 @@ void write_hline_lm(unsigned int x0, unsigned int x1, unsigned int y, int lmode,
         // TODO: an optimisation would compute the masks and apply to
         // both buffers simultaneously.
         write_hline(frameBuffer, x0, x1, y, lmode);
-        //write_hline(draw_buffer_mask, x0, x1, y, mmode);
+        write_hline(maskBuffer, x0, x1, y, mmode);
 }
 
 /**
@@ -427,7 +430,7 @@ void write_hline_outlined(unsigned int x0, unsigned int x1, unsigned int y, int 
         // Draw the main body of the line.
         write_hline_lm(x0 + 1, x1 - 1, y - 1, stroke, mmode);
         write_hline_lm(x0 + 1, x1 - 1, y + 1, stroke, mmode);
-        write_hline_lm(x0 + 1, x1 - 1, y, fill, mmode);
+        write_hline_lm(x0 + 1, x1 - 1, y, fill, 1);
         // Draw the endcaps, if any.
         DRAW_ENDCAP_HLINE(endcap0, x0, y, stroke, fill, mmode);
         DRAW_ENDCAP_HLINE(endcap1, x1, y, stroke, fill, mmode);
@@ -481,7 +484,7 @@ void write_vline_lm(unsigned int x, unsigned int y0, unsigned int y1, int lmode,
         // TODO: an optimisation would compute the masks and apply to
         // both buffers simultaneously.
         write_vline(frameBuffer, x, y0, y1, lmode);
-        //write_vline(draw_buffer_mask, x, y0, y1, mmode);
+        write_vline(maskBuffer, x, y0, y1, mmode);
 }
 
 /**
@@ -507,7 +510,7 @@ void write_vline_outlined(unsigned int x, unsigned int y0, unsigned int y1, int 
         // Draw the main body of the line.
         write_vline_lm(x - 1, y0 + 1, y1 - 1, stroke, mmode);
         write_vline_lm(x + 1, y0 + 1, y1 - 1, stroke, mmode);
-        write_vline_lm(x, y0 + 1, y1 - 1, fill, mmode);
+        write_vline_lm(x, y0 + 1, y1 - 1, fill, 1);
         // Draw the endcaps, if any.
         DRAW_ENDCAP_VLINE(endcap0, x, y0, stroke, fill, mmode);
         DRAW_ENDCAP_VLINE(endcap1, x, y1, stroke, fill, mmode);
@@ -597,7 +600,7 @@ void write_filled_rectangle(uint16_t *buff, unsigned int x, unsigned int y, unsi
  */
 void write_filled_rectangle_lm(unsigned int x, unsigned int y, unsigned int width, unsigned int height, int lmode, int mmode)
 {
-        //write_filled_rectangle(draw_buffer_mask, x, y, width, height, mmode);
+        write_filled_rectangle(maskBuffer, x, y, width, height, mmode);
         write_filled_rectangle(frameBuffer, x, y, width, height, lmode);
 }
 
@@ -855,7 +858,7 @@ void write_line(uint16_t *buff, unsigned int x0, unsigned int y0, unsigned int x
  */
 void write_line_lm(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1, int mmode, int lmode)
 {
-        //write_line(draw_buffer_mask, x0, y0, x1, y1, mmode);
+        write_line(maskBuffer, x0, y0, x1, y1, mmode);
         write_line(frameBuffer, x0, y0, x1, y1, lmode);
 }
 
@@ -1044,7 +1047,7 @@ void write_word_misaligned_OR(uint16_t *buff, uint16_t word, unsigned int addr, 
 void write_word_misaligned_lm(uint16_t wordl, uint16_t wordm, unsigned int addr, unsigned int xoff, int lmode, int mmode)
 {
         write_word_misaligned(frameBuffer, wordl, addr, xoff, lmode);
-        //write_word_misaligned(draw_buffer_mask, wordm, addr, xoff, mmode);
+        write_word_misaligned(maskBuffer, wordm, addr, xoff, mmode);
 }
 
 /**
@@ -1111,12 +1114,12 @@ void write_char(char ch, unsigned int x, unsigned int y, int flags, int font)
             addr_temp = addr;
             xshift = 16 - font_info.width;
             // We can write mask words easily.
-            /*for(yy = y; yy < y + font_info.height; yy++)
+            for(yy = y; yy < y + font_info.height; yy++)
             {
-                    write_word_misaligned_OR(draw_buffer_mask, font_info.data[row] << xshift, addr, wbit);
+                    write_word_misaligned_OR(maskBuffer, font_info.data[row] << xshift, addr, wbit);
                     addr += DISP_WIDTH / 16;
                     row++;
-            }*/
+            }
             // Level bits are more complicated. We need to set or clear
             // level bits, but only where the mask bit is set; otherwise,
             // we need to leave them alone. To do this, for each word, we
@@ -1689,12 +1692,12 @@ void setAttitudeOsd(int16_t pitch, int16_t roll, int16_t yaw)
 
 
 void introText(){
-	printTextFB((GRAPHICS_WIDTH_REAL/2 - 40)/16,GRAPHICS_HEIGHT_REAL-10,"ver 0.1");
+	//printTextFB((GRAPHICS_WIDTH_REAL/2 - 40)/16,GRAPHICS_HEIGHT_REAL-10,"ver 0.1");
 }
 
 void introGraphics() {
 	/* logo */
-	copyimage(GRAPHICS_WIDTH_REAL/2-128/2, GRAPHICS_HEIGHT_REAL/2-128/2);
+	//copyimage(GRAPHICS_WIDTH_REAL/2-128/2, GRAPHICS_HEIGHT_REAL/2-128/2);
 
 	/* frame */
 	drawBox(0,0,GRAPHICS_WIDTH_REAL-2,GRAPHICS_HEIGHT_REAL-1);
@@ -1967,6 +1970,13 @@ void hud_draw_linear_compass(int v, int range, int width, int x, int y, int mint
 
 
 void updateGraphics() {
+
+	/*drawBox(2,2,GRAPHICS_WIDTH_REAL-4,GRAPHICS_HEIGHT_REAL-4);
+	write_filled_rectangle(maskBuffer,0,0,GRAPHICS_WIDTH_REAL-2,GRAPHICS_HEIGHT_REAL-2,0);
+	write_filled_rectangle(maskBuffer,2,2,GRAPHICS_WIDTH_REAL-4-2,GRAPHICS_HEIGHT_REAL-4-2,2);
+	write_filled_rectangle(maskBuffer,3,3,GRAPHICS_WIDTH_REAL-4-1,GRAPHICS_HEIGHT_REAL-4-1,0);*/
+	//write_filled_rectangle(maskBuffer,5,5,GRAPHICS_WIDTH_REAL-4-5,GRAPHICS_HEIGHT_REAL-4-5,0);
+	write_rectangle_outlined(10,10,GRAPHICS_WIDTH_REAL-20,GRAPHICS_HEIGHT_REAL-20,0,0);
 	//drawLine(GRAPHICS_WIDTH_REAL-1, GRAPHICS_HEIGHT_REAL-1,(GRAPHICS_WIDTH_REAL/2)-1, GRAPHICS_HEIGHT_REAL-1 );
 	//drawCircle((GRAPHICS_WIDTH_REAL/2)-1, (GRAPHICS_HEIGHT_REAL/2)-1, (GRAPHICS_HEIGHT_REAL/2)-1);
 	//drawCircle((GRAPHICS_SIZE/2)-1, (GRAPHICS_SIZE/2)-1, (GRAPHICS_SIZE/2)-2);
@@ -1983,15 +1993,15 @@ void updateGraphics() {
 	}
 	angleB+=sum;
 	angleC+=2;
-	drawArrow(32,GRAPHICS_HEIGHT_REAL-40,angleA,32);
+	//drawArrow(32,GRAPHICS_HEIGHT_REAL-40,angleA,32);
 	//drawAttitude(96,GRAPHICS_HEIGHT_REAL/2,90,0,48);
-	drawAttitude(GRAPHICS_WIDTH_REAL/2,GRAPHICS_HEIGHT_REAL/2,m_pitch,m_roll,96);
+	//drawAttitude(GRAPHICS_WIDTH_REAL/2,GRAPHICS_HEIGHT_REAL/2,m_pitch,m_roll,96);
 	//printTextFB(2,12,"Hello OP-OSD");
 	//printTextFB(1,21,"Hello OP-OSD");
 	//printTextFB(0,2,"Hello OP-OSD");
 	write_string("Hello OP-OSD", 1, 12, 1, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, 1);
 	//printTime(10,2);
-	printTime((GRAPHICS_WIDTH_REAL - 80)/16,GRAPHICS_HEIGHT_REAL-10);
+	//printTime((GRAPHICS_WIDTH_REAL - 80)/16,GRAPHICS_HEIGHT_REAL-10);
 	//drawBox(0,0,GRAPHICS_WIDTH_REAL-2,GRAPHICS_HEIGHT_REAL-1);
 
 	m_batt++;
@@ -2008,21 +2018,25 @@ void updateGraphics() {
 		dir=1;
 		m_alt+=m_pitch/2;
 	}
-	drawBattery(310,20,m_batt,16);
+	//drawBattery(310,20,m_batt,16);
 
 	//drawAltitude(200,50,m_alt,dir);
 	//drawArrow(96,GRAPHICS_HEIGHT_REAL/2,angleB,32);
 	//ellipse(50,50,50,30);
     // Draw airspeed (left side.)
-    hud_draw_vertical_scale(m_batt, 100, -1, 2, (DISP_HEIGHT / 2) + 10, 120, 10, 20, 7, 12, 15, 1000, HUD_VSCALE_FLAG_NO_NEGATIVE);
+    //hud_draw_vertical_scale(m_batt, 100, -1, 2, (DISP_HEIGHT / 2) + 10, 100, 10, 20, 7, 12, 15, 1000, HUD_VSCALE_FLAG_NO_NEGATIVE);
     // Draw altimeter (right side.)
-    hud_draw_vertical_scale(m_alt, 200, +1, 2, (DISP_HEIGHT / 2) + 10, 120, 20, 100, 7, 12, 15, 500, 0);
+    //hud_draw_vertical_scale(m_alt, 200, +1, 2, (DISP_HEIGHT / 2) + 10, 100, 20, 100, 7, 12, 15, 500, 0);
     // Draw compass.
-    if(m_yaw<0)
+/*    if(m_yaw<0)
     	hud_draw_linear_compass(360+m_yaw, 150, 120, DISP_WIDTH / 2, DISP_HEIGHT - 20, 15, 30, 7, 12, 0);
     else
     	hud_draw_linear_compass(m_yaw, 150, 120, DISP_WIDTH / 2, DISP_HEIGHT - 20, 15, 30, 7, 12, 0);
-
+*/
+	write_filled_rectangle(frameBuffer,20,20,30,30,1);
+	write_filled_rectangle(maskBuffer,30,30,30,30,1);
+	write_vline( frameBuffer,GRAPHICS_WIDTH_REAL-1,0,GRAPHICS_HEIGHT_REAL-1,0);
+	write_vline( maskBuffer,GRAPHICS_WIDTH_REAL-1,0,GRAPHICS_HEIGHT_REAL-1,0);
 }
 
 
@@ -2057,12 +2071,12 @@ void initLine() {
 
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_OD;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-
+/*
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
-	GPIO_ResetBits(GPIOA,GPIO_Pin_4);
-
+	GPIO_ResetBits(GPIOA,GPIO_Pin_4);*/
+	//write_filled_rectangle(maskBuffer,0,0,GRAPHICS_WIDTH_REAL-1,GRAPHICS_HEIGHT_REAL-1,0);
 }
 
 void updateLine() {
@@ -2074,12 +2088,18 @@ void updateLine() {
 		if (gActiveLine != 0) {
 			if(gLineType == LINE_TYPE_GRAPHICS)
 			{
+					DMA_DeInit(DMA1_Channel3);
 					DMA_DeInit(DMA1_Channel5);
 					DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)&frameBuffer[currLine*GRAPHICS_WIDTH];
 					DMA_InitStructure.DMA_BufferSize = BUFFER_LINE_LENGTH;
 					DMA_Init(DMA1_Channel5, &DMA_InitStructure);
+					DMA_InitStructure2.DMA_MemoryBaseAddr = (uint32_t)&maskBuffer[currLine*GRAPHICS_WIDTH];
+					DMA_InitStructure2.DMA_BufferSize = BUFFER_LINE_LENGTH;
+					DMA_Init(DMA1_Channel3, &DMA_InitStructure2);
 					SPI_I2S_DMACmd(SPI2, SPI_I2S_DMAReq_Tx, ENABLE);
+					SPI_I2S_DMACmd(SPI1, SPI_I2S_DMAReq_Tx, ENABLE);
 					DMA_Cmd(DMA1_Channel5, ENABLE);
+					DMA_Cmd(DMA1_Channel3, ENABLE);
 			}
 		}
 
