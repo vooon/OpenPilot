@@ -1024,6 +1024,7 @@ const struct pios_usb_cdc_cfg pios_usb_cdc_cfg = {
 #endif	/* PIOS_INCLUDE_USB_CDC */
 
 uint32_t pios_com_telem_rf_id;
+uint32_t pios_com_debug_id;
 uint32_t pios_com_telem_usb_id;
 uint32_t pios_com_vcp_id;
 uint32_t pios_com_gps_id;
@@ -1182,6 +1183,7 @@ void PIOS_Board_Init(void) {
 	uint8_t hwsettings_cc_mainport;
 	HwSettingsCC_MainPortGet(&hwsettings_cc_mainport);
 
+	hwsettings_cc_mainport = HWSETTINGS_CC_MAINPORT_COMAUX;
 	switch (hwsettings_cc_mainport) {
 	case HWSETTINGS_CC_MAINPORT_DISABLED:
 		break;
@@ -1289,6 +1291,22 @@ void PIOS_Board_Init(void) {
 #endif	/* PIOS_INCLUDE_DSM */
 		break;
 	case HWSETTINGS_CC_MAINPORT_COMAUX:
+		{
+			uint32_t pios_usart_debug_id;
+			if (PIOS_USART_Init(&pios_usart_debug_id, &pios_usart_telem_main_cfg)) {
+				PIOS_Assert(0);
+			}
+
+			uint8_t * rx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_TELEM_RF_RX_BUF_LEN);
+			uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_TELEM_RF_TX_BUF_LEN);
+			PIOS_Assert(rx_buffer);
+			PIOS_Assert(tx_buffer);
+			if (PIOS_COM_Init(&pios_com_debug_id, &pios_usart_com_driver, pios_usart_debug_id,
+					  rx_buffer, PIOS_COM_TELEM_RF_RX_BUF_LEN,
+					  tx_buffer, PIOS_COM_TELEM_RF_TX_BUF_LEN)) {
+				PIOS_Assert(0);
+			}
+		}
 		break;
 	case HWSETTINGS_CC_MAINPORT_COMBRIDGE:
 		{
@@ -1309,6 +1327,7 @@ void PIOS_Board_Init(void) {
 		}
 		break;
 	}
+	PIOS_COM_SendString(PIOS_COM_DEBUG, "Hello Debug\n\r");
 
 	/* Configure the flexi port */
 	uint8_t hwsettings_cc_flexiport;
