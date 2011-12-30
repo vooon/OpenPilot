@@ -1,7 +1,7 @@
 /**
  ******************************************************************************
  *
- * @file       defaultccattitudewidget.h
+ * @file       defaulthwsettingswidget.h
  * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2010.
  * @addtogroup GCSPlugins GCS Plugins
  * @{
@@ -35,21 +35,27 @@
 #include <QtGui/QWidget>
 #include <QTimer>
 #include <QMutex>
-
-class Ui_Widget;
+#include <QSignalMapper>
 
 class DefaultHwSettingsWidget : public QWidget
 {
     Q_OBJECT
 
 public:
+    enum BoardType {UnknownBoard, CopterControlBoard, RevolutionBoard};
+
     explicit DefaultHwSettingsWidget(QWidget *parent = 0);
     ~DefaultHwSettingsWidget();
 
-private slots:
+signals:
+    void boardChanged(DefaultHwSettingsWidget::BoardType);
 
-private:
-    Ui_defaulthwsettings *ui;
+private slots:
+    void signalWrapper(int board);
+
+private:    
+    Ui::defaulthwsettings ui;
+    QSignalMapper signalMapper;
 };
 
 #endif // DEFAULTHWSETTINGSt_H

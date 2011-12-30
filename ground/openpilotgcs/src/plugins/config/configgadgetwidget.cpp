@@ -37,7 +37,6 @@
 #include "config_pro_hw_widget.h"
 #include "config_cc_hw_widget.h"
 #include "defaultattitudewidget.h"
-#include "defaulthwsettingswidget.h"
 #include "uavobjectutilmanager.h"
 
 #include <QDebug>
@@ -49,11 +48,12 @@
 
 
 
-ConfigGadgetWidget::ConfigGadgetWidget(QWidget *parent) : QWidget(parent)
+ConfigGadgetWidget::ConfigGadgetWidget(QWidget *parent) :
+        QWidget(parent),
+        ftw(new MyTabbedStackWidget(this, this, true))
 {
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 
-    ftw = new MyTabbedStackWidget(this, true, true);
     ftw->setIconSize(64);
 
     QVBoxLayout *layout = new QVBoxLayout;
@@ -61,8 +61,11 @@ ConfigGadgetWidget::ConfigGadgetWidget(QWidget *parent) : QWidget(parent)
     layout->addWidget(ftw);
     setLayout(layout);
 
+    setBoard(DefaultHwSettingsWidget::UnknownBoard);
+    //TODO: remove DefaultAttitudeWidget
+
     // *********************
-    QWidget *qwd;
+/*    QWidget *qwd;
 
     qwd = new DefaultHwSettingsWidget(this);
     ftw->insertTab(ConfigGadgetWidget::hardware, qwd, QIcon(":/configgadget/images/hw_config.png"), QString("HW Settings"));
@@ -84,7 +87,7 @@ ConfigGadgetWidget::ConfigGadgetWidget(QWidget *parent) : QWidget(parent)
 
     qwd = new ConfigCameraStabilizationWidget(this);
     ftw->insertTab(ConfigGadgetWidget::camerastabilization, qwd, QIcon(":/configgadget/images/camera.png"), QString("Camera Stab"));
-
+*/
 
 //    qwd = new ConfigPipXtremeWidget(this);
 //    ftw->insertTab(5, qwd, QIcon(":/configgadget/images/PipXtreme.png"), QString("PipXtreme"));
@@ -101,7 +104,6 @@ ConfigGadgetWidget::ConfigGadgetWidget(QWidget *parent) : QWidget(parent)
     if (telMngr->isConnected())
         onAutopilotConnect();    
 
-    help = 0;
     connect(ftw,SIGNAL(currentAboutToShow(int,bool*)),this,SLOT(tabAboutToChange(int,bool*)));//,Qt::BlockingQueuedConnection);
 
 }
@@ -120,15 +122,7 @@ void ConfigGadgetWidget::resizeEvent(QResizeEvent *event)
 }
 
 void ConfigGadgetWidget::onAutopilotDisconnect() {
-    ftw->setCurrentIndex(ConfigGadgetWidget::hardware);
-    ftw->removeTab(ConfigGadgetWidget::ins);
-    QWidget *qwd = new DefaultAttitudeWidget(this);
-    ftw->insertTab(ConfigGadgetWidget::ins, qwd, QIcon(":/configgadget/images/AHRS-v1.3.png"), QString("INS"));
-    ftw->removeTab(ConfigGadgetWidget::hardware);
-    qwd = new DefaultHwSettingsWidget(this);
-    ftw->insertTab(ConfigGadgetWidget::hardware, qwd, QIcon(":/configgadget/images/hw_config.png"), QString("HW Settings"));
-    ftw->setCurrentIndex(ConfigGadgetWidget::hardware);
-
+    setBoard(DefaultHwSettingsWidget::UnknownBoard);
     emit autopilotDisconnected();
 }
 
@@ -144,30 +138,145 @@ void ConfigGadgetWidget::onAutopilotConnect() {
         qDebug() << "Board model: " << board;
         if ((board & 0xff00) == 1024) {
             // CopterControl family
-            // Delete the INS panel, replace with CC Panel:
-            ftw->setCurrentIndex(ConfigGadgetWidget::hardware);
-            ftw->removeTab(ConfigGadgetWidget::ins);
-            QWidget *qwd = new ConfigCCAttitudeWidget(this);
-            ftw->insertTab(ConfigGadgetWidget::ins, qwd, QIcon(":/configgadget/images/AHRS-v1.3.png"), QString("Attitude"));
-            ftw->removeTab(ConfigGadgetWidget::hardware);
-            qwd = new ConfigCCHWWidget(this);
-            ftw->insertTab(ConfigGadgetWidget::hardware, qwd, QIcon(":/configgadget/images/hw_config.png"), QString("HW Settings"));
-            ftw->setCurrentIndex(ConfigGadgetWidget::hardware);
+            setBoard(DefaultHwSettingsWidget::CopterControlBoard);
         } else if ((board & 0xff00) == 256 ) {
             // Mainboard family
-            ftw->setCurrentIndex(ConfigGadgetWidget::hardware);
-            ftw->removeTab(ConfigGadgetWidget::ins);
-            QWidget *qwd = new ConfigAHRSWidget(this);
-            ftw->insertTab(ConfigGadgetWidget::ins, qwd, QIcon(":/configgadget/images/AHRS-v1.3.png"), QString("INS"));
-            ftw->removeTab(ConfigGadgetWidget::hardware);
-            qwd = new ConfigProHWWidget(this);
-            ftw->insertTab(ConfigGadgetWidget::hardware, qwd, QIcon(":/configgadget/images/hw_config.png"), QString("HW Settings"));
-            ftw->setCurrentIndex(ConfigGadgetWidget::hardware);
+            setBoard(DefaultHwSettingsWidget::RevolutionBoard);
         }
     }
     emit autopilotConnected();
 }
 
+void ConfigGadgetWidget::addWidgetTab(const widgetTabs tab, QWidget *widget, const QIcon &icon, const QString &label)
+{
+    if (!widget) return;
+    if (tab2index.find(tab) != tab2index.end() ) // widget tab already exists
+        return;
+
+    int index = ftw->insertTab(tab, widget, icon, label);
+    QMap<widgetTabs, int>::iterator tab_iter = tab2index.insert(tab, index);
+
+    // increment indicies of following entries
+    ++tab_iter;
+    while (tab_iter != tab2index.end())
+    {
+        tab_iter.value()++;
+        ++tab_iter;
+    }
+}
+
+void ConfigGadgetWidget::removeWidgetTab(widgetTabs tab)
+{
+    QMap<widgetTabs, int>::iterator tab_iter = tab2index.find(tab);
+    if (tab2index.end() == tab_iter)
+        // no entry for tab
+        return;
+
+    ftw->removeTab(tab_iter.value());
+    tab_iter = tab2index.erase(tab_iter);
+
+    // decrement indices of following entries
+    while (tab_iter != tab2index.end())
+    {
+        tab_iter.value()--;
+        ++tab_iter;
+    }
+}
+
+void ConfigGadgetWidget::setBoard(const DefaultHwSettingsWidget::BoardType type)
+{
+    //TODO check if board type has changed
+    QWidget *qwd;
+
+    ftw->setCurrentIndex(ConfigGadgetWidget::hardware);
+
+    switch(type)
+    {
+    case DefaultHwSettingsWidget::UnknownBoard:
+        // remove unnecessary widgets
+        removeWidgetTab(aircraft);
+        removeWidgetTab(input);
+        removeWidgetTab(output);
+        removeWidgetTab(ins);
+        removeWidgetTab(stabilization);
+        removeWidgetTab(camerastabilization);
+        if (!checkWidgetTab<DefaultHwSettingsWidget>(hardware))
+        { // add default hardware widget
+            qwd = new DefaultHwSettingsWidget(this);
+            addWidgetTab(hardware, qwd, QIcon(":/configgadget/images/hw_config.png"), QString("HW Settings"));
+            connect(qwd, SIGNAL(boardChanged(DefaultHwSettingsWidget::BoardType)),
+                    this, SLOT(setBoard(DefaultHwSettingsWidget::BoardType)));
+        }
+        return;
+    case DefaultHwSettingsWidget::CopterControlBoard:
+    {
+        // hardware widget
+        if (!checkWidgetTab<ConfigCCHWWidget>(hardware))
+        {
+            qwd = new ConfigCCHWWidget(this);
+            addWidgetTab(hardware, qwd, QIcon(":/configgadget/images/hw_config.png"), QString("HW Settings"));
+        }
+        // input widget
+        if (checkWidgetTab<ConfigInputWidget>(input))
+        {
+            //TODO: For input CC should not allow the options for flight mode switch like position hold.
+        }
+        // output widget
+        ConfigOutputWidget *outputWidget;
+        if ( (outputWidget = checkWidgetTab<ConfigOutputWidget>(output)) )
+        { // output widget already exist -> configure it
+            outputWidget->channels(6);
+        }
+        else
+        { // output widget doesn't exist
+            qwd = new ConfigOutputWidget(6, this);
+            addWidgetTab(output, qwd, QIcon(":/configgadget/images/Servo.png"), QString("Output"));
+        }
+        // INS widget
+        if (!checkWidgetTab<ConfigCCAttitudeWidget>(ins))
+        {
+            qwd = new ConfigCCAttitudeWidget(this);
+            addWidgetTab(ins, qwd, QIcon(":/configgadget/images/AHRS-v1.3.png"), QString("Attitude"));
+        }
+        break;
+    }
+    case DefaultHwSettingsWidget::RevolutionBoard:
+        //TODO: Revo has 8 or 16 outputs
+        // hardware widget
+        if (!checkWidgetTab<ConfigProHWWidget>(hardware))
+        {
+            qwd = new ConfigProHWWidget(this);
+            addWidgetTab(hardware, qwd, QIcon(":/configgadget/images/hw_config.png"), QString("HW Settings"));
+        }
+        // INS widget
+        if (!checkWidgetTab<ConfigAHRSWidget>(ins))
+        {
+            QWidget *qwd = new ConfigAHRSWidget(this);
+            addWidgetTab(ins, qwd, QIcon(":/configgadget/images/AHRS-v1.3.png"), QString("INS"));
+        }
+        break;
+    default:
+        break;
+    }
+
+    // add board unspecific widgets
+    qwd = new ConfigAirframeWidget(this);
+    addWidgetTab(aircraft, qwd, QIcon(":/configgadget/images/Airframe.png"), QString("Aircraft"));
+
+    // FIXME: input is board specific
+    qwd = new ConfigInputWidget(this);
+    addWidgetTab(input, qwd, QIcon(":/configgadget/images/Transmitter.png"), QString("Input"));
+
+    qwd = new ConfigStabilizationWidget(this);
+    addWidgetTab(stabilization, qwd, QIcon(":/configgadget/images/gyroscope.png"), QString("Stabilization"));
+
+    qwd = new ConfigCameraStabilizationWidget(this);
+    addWidgetTab(camerastabilization, qwd, QIcon(":/configgadget/images/camera.png"), QString("Camera Stab"));
+
+    ftw->setCurrentIndex(ConfigGadgetWidget::hardware);
+}
+
+//FIXME: use reference instead of pointer
 void ConfigGadgetWidget::tabAboutToChange(int i,bool * proceed)
 {
     Q_UNUSED(i);

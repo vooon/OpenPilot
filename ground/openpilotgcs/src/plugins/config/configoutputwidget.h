@@ -44,14 +44,17 @@ class ConfigOutputWidget: public ConfigTaskWidget
 	Q_OBJECT
 
 public:
-        ConfigOutputWidget(QWidget *parent = 0);
+        ConfigOutputWidget(const int numChannels, QWidget *parent = 0);
         ~ConfigOutputWidget();
+        unsigned int channels(unsigned int channels);
+        unsigned int channels() const;
 
 
 private:
         Ui_OutputWidget *m_config;
 
 	QList<QSlider> sliders;
+        unsigned int m_numChannels;
 
 	void updateChannelInSlider(QSlider *slider, QLabel *min, QLabel *max, QCheckBox *rev, int value);
 
@@ -78,5 +81,10 @@ private slots:
 protected:
         void enableControls(bool enable);
 };
+
+/// Get the number of channels.
+inline unsigned int ConfigOutputWidget::channels() const {
+    return m_numChannels;
+}
 
 #endif

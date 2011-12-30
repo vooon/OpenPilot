@@ -32,13 +32,29 @@
 
 DefaultHwSettingsWidget::DefaultHwSettingsWidget(QWidget *parent) :
         QWidget(parent),
-        ui(new Ui_defaulthwsettings)
+        ui(),
+        signalMapper(this)
 {
-    ui->setupUi(this);
+    ui.setupUi(this);
+
+    // connect radio buttons
+    connect(ui.ccRadioButton, SIGNAL(clicked()),
+            &signalMapper, SLOT(map()));
+    signalMapper.setMapping(ui.ccRadioButton, CopterControlBoard);
+    connect(ui.revoRadioButton, SIGNAL(clicked()),
+            &signalMapper, SLOT(map()));
+    signalMapper.setMapping(ui.revoRadioButton, RevolutionBoard);
+
+    // connect signal mapper to boardChanged signal
+    connect(&signalMapper, SIGNAL(mapped(int)),
+            this, SLOT(signalWrapper(int)));
 }
 
 DefaultHwSettingsWidget::~DefaultHwSettingsWidget()
 {
-    delete ui;
 }
 
+void DefaultHwSettingsWidget::signalWrapper(int board)
+{
+    emit boardChanged(static_cast<BoardType>(board));
+}

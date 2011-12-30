@@ -33,12 +33,12 @@
 
 MyTabbedStackWidget::MyTabbedStackWidget(QWidget *parent, bool isVertical, bool iconAbove)
     : QWidget(parent),
+      m_listWidget(new MyListWidget(this)),
+      m_stackWidget(new QStackedWidget(this)),
       m_vertical(isVertical),
       m_iconAbove(iconAbove)
 {
-    m_listWidget = new MyListWidget(this);
     m_listWidget->setIconAbove(m_iconAbove);
-    m_stackWidget = new QStackedWidget();
     m_stackWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     QBoxLayout *toplevelLayout;
@@ -68,31 +68,28 @@ MyTabbedStackWidget::MyTabbedStackWidget(QWidget *parent, bool isVertical, bool 
     connect(m_listWidget, SIGNAL(currentRowChanged(int)), this, SLOT(showWidget(int)),Qt::QueuedConnection);
 }
 
-void MyTabbedStackWidget::insertTab(const int index, QWidget *tab, const QIcon &icon, const QString &label)
+int MyTabbedStackWidget::insertTab(const int index, QWidget *tab, const QIcon &icon, const QString &label)
 {
+    if (!tab) return -1;
+
     tab->setContentsMargins(0, 0, 0, 0);
-    m_stackWidget->insertWidget(index, tab);
+    int rc = m_stackWidget->insertWidget(index, tab);
     QListWidgetItem *item = new QListWidgetItem(icon, label);
     item->setToolTip(label);
     m_listWidget->insertItem(index, item);
+
+    return rc;
 }
 
 void MyTabbedStackWidget::removeTab(int index)
 {
     m_stackWidget->removeWidget(m_stackWidget->widget(index));
     QListWidgetItem *item = m_listWidget->item(index);
-    m_listWidget->removeItemWidget(item);
-    delete item;
-}
-
-int MyTabbedStackWidget::currentIndex() const
-{
-    return m_listWidget->currentRow();
-}
-
-void MyTabbedStackWidget::setCurrentIndex(int index)
-{
-    m_listWidget->setCurrentRow(index);
+    if (item)
+    {
+        m_listWidget->removeItemWidget(item);
+        delete item;
+    }
 }
 
 void MyTabbedStackWidget::showWidget(int index)
@@ -114,6 +111,10 @@ void MyTabbedStackWidget::showWidget(int index)
 
 void MyTabbedStackWidget::insertCornerWidget(int index, QWidget *widget)
 {
+    Q_UNUSED(index);
+
+    if (!widget) return;
+
     widget->hide();
 }
 

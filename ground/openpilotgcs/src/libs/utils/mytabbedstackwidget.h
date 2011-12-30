@@ -43,22 +43,23 @@ class QTCREATOR_UTILS_EXPORT MyTabbedStackWidget : public QWidget
 public:
     MyTabbedStackWidget(QWidget *parent = 0, bool isVertical = false, bool iconAbove = true);
 
-    void insertTab(int index, QWidget *tab, const QIcon &icon, const QString &label);
+    int insertTab(int index, QWidget *tab, const QIcon &icon, const QString &label);
     void removeTab(int index);
     void setIconSize(int size) { m_listWidget->setIconSize(QSize(size, size)); }
 
-    int currentIndex() const;
+    int currentIndex() const { return m_listWidget->currentRow(); }
 
     void insertCornerWidget(int index, QWidget *widget);
     int cornerWidgetCount() { return m_cornerWidgetCount; }
     QWidget * currentWidget(){return m_stackWidget->currentWidget();}
+    QWidget * widget(int index) const { return m_stackWidget->widget(index); }
 
 signals:
     void currentAboutToShow(int index,bool * proceed);
     void currentChanged(int index);
 
 public slots:
-    void setCurrentIndex(int index);
+    void setCurrentIndex(int index) { m_listWidget->setCurrentRow(index); }
 
 private slots:
     void showWidget(int index);
@@ -66,7 +67,6 @@ private slots:
 private:
     MyListWidget *m_listWidget;
     QStackedWidget *m_stackWidget;
-    QWidget *m_selectionWidget;
     bool m_vertical;
     bool m_iconAbove;
     int m_cornerWidgetCount;

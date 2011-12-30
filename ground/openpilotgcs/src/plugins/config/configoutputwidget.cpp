@@ -44,9 +44,12 @@
 #include "systemalarms.h"
 #include "uavsettingsimportexport/uavsettingsimportexportfactory.h"
 
-ConfigOutputWidget::ConfigOutputWidget(QWidget *parent) : ConfigTaskWidget(parent),wasItMe(false)
+ConfigOutputWidget::ConfigOutputWidget(const int numChannels, QWidget *parent) :
+        ConfigTaskWidget(parent),
+        m_config(new Ui_OutputWidget()),
+        m_numChannels(0),
+        wasItMe(false)
 {
-    m_config = new Ui_OutputWidget();
     m_config->setupUi(this);
 
     ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
@@ -59,17 +62,7 @@ ConfigOutputWidget::ConfigOutputWidget(QWidget *parent) : ConfigTaskWidget(paren
     setupButtons(m_config->saveRCOutputToRAM,m_config->saveRCOutputToSD);
         addUAVObject("ActuatorSettings");
 
-    // NOTE: we have channel indices from 0 to 9, but the convention for OP is Channel 1 to Channel 10.
-    // Register for ActuatorSettings changes:
-    for (unsigned int i = 0; i < ActuatorCommand::CHANNEL_NUMELEM; i++)
-    {
-        OutputChannelForm *form = new OutputChannelForm(i, this, i==0);
-        connect(m_config->channelOutTest, SIGNAL(toggled(bool)),
-                form, SLOT(enableChannelTest(bool)));
-        connect(form, SIGNAL(channelChanged(int,int)),
-                this, SLOT(sendChannelTest(int,int)));
-        m_config->channelLayout->addWidget(form);
-    }
+    channels(numChannels);
 
     connect(m_config->channelOutTest, SIGNAL(toggled(bool)), this, SLOT(runChannelTests(bool)));
 
@@ -197,6 +190,47 @@ void ConfigOutputWidget::assignOutputChannel(UAVDataObject *obj, QString str)
 }
 
 /**
+  * Set the number of channels.
+  *
+  * \note
+  * We have channel indices from 0 to 9, but the convention for OP is Channel 1 to Channel 10.
+  */
+unsigned int ConfigOutputWidget::channels(unsigned int channels)
+{
+    if (channels == m_numChannels)
+        return m_numChannels;
+    if (channels > ActuatorCommand::CHANNEL_NUMELEM)
+        channels = ActuatorCommand::CHANNEL_NUMELEM;
+
+    if(channels > m_numChannels)
+    { // add channels
+        for (unsigned int i = m_numChannels; i < channels; i++)
+        {
+            OutputChannelForm *form = new OutputChannelForm(i, this, i==0);
+            // Register for ActuatorSettings changes:
+            connect(m_config->channelOutTest, SIGNAL(toggled(bool)),
+                    form, SLOT(enableChannelTest(bool)));
+            connect(form, SIGNAL(channelChanged(int,int)),
+                    this, SLOT(sendChannelTest(int,int)));
+            m_config->channelLayout->addWidget(form);
+        }
+    }
+    else
+    { // remove channels
+        for (unsigned int i = channels; i < m_numChannels; i++)
+        {
+            OutputChannelForm* form = getOutputChannelForm(i);
+            if (!form) continue;
+            m_config->channelLayout->removeWidget(form);
+            delete form;
+        }
+    }
+
+    m_numChannels = channels;
+    return m_numChannels;
+}
+
+/**
   * Set the "Spin motors at neutral when armed" flag in ActuatorSettings
   */
 void ConfigOutputWidget::setSpinningArmed(bool val)
@@ -223,7 +257,7 @@ void ConfigOutputWidget::sendChannelTest(int index, int value)
     if (!m_config->channelOutTest->isChecked())
         return;
 
-    if(index < 0 || (unsigned)index >= ActuatorCommand::CHANNEL_NUMELEM)
+    if(index < 0 || (unsigned int)index >= m_numChannels)
         return;
 
     ActuatorCommand *actuatorCommand = ActuatorCommand::GetInstance(getObjectManager());

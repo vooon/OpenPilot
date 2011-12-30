@@ -30,8 +30,6 @@
 #include <QWidget>
 #include "ui_outputchannelform.h"
 
-class ConfigOnputWidget;
-
 class OutputChannelForm : public QWidget
 {
     Q_OBJECT

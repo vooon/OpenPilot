@@ -41,11 +41,11 @@
 //#include "fancytabwidget.h"
 #include "utils/mytabbedstackwidget.h"
 #include "configtaskwidget.h"
+#include "defaulthwsettingswidget.h"
 
 class ConfigGadgetWidget: public QWidget
 {
     Q_OBJECT
-    QTextBrowser* help;
 
 public:
     ConfigGadgetWidget(QWidget *parent = 0);
@@ -55,6 +55,7 @@ public:
 public slots:
     void onAutopilotConnect();
     void onAutopilotDisconnect();
+    void setBoard(const DefaultHwSettingsWidget::BoardType);
     void tabAboutToChange(int i,bool *);
 
 signals:
@@ -62,8 +63,32 @@ signals:
     void autopilotDisconnected();
 
 protected:
-        void resizeEvent(QResizeEvent * event);
-        MyTabbedStackWidget *ftw;
+    void addWidgetTab(const ConfigGadgetWidget::widgetTabs tab, QWidget *widget, const QIcon &icon, const QString &label);
+    template<typename T>
+    T* checkWidgetTab(const ConfigGadgetWidget::widgetTabs tab);
+    void removeWidgetTab(ConfigGadgetWidget::widgetTabs tab);
+    void resizeEvent(QResizeEvent * event);
+
+private:
+    MyTabbedStackWidget * ftw;
+    QMap<widgetTabs, int> tab2index;
 };
+
+template<typename T>
+T* ConfigGadgetWidget::checkWidgetTab(const ConfigGadgetWidget::widgetTabs tab)
+{
+    QWidget *widget;
+    if ( (widget = ftw->widget(tab2index.value(tab))) )
+    { // widget exists
+        T *rc = dynamic_cast<T*>(widget);
+        if (rc)
+            // widget has type T
+            return rc;
+        else
+            removeWidgetTab(tab);
+    }
+
+    return NULL;
+}
 
 #endif // CONFIGGADGETWIDGET_H
