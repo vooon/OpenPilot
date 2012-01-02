@@ -59,8 +59,8 @@ struct fileHeader {
 #define OBJECT_TABLE_MAGIC 0x85FB3D35
 #define OBJ_MAGIC          0x3015A371
 #define OBJECT_TABLE_START 0x00000010
-#define OBJECT_TABLE_END   0x00001000
-#define SECTOR_SIZE        0x00001000
+#define OBJECT_TABLE_END   0x00010000
+#define SECTOR_SIZE        0x00010000
 #define MAX_BADMAGIC       1000
 
 /**

@@ -23,7 +23,6 @@ HEADERS += configplugin.h \
     configairframewidget.h \
     config_pro_hw_widget.h \
     config_cc_hw_widget.h \
-    configahrswidget.h \
     configccattitudewidget.h \
     mixercurvewidget.h \
     mixercurvepoint.h \
@@ -37,7 +36,8 @@ HEADERS += configplugin.h \
     defaulthwsettingswidget.h \
     inputchannelform.h \
     configcamerastabilizationwidget.h \
-    outputchannelform.h
+    outputchannelform.h \
+    configrevowidget.h
 SOURCES += configplugin.cpp \
     configgadgetconfiguration.cpp \
     configgadgetwidget.cpp \
@@ -51,7 +51,6 @@ SOURCES += configplugin.cpp \
     configairframewidget.cpp \
     config_pro_hw_widget.cpp \
     config_cc_hw_widget.cpp \
-    configahrswidget.cpp \
     configccattitudewidget.cpp \
     mixercurvewidget.cpp \
     mixercurvepoint.cpp \
@@ -67,11 +66,11 @@ SOURCES += configplugin.cpp \
     defaulthwsettingswidget.cpp \
     inputchannelform.cpp \
     configcamerastabilizationwidget.cpp \
-    outputchannelform.cpp
+    outputchannelform.cpp \
+    configrevowidget.cpp
 FORMS += airframe.ui \
     cc_hw_settings.ui \
     pro_hw_settings.ui \
-    ahrs.ui \
     ccpm.ui \
     stabilization.ui \
     input.ui \
@@ -81,5 +80,6 @@ FORMS += airframe.ui \
     defaulthwsettings.ui \
     inputchannelform.ui \
     camerastabilization.ui \
-    outputchannelform.ui
+    outputchannelform.ui \
+    revosensors.ui
 RESOURCES += configgadget.qrc

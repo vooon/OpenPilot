@@ -46,9 +46,16 @@
 #include <string.h>
 #include <math.h>
 
+#include "pios_config.h"
 /* STM32 Std Perf Lib */
+#if defined(STM32F4XX)
+# include <stm32f4xx.h>
+#elif defined(STM32F2XX)
+#include <stm32f2xx.h>
+#include <stm32f2xx_syscfg.h>
+#else
 #include <stm32f10x.h>
-#include <stm32f10x_conf.h>
+#endif
 
 #if defined(PIOS_INCLUDE_SDCARD)
 /* Dosfs Includes */
@@ -112,15 +119,22 @@
 #if defined(PIOS_INCLUDE_IMU3000)
 #include <pios_imu3000.h>
 #endif
+#if defined(PIOS_INCLUDE_MPU6050)
+#include <pios_mpu6050.h>
+#endif
+#if defined(PIOS_INCLUDE_MPU6000)
+#include <pios_mpu6000.h>
+#endif
+#if defined(PIOS_INCLUDE_MS5611)
+#include <pios_ms5611.h>
+#endif
 #include <pios_iap.h>
 
 #if defined(PIOS_INCLUDE_ADXL345)
 #include <pios_adxl345.h>
 #endif
 
-#if defined(PIOS_INCLUDE_BMA180)
 #include <pios_bma180.h>
-#endif
 
 #if defined(PIOS_INCLUDE_FLASH)
 #include <pios_flash_w25x.h>
