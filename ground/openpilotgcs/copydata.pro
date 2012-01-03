@@ -19,6 +19,7 @@ equals(copydata, 1) {
                   QtSql4.dll \
                   QtSvg4.dll \
                   QtTest4.dll \
+                  Qt3D.dll \
                   QtXml4.dll
         for(dll, QT_DLLS) {
             data_copy.commands += $(COPY_FILE) $$targetPath(\"$$[QT_INSTALL_BINS]/$$dll\") $$targetPath(\"$$GCS_APP_PATH/$$dll\") $$addNewline()
@@ -32,10 +33,17 @@ equals(copydata, 1) {
         }
 
         # copy imageformats
-        QT_IMAGEFORMAT_DLLS = qgif4.dll qico4.dll qjpeg4.dll qmng4.dll qsvg4.dll qtiff4.dll
+        QT_IMAGEFORMAT_DLLS = qgif4.dll qico4.dll qjpeg4.dll qmng4.dll qsvg4.dll qtiff4.dll qtga4.dll
         data_copy.commands += -@$(MKDIR) $$targetPath(\"$$GCS_APP_PATH/imageformats\") $$addNewline()
         for(dll, QT_IMAGEFORMAT_DLLS) {
             data_copy.commands += $(COPY_FILE) $$targetPath(\"$$[QT_INSTALL_PLUGINS]/imageformats/$$dll\") $$targetPath(\"$$GCS_APP_PATH/imageformats/$$dll\") $$addNewline()
+        }
+
+        # copy sceneformats
+        QT_SCENEFORMAT_DLLS = qsceneai4.dll qscenebezier4.dll
+        data_copy.commands += -@$(MKDIR) $$targetPath(\"$$GCS_APP_PATH/sceneformats\") $$addNewline()
+        for(dll, QT_SCENEFORMAT_DLLS) {
+            data_copy.commands += $(COPY_FILE) $$targetPath(\"$$[QT_INSTALL_PLUGINS]/sceneformats/$$dll\") $$targetPath(\"$$GCS_APP_PATH/sceneformats/$$dll\") $$addNewline()
         }
 
         # copy phonon_backend
