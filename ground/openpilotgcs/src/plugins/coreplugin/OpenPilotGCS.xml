@@ -1650,6 +1650,21 @@
         </data>
       </CopterControl>
     </ModelViewGadget>
+    <ModelViewQt3DGadget>
+      <Gaui__PCT__20330X>
+        <configInfo>
+           <locked>false</locked>
+           <version>0.0.0</version>
+        </configInfo>
+        <data>
+          <aaSamples>6</aaSamples>
+          <fpsLimiter>10</fpsLimiter>
+          <modelFilename>%%DATAPATH%%models/multi/gaui_330x/gaui_330x.3ds</modelFilename>
+          <ppOptions>@Variant(AAAADQAAAAgJ)</ppOptions>
+          <worldFilename>%%DATAPATH%%models/worlds/manchue.jpg</worldFilename>
+        </data>
+      </Gaui__PCT__20330X>
+    </ModelViewQt3DGadget>
     <OPMapGadget>
       <Google__PCT__20Sat>
         <configInfo>
@@ -2388,9 +2403,9 @@
           </side0>
           <side1>
             <side0>
-              <classId>ModelViewGadget</classId>
+              <classId>ModelViewQt3DGadget</classId>
               <gadget>
-                <activeConfiguration>Test Quad X</activeConfiguration>
+                <activeConfiguration>Gaui 330X</activeConfiguration>
               </gadget>
               <type>uavGadget</type>
             </side0>
@@ -2661,9 +2676,9 @@
         </side0>
         <side1>
           <side0>
-            <classId>ModelViewGadget</classId>
+            <classId>ModelViewQt3DGadget</classId>
             <gadget>
-              <activeConfiguration>Test Quad X</activeConfiguration>
+              <activeConfiguration>Gaui 330X</activeConfiguration>
             </gadget>
             <type>uavGadget</type>
           </side0>
