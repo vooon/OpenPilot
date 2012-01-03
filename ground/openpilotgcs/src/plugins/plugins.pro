@@ -69,6 +69,14 @@ plugin_uavobjectbrowser.depends = plugin_coreplugin
 plugin_uavobjectbrowser.depends += plugin_uavobjects
 SUBDIRS += plugin_uavobjectbrowser
 
+contains(QT_VERSION, ^4\\.8\\..*) {
+# ModelView UAVGadget
+plugin_modelviewqt3d.subdir = modelviewqt3d
+plugin_modelviewqt3d.depends = plugin_coreplugin
+plugin_modelviewqt3d.depends += plugin_uavobjects
+SUBDIRS += plugin_modelviewqt3d
+}
+
 !contains(QT_VERSION, ^4\\.8\\..*) {
 # ModelView UAVGadget
 plugin_modelview.subdir = modelview

@@ -1,0 +1,1 @@
+all images from Philo's Sky Collection (http://www.philohome.com/skycollec/skycollec.htm)

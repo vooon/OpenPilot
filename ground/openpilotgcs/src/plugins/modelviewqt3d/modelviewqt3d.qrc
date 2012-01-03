@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/modelviewqt3d">
+        <file>models/cube.dae</file>
+        <file>models/alert_bg.png</file>
+        <file>models/alert_fg.png</file>
+        <file>models/sky.jpg</file>
+    </qresource>
+</RCC>
