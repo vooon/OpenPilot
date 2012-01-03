@@ -1,0 +1,39 @@
+include(compat.qdocconf)
+include(macros.qdocconf)
+include(qt-cpp-ignore.qdocconf)
+include(qt-defines.qdocconf)
+
+sourceencoding = UTF-8
+outputencoding = UTF-8
+naturallanguage = en_US
+
+project = QtQuick3D
+description = QtQuick3D Documentation
+url = http://doc.qt.nokia.com/qtquick3d
+language = Cpp
+
+sources.fileextensions = "*.cpp *.qdoc *.mm *.qml"
+headers.fileextensions = "*.h *.ch *.h++ *.hh *.hpp *.hxx"
+examples.fileextensions = "*.cpp *.h *.js *.xq *.svg *.xml *.ui *.qhp *.qhcp *.qml"
+examples.imageextensions = "*.png *.jpeg *.jpg *.gif *.mng"
+
+headerdirs = $TOPSRC/src/imports \
+             $TOPSRC/src/quick3d \
+             $TOPSRC/src/threed
+
+sourcedirs = $TOPSRC/src/imports \
+             $TOPSRC/src/quick3d \
+             $TOPSRC/src/threed \
+             $TOPSRC/doc/src
+
+exampledirs = $TOPSRC/examples \
+              $TOPSRC/demos \
+              $TOPSRC/tutorials \
+              $TOPSRC/src/plugins
+
+imagedirs = $TOPSRC/doc/src/images \
+            $TOPSRC/doc/src/images/tutorials \
+            $TOPSRC/doc/config/images
+
+outputdir = $DESTDIR/html
+base      = file:$DESTDIR

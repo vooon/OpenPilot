@@ -1,0 +1,72 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the QtQuick3D documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file.
+**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \page qt3d-examples.html
+    \title Tutorials and Examples
+    \keyword Tutorials and Examples
+
+    Building 3D applications in QML with QtQuick3D:
+
+    \list
+    \o \l{Teapot Example in QtQuick3D}{Hello Teapot} in QtQuick3D
+    \o \l{quick3d/basket#Basket in QtQuick3D}{Basket} in QtQuick3D
+    \o \l{Object Effects}{Cube} in QtQuick3D
+    \o \l{Monkey God in QML}{Monkey God} in QtQuick3D
+    \o \l{Tea Service Demo in QML}{Tea Service} in QtQuick3D
+    \o \l{Using GLSL shaders in QtQuick3D}
+    \endlist
+
+    Using C++ to extend QtQuick3D and to build applications with Qt3D:
+
+    \list
+    \o \l{Teapot Example}{Hello Teapot} - drawing a basic object in 3D.
+    \o \l{Object Effects#Cube in Qt3D}{Cube in C++} - applying transformations and materials to objects.
+    \o \l{qt3d/nesting}{Nesting} - drawing into framebuffer objects.
+    \o \l{Loading a 3DS model with Qt3D}{Penguin} - loading a 3DS model with Qt3D.
+    \o \l{qt3d/pageflip}{Page Flip} - using shaders to combine textures.
+    \o \l{qt3d/shapes}{Shapes} - paints all of the basic OpenGL shapes.
+    \endlist
+
+    Other topics:
+
+    \list
+    \o \l{Scene Format Plugin}{Writing a scene format plug-in for Qt3D}
+    \endlist
+
+    \l{index.html}{Return to the main Qt3D page}.
+*/
+
+/*!
+    \page qt-examples-placeholder.html
+    \title Qt Examples
+    \keyword Qt Examples
+
+    Check the \l{http://doc.qt.nokia.com/4.7/all-examples.html}{Qt Examples for sample code specific to Qt itself.}
+
+    For examples specific to Qt3D check our \l{qt3d-examples.html}{examples page}.
+*/

@@ -1,0 +1,3 @@
+INCLUDEPATH += $$PWD
+VPATH += $$PWD
+
