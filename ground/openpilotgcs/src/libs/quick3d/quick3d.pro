@@ -1,12 +1,12 @@
 TEMPLATE = subdirs
 SUBDIRS += src
-!gcov: SUBDIRS += util examples demos
+!gcov: SUBDIRS += util #examples demos
 
 include(pkg.pri)
 
-!package: SUBDIRS += tutorials
+#!package: SUBDIRS += tutorials
 
-SUBDIRS += tests
+#SUBDIRS += tests
 CONFIG += ordered
 
 include(doc/doc.pri)
