@@ -56,7 +56,11 @@
 
 #define qAiPostProcessPreset ( \
     aiProcess_CalcTangentSpace           | \
-    aiProcess_GenSmoothNormals           | \
+    aiProcess_OptimizeMeshes             | \
+    aiProcess_FindInstances              | \
+    aiProcess_ValidateDataStructure      | \
+    aiProcess_TransformUVCoords          | \
+    aiProcess_SplitByBoneCount           | \
     aiProcess_JoinIdenticalVertices      | \
     aiProcess_ImproveCacheLocality       | \
     aiProcess_LimitBoneWeights           | \
@@ -76,6 +80,7 @@ QAiSceneHandler::QAiSceneHandler()
     , m_mayHaveLinesPoints(false)
     , m_meshSplitVertexLimit(2000)
     , m_meshSplitTriangleLimit(2000)
+    , m_smoothAngle(80)
     , m_removeComponentFlags(0)
     , m_removeSortFlags(0)
 {
@@ -117,6 +122,7 @@ void QAiSceneHandler::decodeOptions(const QString &options)
         "FixNormals",
         "DeDupMeshes",
         "Optimize",
+        "Optimize2",
         "FlipUVs",
         "FlipWinding",
         "UseVertexColors",
@@ -180,10 +186,14 @@ void QAiSceneHandler::decodeOptions(const QString &options)
                 m_options |= aiProcess_FixInfacingNormals;
                 break;
             case DeDupMeshes:
-                m_options |= aiProcess_FindInstances;
                 break;
             case Optimize:
-                m_options |= aiProcess_OptimizeGraph | aiProcess_OptimizeMeshes;
+                m_options |= aiProcess_OptimizeGraph;
+                m_options &= ~aiProcess_PreTransformVertices;
+                break;
+            case Optimize2:
+                m_options |= aiProcess_PreTransformVertices;
+                m_options &= ~aiProcess_OptimizeGraph;
                 break;
             case FlipUVs:
                 m_options |= aiProcess_FlipUVs;
@@ -250,6 +260,7 @@ QGLAbstractScene *QAiSceneHandler::read()
     m_importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, m_removeSortFlags);
     m_importer.SetPropertyInteger(AI_CONFIG_PP_SLM_VERTEX_LIMIT, m_meshSplitVertexLimit);
     m_importer.SetPropertyInteger(AI_CONFIG_PP_SLM_TRIANGLE_LIMIT, m_meshSplitTriangleLimit);
+    m_importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, m_smoothAngle);
 
     // force this on, and provide no way to turn it off.  Its set by the
     // aiProcessPreset_TargetRealtime_Quality option in the constructor.

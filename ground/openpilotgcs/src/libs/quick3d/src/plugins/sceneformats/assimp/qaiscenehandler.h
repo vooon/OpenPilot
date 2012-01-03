@@ -49,8 +49,8 @@
 
 #include <QtCore/qurl.h>
 
-Q_DECLARE_FLAGS(aiPostProcessFlags, aiPostProcessSteps);
-Q_DECLARE_OPERATORS_FOR_FLAGS(aiPostProcessFlags);
+Q_DECLARE_FLAGS(aiPostProcessFlags, aiPostProcessSteps)
+Q_DECLARE_OPERATORS_FOR_FLAGS(aiPostProcessFlags)
 
 QT_BEGIN_NAMESPACE
 
@@ -69,8 +69,9 @@ public:
         IncludeAllMaterials, // include even redundant (unused) materials
         IncludeLinesPoints,  // include even collapsed triangles (lines or points)
         FixNormals,          // try to fix incorrect (in facing) normals
-        DeDupMeshes,         // replace copied meshes with refs to a single instance
-        Optimize,            // collapse meshes, nodes & scene heierarchies
+        DeDupMeshes,         // replace copied meshes with refs to a single instance (disabled)
+        Optimize,            // collapse nodes, but meshes & scene heierarchies (modified)
+        Optimize2,           // collapse meshes & scene heierarchies, but nodes (added)
         FlipUVs,             // flips UV's on the y-axis (for upside-down textures)
         FlipWinding,         // makes faces CW instead of CCW
         UseVertexColors,     // use vertex colors that are in a model
@@ -101,6 +102,7 @@ private:
     bool m_mayHaveLinesPoints;
     int m_meshSplitVertexLimit;
     int m_meshSplitTriangleLimit;
+    float m_smoothAngle;
     Assimp::Importer m_importer;
     quint32 m_removeComponentFlags;
     quint32 m_removeSortFlags;
