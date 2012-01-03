@@ -5,8 +5,8 @@ Open Asset Import Library (ASSIMP)
 Copyright (c) 2006-2010, ASSIMP Development Team
 All rights reserved.
 
-Redistribution and use of this software in source and binary forms,
-with or without modification, are permitted provided that the
+Redistribution and use of this software in source and binary forms, 
+with or without modification, are permitted provided that the 
 following conditions are met:
 
 * Redistributions of source code must retain the above
@@ -23,16 +23,16 @@ following conditions are met:
   derived from this software without specific prior
   written permission of the ASSIMP Development Team.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
 LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
 OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
 LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ----------------------------------------------------------------------
@@ -51,36 +51,32 @@ namespace Assimp
 // ---------------------------------------------------------------------------
 /** The GenFaceNormalsProcess computes face normals for all faces of all meshes
 */
-class ASSIMP_API GenFaceNormalsProcess : public BaseProcess
+class ASSIMP_API_WINONLY GenFaceNormalsProcess : public BaseProcess
 {
-    friend class Importer;
+public:
 
-protected:
-    /** Constructor to be privately used by Importer */
-    GenFaceNormalsProcess();
-
-    /** Destructor, private as well */
-    ~GenFaceNormalsProcess();
+	GenFaceNormalsProcess();
+	~GenFaceNormalsProcess();
 
 public:
-    // -------------------------------------------------------------------
-    /** Returns whether the processing step is present in the given flag field.
-    * @param pFlags The processing flags the importer was called with. A bitwise
-    *   combination of #aiPostProcessSteps.
-    * @return true if the process is present in this flag fields, false if not.
-    */
-    bool IsActive( unsigned int pFlags) const;
+	// -------------------------------------------------------------------
+	/** Returns whether the processing step is present in the given flag field.
+	* @param pFlags The processing flags the importer was called with. A bitwise
+	*   combination of #aiPostProcessSteps.
+	* @return true if the process is present in this flag fields, false if not.
+	*/
+	bool IsActive( unsigned int pFlags) const;
 
-    // -------------------------------------------------------------------
-    /** Executes the post processing step on the given imported data.
-    * At the moment a process is not supposed to fail.
-    * @param pScene The imported data to work at.
-    */
-    void Execute( aiScene* pScene);
+	// -------------------------------------------------------------------
+	/** Executes the post processing step on the given imported data.
+	* At the moment a process is not supposed to fail.
+	* @param pScene The imported data to work at.
+	*/
+	void Execute( aiScene* pScene);
 
 
 private:
-    bool GenMeshFaceNormals (aiMesh* pcMesh);
+	bool GenMeshFaceNormals (aiMesh* pcMesh);
 };
 
 } // end of namespace Assimp

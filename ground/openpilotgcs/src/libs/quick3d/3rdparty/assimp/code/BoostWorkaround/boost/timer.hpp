@@ -9,7 +9,7 @@
 //  Revision History
 //  01 Apr 01  Modified to use new <boost/limits.hpp> header. (JMaddock)
 //  12 Jan 01  Change to inline implementation to allow use without library
-//             builds. See docs for more rationale. (Beman Dawes)
+//             builds. See docs for more rationale. (Beman Dawes) 
 //  25 Sep 99  elapsed_max() and elapsed_min() added (John Maddock)
 //  16 Jul 99  Second beta
 //   6 Jul 99  Initial boost version
@@ -19,22 +19,12 @@
 
 //#include <boost/config.hpp>
 #include <ctime>
-#include <time.h>
 //#include <boost/limits.hpp>
 
 # ifdef BOOST_NO_STDC_NAMESPACE
     namespace std { using ::clock_t; using ::clock; }
 # endif
 
-//symbian workarounds for CLOCKS_PER_SEC
-#ifndef CLOCKS_PER_SEC
-#ifndef __CLK_TCK
-#  warning CLOCKS_PER_SEC is undefined... defaulting to 100 (as per RVCT time.h)
-#  define CLOCKS_PER_SEC  100
-#else
-#  define CLOCKS_PER_SEC  __CLK_TCK
-#endif
-#endif
 
 namespace boost {
 
@@ -67,7 +57,7 @@ class timer
   // where std::clock_t overflows or resets at surprising values.
   {
     return (double((std::numeric_limits<std::clock_t>::max)())
-       - double(_start_time)) / double(CLOCKS_PER_SEC);
+       - double(_start_time)) / double(CLOCKS_PER_SEC); 
   }
 
   double elapsed_min() const            // return minimum value for elapsed()

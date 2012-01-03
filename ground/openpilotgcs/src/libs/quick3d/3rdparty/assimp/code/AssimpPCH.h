@@ -7,8 +7,8 @@ Copyright (c) 2006-2010, ASSIMP Development Team
 
 All rights reserved.
 
-Redistribution and use of this software in source and binary forms,
-with or without modification, are permitted provided that the following
+Redistribution and use of this software in source and binary forms, 
+with or without modification, are permitted provided that the following 
 conditions are met:
 
 * Redistributions of source code must retain the above
@@ -25,16 +25,16 @@ conditions are met:
   derived from this software without specific prior
   written permission of the ASSIMP Development Team.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
 LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
 OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
 LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ---------------------------------------------------------------------------
 */
@@ -54,16 +54,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "../include/aiDefines.h"
 
-/* Include our stdint.h replacement header for MSVC, take the global header for gcc/mingw
- */
-#ifdef _MSC_VER
-# include "pstdint.h"
+// Include our stdint.h replacement header for MSVC, take the global header for gcc/mingw
+#if defined( _MSC_VER) && (_MSC_VER < 1600)
+#	include "pstdint.h"
 #else
-# include <stdint.h>
+#	include <stdint.h>
 #endif
 
-/* Undefine the min/max macros defined by some platform headers (namely Windows.h) to
- * avoid obvious conflicts with std::min() and std::max().
+/* Undefine the min/max macros defined by some platform headers (namely Windows.h) to 
+ * avoid obvious conflicts with std::min() and std::max(). 
  */
 #undef min
 #undef max
@@ -76,23 +75,23 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* Helper macro to set a pointer to NULL in debug builds
  */
 #if (defined _DEBUG)
-# define AI_DEBUG_INVALIDATE_PTR(x) x = NULL;
+#	define AI_DEBUG_INVALIDATE_PTR(x) x = NULL;
 #else
-# define AI_DEBUG_INVALIDATE_PTR(x)
+#	define AI_DEBUG_INVALIDATE_PTR(x)
 #endif
 
 /* Beginning with MSVC8 some C string manipulation functions are mapped to their _safe_
  * counterparts (e.g. _itoa_s). This avoids a lot of trouble with deprecation warnings.
  */
 #if _MSC_VER >= 1400 && !(defined _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES)
-# define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
+#	define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
 #endif
 
 /* size_t to unsigned int, possible loss of data. The compiler is right with his warning
  * but this loss of data won't be a problem for us. So shut up, little boy.
  */
 #ifdef _MSC_VER
-# pragma warning (disable : 4267)
+#	pragma warning (disable : 4267)
 #endif
 
 // ----------------------------------------------------------------------------------------
@@ -117,6 +116,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <numeric>
 #include <new>
 #include <cstdio>
+#include <limits.h>
+#include <memory>
 
 // Boost headers
 #include <boost/pointer_cast.hpp>
@@ -124,7 +125,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/scoped_array.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>
-//#include <boost/make_shared.hpp>
+#include <boost/make_shared.hpp>
 #include <boost/format.hpp>
 #include <boost/foreach.hpp>
 #include <boost/static_assert.hpp>
@@ -137,13 +138,24 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../include/aiScene.h"
 #include "../include/aiPostProcess.h"
 #include "../include/assimp.hpp"
+#include "../include/export.hpp"
 
 // Internal utility headers
 #include "BaseImporter.h"
-#include "MaterialSystem.h"
 #include "StringComparison.h"
 #include "StreamReader.h"
 #include "qnan.h"
+#include "ScenePrivate.h" 
+
+
+// We need those constants, workaround for any platforms where nobody defined them yet
+#if (!defined SIZE_MAX)
+#	define SIZE_MAX (~((size_t)0))
+#endif
+
+#if (!defined UINT_MAX)
+#	define UINT_MAX (~((unsigned int)0))
+#endif
 
 
 #endif // !! ASSIMP_PCH_INCLUDED

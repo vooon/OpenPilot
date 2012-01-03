@@ -57,20 +57,25 @@ HEADERS += \
         code/BlenderModifier.h \
         code/BlenderScene.h \
         code/BlenderSceneGen.h \
+        code/BlobIOSystem.h \
         code/BVHLoader.h \
         code/ByteSwap.h \
         code/CalcTangentsProcess.h \
+        code/CInterfaceIOWrapper.h \
         code/COBLoader.h \
         code/COBScene.h \
+        code/ColladaExporter.h \
         code/ColladaHelper.h \
         code/ColladaLoader.h \
         code/ColladaParser.h \
         code/ComputeUVMappingProcess.h \
         code/ConvertToLHProcess.h \
         code/CSMLoader.h \
+        code/DeboneProcess.h \
         code/DefaultIOStream.h \
         code/DefaultIOSystem.h \
         code/DefaultProgressHandler.h \
+        code/DXFHelper.h \
         code/DXFLoader.h \
         code/Exceptional.h \
         code/fast_atof.h \
@@ -87,7 +92,11 @@ HEADERS += \
         code/Hash.h \
         code/HMPFileData.h \
         code/HMPLoader.h \
+        code/IFCLoader.h \
+        code/IFCReaderGen.h \
+        code/IFCUtil.h \
         code/IFF.h \
+        code/Importer.h \
         code/ImproveCacheLocality.h \
         code/IRRLoader.h \
         code/IRRMeshLoader.h \
@@ -96,10 +105,12 @@ HEADERS += \
         code/JoinVerticesProcess.h \
         code/LimitBoneWeightsProcess.h \
         code/LineSplitter.h \
+        code/LogAux.h \
         code/LWOAnimation.h \
         code/LWOFileData.h \
         code/LWOLoader.h \
         code/LWSLoader.h \
+        code/M3Importer.h \
         code/MakeVerboseFormat.h \
         code/MaterialSystem.h \
         code/MD2FileData.h \
@@ -120,6 +131,7 @@ HEADERS += \
         code/MS3DLoader.h \
         code/NDOLoader.h \
         code/NFFLoader.h \
+        code/ObjExporter.h \
         code/ObjFileData.h \
         code/ObjFileImporter.h \
         code/ObjFileMtlImporter.h \
@@ -133,6 +145,7 @@ HEADERS += \
         code/ParsingUtils.h \
         code/PlyLoader.h \
         code/PlyParser.h \
+        code/PolyTools.h \
         code/PretransformVertices.h \
         code/ProcessHelper.h \
         code/Profiler.h \
@@ -155,9 +168,13 @@ HEADERS += \
         code/SmoothingGroups.h \
         code/SortByPTypeProcess.h \
         code/SpatialSort.h \
+        code/SplitByBoneCountProcess.h \
         code/SplitLargeMeshes.h \
         code/StandardShapes.h \
         code/StdOStreamLogStream.h \
+        code/STEPFile.h \
+        code/STEPFileReader.h \
+        code/STLExporter.h \
         code/STLLoader.h \
         code/StreamReader.h \
         code/StringComparison.h \
@@ -252,10 +269,10 @@ SOURCES += \
         code/3DSConverter.cpp \
         code/3DSLoader.cpp \
         code/ACLoader.cpp \
-        code/aiAssert.cpp \
         code/ASELoader.cpp \
         code/ASEParser.cpp \
         code/Assimp.cpp \
+        code/AssimpCExport.cpp \
         code/AssimpPCH.cpp \
         code/B3DImporter.cpp \
         code/BaseImporter.cpp \
@@ -267,15 +284,18 @@ SOURCES += \
         code/BVHLoader.cpp \
         code/CalcTangentsProcess.cpp \
         code/COBLoader.cpp \
+        code/ColladaExporter.cpp \
         code/ColladaLoader.cpp \
         code/ColladaParser.cpp \
         code/ComputeUVMappingProcess.cpp \
         code/ConvertToLHProcess.cpp \
         code/CSMLoader.cpp \
+        code/DeboneProcess.cpp \
         code/DefaultIOStream.cpp \
         code/DefaultIOSystem.cpp \
         code/DefaultLogger.cpp \
         code/DXFLoader.cpp \
+        code/Exporter.cpp \
         code/FindDegenerates.cpp \
         code/FindInstancesProcess.cpp \
         code/FindInvalidDataProcess.cpp \
@@ -283,7 +303,15 @@ SOURCES += \
         code/GenFaceNormalsProcess.cpp \
         code/GenVertexNormalsProcess.cpp \
         code/HMPLoader.cpp \
+        code/IFCCurve.cpp \
+        code/IFCGeometry.cpp \
+        code/IFCLoader.cpp \
+        code/IFCMaterial.cpp \
+        code/IFCProfile.cpp \
+        code/IFCReaderGen.cpp \
+        code/IFCUtil.cpp \
         code/Importer.cpp \
+        code/ImporterRegistry.cpp \
         code/ImproveCacheLocality.cpp \
         code/IRRLoader.cpp \
         code/IRRMeshLoader.cpp \
@@ -295,6 +323,7 @@ SOURCES += \
         code/LWOLoader.cpp \
         code/LWOMaterial.cpp \
         code/LWSLoader.cpp \
+        code/M3Importer.cpp \
         code/MakeVerboseFormat.cpp \
         code/MaterialSystem.cpp \
         code/MD2Loader.cpp \
@@ -307,6 +336,7 @@ SOURCES += \
         code/MS3DLoader.cpp \
         code/NDOLoader.cpp \
         code/NFFLoader.cpp \
+        code/ObjExporter.cpp \
         code/ObjFileImporter.cpp \
         code/ObjFileMtlImporter.cpp \
         code/ObjFileParser.cpp \
@@ -317,7 +347,9 @@ SOURCES += \
         code/OptimizeMeshes.cpp \
         code/PlyLoader.cpp \
         code/PlyParser.cpp \
+        code/PostStepRegistry.cpp \
         code/PretransformVertices.cpp \
+        code/ProcessHelper.cpp \
         code/Q3BSPFileImporter.cpp \
         code/Q3BSPFileParser.cpp \
         code/Q3BSPZipArchive.cpp \
@@ -333,8 +365,11 @@ SOURCES += \
         code/SMDLoader.cpp \
         code/SortByPTypeProcess.cpp \
         code/SpatialSort.cpp \
+        code/SplitByBoneCountProcess.cpp \
         code/SplitLargeMeshes.cpp \
         code/StandardShapes.cpp \
+        code/STEPFileReader.cpp \
+        code/STLExporter.cpp \
         code/STLLoader.cpp \
         code/Subdivision.cpp \
         code/TargetAnimation.cpp \

@@ -1,7 +1,7 @@
 
 // ===============================================================================
-// May be included multiple times - resets structure packing to the defaults
-// for all supported compilers. Reverts the changes made by #include <pushpack1.h>
+// May be included multiple times - resets structure packing to the defaults 
+// for all supported compilers. Reverts the changes made by #include <pushpack1.h> 
 //
 // Currently this works on the following compilers:
 // MSVC 7,8,9
@@ -10,12 +10,12 @@
 // ===============================================================================
 
 #ifndef AI_PUSHPACK_IS_DEFINED
-# error pushpack1.h must be included after poppack1.h
+#	error pushpack1.h must be included after poppack1.h
 #endif
 
 // reset packing to the original value
 #if defined(_MSC_VER) ||  defined(__BORLANDC__) || defined (__BCPLUSPLUS__)
-# pragma pack( pop )
+#	pragma pack( pop )
 #endif
 #undef PACK_STRUCT
 

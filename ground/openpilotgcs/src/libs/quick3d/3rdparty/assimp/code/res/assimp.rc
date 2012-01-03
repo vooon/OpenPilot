@@ -56,7 +56,7 @@ BEGIN
             VALUE "OriginalFilename", "assimpNN.dll"
             VALUE "ProductName", "Open Asset Import Library"
             VALUE "ProductVersion", 1,1,SVNRevision,0
-        ,0
+		,0
         END
     END
     BLOCK "VarFileInfo"
