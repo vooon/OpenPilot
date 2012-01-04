@@ -613,6 +613,83 @@ static const struct pios_usart_cfg pios_usart_generic_flexi_cfg = {
   },
 };
 
+#if defined(PIOS_INCLUDE_COM_AUX)
+/*
+ * AUX USART
+ */
+static const struct pios_usart_cfg pios_usart_aux_main_cfg = {
+  .regs  = USART1,
+  .init = {
+    .USART_BaudRate            = 57600,
+    .USART_WordLength          = USART_WordLength_8b,
+    .USART_Parity              = USART_Parity_No,
+    .USART_StopBits            = USART_StopBits_1,
+    .USART_HardwareFlowControl = USART_HardwareFlowControl_None,
+    .USART_Mode                = USART_Mode_Rx | USART_Mode_Tx,
+  },
+  .irq = {
+    .init    = {
+      .NVIC_IRQChannel                   = USART1_IRQn,
+      .NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_MID,
+      .NVIC_IRQChannelSubPriority        = 0,
+      .NVIC_IRQChannelCmd                = ENABLE,
+    },
+  },
+  .rx   = {
+    .gpio = GPIOA,
+    .init = {
+      .GPIO_Pin   = GPIO_Pin_10,
+      .GPIO_Speed = GPIO_Speed_2MHz,
+      .GPIO_Mode  = GPIO_Mode_IPU,
+    },
+  },
+  .tx   = {
+    .gpio = GPIOA,
+    .init = {
+      .GPIO_Pin   = GPIO_Pin_9,
+      .GPIO_Speed = GPIO_Speed_2MHz,
+      .GPIO_Mode  = GPIO_Mode_AF_PP,
+    },
+  },
+};
+
+static const struct pios_usart_cfg pios_usart_aux_flexi_cfg = {
+  .regs  = USART3,
+  .init = {
+    .USART_BaudRate            = 57600,
+    .USART_WordLength          = USART_WordLength_8b,
+    .USART_Parity              = USART_Parity_No,
+    .USART_StopBits            = USART_StopBits_1,
+    .USART_HardwareFlowControl = USART_HardwareFlowControl_None,
+    .USART_Mode                = USART_Mode_Rx | USART_Mode_Tx,
+  },
+  .irq = {
+    .init    = {
+      .NVIC_IRQChannel                   = USART3_IRQn,
+      .NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_MID,
+      .NVIC_IRQChannelSubPriority        = 0,
+      .NVIC_IRQChannelCmd                = ENABLE,
+    },
+  },
+  .rx   = {
+    .gpio = GPIOB,
+    .init = {
+      .GPIO_Pin   = GPIO_Pin_11,
+      .GPIO_Speed = GPIO_Speed_2MHz,
+      .GPIO_Mode  = GPIO_Mode_IPU,
+    },
+  },
+  .tx   = {
+    .gpio = GPIOB,
+    .init = {
+      .GPIO_Pin   = GPIO_Pin_10,
+      .GPIO_Speed = GPIO_Speed_2MHz,
+      .GPIO_Mode  = GPIO_Mode_AF_PP,
+    },
+  },
+};
+#endif /* PIOS_INCLUDE_COM_AUX */
+
 #if defined(PIOS_INCLUDE_DSM)
 /*
  * Spektrum/JR DSM USART
@@ -790,6 +867,9 @@ static const struct pios_sbus_cfg pios_sbus_cfg = {
 
 #define PIOS_COM_BRIDGE_RX_BUF_LEN 65
 #define PIOS_COM_BRIDGE_TX_BUF_LEN 12
+
+#define PIOS_COM_AUX_RF_RX_BUF_LEN 64
+#define PIOS_COM_AUX_RF_TX_BUF_LEN 64
 
 #endif	/* PIOS_INCLUDE_COM */
 
@@ -1024,7 +1104,9 @@ const struct pios_usb_cdc_cfg pios_usb_cdc_cfg = {
 #endif	/* PIOS_INCLUDE_USB_CDC */
 
 uint32_t pios_com_telem_rf_id;
+#ifdef PIOS_INCLUDE_COM_AUX
 uint32_t pios_com_debug_id;
+#endif
 uint32_t pios_com_telem_usb_id;
 uint32_t pios_com_vcp_id;
 uint32_t pios_com_gps_id;
@@ -1183,7 +1265,6 @@ void PIOS_Board_Init(void) {
 	uint8_t hwsettings_cc_mainport;
 	HwSettingsCC_MainPortGet(&hwsettings_cc_mainport);
 
-	hwsettings_cc_mainport = HWSETTINGS_CC_MAINPORT_COMAUX;
 	switch (hwsettings_cc_mainport) {
 	case HWSETTINGS_CC_MAINPORT_DISABLED:
 		break;
@@ -1291,22 +1372,24 @@ void PIOS_Board_Init(void) {
 #endif	/* PIOS_INCLUDE_DSM */
 		break;
 	case HWSETTINGS_CC_MAINPORT_COMAUX:
+#ifdef PIOS_INCLUDE_COM_AUX
 		{
 			uint32_t pios_usart_debug_id;
-			if (PIOS_USART_Init(&pios_usart_debug_id, &pios_usart_telem_main_cfg)) {
+			if (PIOS_USART_Init(&pios_usart_debug_id, &pios_usart_aux_main_cfg)) {
 				PIOS_Assert(0);
 			}
 
-			uint8_t * rx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_TELEM_RF_RX_BUF_LEN);
-			uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_TELEM_RF_TX_BUF_LEN);
+			uint8_t * rx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_AUX_RF_RX_BUF_LEN);
+			uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_AUX_RF_TX_BUF_LEN);
 			PIOS_Assert(rx_buffer);
 			PIOS_Assert(tx_buffer);
 			if (PIOS_COM_Init(&pios_com_debug_id, &pios_usart_com_driver, pios_usart_debug_id,
-					  rx_buffer, PIOS_COM_TELEM_RF_RX_BUF_LEN,
-					  tx_buffer, PIOS_COM_TELEM_RF_TX_BUF_LEN)) {
+					  rx_buffer, PIOS_COM_AUX_RF_RX_BUF_LEN,
+					  tx_buffer, PIOS_COM_AUX_RF_TX_BUF_LEN)) {
 				PIOS_Assert(0);
 			}
 		}
+#endif  /* PIOS_INCLUDE_COM_AUX */
 		break;
 	case HWSETTINGS_CC_MAINPORT_COMBRIDGE:
 		{
@@ -1434,6 +1517,24 @@ void PIOS_Board_Init(void) {
 #endif	/* PIOS_INCLUDE_DSM */
 		break;
 	case HWSETTINGS_CC_FLEXIPORT_COMAUX:
+#ifdef PIOS_INCLUDE_COM_AUX
+		{
+			uint32_t pios_usart_debug_id;
+			if (PIOS_USART_Init(&pios_usart_debug_id, &pios_usart_aux_flexi_cfg)) {
+				PIOS_Assert(0);
+			}
+
+			uint8_t * rx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_TELEM_RF_RX_BUF_LEN);
+			uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_TELEM_RF_TX_BUF_LEN);
+			PIOS_Assert(rx_buffer);
+			PIOS_Assert(tx_buffer);
+			if (PIOS_COM_Init(&pios_com_debug_id, &pios_usart_com_driver, pios_usart_debug_id,
+					  rx_buffer, PIOS_COM_TELEM_RF_RX_BUF_LEN,
+					  tx_buffer, PIOS_COM_TELEM_RF_TX_BUF_LEN)) {
+				PIOS_Assert(0);
+			}
+		}
+#endif  /* PIOS_INCLUDE_COM_AUX */
 		break;
 	case HWSETTINGS_CC_FLEXIPORT_I2C:
 #if defined(PIOS_INCLUDE_I2C)
