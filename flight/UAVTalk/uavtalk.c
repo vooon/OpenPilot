@@ -55,11 +55,10 @@ static void sendPacket(UAVTalkConnectionData *connection, uint8_t* buf, uint16_t
  * \return the UAVTalkConnection
  * \return 0 Failure
  */
-UAVTalkConnection UAVTalkInitializeMultiBuffer(UAVTalkOutputStream outputStream, uint32_t maxPacketSize, uint8_t numRxBuffers)
+UAVTalkConnection UAVTalkInitializeMultiBuffer(UAVTalkOutputStream outputStream, uint8_t numRxBuffers)
 {
 	UAVTalkConnectionData *connection;
 	uint8_t i;
-	if (maxPacketSize<1) return 0;
 	// allocate object
 	connection = pvPortMalloc(sizeof(UAVTalkConnectionData));
 	if (!connection) return 0;
@@ -71,7 +70,7 @@ UAVTalkConnection UAVTalkInitializeMultiBuffer(UAVTalkOutputStream outputStream,
 	connection->transLock = xSemaphoreCreateRecursiveMutex();
 	connection->numRxBuffers = numRxBuffers;
 	connection->curRxBuffer = 0;
-	connection->txSize = maxPacketSize;
+	connection->txSize = UAVTALK_MAX_PACKET_LENGTH;
 	// allocate buffers
 	connection->rxBuffers = (uint8_t**)pvPortMalloc(numRxBuffers * sizeof(uint8_t*));
 	if (!connection->rxBuffers) return 0;
@@ -95,9 +94,9 @@ UAVTalkConnection UAVTalkInitializeMultiBuffer(UAVTalkOutputStream outputStream,
  * \return the UAVTalkConnection
  * \return 0 Failure
  */
-UAVTalkConnection UAVTalkInitialize(UAVTalkOutputStream outputStream, uint32_t maxPacketSize)
+UAVTalkConnection UAVTalkInitialize(UAVTalkOutputStream outputStream)
 {
-	return UAVTalkInitializeMultiBuffer(outputStream, maxPacketSize, 1);
+	return UAVTalkInitializeMultiBuffer(outputStream, 1);
 }
 
 /**
@@ -898,11 +897,13 @@ static int32_t sendSingleObject(UAVTalkConnectionData *connection, UAVObjHandle 
 	int32_t length;
 	int32_t dataOffset;
 	uint32_t objId;
+	if (!connection->outStream) return -1;
 
 	// Lock the semaphore
 	xSemaphoreTakeRecursive(connection->lock, portMAX_DELAY);
 
 	// Get the object ID
+
 	objId = UAVObjGetID(obj);
 	
 	// Determine data length
@@ -957,6 +958,8 @@ static int32_t sendNack(UAVTalkConnectionData *connection, uint32_t objId)
 {
 	int32_t dataOffset;
 
+	if (!connection->outStream) return -1;
+
 	connection->txBuffer[0] = UAVTALK_SYNC_VAL;  // sync byte
 	connection->txBuffer[1] = UAVTALK_TYPE_NACK;
 	// data length inserted here below
@@ -976,9 +979,6 @@ static int32_t sendNack(UAVTalkConnectionData *connection, uint32_t objId)
 
 	// Send buffer
 	if (connection->outStream!=NULL) sendPacket(connection, connection->txBuffer, 0, dataOffset);
-
-	// Update stats
-	connection->stats.txBytes += dataOffset+UAVTALK_CHECKSUM_LENGTH;
 
 	// Done
 	return 0;

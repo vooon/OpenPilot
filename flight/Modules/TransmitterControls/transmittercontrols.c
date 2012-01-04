@@ -151,8 +151,8 @@ int32_t TransmitterControlsInitialize(void) {
 	comms[1].txqueue = xQueueCreate(TELEM_QUEUE_SIZE, sizeof(UAVObjEvent));
 
 	// Initialise UAVTalk
-	comms[0].com = UAVTalkInitializeMultiBuffer(&transmitData1, 256, 3);
-	comms[1].com = UAVTalkInitializeMultiBuffer(&transmitData2, 256, 3);
+	comms[0].com = UAVTalkInitializeMultiBuffer(&transmitData1, 3);
+	comms[1].com = UAVTalkInitializeMultiBuffer(&transmitData2, 3);
 
 	//TransmitterControlsSettingsConnectCallback(&settingsUpdatedCb);
 

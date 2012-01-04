@@ -131,7 +131,6 @@ SRC += $(OPSYSTEM)/taskmonitor.c
 SRC += $(OPUAVTALK)/uavtalk.c
 SRC += $(OPUAVOBJ)/uavobjectmanager.c
 SRC += $(OPUAVOBJ)/eventdispatcher.c
-SRC += $(OPSYSTEM)/pios_usb_hid_desc.c
 else
 ## TESTCODE
 SRC += $(OPTESTS)/test_common.c
@@ -194,12 +193,6 @@ SRC += $(PIOSSTM32F10X)/pios_wdg.c
 SRC += $(PIOSSTM32F10X)/pios_tim.c
 SRC += $(PIOSSTM32F10X)/pios_pwm.c
 
-
-# PIOS USB related files (seperated to make code maintenance more easy)
-SRC += $(PIOSSTM32F10X)/pios_usb_hid.c
-SRC += $(PIOSSTM32F10X)/pios_usb_hid_istr.c
-SRC += $(PIOSSTM32F10X)/pios_usb_hid_prop.c
-SRC += $(PIOSSTM32F10X)/pios_usb_hid_pwr.c
 
 ## PIOS Hardware (Common)
 SRC += $(PIOSCOMMON)/pios_crc.c
