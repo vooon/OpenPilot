@@ -1410,7 +1410,6 @@ void PIOS_Board_Init(void) {
 		}
 		break;
 	}
-	PIOS_COM_SendString(PIOS_COM_DEBUG, "Hello Debug\n\r");
 
 	/* Configure the flexi port */
 	uint8_t hwsettings_cc_flexiport;
