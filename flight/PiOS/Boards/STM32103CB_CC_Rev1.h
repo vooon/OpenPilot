@@ -134,8 +134,6 @@ extern uint32_t pios_i2c_main_adapter_id;
 
 extern uint32_t pios_com_telem_rf_id;
 #define PIOS_COM_TELEM_RF               (pios_com_telem_rf_id)
-extern uint32_t pios_com_debug_id;
-#define PIOS_COM_DEBUG                  (pios_com_debug_id)
 
 #if defined(PIOS_INCLUDE_GPS)
 extern uint32_t pios_com_gps_id;
@@ -147,6 +145,10 @@ extern uint32_t pios_com_bridge_id;
 
 extern uint32_t pios_com_vcp_id;
 #define PIOS_COM_VCP			(pios_com_vcp_id)
+#ifdef PIOS_INCLUDE_COM_AUX
+extern uint32_t pios_com_debug_id;
+#define PIOS_COM_DEBUG                  (pios_com_debug_id)
+#endif
 
 extern uint32_t pios_com_telem_usb_id;
 #define PIOS_COM_TELEM_USB              (pios_com_telem_usb_id)
