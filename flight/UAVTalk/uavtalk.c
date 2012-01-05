@@ -32,7 +32,12 @@
 
 #include "openpilot.h"
 #include "uavtalk_priv.h"
-
+#include "gcstelemetrystats.h"
+#ifdef USE_DEBUG_Mod
+#include "debugmod.h"
+#else
+#define DEBUG_QUEUE_BUF_SIZE 64
+#endif
 
 // Private functions
 static int32_t objectTransaction(UAVTalkConnectionData *connection, UAVObjHandle objectId, uint16_t instId, uint8_t type, int32_t timeout);
@@ -41,16 +46,27 @@ static int32_t sendSingleObject(UAVTalkConnectionData *connection, UAVObjHandle 
 static int32_t sendNack(UAVTalkConnectionData *connection, uint32_t objId);
 static int32_t receiveObject(UAVTalkConnectionData *connection, uint8_t type, uint32_t objId, uint16_t instId, uint8_t* data, int32_t length);
 static void updateAck(UAVTalkConnectionData *connection, UAVObjHandle obj, uint16_t instId);
+static uint8_t packetType(const uint8_t *buf);
 static uint16_t packetLength(const uint8_t *buf);
+static uint32_t packetObjId(const uint8_t *buf);
 static void packetCRC(uint8_t *buf);
-static int32_t packHeader(uint8_t *buf, uint32_t buf_length, uint8_t type, uint32_t objId, uint16_t instId, uint8_t singleInstance, uint16_t length);
+static int32_t packHeader(uint8_t *buf, uint32_t buf_length, uint8_t type, uint32_t objId, uint32_t msgId, uint16_t instId, uint8_t singleInstance, uint16_t length);
 static void sendPacket(UAVTalkConnectionData *connection, uint8_t* buf, uint16_t length, uint16_t packet_length);
+#ifdef PIOS_UAVTALK_DEBUG
+static uint32_t packetMsgId(const uint8_t *buf);
+static uint16_t packetTime(const uint8_t *buf);
+static void printDebug(UAVTalkConnectionData *connection, char debugType, uint32_t msgId, uint16_t time, uint8_t type, uint32_t objId);
+static void printConnDebug(UAVTalkConnectionData *connection, char debugType);
+static void printPacketDebug(UAVTalkConnectionData *connection, char debugType, const uint8_t *buf);
+#else
+#define printDebug(debugType, msgId, time, type, objId) {}
+#define printConnDebug(c, t) {}
+#endif
 
 /**
  * Initialize the UAVTalk library
  * This version of the initialization function support allocating multiple receive buffers.
  * \param[in] outputStream Function pointer that is called to send a data buffer
- * \param[in] maxPacketSize The maximum packet size that can be transmitted over the connection
  * \param[in] numRxBuffers The number of receive buffers to allocate
  * \return the UAVTalkConnection
  * \return 0 Failure
@@ -71,6 +87,10 @@ UAVTalkConnection UAVTalkInitializeMultiBuffer(UAVTalkOutputStream outputStream,
 	connection->numRxBuffers = numRxBuffers;
 	connection->curRxBuffer = 0;
 	connection->txSize = UAVTALK_MAX_PACKET_LENGTH;
+#ifdef PIOS_UAVTALK_DEBUG
+	connection->curMsgId = 0;
+	connection->printBuffer = (char*)pvPortMalloc(DEBUG_QUEUE_BUF_SIZE);
+#endif
 	// allocate buffers
 	connection->rxBuffers = (uint8_t**)pvPortMalloc(numRxBuffers * sizeof(uint8_t*));
 	if (!connection->rxBuffers) return 0;
@@ -90,7 +110,6 @@ UAVTalkConnection UAVTalkInitializeMultiBuffer(UAVTalkOutputStream outputStream,
 /**
  * Initialize the UAVTalk library
  * \param[in] outputStream Function pointer that is called to send a data buffer
- * \param[in] maxPacketSize The maximum packet size that can be transmitted over the connection
  * \return the UAVTalkConnection
  * \return 0 Failure
  */
@@ -190,8 +209,8 @@ uint32_t UAVTalkGetPacketType(UAVTalkConnection connectionHandle)
 	// Lock
 	xSemaphoreTakeRecursive(connection->lock, portMAX_DELAY);
 
-	// Only return the object ID if it is valid.
-	if (connection->iproc.state == UAVTALK_STATE_SIZE || connection->iproc.state == UAVTALK_STATE_OBJID || connection->iproc.state == UAVTALK_STATE_INSTID || connection->iproc.state == UAVTALK_STATE_DATA || connection->iproc.state == UAVTALK_STATE_CS || connection->iproc.state == UAVTALK_STATE_COMPLETE)
+	// Only return the object type if it is valid.
+	if (connection->iproc.state > UAVTALK_STATE_TYPE)
 	{
 		// Get the packet type
 		type = connection->iproc.type;
@@ -219,7 +238,7 @@ uint32_t UAVTalkGetObjectID(UAVTalkConnection connectionHandle)
 	xSemaphoreTakeRecursive(connection->lock, portMAX_DELAY);
 
 	// Only return the object ID if it is valid.
-	if (connection->iproc.state == UAVTALK_STATE_INSTID || connection->iproc.state == UAVTALK_STATE_DATA || connection->iproc.state == UAVTALK_STATE_CS || connection->iproc.state == UAVTALK_STATE_COMPLETE)
+	if (connection->iproc.state > UAVTALK_STATE_OBJID)
 	{
 		// Get the object ID
 		obj_id = connection->iproc.objId;
@@ -395,9 +414,14 @@ UAVTalkRxState UAVTalkProcessInputStream(UAVTalkConnection connectionHandle, uin
 	}
 
 	// Insert this byte into the rx buffer if we're in the middle of a packet.
-	else if(iproc->state != UAVTALK_STATE_SYNC)
+	else if(iproc->state != UAVTALK_STATE_SYNC) {
 		rxBuffer[iproc->rxCount++] = rxbyte;
-	
+
+		// update the CRC
+		if(iproc->state != UAVTALK_STATE_CS)
+			iproc->cs = PIOS_CRC_updateByte(iproc->cs, rxbyte);
+	}
+
 	// Receive state machine
 	switch (iproc->state)
 	{
@@ -409,6 +433,7 @@ UAVTalkRxState UAVTalkProcessInputStream(UAVTalkConnection connectionHandle, uin
 			}
 
 			// Switch to the next RX buffer.
+			rxBuffer[0] = 0;
 			if(rxBuffer[0] != 0)
 			{
 				uint8_t nextRxBuffer = connection->curRxBuffer + 1;
@@ -446,12 +471,10 @@ UAVTalkRxState UAVTalkProcessInputStream(UAVTalkConnection connectionHandle, uin
 			
 		case UAVTALK_STATE_TYPE:
 			
-			// update the CRC
-			iproc->cs = PIOS_CRC_updateByte(iproc->cs, rxbyte);
-			
 			if ((rxbyte & UAVTALK_TYPE_MASK) != UAVTALK_TYPE_VER)
 			{
 				iproc->state = UAVTALK_STATE_ERROR;
+				printConnDebug(connection, 'T');
 				break;
 			}
 			
@@ -479,22 +502,58 @@ UAVTalkRxState UAVTalkProcessInputStream(UAVTalkConnection connectionHandle, uin
 			if (iproc->packet_size < UAVTALK_MIN_HEADER_LENGTH || iproc->packet_size > UAVTALK_MAX_HEADER_LENGTH + UAVTALK_MAX_PAYLOAD_LENGTH)
 			{   // incorrect packet size
 				iproc->state = UAVTALK_STATE_ERROR;
+				printConnDebug(connection, 'L');
 				break;
 			}
 			
+#ifdef PIOS_UAVTALK_DEBUG
+			iproc->msgId = 0;
+			iproc->state = UAVTALK_STATE_MSGID;
+#else
 			iproc->objId = 0;
 			iproc->state = UAVTALK_STATE_OBJID;
+#endif
 			break;
+
+#ifdef PIOS_UAVTALK_DEBUG
 			
-		case UAVTALK_STATE_OBJID:
+		case UAVTALK_STATE_MSGID:
 			
-			// update the CRC
-			iproc->cs = PIOS_CRC_updateByte(iproc->cs, rxbyte);
-			
-			iproc->objId += rxbyte << (8*(iproc->rxCount - 5));
+			iproc->msgId += rxbyte << (8*(iproc->rxCount - 5));
 
 			if (iproc->rxCount < 8)
 				break;
+
+			iproc->state = UAVTALK_STATE_TIME;
+			break;
+
+		case UAVTALK_STATE_TIME:
+			
+			if (iproc->rxCount == 8)
+			{
+				iproc->time = rxbyte;
+				break;
+			}
+
+			iproc->time += rxbyte << 8;
+
+			iproc->state = UAVTALK_STATE_OBJID;
+			iproc->objId = 0;
+			break;
+
+#endif
+
+		case UAVTALK_STATE_OBJID:
+			
+#ifdef PIOS_UAVTALK_DEBUG
+			iproc->objId += rxbyte << (8*(iproc->rxCount - 11));
+			if (iproc->rxCount < 14)
+				break;
+#else
+			iproc->objId += rxbyte << (8*(iproc->rxCount - 5));
+			if (iproc->rxCount < 8)
+				break;
+#endif
 
 			// Search for object
 			iproc->obj = UAVObjGetByID(iproc->objId);
@@ -521,6 +580,7 @@ UAVTalkRxState UAVTalkProcessInputStream(UAVTalkConnection connectionHandle, uin
 			{
 				connection->stats.rxErrors++;
 				iproc->state = UAVTALK_STATE_ERROR;
+				printConnDebug(connection, 'P');
 				break;
 			}
 
@@ -529,6 +589,7 @@ UAVTalkRxState UAVTalkProcessInputStream(UAVTalkConnection connectionHandle, uin
 			{   // packet error - mismatched packet size
 				connection->stats.rxErrors++;
 				iproc->state = UAVTALK_STATE_ERROR;
+				printConnDebug(connection, 'M');
 				break;
 			}
 
@@ -552,25 +613,26 @@ UAVTalkRxState UAVTalkProcessInputStream(UAVTalkConnection connectionHandle, uin
 			{
 				iproc->state = UAVTALK_STATE_INSTID;
 			}
-			
+
 			break;
 			
 		case UAVTALK_STATE_INSTID:
 			
-			// update the CRC
-			iproc->cs = PIOS_CRC_updateByte(iproc->cs, rxbyte);
-			
+#ifdef PIOS_UAVTALK_DEBUG
+			iproc->instId += rxbyte << (8*(iproc->rxCount - 14));
+			if (iproc->rxCount < 17)
+				break;
+#else
 			iproc->instId += rxbyte << (8*(iproc->rxCount - 9));
-
 			if (iproc->rxCount < 11)
 				break;
+#endif
 			
 			// If there is a payload get it, otherwise receive checksum
 			if (iproc->length > 0)
 				iproc->state = UAVTALK_STATE_DATA;
 			else
 				iproc->state = UAVTALK_STATE_CS;
-			
 			break;
 			
 		case UAVTALK_STATE_DATA:
@@ -590,6 +652,7 @@ UAVTalkRxState UAVTalkProcessInputStream(UAVTalkConnection connectionHandle, uin
 			{   // packet error - faulty CRC
 				connection->stats.rxErrors++;
 				iproc->state = UAVTALK_STATE_ERROR;
+				printConnDebug(connection, 'C');
 				break;
 			}
 			
@@ -597,6 +660,7 @@ UAVTalkRxState UAVTalkProcessInputStream(UAVTalkConnection connectionHandle, uin
 			{   // packet error - mismatched packet size
 				connection->stats.rxErrors++;
 				iproc->state = UAVTALK_STATE_ERROR;
+				printConnDebug(connection, 'S');
 				break;
 			}
 
@@ -611,8 +675,9 @@ UAVTalkRxState UAVTalkProcessInputStream(UAVTalkConnection connectionHandle, uin
 
 	if (iproc->state == UAVTALK_STATE_COMPLETE && (iproc->obj != NULL || iproc->type == UAVTALK_TYPE_NACK))
 	{
+	    printConnDebug(connection, 'R');
 			xSemaphoreTakeRecursive(connection->lock, portMAX_DELAY);
-			receiveObject(connection, iproc->type, iproc->objId, iproc->instId, rxBuffer + iproc->instanceLength + UAVTALK_MIN_PACKET_LENGTH, iproc->length);
+			receiveObject(connection, iproc->type, iproc->objId, iproc->instId, rxBuffer + iproc->instanceLength + UAVTALK_MIN_HEADER_LENGTH, iproc->length);
 			connection->stats.rxObjectBytes += iproc->length;
 			connection->stats.rxObjects++;
 			xSemaphoreGiveRecursive(connection->lock);
@@ -661,7 +726,8 @@ static int32_t receiveObject(UAVTalkConnectionData *connection, uint8_t type, ui
 	obj = UAVObjGetByID(objId);
 	
 	// Process message type
-	switch (type) {
+	switch (type)
+	{
 		case UAVTALK_TYPE_OBJ:
 			// All instances, not allowed for OBJ messages
 			if (instId != UAVOBJ_ALL_INSTANCES)
@@ -726,13 +792,35 @@ static int32_t receiveObject(UAVTalkConnectionData *connection, uint8_t type, ui
 }
 
 /**
+ * Extract the packet type from a packet buffer.
+ * \param[in] buf The packet buffer
+ * \return The packet type
+ */
+static uint8_t packetType(const uint8_t *buf) {
+	return (uint8_t)buf[1];
+}
+
+/**
  * Extract the packet length from a packet buffer.
  * \param[in] buf The packet buffer
+ * \return The packet length
  */
-static uint16_t
-packetLength(const uint8_t *buf) {
+static uint16_t packetLength(const uint8_t *buf) {
 	return ((uint16_t)(buf[3]) << 8) + buf[2];
 	
+}
+
+/**
+ * Extract the ObjId from a packet buffer.
+ * \param[in] buf The packet buffer
+ * \return The ObjId
+ */
+static uint32_t packetObjId(const uint8_t *buf) {
+#ifdef PIOS_UAVTALK_DEBUG
+	return ((uint32_t)buf[13] << 24) + ((uint32_t)buf[12] << 16) + ((uint32_t)buf[11] << 8) + (uint32_t)buf[10];
+#else
+	return ((uint32_t)buf[7] << 24) + ((uint32_t)buf[6] << 16) + ((uint32_t)buf[5] << 8) + (uint32_t)buf[4];
+#endif
 }
 
 /**
@@ -770,7 +858,7 @@ packetCRC(uint8_t *buf) {
  * \return 1 on failure
  */
 static int32_t
-packHeader(uint8_t *buf, uint32_t buf_length, uint8_t type,
+packHeader(uint8_t *buf, uint32_t buf_length, uint8_t type, uint32_t msgId,
 					 uint32_t objId, uint16_t instId, uint8_t singleInstance,
 					 uint16_t length)
 {
@@ -782,23 +870,30 @@ packHeader(uint8_t *buf, uint32_t buf_length, uint8_t type,
 		return -1;
 
 	// Setup type and object id fields
-	buf[0] = UAVTALK_SYNC_VAL;  // sync byte
-	buf[1] = type;
-	buf[2] = (uint8_t)(packet_length & 0xFF);
-	buf[3] = (uint8_t)((packet_length >> 8) & 0xFF);
-	buf[4] = (uint8_t)(objId & 0xFF);
-	buf[5] = (uint8_t)((objId >> 8) & 0xFF);
-	buf[6] = (uint8_t)((objId >> 16) & 0xFF);
-	buf[7] = (uint8_t)((objId >> 24) & 0xFF);
-
-	// Data offset is packet length - data length
-	dataOffset = packet_length - length;
+	uint8_t cntr = 0;
+	buf[cntr++] = UAVTALK_SYNC_VAL;  // sync byte
+	buf[cntr++] = type;
+	buf[cntr++] = (uint8_t)(packet_length & 0xFF);
+	buf[cntr++] = (uint8_t)((packet_length >> 8) & 0xFF);
+#ifdef PIOS_UAVTALK_DEBUG
+	buf[cntr++] = (uint8_t)(msgId & 0xFF);
+	buf[cntr++] = (uint8_t)((msgId >> 8) & 0xFF);
+	buf[cntr++] = (uint8_t)((msgId >> 16) & 0xFF);
+	buf[cntr++] = (uint8_t)((msgId >> 24) & 0xFF);
+	uint16_t time = (uint16_t)(xTaskGetTickCount() & 0xffff);
+	buf[cntr++] = (uint8_t)(time & 0xFF);
+	buf[cntr++] = (uint8_t)((time >> 8) & 0xFF);
+#endif
+	buf[cntr++] = (uint8_t)(objId & 0xFF);
+	buf[cntr++] = (uint8_t)((objId >> 8) & 0xFF);
+	buf[cntr++] = (uint8_t)((objId >> 16) & 0xFF);
+	buf[cntr++] = (uint8_t)((objId >> 24) & 0xFF);
 
 	// Setup instance ID if one is required
-	if (singleInstance)
+	if (!singleInstance)
 	{
-		buf[8] = (uint8_t)(instId & 0xFF);
-		buf[9] = (uint8_t)((instId >> 8) & 0xFF);
+		buf[cntr++] = (uint8_t)(instId & 0xFF);
+		buf[cntr++] = (uint8_t)((instId >> 8) & 0xFF);
 	}
 	
 	// Done
@@ -897,13 +992,18 @@ static int32_t sendSingleObject(UAVTalkConnectionData *connection, UAVObjHandle 
 	int32_t length;
 	int32_t dataOffset;
 	uint32_t objId;
+#ifdef PIOS_UAVTALK_DEBUG
+	uint16_t msgId = (type == UAVTALK_TYPE_ACK) ? connection->iproc.msgId : connection->curMsgId++;
+#else
+	uint16_t msgId = 0;
+#endif
+
 	if (!connection->outStream) return -1;
 
 	// Lock the semaphore
 	xSemaphoreTakeRecursive(connection->lock, portMAX_DELAY);
 
 	// Get the object ID
-
 	objId = UAVObjGetID(obj);
 	
 	// Determine data length
@@ -926,7 +1026,7 @@ static int32_t sendSingleObject(UAVTalkConnectionData *connection, UAVObjHandle 
 	}
 
 	// Pack the packet into the txBuffer.
-	if(packHeader(buf, buf_size, type, objId, instId, singleInstance, length) < 0)
+	if(packHeader(buf, buf_size, type, msgId, objId, instId, singleInstance, length) < 0)
 		return -1;
 	
 	// Copy data (if any)
@@ -956,33 +1056,98 @@ static int32_t sendSingleObject(UAVTalkConnectionData *connection, UAVObjHandle 
  */
 static int32_t sendNack(UAVTalkConnectionData *connection, uint32_t objId)
 {
-	int32_t dataOffset;
-
+	int32_t dataOffset = UAVTALK_MIN_HEADER_LENGTH;
+#ifdef PIOS_UAVTALK_DEBUG
+	uint16_t msgId = connection->iproc.msgId;
+#else
+	uint32_t msgId = 0;
+#endif
 	if (!connection->outStream) return -1;
 
-	connection->txBuffer[0] = UAVTALK_SYNC_VAL;  // sync byte
-	connection->txBuffer[1] = UAVTALK_TYPE_NACK;
-	// data length inserted here below
-	connection->txBuffer[4] = (uint8_t)(objId & 0xFF);
-	connection->txBuffer[5] = (uint8_t)((objId >> 8) & 0xFF);
-	connection->txBuffer[6] = (uint8_t)((objId >> 16) & 0xFF);
-	connection->txBuffer[7] = (uint8_t)((objId >> 24) & 0xFF);
-
-	dataOffset = UAVTALK_MIN_HEADER_LENGTH;
-
-	// Store the packet length
-	connection->txBuffer[2] = (uint8_t)((dataOffset) & 0xFF);
-	connection->txBuffer[3] = (uint8_t)(((dataOffset) >> 8) & 0xFF);
+	// Create the packet header.
+	packHeader(connection->txBuffer, connection->txSize, UAVTALK_TYPE_NACK, msgId, objId, 0, 1, 0);
 
 	// Calculate checksum
-	connection->txBuffer[dataOffset] = PIOS_CRC_updateCRC(0, connection->txBuffer, dataOffset);
+	packetCRC(connection->txBuffer);
 
 	// Send buffer
-	if (connection->outStream!=NULL) sendPacket(connection, connection->txBuffer, 0, dataOffset);
+	sendPacket(connection, connection->txBuffer, 0, dataOffset);
 
 	// Done
 	return 0;
 }
+
+/**
+ * Send a packet of the connection
+ * \param[in] connection UAVTalkConnection to be used
+ * \param[in] buf The buffer to send
+ * \param[in] length the data length
+ * \param[in] packet_length the total packet length (not including CRC)
+ */
+static void sendPacket(UAVTalkConnectionData *connection, uint8_t* buf, uint16_t length, uint16_t packet_length)
+{
+	// Print a debug message.
+	printPacketDebug(connection, 'S', buf);
+
+	// Send buffer (partially if needed)
+	uint32_t send_length = packet_length + UAVTALK_CHECKSUM_LENGTH;
+	uint32_t sent=0;
+	while (sent < send_length) {
+		uint32_t sending = send_length - sent;
+		if ( sending > connection->txSize ) sending = connection->txSize;
+		if ( connection->outStream != NULL ) {
+			(*connection->outStream)(buf+sent, sending);
+		}
+		sent += sending;
+	}
+
+	// Update stats
+	++connection->stats.txObjects;
+	connection->stats.txBytes += send_length;
+	connection->stats.txObjectBytes += length;
+}
+
+#ifdef PIOS_UAVTALK_DEBUG
+/**
+ * Extract the MsgId from a packet buffer.
+ * \param[in] buf The packet buffer
+ * \return The MsgId
+ */
+static uint32_t packetMsgId(const uint8_t *buf) {
+	return ((uint32_t)buf[7] << 24) + ((uint32_t)buf[6] << 16) + ((uint32_t)buf[5] << 8) + (uint32_t)buf[4];
+}
+
+/**
+ * Extract the time from a packet buffer.
+ * \param[in] buf The packet buffer
+ * \return The time
+ */
+static uint16_t packetTime(const uint8_t *buf) {
+	return ((uint32_t)buf[9] << 8) + (uint32_t)buf[8];
+}
+
+/**
+ * Print a line of debug for message tracking.
+ */
+static void printDebug(UAVTalkConnectionData *connection, char debugType, uint32_t msgId, uint16_t time, uint8_t type, uint32_t objId)
+{
+	uint16_t curTime = (uint16_t)(xTaskGetTickCount() &0xffff);
+  sprintf(connection->printBuffer, "%c 0x%x 0x%x 0x%x %d 0x%x\n\r", debugType, (unsigned int)curTime, (unsigned int)msgId, (unsigned int)time, type, (unsigned int)objId);
+#ifdef USE_Debug
+	InsertDebugQueue(connection->printBuffer);
+#else
+	PIOS_COM_SendString(PIOS_COM_DEBUG, connection->printBuffer);
+#endif
+}
+static void printConnDebug(UAVTalkConnectionData *connection, char debugType)
+{
+	UAVTalkInputProcessor *iproc = &connection->iproc;
+  printDebug(connection, debugType, iproc->msgId, iproc->time, iproc->type, iproc->objId);
+}
+static void printPacketDebug(UAVTalkConnectionData *connection, char debugType, const uint8_t *buf) {
+	printDebug(connection, debugType, packetMsgId(buf), packetTime(buf), packetType(buf), packetObjId(buf));
+}
+#endif
 
 /**
  * Send a packet of the connection

@@ -45,6 +45,8 @@
 
 #define PIOS_INCLUDE_RCVR
 
+#define PIOS_UAVTALK_DEBUG
+
 /* Supported receiver interfaces */
 #define PIOS_INCLUDE_DSM
 #define PIOS_INCLUDE_SBUS
@@ -96,7 +98,11 @@
 #define PIOS_MANUAL_STACK_SIZE          724
 #define PIOS_SYSTEM_STACK_SIZE          460
 #define PIOS_STABILIZATION_STACK_SIZE   524
+#ifdef PIOS_UAVTALK_DEBUG
+#define PIOS_TELEM_STACK_SIZE           600
+#else
 #define PIOS_TELEM_STACK_SIZE           500
+#endif
 #define PIOS_EVENTDISPATCHER_STACK_SIZE 130
 #define IDLE_COUNTS_PER_SEC_AT_NO_LOAD 1995998
 //#define PIOS_QUATERNION_STABILIZATION

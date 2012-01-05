@@ -30,35 +30,31 @@
 #define UAVTALK_PRIV_H
 
 #include "uavobjectsinit.h"
+#include "uavtalk.h"
 
 // Private types and constants
-typedef struct {
-	uint8_t  sync;
-	uint8_t	 type;
-	uint16_t size;
-	uint32_t objId;
-} uavtalk_min_header;
-#define UAVTALK_MIN_HEADER_LENGTH       sizeof(uavtalk_min_header)
-
-typedef struct {
-	uint8_t  sync;
-	uint8_t	 type;
-	uint16_t size;
-	uint32_t objId;
-	uint16_t instId;
-} uavtalk_max_header;
-#define UAVTALK_MAX_HEADER_LENGTH       sizeof(uavtalk_max_header)
+#ifdef PIOS_UAVTALK_DEBUG
+#define UAVTALK_MIN_HEADER_LENGTH 14 // sync(1), type (1), size(2), id(4), time(2), object ID(4)
+#define UAVTALK_MAX_HEADER_LENGTH 16 // sync(1), type (1), size(2), id(4), time(2), object ID (4), instance ID(2, not used in single objects)
+#else
+#define UAVTALK_MIN_HEADER_LENGTH 8 // sync(1), type (1), size(2), object ID(4)
+#define UAVTALK_MAX_HEADER_LENGTH 10 // sync(1), type (1), size(2), object ID (4), instance ID(2, not used in single objects)
+#endif
 
 typedef uint8_t uavtalk_checksum;
 #define UAVTALK_CHECKSUM_LENGTH	        sizeof(uavtalk_checksum)
 #define UAVTALK_MAX_PAYLOAD_LENGTH      (UAVOBJECTS_LARGEST + 1)
-#define UAVTALK_MIN_PACKET_LENGTH	UAVTALK_MAX_HEADER_LENGTH + UAVTALK_CHECKSUM_LENGTH
-#define UAVTALK_MAX_PACKET_LENGTH       UAVTALK_MIN_PACKET_LENGTH + UAVTALK_MAX_PAYLOAD_LENGTH
+#define UAVTALK_MIN_PACKET_LENGTH	UAVTALK_MIN_HEADER_LENGTH + UAVTALK_CHECKSUM_LENGTH
+#define UAVTALK_MAX_PACKET_LENGTH       UAVTALK_MAX_HEADER_LENGTH + UAVTALK_CHECKSUM_LENGTH + UAVTALK_MAX_PAYLOAD_LENGTH
 
 typedef struct {
     UAVObjHandle obj;
     uint8_t type;
     uint16_t packet_size;
+#ifdef PIOS_UAVTALK_DEBUG
+    uint32_t msgId;
+    uint16_t time;
+#endif
     uint32_t objId;
     uint16_t instId;
     uint32_t length;
@@ -77,6 +73,10 @@ typedef struct {
     xSemaphoreHandle respSema;
     UAVObjHandle respObj;
     uint16_t respInstId;
+#ifdef PIOS_UAVTALK_DEBUG
+    uint32_t curMsgId;
+    char *printBuffer;
+#endif
     UAVTalkStats stats;
     UAVTalkInputProcessor iproc;
     uint8_t numRxBuffers;
