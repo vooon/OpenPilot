@@ -46,21 +46,22 @@ static int32_t sendSingleObject(UAVTalkConnectionData *connection, UAVObjHandle 
 static int32_t sendNack(UAVTalkConnectionData *connection, uint32_t objId);
 static int32_t receiveObject(UAVTalkConnectionData *connection, uint8_t type, uint32_t objId, uint16_t instId, uint8_t* data, int32_t length);
 static void updateAck(UAVTalkConnectionData *connection, UAVObjHandle obj, uint16_t instId);
-static uint8_t packetType(const uint8_t *buf);
 static uint16_t packetLength(const uint8_t *buf);
-static uint32_t packetObjId(const uint8_t *buf);
 static void packetCRC(uint8_t *buf);
 static int32_t packHeader(uint8_t *buf, uint32_t buf_length, uint8_t type, uint32_t objId, uint32_t msgId, uint16_t instId, uint8_t singleInstance, uint16_t length);
 static void sendPacket(UAVTalkConnectionData *connection, uint8_t* buf, uint16_t length, uint16_t packet_length);
 #ifdef PIOS_UAVTALK_DEBUG
+static uint8_t packetType(const uint8_t *buf);
 static uint32_t packetMsgId(const uint8_t *buf);
 static uint16_t packetTime(const uint8_t *buf);
+static uint32_t packetObjId(const uint8_t *buf);
 static void printDebug(UAVTalkConnectionData *connection, char debugType, uint32_t msgId, uint16_t time, uint8_t type, uint32_t objId);
 static void printConnDebug(UAVTalkConnectionData *connection, char debugType);
 static void printPacketDebug(UAVTalkConnectionData *connection, char debugType, const uint8_t *buf);
 #else
 #define printDebug(debugType, msgId, time, type, objId) {}
 #define printConnDebug(c, t) {}
+#define printPacketDebug(c, d, b) {}
 #endif
 
 /**
@@ -786,15 +787,6 @@ static int32_t receiveObject(UAVTalkConnectionData *connection, uint8_t type, ui
 }
 
 /**
- * Extract the packet type from a packet buffer.
- * \param[in] buf The packet buffer
- * \return The packet type
- */
-static uint8_t packetType(const uint8_t *buf) {
-	return (uint8_t)buf[1];
-}
-
-/**
  * Extract the packet length from a packet buffer.
  * \param[in] buf The packet buffer
  * \return The packet length
@@ -802,19 +794,6 @@ static uint8_t packetType(const uint8_t *buf) {
 static uint16_t packetLength(const uint8_t *buf) {
 	return ((uint16_t)(buf[3]) << 8) + buf[2];
 	
-}
-
-/**
- * Extract the ObjId from a packet buffer.
- * \param[in] buf The packet buffer
- * \return The ObjId
- */
-static uint32_t packetObjId(const uint8_t *buf) {
-#ifdef PIOS_UAVTALK_DEBUG
-	return ((uint32_t)buf[13] << 24) + ((uint32_t)buf[12] << 16) + ((uint32_t)buf[11] << 8) + (uint32_t)buf[10];
-#else
-	return ((uint32_t)buf[7] << 24) + ((uint32_t)buf[6] << 16) + ((uint32_t)buf[5] << 8) + (uint32_t)buf[4];
-#endif
 }
 
 /**
@@ -1103,6 +1082,15 @@ static void sendPacket(UAVTalkConnectionData *connection, uint8_t* buf, uint16_t
 
 #ifdef PIOS_UAVTALK_DEBUG
 /**
+ * Extract the packet type from a packet buffer.
+ * \param[in] buf The packet buffer
+ * \return The packet type
+ */
+static uint8_t packetType(const uint8_t *buf) {
+	return (uint8_t)buf[1];
+}
+
+/**
  * Extract the MsgId from a packet buffer.
  * \param[in] buf The packet buffer
  * \return The MsgId
@@ -1118,6 +1106,19 @@ static uint32_t packetMsgId(const uint8_t *buf) {
  */
 static uint16_t packetTime(const uint8_t *buf) {
 	return ((uint32_t)buf[9] << 8) + (uint32_t)buf[8];
+}
+
+/**
+ * Extract the ObjId from a packet buffer.
+ * \param[in] buf The packet buffer
+ * \return The ObjId
+ */
+static uint32_t packetObjId(const uint8_t *buf) {
+#ifdef PIOS_UAVTALK_DEBUG
+	return ((uint32_t)buf[13] << 24) + ((uint32_t)buf[12] << 16) + ((uint32_t)buf[11] << 8) + (uint32_t)buf[10];
+#else
+	return ((uint32_t)buf[7] << 24) + ((uint32_t)buf[6] << 16) + ((uint32_t)buf[5] << 8) + (uint32_t)buf[4];
+#endif
 }
 
 /**
