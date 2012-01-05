@@ -28,8 +28,11 @@
 #include <QtEndian>
 #include <QDebug>
 
-//#define UAVTALK_DEBUG
 #ifdef UAVTALK_DEBUG
+#include <time.h>
+#define DEBUG_OUTPUT_FILE "UAVTalkLog.txt"
+#endif
+#ifdef UAVTALK_DEBUG2
   #include "qxtlogger.h"
   #define UAVTALK_QXTLOG_DEBUG(args...) qxtLog->debug(args...)
 #else  // UAVTALK_DEBUG
@@ -77,6 +80,11 @@ UAVTalk::UAVTalk(QIODevice* iodev, UAVObjectManager* objMngr)
     memset(&stats, 0, sizeof(ComStats));
 
     connect(io, SIGNAL(readyRead()), this, SLOT(processInputStream()));
+
+#ifdef UAVTALK_DEBUG
+    curMsgId = 0;
+    debugFile = fopen(DEBUG_OUTPUT_FILE, "w");
+#endif
 }
 
 UAVTalk::~UAVTalk()
@@ -238,6 +246,7 @@ bool UAVTalk::processInputByte(quint8 rxbyte)
             {
                 rxState = STATE_SYNC;
                 UAVTALK_QXTLOG_DEBUG("UAVTalk: Type->Sync");
+		printDebug('T');
                 break;
             }
 
@@ -269,13 +278,54 @@ bool UAVTalk::processInputByte(quint8 rxbyte)
             {   // incorrect packet size
                 rxState = STATE_SYNC;
                 UAVTALK_QXTLOG_DEBUG("UAVTalk: Size->Sync");
+		printDebug('L');
                 break;
             }
 
             rxCount = 0;
+#ifdef UAVTALK_DEBUG
+            rxState = STATE_MSGID;
+#else
             rxState = STATE_OBJID;
             UAVTALK_QXTLOG_DEBUG("UAVTalk: Size->ObjID");
+#endif
             break;
+
+#ifdef UAVTALK_DEBUG
+
+        case STATE_MSGID:
+
+            // Update CRC
+            rxCS = updateCRC(rxCS, rxbyte);
+
+            rxTmpBuffer[rxCount++] = rxbyte;
+            if (rxCount < 4)
+                break;
+
+            rxMsgId = (qint32)qFromLittleEndian<quint32>(rxTmpBuffer);
+
+            rxCount = 0;
+            rxState = STATE_TIME;
+	    break;
+
+        case STATE_TIME:
+
+            // Update CRC
+            rxCS = updateCRC(rxCS, rxbyte);
+
+            if (rxCount == 0)
+            {
+                time = rxbyte;
+                rxCount++;
+                break;
+            }
+
+            time += (quint16)rxbyte << 8;
+
+            rxCount = 0;
+	    rxState = STATE_OBJID;
+	    break;
+#endif
 
         case STATE_OBJID:
 
@@ -298,6 +348,7 @@ bool UAVTalk::processInputByte(quint8 rxbyte)
                     stats.rxErrors++;
                     rxState = STATE_SYNC;
                     UAVTALK_QXTLOG_DEBUG("UAVTalk: ObjID->Sync (badtype)");
+		    printDebug('O');
                     break;
                 }
 
@@ -319,6 +370,7 @@ bool UAVTalk::processInputByte(quint8 rxbyte)
                     stats.rxErrors++;
                     rxState = STATE_SYNC;
                     UAVTALK_QXTLOG_DEBUG("UAVTalk: ObjID->Sync (oversize)");
+		    printDebug('P');
                     break;
                 }
 
@@ -328,6 +380,7 @@ bool UAVTalk::processInputByte(quint8 rxbyte)
                     stats.rxErrors++;
                     rxState = STATE_SYNC;
                     UAVTALK_QXTLOG_DEBUG("UAVTalk: ObjID->Sync (length mismatch)");
+		    printDebug('M');
                     break;
                 }
 
@@ -423,6 +476,7 @@ bool UAVTalk::processInputByte(quint8 rxbyte)
                 stats.rxErrors++;
                 rxState = STATE_SYNC;
                 UAVTALK_QXTLOG_DEBUG("UAVTalk: CSum->Sync (badcrc)");
+		printDebug('C');
                 break;
             }
 
@@ -431,8 +485,10 @@ bool UAVTalk::processInputByte(quint8 rxbyte)
                 stats.rxErrors++;
                 rxState = STATE_SYNC;
                 UAVTALK_QXTLOG_DEBUG("UAVTalk: CSum->Sync (length mismatch)");
+		printDebug('M');
                 break;
             }
+	    printDebug('R', rxMsgId, time, rxType, rxObjId);
 
             mutex->lock();
                 receiveObject(rxType, rxObjId, rxInstId, rxBuffer, rxLength);
@@ -708,17 +764,25 @@ bool UAVTalk::transmitObject(UAVObject* obj, quint8 type, bool allInstances)
  */
 bool UAVTalk::transmitNack(quint32 objId)
 {
-    int dataOffset = 8;
+    int dataOffset = MIN_HEADER_LENGTH;
+#ifdef UAVTALK_DEBUG
+    quint32 msg_id = rxMsgId;
+    qToLittleEndian<quint32>(msg_id, &txBuffer[4]);
+    quint16 time = clock();
+    qToLittleEndian<quint16>(time, &txBuffer[8]);
+#endif
 
     txBuffer[0] = SYNC_VAL;
     txBuffer[1] = TYPE_NACK;
-    qToLittleEndian<quint32>(objId, &txBuffer[4]);
+    qToLittleEndian<quint32>(objId, &txBuffer[dataOffset - 4]);
 
     // Calculate checksum
     txBuffer[dataOffset] = updateCRC(0, txBuffer, dataOffset);
 
     qToLittleEndian<quint16>(dataOffset, &txBuffer[2]);
 
+    // Print a debug message.
+    printDebug('S', msg_id, time, TYPE_NACK, objId);
 
     // Send buffer, check that the transmit backlog does not grow above limit
     if ( io->bytesToWrite() < TX_BUFFER_SIZE )
@@ -739,7 +803,6 @@ bool UAVTalk::transmitNack(quint32 objId)
 
 }
 
-
 /**
  * Send an object through the telemetry link.
  * \param[in] obj Object handle to send
@@ -758,26 +821,35 @@ bool UAVTalk::transmitSingleObject(UAVObject* obj, quint8 type, bool allInstance
     objId = obj->getObjID();
     txBuffer[0] = SYNC_VAL;
     txBuffer[1] = type;
-    qToLittleEndian<quint32>(objId, &txBuffer[4]);
+#ifdef UAVTALK_DEBUG
+    quint32 msg_id = (type == TYPE_ACK) ? rxMsgId : nextMsgId();
+    qToLittleEndian<quint32>(msg_id, &txBuffer[4]);
+    quint16 time = clock() & 0xffff;
+    qToLittleEndian<quint16>(time, &txBuffer[8]);
+    dataOffset = 10;
+#else
+    dataOffset = 4;
+#endif
+    qToLittleEndian<quint32>(objId, &txBuffer[dataOffset]);
+    dataOffset += 4;
+
+    // Print a debug message.
+    printDebug('S', msg_id, time, type, objId);
 
     // Setup instance ID if one is required
-    if ( obj->isSingleInstance() )
-    {
-        dataOffset = 8;
-    }
-    else
+    if ( ! obj->isSingleInstance() )
     {
         // Check if all instances are requested
         if (allInstances)
         {
-            qToLittleEndian<quint16>(allInstId, &txBuffer[8]);
+            qToLittleEndian<quint16>(allInstId, &txBuffer[dataOffset]);
         }
         else
         {
             instId = obj->getInstID();
-            qToLittleEndian<quint16>(instId, &txBuffer[8]);
+            qToLittleEndian<quint16>(instId, &txBuffer[dataOffset]);
         }
-        dataOffset = 10;
+        dataOffset += 2;
     }
 
     // Determine data length
@@ -858,3 +930,29 @@ quint8 UAVTalk::updateCRC(quint8 crc, const quint8* data, qint32 length)
         crc = crc_table[crc ^ *data++];
     return crc;
 }
+
+#ifdef UAVTALK_DEBUG
+/**
+ * Get the next message ID.
+ */
+quint32 UAVTalk::nextMsgId()
+{
+    QMutexLocker locker(mutex);
+    return ++curMsgId;
+}
+
+/**
+ * Print a line of debug for message tracking.
+ */
+void UAVTalk::printDebug(char debugType, quint32 msgId, quint16 time, quint8 type, quint32 objId)
+{
+  if(debugFile == NULL)
+    return;
+  quint16 curTime = (quint16)(clock() & 0xffff);
+  fprintf(debugFile, "%c 0x%x 0x%x 0x%x %d 0x%x\n", debugType, curTime, msgId, time, type, objId);
+}
+void UAVTalk::printDebug(char debugType)
+{
+  printDebug(debugType, rxMsgId, time, rxType, rxObjId);
+}
+#endif

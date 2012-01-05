@@ -34,6 +34,8 @@
 #include "uavobjectmanager.h"
 #include "uavtalk_global.h"
 
+#define UAVTALK_DEBUG
+
 class UAVTALK_EXPORT UAVTalk: public QObject
 {
     Q_OBJECT
@@ -74,9 +76,13 @@ private:
     static const int TYPE_ACK = (TYPE_VER | 0x03);
     static const int TYPE_NACK = (TYPE_VER | 0x04);
 
+#ifdef UAVTALK_DEBUG
+    static const int MIN_HEADER_LENGTH = 14; // sync(1), type (1), size(2), id(4), time(2), object ID(4)
+    static const int MAX_HEADER_LENGTH = 16; // sync(1), type (1), size(2), id(4), time(2), object ID (4), instance ID(2, not used in single objects)
+#else
     static const int MIN_HEADER_LENGTH = 8; // sync(1), type (1), size(2), object ID(4)
     static const int MAX_HEADER_LENGTH = 10; // sync(1), type (1), size(2), object ID (4), instance ID(2, not used in single objects)
-
+#endif
     static const int CHECKSUM_LENGTH = 1;
 
     static const int MAX_PAYLOAD_LENGTH = 256;
@@ -90,7 +96,7 @@ private:
     static const quint8 crc_table[256];
 
     // Types
-    typedef enum {STATE_SYNC, STATE_TYPE, STATE_SIZE, STATE_OBJID, STATE_INSTID, STATE_DATA, STATE_CS} RxStateType;
+    typedef enum {STATE_SYNC, STATE_TYPE, STATE_SIZE, STATE_MSGID, STATE_TIME, STATE_OBJID, STATE_INSTID, STATE_DATA, STATE_CS} RxStateType;
 
     // Variables
     QIODevice* io;
@@ -104,6 +110,12 @@ private:
     quint8 rxTmpBuffer[4];
     quint8 rxType;
     quint32 rxObjId;
+#ifdef UAVTALK_DEBUG
+    quint16 time;
+    quint32 rxMsgId;
+    quint16 curMsgId;
+    FILE *debugFile;
+#endif
     quint16 rxInstId;
     quint16 rxLength;
     quint16 rxPacketLength;
@@ -127,7 +139,14 @@ private:
     bool transmitSingleObject(UAVObject* obj, quint8 type, bool allInstances);
     quint8 updateCRC(quint8 crc, const quint8 data);
     quint8 updateCRC(quint8 crc, const quint8* data, qint32 length);
-
+#ifdef UAVTALK_DEBUG
+    quint32 nextMsgId();
+    void printDebug(char debugType, quint32 msgId, quint16 time, quint8 type, quint32 objId);
+    void printDebug(char debugType);
+#else
+    void printDebug(char debugType, quint32 msgId, quint16 time, quint8 type, quint32 objId) {}
+    void printDebug(char debugType) {}
+#endif
 };
 
 #endif // UAVTALK_H
