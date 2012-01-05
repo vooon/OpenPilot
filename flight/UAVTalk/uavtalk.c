@@ -67,7 +67,6 @@ static void printPacketDebug(UAVTalkConnectionData *connection, char debugType, 
  * Initialize the UAVTalk library
  * This version of the initialization function support allocating multiple receive buffers.
  * \param[in] outputStream Function pointer that is called to send a data buffer
- * \param[in] maxPacketSize The maximum packet size that can be transmitted over the connection
  * \param[in] numRxBuffers The number of receive buffers to allocate
  * \return the UAVTalkConnection
  * \return 0 Failure
@@ -111,7 +110,6 @@ UAVTalkConnection UAVTalkInitializeMultiBuffer(UAVTalkOutputStream outputStream,
 /**
  * Initialize the UAVTalk library
  * \param[in] outputStream Function pointer that is called to send a data buffer
- * \param[in] maxPacketSize The maximum packet size that can be transmitted over the connection
  * \return the UAVTalkConnection
  * \return 0 Failure
  */
@@ -1058,6 +1056,7 @@ static int32_t sendNack(UAVTalkConnectionData *connection, uint32_t objId)
 #else
 	uint32_t msgId = 0;
 #endif
+	if (!connection->outStream) return -1;
 
 	// Create the packet header.
 	packHeader(connection->txBuffer, connection->txSize, UAVTALK_TYPE_NACK, msgId, objId, 0, 1, 0);
