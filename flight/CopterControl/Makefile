@@ -66,6 +66,7 @@ FLASH_TOOL = OPENOCD
 
 # List of modules to include
 OPTMODULES = CameraStab ComUsbBridge
+OPTMODULES += Debug
 ifeq ($(USE_GPS), YES)
 OPTMODULES += GPS
 endif

@@ -49,6 +49,7 @@ ConfigCCHWWidget::ConfigCCHWWidget(QWidget *parent) : ConfigTaskWidget(parent)
     addUAVObjectToWidgetRelation("HwSettings","TelemetrySpeed",m_telemetry->telemetrySpeed);
     addUAVObjectToWidgetRelation("HwSettings","GPSSpeed",m_telemetry->gpsSpeed);
     addUAVObjectToWidgetRelation("HwSettings","ComUsbBridgeSpeed",m_telemetry->comUsbBridgeSpeed);
+    addUAVObjectToWidgetRelation("HwSettings","AuxSpeed",m_telemetry->auxSpeed);
     connect(m_telemetry->cchwHelp,SIGNAL(clicked()),this,SLOT(openHelp()));
     enableControls(false);
     populateWidgets();
