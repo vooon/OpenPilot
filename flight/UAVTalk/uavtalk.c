@@ -33,7 +33,7 @@
 #include "openpilot.h"
 #include "uavtalk_priv.h"
 #include "gcstelemetrystats.h"
-#ifdef USE_DEBUG_Mod
+#ifdef USE_Debug
 #include "debugmod.h"
 #else
 #define DEBUG_QUEUE_BUF_SIZE 64
