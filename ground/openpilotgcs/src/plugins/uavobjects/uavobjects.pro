@@ -73,8 +73,7 @@ HEADERS += $$UAVOBJECT_SYNTHETICS/accessorydesired.h \
     $$UAVOBJECT_SYNTHETICS/receiveractivity.h \
     $$UAVOBJECT_SYNTHETICS/attitudesettings.h \
     $$UAVOBJECT_SYNTHETICS/cameradesired.h \
-    $$UAVOBJECT_SYNTHETICS/faultsettings.h \
-    $$UAVOBJECT_SYNTHETICS/timesync.h
+    $$UAVOBJECT_SYNTHETICS/faultsettings.h
 
 SOURCES += $$UAVOBJECT_SYNTHETICS/accessorydesired.cpp \
     $$UAVOBJECT_SYNTHETICS/ahrsstatus.cpp \
@@ -127,5 +126,4 @@ SOURCES += $$UAVOBJECT_SYNTHETICS/accessorydesired.cpp \
     $$UAVOBJECT_SYNTHETICS/receiveractivity.cpp \
     $$UAVOBJECT_SYNTHETICS/attitudesettings.cpp \
     $$UAVOBJECT_SYNTHETICS/cameradesired.cpp \
-    $$UAVOBJECT_SYNTHETICS/faultsettings.cpp \
-    $$UAVOBJECT_SYNTHETICS/timesync.cpp
+    $$UAVOBJECT_SYNTHETICS/faultsettings.cpp
