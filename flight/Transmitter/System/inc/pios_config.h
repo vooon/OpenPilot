@@ -71,6 +71,8 @@
 #define PIOS_INCLUDE_ADXL345
 #define PIOS_INCLUDE_FLASH
 
+#define PIOS_UAVTALK_DEBUG
+
 /* A really shitty setting saving implementation */
 //#define PIOS_INCLUDE_FLASH_SECTOR_SETTINGS
 

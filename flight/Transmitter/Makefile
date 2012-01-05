@@ -66,7 +66,7 @@ FLASH_TOOL = OPENOCD
 
 # List of modules to include
 OPTMODULES = 
-MODULES = TransmitterControls FirmwareIAP
+MODULES = TransmitterControls FirmwareIAP Debug
 # Telemetry must be last to grab the optional modules
 #MODULES += Telemetry
 
@@ -381,6 +381,8 @@ endif
 ifeq ($(USE_I2C), YES)
 CDEFS += -DUSE_I2C
 endif
+
+CDEFS += -DUSE_Debug
 
 # Place project-specific -D and/or -U options for
 # Assembler with preprocessor here.
