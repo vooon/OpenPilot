@@ -31,6 +31,7 @@
 #ifdef UAVTALK_DEBUG
 #include <time.h>
 #define DEBUG_OUTPUT_FILE "UAVTalkLog.txt"
+#define UAVTALK_MSG_ID_INC 8
 #endif
 #ifdef UAVTALK_DEBUG2
   #include "qxtlogger.h"
@@ -938,7 +939,7 @@ quint8 UAVTalk::updateCRC(quint8 crc, const quint8* data, qint32 length)
 quint32 UAVTalk::nextMsgId()
 {
     QMutexLocker locker(mutex);
-    return ++curMsgId;
+    return curMsgId += UAVTALK_MSG_ID_INC;
 }
 
 /**
@@ -949,7 +950,7 @@ void UAVTalk::printDebug(char debugType, quint32 msgId, quint16 time, quint8 typ
   if(debugFile == NULL)
     return;
   quint16 curTime = (quint16)(clock() & 0xffff);
-  fprintf(debugFile, "%c 0x%x 0x%x 0x%x %d 0x%x\n", debugType, curTime, msgId, time, type, objId);
+  fprintf(debugFile, "%c 0x%x 0x%x 0x%x 0x%x 0x%x\n", debugType, curTime, msgId, time, type, objId);
 }
 void UAVTalk::printDebug(char debugType)
 {
