@@ -66,6 +66,11 @@ typedef struct {
 } UAVTalkInputProcessor;
 
 typedef struct {
+    uint8_t *buffer;
+    xSemaphoreHandle lock;
+} UAVTalkBuffer;
+    
+typedef struct {
     uint8_t canari;
     UAVTalkOutputStream outStream;
     xSemaphoreHandle lock;
@@ -80,9 +85,8 @@ typedef struct {
     UAVTalkStats stats;
     UAVTalkInputProcessor iproc;
     uint8_t numRxBuffers;
-    uint8_t **rxBuffers;
-    xSemaphoreHandle *rxBufferLocks;
     uint8_t curRxBuffer;
+    UAVTalkBuffer *rxBuffers;
     uint32_t txSize;
     uint8_t *txBuffer;
 } UAVTalkConnectionData;
