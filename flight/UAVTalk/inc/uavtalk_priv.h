@@ -81,6 +81,7 @@ typedef struct {
     UAVTalkInputProcessor iproc;
     uint8_t numRxBuffers;
     uint8_t **rxBuffers;
+    xSemaphoreHandle *rxBufferLocks;
     uint8_t curRxBuffer;
     uint32_t txSize;
     uint8_t *txBuffer;
