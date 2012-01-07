@@ -98,12 +98,16 @@ UAVTalkConnection UAVTalkInitializeMultiBuffer(UAVTalkOutputStream outputStream,
 #endif
 	// allocate buffers
 	connection->rxBuffers = (uint8_t**)pvPortMalloc(numRxBuffers * sizeof(uint8_t*));
+	connection->rxBufferLocks = (xSemaphoreHandle*)pvPortMalloc(numRxBuffers * sizeof(xSemaphoreHandle*));
 	if (!connection->rxBuffers) return 0;
 	for (i = 0; i < numRxBuffers; ++i)
+	{
 		if (!(connection->rxBuffers[i] = pvPortMalloc(UAVTALK_MAX_PACKET_LENGTH)))
 			return 0;
 		else
 			connection->rxBuffers[i][0] = 0;
+		connection->rxBufferLocks[i] = xSemaphoreCreateRecursiveMutex();
+	}
 	if (!(connection->txBuffer = pvPortMalloc(UAVTALK_MAX_PACKET_LENGTH)))
 		return 0;
 	vSemaphoreCreateBinary(connection->respSema);
@@ -413,13 +417,15 @@ UAVTalkRxState UAVTalkProcessInputStream(UAVTalkConnection connectionHandle, uin
 	{
 
 		// Reuse the current buffer on error.
-		if(iproc->state == UAVTALK_STATE_ERROR)
+		if(iproc->state != UAVTALK_STATE_ERROR)
 		{
-		  rxBuffer[0] = 0;
+			// Release the buffer.
+			xSemaphoreGiveRecursive(connection->rxBufferLocks[connection->curRxBuffer]);
+			// Decrement to the previous buffer.
 			if(connection->curRxBuffer == 0)
 				connection->curRxBuffer = connection->numRxBuffers - 1;
 			else
-				++connection->curRxBuffer;
+				--connection->curRxBuffer;
 		}
 
 		iproc->state = UAVTALK_STATE_SYNC;
@@ -451,21 +457,11 @@ UAVTalkRxState UAVTalkProcessInputStream(UAVTalkConnection connectionHandle, uin
 				uint8_t nextRxBuffer = connection->curRxBuffer + 1;
 				if (nextRxBuffer >= connection->numRxBuffers)
 					nextRxBuffer = 0;
-				// Is this buffer free?
-				if (connection->rxBuffers[nextRxBuffer][0] == 0)
-				{
-					connection->curRxBuffer = nextRxBuffer;
-					rxBuffer = connection->rxBuffers[nextRxBuffer];
-				}
-				else
-				{
-					char buf[32];
-					connection->stats.rxErrors++;
-					sprintf(buf, "Dropping packet %d %d\n\r", (unsigned int)connection->stats.rxErrors, (unsigned int)connection->stats.txBytes);
-					PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
-					iproc->rxCount = 0;
-					break;
-				}
+				// Lock the buffer.
+				xSemaphoreTakeRecursive(connection->rxBufferLocks[nextRxBuffer], portMAX_DELAY);
+				// Switch to the new buffer.
+				connection->curRxBuffer = nextRxBuffer;
+				rxBuffer = connection->rxBuffers[nextRxBuffer];
 			}
 			
 			// Initialize and update the CRC
@@ -687,6 +683,8 @@ UAVTalkRxState UAVTalkProcessInputStream(UAVTalkConnection connectionHandle, uin
 			connection->stats.rxObjectBytes += iproc->length;
 			connection->stats.rxObjects++;
 			xSemaphoreGiveRecursive(connection->lock);
+			// Release the buffer.
+			xSemaphoreGiveRecursive(connection->rxBufferLocks[connection->curRxBuffer]);
 	}
 	else if(iproc->state == UAVTALK_STATE_ERROR)
 		iproc->rxCount = 0;
