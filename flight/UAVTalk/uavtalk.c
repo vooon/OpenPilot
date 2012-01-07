@@ -97,16 +97,13 @@ UAVTalkConnection UAVTalkInitializeMultiBuffer(UAVTalkOutputStream outputStream,
 	connection->printBuffer = (char*)pvPortMalloc(DEBUG_QUEUE_BUF_SIZE);
 #endif
 	// allocate buffers
-	connection->rxBuffers = (uint8_t**)pvPortMalloc(numRxBuffers * sizeof(uint8_t*));
-	connection->rxBufferLocks = (xSemaphoreHandle*)pvPortMalloc(numRxBuffers * sizeof(xSemaphoreHandle*));
+	connection->rxBuffers = (UAVTalkBuffer*)pvPortMalloc(numRxBuffers * sizeof(UAVTalkBuffer));
 	if (!connection->rxBuffers) return 0;
 	for (i = 0; i < numRxBuffers; ++i)
 	{
-		if (!(connection->rxBuffers[i] = pvPortMalloc(UAVTALK_MAX_PACKET_LENGTH)))
+		if (!(connection->rxBuffers[i].buffer = pvPortMalloc(UAVTALK_MAX_PACKET_LENGTH)))
 			return 0;
-		else
-			connection->rxBuffers[i][0] = 0;
-		connection->rxBufferLocks[i] = xSemaphoreCreateRecursiveMutex();
+		connection->rxBuffers[i].lock = xSemaphoreCreateRecursiveMutex();
 	}
 	if (!(connection->txBuffer = pvPortMalloc(UAVTALK_MAX_PACKET_LENGTH)))
 		return 0;
@@ -309,19 +306,17 @@ int32_t UAVTalkSendObject(UAVTalkConnection connectionHandle, UAVObjHandle obj, 
  * \return 0 Success
  * \return -1 Failure
  */
-int32_t UAVTalkSendPacket(UAVTalkConnection connectionHandle, uint8_t *packet)
+int32_t UAVTalkSendPacket(UAVTalkConnection connectionHandle, UAVTalkBufferHandle buffer)
 {
 	UAVTalkConnectionData *connection;
     CHECKCONHANDLE(connectionHandle,connection,return -1);
+	UAVTalkBuffer *buf = (UAVTalkBuffer*)buffer;
+  uint8_t *packet = buf->buffer;
 	uint32_t packet_length = packetLength(packet);
 	uint32_t length = packet_length - UAVTALK_MIN_HEADER_LENGTH;
-	// Get transaction lock (will block if a transaction is pending)
-	xSemaphoreTakeRecursive(connection->transLock, portMAX_DELAY);
 	// Send the packet
 	xSemaphoreTakeRecursive(connection->lock, portMAX_DELAY);
 	sendPacket(connection, packet, length, packet_length);
-	xSemaphoreGiveRecursive(connection->lock);
-	// Get transaction lock (will block if a transaction is pending)
 	xSemaphoreGiveRecursive(connection->lock);
 	return 0;
 }
@@ -404,7 +399,7 @@ UAVTalkRxState UAVTalkProcessInputStream(UAVTalkConnection connectionHandle, uin
 	UAVTalkConnectionData *connection;
     CHECKCONHANDLE(connectionHandle,connection,return -1);
 	UAVTalkInputProcessor *iproc = &connection->iproc;
-	uint8_t *rxBuffer = connection->rxBuffers[connection->curRxBuffer];
+	UAVTalkBuffer *rxBuffer = connection->rxBuffers + connection->curRxBuffer;
 
 	// Increment the rxBytes count
 	++connection->stats.rxBytes;
@@ -420,7 +415,7 @@ UAVTalkRxState UAVTalkProcessInputStream(UAVTalkConnection connectionHandle, uin
 		if(iproc->state != UAVTALK_STATE_ERROR)
 		{
 			// Release the buffer.
-			xSemaphoreGiveRecursive(connection->rxBufferLocks[connection->curRxBuffer]);
+			xSemaphoreGiveRecursive(rxBuffer->lock);
 			// Decrement to the previous buffer.
 			if(connection->curRxBuffer == 0)
 				connection->curRxBuffer = connection->numRxBuffers - 1;
@@ -433,7 +428,7 @@ UAVTalkRxState UAVTalkProcessInputStream(UAVTalkConnection connectionHandle, uin
 
 	// Insert this byte into the rx buffer if we're in the middle of a packet.
 	else if(iproc->state != UAVTALK_STATE_SYNC) {
-		rxBuffer[iproc->rxCount++] = rxbyte;
+		rxBuffer->buffer[iproc->rxCount++] = rxbyte;
 
 		// update the CRC
 		if(iproc->state != UAVTALK_STATE_CS)
@@ -451,24 +446,22 @@ UAVTalkRxState UAVTalkProcessInputStream(UAVTalkConnection connectionHandle, uin
 			}
 
 			// Switch to the next RX buffer.
-			rxBuffer[0] = 0;
-			if(rxBuffer[0] != 0)
 			{
 				uint8_t nextRxBuffer = connection->curRxBuffer + 1;
 				if (nextRxBuffer >= connection->numRxBuffers)
 					nextRxBuffer = 0;
-				// Lock the buffer.
-				xSemaphoreTakeRecursive(connection->rxBufferLocks[nextRxBuffer], portMAX_DELAY);
 				// Switch to the new buffer.
 				connection->curRxBuffer = nextRxBuffer;
-				rxBuffer = connection->rxBuffers[nextRxBuffer];
+				rxBuffer = connection->rxBuffers + nextRxBuffer;
+				// Lock the buffer.
+				xSemaphoreTakeRecursive(rxBuffer->lock, portMAX_DELAY);
 			}
 			
 			// Initialize and update the CRC
 			iproc->cs = PIOS_CRC_updateByte(0, rxbyte);
 
 			// Add this byte to the RX buffer
-			rxBuffer[0] = rxbyte;
+			rxBuffer->buffer[0] = rxbyte;
 			iproc->rxCount = 1;
 			iproc->rxPacketLength = 1;
 
@@ -679,12 +672,12 @@ UAVTalkRxState UAVTalkProcessInputStream(UAVTalkConnection connectionHandle, uin
 	{
 	    printConnDebug(connection, 'R');
 			xSemaphoreTakeRecursive(connection->lock, portMAX_DELAY);
-			receiveObject(connection, iproc->type, iproc->objId, iproc->instId, rxBuffer + iproc->instanceLength + UAVTALK_MIN_HEADER_LENGTH, iproc->length);
+			receiveObject(connection, iproc->type, iproc->objId, iproc->instId, rxBuffer->buffer + iproc->instanceLength + UAVTALK_MIN_HEADER_LENGTH, iproc->length);
 			connection->stats.rxObjectBytes += iproc->length;
 			connection->stats.rxObjects++;
 			xSemaphoreGiveRecursive(connection->lock);
 			// Release the buffer.
-			xSemaphoreGiveRecursive(connection->rxBufferLocks[connection->curRxBuffer]);
+			xSemaphoreGiveRecursive(rxBuffer->lock);
 	}
 	else if(iproc->state == UAVTALK_STATE_ERROR)
 		iproc->rxCount = 0;
@@ -694,19 +687,41 @@ UAVTalkRxState UAVTalkProcessInputStream(UAVTalkConnection connectionHandle, uin
 }
 
 /**
- * Returns a pointer to the last packet a packet received on a UAVTalk connection.
+ * Returns a pointer to the buffer containing the last packet received on a UAVTalk connection.
  * The sending connection must be in the COMPLETE state.
  *
  * \param[in] connection UAVTalkConnection to extract the packet from
- * \return A pointer to the packet buffer
+ * \return A pointer to the buffer
  */
-uint8_t *UAVTalkGetPacket(UAVTalkConnection connection)
+UAVTalkBufferHandle UAVTalkGetCurrentBuffer(UAVTalkConnection connection)
 {
 	UAVTalkConnectionData *con;
     CHECKCONHANDLE(connection,con,return 0);
 
 	// Return the current packet
-	return con->rxBuffers[con->curRxBuffer];
+	return con->rxBuffers[con->curRxBuffer].buffer;
+}
+
+/**
+ * Locks the given buffer.
+ *
+ * \param[in] buffer The buffer to lock.
+ */
+void UAVTalkLockBuffer(UAVTalkBufferHandle buffer)
+{
+	UAVTalkBuffer *buf = (UAVTalkBuffer*)buffer;
+	xSemaphoreTakeRecursive(buf->lock, portMAX_DELAY);
+}
+
+/**
+ * Releases the lock on the given buffer.
+ *
+ * \param[in] buffer The buffer to lock.
+ */
+void UAVTalkReleaseBuffer(UAVTalkBufferHandle buffer)
+{
+	UAVTalkBuffer *buf = (UAVTalkBuffer*)buffer;
+	xSemaphoreGiveRecursive(buf->lock);
 }
 
 /**
