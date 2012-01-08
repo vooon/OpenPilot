@@ -291,7 +291,7 @@ static void processObjEvent(UAVObjEvent * ev, RouterComms *comm)
 			extern uint32_t pios_rcvr_group_map[];
 			uint32_t val = PIOS_RCVR_Read(pios_rcvr_group_map[MANUALCONTROLSETTINGS_CHANNELGROUPS_PPM],	i+1);
 			if(debug) {
-				sprintf(printBuffer, "%s %x %x ", printBuffer, (unsigned int)rcvr.Channel[i], (unsigned int)val);
+				sprintf(printBuffer, "%s %x ", printBuffer, (unsigned int)val);
 				xPortGetFreeHeapSize();
 			}
 			rcvr.Channel[i] = val;
