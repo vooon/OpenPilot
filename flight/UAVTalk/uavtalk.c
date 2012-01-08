@@ -669,14 +669,16 @@ UAVTalkRxState UAVTalkProcessInputStream(UAVTalkConnection connectionHandle, uin
 	}
 
 	if (iproc->state == UAVTALK_STATE_COMPLETE)
-		printConnDebug(connection, 'R');
-	if (iproc->state == UAVTALK_STATE_COMPLETE && (iproc->obj != NULL || iproc->type == UAVTALK_TYPE_NACK || iproc->type == UAVTALK_TYPE_OBJ_REQ))
 	{
-		xSemaphoreTakeRecursive(connection->lock, portMAX_DELAY);
-		receiveObject(connection, iproc->type, iproc->objId, iproc->instId, rxBuffer->buffer + iproc->instanceLength + UAVTALK_MIN_HEADER_LENGTH, iproc->length);
+		printConnDebug(connection, 'R');
+		if (iproc->obj != NULL || ((iproc->type == UAVTALK_TYPE_NACK || iproc->type == UAVTALK_TYPE_OBJ_REQ) && (connection->numRxBuffers == 1)))
+		{
+			xSemaphoreTakeRecursive(connection->lock, portMAX_DELAY);
+			receiveObject(connection, iproc->type, iproc->objId, iproc->instId, rxBuffer->buffer + iproc->instanceLength + UAVTALK_MIN_HEADER_LENGTH, iproc->length);
+			xSemaphoreGiveRecursive(connection->lock);
+		}
 		connection->stats.rxObjectBytes += iproc->length;
 		connection->stats.rxObjects++;
-		xSemaphoreGiveRecursive(connection->lock);
 		// Release the buffer.
 		xSemaphoreGiveRecursive(rxBuffer->lock);
 	}
@@ -784,7 +786,7 @@ static int32_t receiveObject(UAVTalkConnectionData *connection, uint8_t type, ui
 			break;
 		case UAVTALK_TYPE_OBJ_REQ:
 			// Send requested object if message is of type OBJ_REQ
-			if ((obj == 0) && (connection->numRxBuffers == 1))
+			if (obj == 0)
 				sendNack(connection, objId, connection->iproc.msgId);
 			else
 				sendObject(connection, obj, instId, UAVTALK_TYPE_OBJ, connection->iproc.msgId);
