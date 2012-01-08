@@ -548,24 +548,7 @@ void PIOS_Board_Init(void) {
 	PIOS_COM_SendString(PIOS_COM_TELEM_GCS, "Hello GCS\n\r");
 	PIOS_COM_SendString(PIOS_COM_DEBUG, "Hello Debug\n\r");
 
-	/* Configure the rcvr port */
-	uint8_t hwsettings_rcvrport;
-	HwSettingsCC_RcvrPortGet(&hwsettings_rcvrport);
-
-	{
-		uint32_t pios_ppm_id;
-		PIOS_PPM_Init(&pios_ppm_id, &pios_ppm_cfg);
-
-		uint32_t pios_ppm_rcvr_id;
-		if (PIOS_RCVR_Init(&pios_ppm_rcvr_id, &pios_ppm_rcvr_driver, pios_ppm_id)) {
-			PIOS_Assert(0);
-		}
-		pios_rcvr_group_map[MANUALCONTROLSETTINGS_CHANNELGROUPS_PPM] = pios_ppm_rcvr_id;
-	}
-
-	/* Remap AFIO pin */
-	GPIO_PinRemapConfig( GPIO_Remap_SWJ_NoJTRST, ENABLE);
-
+#ifdef PIOS_TRANSMITTER_ANALOG
 	// Initialize switch GPIO pins
 	{
 		GPIO_TypeDef *GPIO_GPIOxs[] = {
@@ -605,6 +588,25 @@ void PIOS_Board_Init(void) {
 
 	// Initialize the XBee RSSI PWM input.
 	PIOS_PWM_Init(&rssi_pwm_id, &pios_pwm_cfg);
+#else
+	/* Configure the rcvr port */
+	uint8_t hwsettings_rcvrport;
+	HwSettingsCC_RcvrPortGet(&hwsettings_rcvrport);
+
+	{
+		uint32_t pios_ppm_id;
+		PIOS_PPM_Init(&pios_ppm_id, &pios_ppm_cfg);
+
+		uint32_t pios_ppm_rcvr_id;
+		if (PIOS_RCVR_Init(&pios_ppm_rcvr_id, &pios_ppm_rcvr_driver, pios_ppm_id)) {
+			PIOS_Assert(0);
+		}
+		pios_rcvr_group_map[MANUALCONTROLSETTINGS_CHANNELGROUPS_PPM] = pios_ppm_rcvr_id;
+	}
+#endif
+
+	/* Remap AFIO pin */
+	GPIO_PinRemapConfig( GPIO_Remap_SWJ_NoJTRST, ENABLE);
 
 	PIOS_ADC_Init();
 	PIOS_GPIO_Init();

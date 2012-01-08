@@ -161,14 +161,14 @@ extern uint32_t pios_com_telem_usb_id;
 #else
 // 1 = Xbee, 2 = Extra, 3 = USB
 // Debug mode
-//#define PIOS_COM_TELEM_GCS              (pios_com_usart1_id)
-//#define PIOS_COM_TELEM_OUT              (pios_com_usart2_id)
-//#define PIOS_COM_DEBUG                  (pios_com_usart3_id)
+#define PIOS_COM_TELEM_GCS              (pios_com_usart1_id)
+#define PIOS_COM_TELEM_OUT              (pios_com_usart2_id)
+#define PIOS_COM_DEBUG                  (pios_com_usart3_id)
 
 // Normal mode
-#define PIOS_COM_TELEM_GCS              (pios_com_usart3_id)
-#define PIOS_COM_TELEM_OUT              (pios_com_usart1_id)
-#define PIOS_COM_DEBUG                  (pios_com_usart2_id)
+//#define PIOS_COM_TELEM_GCS              (pios_com_usart3_id)
+//#define PIOS_COM_TELEM_OUT              (pios_com_usart1_id)
+//#define PIOS_COM_DEBUG                  (pios_com_usart2_id)
 #endif
 
 #if defined(PIOS_INCLUDE_GPS)
@@ -178,6 +178,9 @@ extern uint32_t pios_com_gps_id;
 
 #define PIOS_COM_TELEM_USB              (pios_com_telem_usb_id)
 
+//#define PIOS_TRANSMITTER_ANALOG
+
+#ifdef PIOS_TRANSMITTER_ANALOG
 //-------------------------
 // ADC
 // PIOS_ADC_PinGet(0) = Roll Prim
@@ -256,6 +259,19 @@ extern uint32_t pios_com_gps_id;
 #define PIOS_ADC_CHANNELS			{ PIOS_ADC_PIN1_GPIO_CHANNEL, PIOS_ADC_PIN2_GPIO_CHANNEL, PIOS_ADC_PIN3_GPIO_CHANNEL, PIOS_ADC_PIN4_GPIO_CHANNEL, PIOS_ADC_PIN5_GPIO_CHANNEL, PIOS_ADC_PIN6_GPIO_CHANNEL, PIOS_ADC_PIN7_GPIO_CHANNEL, PIOS_ADC_PIN8_GPIO_CHANNEL, PIOS_ADC_PIN9_GPIO_CHANNEL }
 #define PIOS_ADC_MAPPING			{ PIOS_ADC_PIN1_ADC, PIOS_ADC_PIN2_ADC, PIOS_ADC_PIN3_ADC, PIOS_ADC_PIN4_ADC, PIOS_ADC_PIN5_ADC, PIOS_ADC_PIN6_ADC, PIOS_ADC_PIN7_ADC, PIOS_ADC_PIN8_ADC, PIOS_ADC_PIN9_ADC }
 #define PIOS_ADC_CHANNEL_MAPPING		{ PIOS_ADC_PIN1_ADC_NUMBER, PIOS_ADC_PIN2_ADC_NUMBER, PIOS_ADC_PIN3_ADC_NUMBER, PIOS_ADC_PIN4_ADC_NUMBER, PIOS_ADC_PIN5_ADC_NUMBER, PIOS_ADC_PIN6_ADC_NUMBER, PIOS_ADC_PIN7_ADC_NUMBER, PIOS_ADC_PIN8_ADC_NUMBER, PIOS_ADC_PIN9_ADC_NUMBER }
+#else
+#define PIOS_ADC_USE_TEMP_SENSOR		0
+#define PIOS_ADC_TEMP_SENSOR_ADC		ADC1
+#define PIOS_ADC_TEMP_SENSOR_ADC_CHANNEL	1
+
+#define PIOS_ADC_NUM_PINS			0
+
+#define PIOS_ADC_PORTS				{ }
+#define PIOS_ADC_PINS				{ }
+#define PIOS_ADC_CHANNELS			{ }
+#define PIOS_ADC_MAPPING			{ }
+#define PIOS_ADC_CHANNEL_MAPPING		{ }
+#endif
 
 #define PIOS_ADC_NUM_CHANNELS			(PIOS_ADC_NUM_PINS + PIOS_ADC_USE_TEMP_SENSOR)
 #define PIOS_ADC_NUM_ADC_CHANNELS		2

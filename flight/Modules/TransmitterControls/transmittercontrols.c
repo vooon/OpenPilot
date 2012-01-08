@@ -54,9 +54,11 @@
 #include "transmittercontrols.h"
 #include "manualcontrolsettings.h"
 #include "gcsreceiver.h"
-
-#define RECEIVER_INPUT
-//#define ANALOG_INPUT
+#ifdef USE_Debug
+#include "debugmod.h"
+#else
+#define DEBUG_QUEUE_BUF_SIZE 64
+#endif
 
 // Private constants
 #define STACK_SIZE_BYTES 540
@@ -91,6 +93,7 @@ typedef RouterComms *RouterCommsHandle;
 static uint32_t txErrors;
 static uint32_t txRetries;
 static RouterComms comms[2];
+static char *printBuffer;
 
 // Private functions
 static void transmitterTxTask(void *parameters);
@@ -151,24 +154,29 @@ int32_t TransmitterControlsInitialize(void) {
 	comms[1].txqueue = xQueueCreate(TELEM_QUEUE_SIZE, sizeof(UAVObjEvent));
 
 	// Initialise UAVTalk
-	comms[0].com = UAVTalkInitializeMultiBuffer(&transmitData1, 3);
-	comms[1].com = UAVTalkInitializeMultiBuffer(&transmitData2, 3);
+	comms[0].com = UAVTalkInitializeMultiBuffer(&transmitData1, 3, 2);
+	comms[1].com = UAVTalkInitializeMultiBuffer(&transmitData2, 3, 3);
 
 	//TransmitterControlsSettingsConnectCallback(&settingsUpdatedCb);
+
+	// Allocate a debug print buffer
+	printBuffer = (char*)pvPortMalloc(DEBUG_QUEUE_BUF_SIZE);
 
 	// Create periodic event that will be used to send transmitter state.
 	UAVObjEvent ev;
 	memset(&ev, 0, sizeof(UAVObjEvent));
 	EventPeriodicQueueCreate(&ev, comms[1].txqueue, RECEIVER_READ_PERIOD_MS);
 
+#ifdef PIOS_TRANSMITTER_ANALOG
 	PIOS_ADC_Config((PIOS_ADC_RATE / 1000.0f) * UPDATE_RATE);
+#endif
 
 	return 0;
 }
 
 MODULE_INITCALL(TransmitterControlsInitialize, TransmitterControlsStart)
 
-#ifdef ANALOG_INPUT
+#ifdef PIOS_TRANSMITTER_ANALOG
 /**
  * Read the primary and trim ADC channels for a control stick and scale it appropriately
  */
@@ -205,7 +213,6 @@ static void processObjEvent(UAVObjEvent * ev, RouterComms *comm)
 
 	if (ev->obj == 0) {
 		GCSReceiverData rcvr;
-		char buf[50];
 		int i;
 		bool debug = false;
 
@@ -215,26 +222,7 @@ static void processObjEvent(UAVObjEvent * ev, RouterComms *comm)
 		}
 		++cntr;
 
-#ifdef RECEIVER_INPUT
-		if(debug)
-			PIOS_COM_SendString(PIOS_COM_DEBUG, "Rcvr: ");
-
-		// Read the receiver channels.
-		for (i = 0; i < GCSRECEIVER_CHANNEL_NUMELEM; ++i) {
-			extern uint32_t pios_rcvr_group_map[];
-			uint32_t val = PIOS_RCVR_Read(pios_rcvr_group_map[MANUALCONTROLSETTINGS_CHANNELGROUPS_PPM],	i+1);
-			if(debug) {
-				sprintf(buf, "%x %x  ", (unsigned int)rcvr.Channel[i], (unsigned int)val);
-				PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
-				xPortGetFreeHeapSize();
-			}
-			rcvr.Channel[i] = val;
-		}
-		if(debug)
-			PIOS_COM_SendString(PIOS_COM_DEBUG, "\n\r");
-
-#else
-
+#ifdef PIOS_TRANSMITTER_ANALOG
 		if(debug) {
 			static int32_t prev_adc[PIOS_ADC_NUM_CHANNELS];
 			PIOS_COM_SendString(PIOS_COM_DEBUG, "ADC: ");
@@ -294,7 +282,24 @@ static void processObjEvent(UAVObjEvent * ev, RouterComms *comm)
 			}
 			PIOS_COM_SendString(PIOS_COM_DEBUG, "\n\r");
 		}
+#else
+		if(debug)
+			strcpy(printBuffer, "Rcvr:");
 
+		// Read the receiver channels.
+		for (i = 0; i < GCSRECEIVER_CHANNEL_NUMELEM; ++i) {
+			extern uint32_t pios_rcvr_group_map[];
+			uint32_t val = PIOS_RCVR_Read(pios_rcvr_group_map[MANUALCONTROLSETTINGS_CHANNELGROUPS_PPM],	i+1);
+			if(debug) {
+				sprintf(printBuffer, "%s %x %x ", printBuffer, (unsigned int)rcvr.Channel[i], (unsigned int)val);
+				xPortGetFreeHeapSize();
+			}
+			rcvr.Channel[i] = val;
+		}
+		if(debug) {
+			sprintf(printBuffer, "%s\n\r", printBuffer);
+			InsertDebugQueue(printBuffer);
+		}
 #endif
 
 		// Set the GCSReceiverData object.
@@ -353,10 +358,12 @@ static void processObjEvent(UAVObjEvent * ev, RouterComms *comm)
 		case EV_TRANSMIT_REQ:
 			// Send packet (with retries)
 			while (retries < MAX_RETRIES && success == -1) {
+				// Relay the packet.
 				success = UAVTalkSendPacket(comm->com, ev->obj);
-				*((char*)ev->obj) = 0;
 				++retries;
 			}
+			// Release the buffer.
+			UAVTalkReleaseBuffer(ev->obj);
 			// Update stats
 			txRetries += (retries - 1);
 			if (success == -1) {
@@ -408,17 +415,16 @@ static void transmitterRxTask(void *parameters)
 					UAVTalkProcessInputStream(&(comm->com), serial_data[i]);
 					UAVTalkRxState state = UAVTalkProcessInputStream(comm->com, serial_data[i]);
 					if(state == UAVTALK_STATE_COMPLETE) {
-						//char buf[16];
-						//sprintf(buf, "Rcvd from %d\n\r", (unsigned int)comm->num);
-						//PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
 						// Send an event to the other connection to transmit the packet.
 						UAVObjEvent ev;
-						ev.obj = UAVTalkGetPacket(comm->com);
+						ev.obj = UAVTalkGetCurrentBuffer(comm->com);
 						ev.instId = 0;
 						ev.event = EV_TRANSMIT_REQ;
+						// Lock the buffer.
+						UAVTalkLockBuffer(ev.obj);
 						// will not block if queue is full
 						if(xQueueSend(comm->relay_comm->txqueue, &ev, 0) != pdTRUE)
-							*((char*)ev.obj) = 0;
+							UAVTalkReleaseBuffer(ev.obj);
 					}
 				}
 			}
