@@ -24,8 +24,8 @@
  */
 
 
-#ifndef STM32103CB_CC_H_
-#define STM32103CB_CC_H_
+#ifndef STM32103C8_TRANSMITTER_H_
+#define STM32103C8_TRANSMITTER_H_
 
 #define ADD_ONE_ADC
 //#define MOVECOPTER
@@ -161,14 +161,14 @@ extern uint32_t pios_com_telem_usb_id;
 #else
 // 1 = Xbee, 2 = Extra, 3 = USB
 // Debug mode
-#define PIOS_COM_TELEM_GCS              (pios_com_usart1_id)
-#define PIOS_COM_TELEM_OUT              (pios_com_usart2_id)
-#define PIOS_COM_DEBUG                  (pios_com_usart3_id)
+//#define PIOS_COM_TELEM_GCS              (pios_com_usart1_id)
+//#define PIOS_COM_TELEM_OUT              (pios_com_usart2_id)
+//#define PIOS_COM_DEBUG                  (pios_com_usart3_id)
 
 // Normal mode
-//#define PIOS_COM_TELEM_GCS              (pios_com_usart3_id)
-//#define PIOS_COM_TELEM_OUT              (pios_com_usart1_id)
-//#define PIOS_COM_DEBUG                  (pios_com_usart2_id)
+#define PIOS_COM_TELEM_GCS              (pios_com_usart3_id)
+#define PIOS_COM_TELEM_OUT              (pios_com_usart1_id)
+#define PIOS_COM_DEBUG                  (pios_com_usart2_id)
 #endif
 
 #if defined(PIOS_INCLUDE_GPS)
@@ -343,9 +343,4 @@ extern uint32_t pios_com_gps_id;
 #define PIOS_USB_DETECT_EXTI_LINE               EXTI_Line15
 #define PIOS_IRQ_USB_PRIORITY                   PIOS_IRQ_PRIO_MID
 
-//------------------------
-// UAVTalkBus Devices
-//------------------------
-#define PIOS_UAVTALK_NUM			2
-#define PIOS_UAVTALK_PORTS			{ PIOS_COM_TELEM_USB, PIOS_COM_TELEM_RF }
 #endif /* STM32103CB_AHRS_H_ */

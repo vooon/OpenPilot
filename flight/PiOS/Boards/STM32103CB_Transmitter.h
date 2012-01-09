@@ -290,9 +290,4 @@ extern uint32_t pios_com_gps_id;
 #define PIOS_USB_DETECT_EXTI_LINE               EXTI_Line15
 #define PIOS_IRQ_USB_PRIORITY                   PIOS_IRQ_PRIO_MID
 
-//------------------------
-// UAVTalkBus Devices
-//------------------------
-#define PIOS_UAVTALK_NUM			2
-#define PIOS_UAVTALK_PORTS			{ PIOS_COM_TELEM_USB, PIOS_COM_TELEM_RF }
 #endif /* STM32103CB_AHRS_H_ */
