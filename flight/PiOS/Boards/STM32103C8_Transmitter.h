@@ -178,7 +178,7 @@ extern uint32_t pios_com_gps_id;
 
 #define PIOS_COM_TELEM_USB              (pios_com_telem_usb_id)
 
-//#define PIOS_TRANSMITTER_ANALOG
+#define PIOS_TRANSMITTER_ANALOG
 
 #ifdef PIOS_TRANSMITTER_ANALOG
 //-------------------------
@@ -336,6 +336,8 @@ extern uint32_t pios_com_gps_id;
 //-------------------------
 // USB
 //-------------------------
+#define PIOS_USB_HID_MAX_DEVS                   1
+
 #define PIOS_USB_ENABLED                        1
 #define PIOS_USB_HID_MAX_DEVS                   1
 #define PIOS_USB_DETECT_GPIO_PORT               GPIOC

@@ -225,32 +225,29 @@ static void processObjEvent(UAVObjEvent * ev, RouterComms *comm)
 #ifdef PIOS_TRANSMITTER_ANALOG
 		if(debug) {
 			static int32_t prev_adc[PIOS_ADC_NUM_CHANNELS];
-			PIOS_COM_SendString(PIOS_COM_DEBUG, "ADC: ");
+
+			strcpy(printBuffer, "ADC:");
 			for(i = 0; i < PIOS_ADC_NUM_CHANNELS; ++i) {
 				int32_t cur_adc = PIOS_ADC_PinGet(i);
 				int32_t diff = (int32_t)abs(prev_adc[i] - cur_adc);
 				//sprintf(buf, "%x ", (unsigned int)PIOS_ADC_PinGet(i));
 				if(diff > 20) {
-					sprintf(buf, "%x ", (unsigned int)PIOS_ADC_PinGet(i));
-					PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
+					sprintf(printBuffer, "%s %x", printBuffer, (unsigned int)PIOS_ADC_PinGet(i));
 				} else
-					PIOS_COM_SendString(PIOS_COM_DEBUG, "--- ");
+					sprintf(printBuffer, "%s ---", printBuffer);
 				prev_adc[i] = cur_adc;
 			}
-			PIOS_COM_SendString(PIOS_COM_DEBUG, "  Switches: ");
-			sprintf(buf, "%x ", (unsigned int)GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_8));
-			PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
-			sprintf(buf, "%x ", (unsigned int)GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_7));
-			PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
-			sprintf(buf, "%x ", (unsigned int)GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_14));
-			PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
-			sprintf(buf, "%x ", (unsigned int)GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_13));
-			PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
-			sprintf(buf, "%x ", (unsigned int)GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_15));
-			PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
-			PIOS_COM_SendString(PIOS_COM_DEBUG, "  RSSI: ");
-			sprintf(buf, "%x ", (unsigned int)pios_pwm_rcvr_driver.read(rssi_pwm_id, 0));
-			PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
+			InsertDebugQueue(printBuffer);
+
+			strcpy(printBuffer, "  Switches:");
+			sprintf(printBuffer, "%s %x %x %x %x %x", printBuffer,
+							(unsigned int)GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_8),
+							(unsigned int)GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_7),
+							(unsigned int)GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_14),
+							(unsigned int)GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_13),
+							(unsigned int)GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_15));
+			sprintf(printBuffer, "%s  RSSI: %x", printBuffer, (unsigned int)pios_pwm_rcvr_driver.read(rssi_pwm_id, 0));
+			InsertDebugQueue(printBuffer);
 		}
 
 		// Calculate Roll
@@ -274,13 +271,13 @@ static void processObjEvent(UAVObjEvent * ev, RouterComms *comm)
 		// Read the potentiometer.
 		rcvr.Channel[9] = read_potentiometer(9);
 
-		if(debug) {
-			PIOS_COM_SendString(PIOS_COM_DEBUG, "  Rcvr: ");
-			for(i = 0; i < 10; ++i) {
-				sprintf(buf, "%d ", (unsigned int)rcvr.Channel[i]);
-				PIOS_COM_SendString(PIOS_COM_DEBUG, buf);
-			}
-			PIOS_COM_SendString(PIOS_COM_DEBUG, "\n\r");
+		if(debug)
+		{
+			strcpy(printBuffer, "Rcvr:");
+			for(i = 0; i < 10; ++i)
+				sprintf(printBuffer, "%s %d", printBuffer, (unsigned int)rcvr.Channel[i]);
+			sprintf(printBuffer, "%s\n\r", printBuffer);
+			InsertDebugQueue(printBuffer);
 		}
 #else
 		if(debug)

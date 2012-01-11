@@ -4,11 +4,11 @@ BOOTLOADER_VERSION  := 0x01
 HW_TYPE             := 0x01
 
 MCU                 := cortex-m3
-CHIP                := STM32F103C8T
-#CHIP                := STM32F103CBT
+#CHIP                := STM32F103C8T
+CHIP                := STM32F103CBT
 #CHIP                := STM32103ZET6
-BOARD               := STM32103C8_Transmitter
-#BOARD               := STM32103CB_Transmitter
+#BOARD               := STM32103C8_Transmitter
+BOARD               := STM32103CB_Transmitter
 #BOARD               := STM32103ZET6_Transmitter
 MODEL               := MD
 MODEL_SUFFIX        := _Transmitter
@@ -19,8 +19,8 @@ OPENOCD_CONFIG      := stm32f1x.cfg
 BL_BANK_BASE        := 0x08000000  # Start of bootloader flash
 BL_BANK_SIZE        := 0x00003000  # Should include BD_INFO region
 FW_BANK_BASE        := 0x08003000  # Start of firmware flash
-FW_BANK_SIZE        := 0x0000D000  # Should include FW_DESC_SIZE
-#FW_BANK_SIZE        := 0x0001D000  # Should include FW_DESC_SIZE
+#FW_BANK_SIZE        := 0x0000D000  # Should include FW_DESC_SIZE
+FW_BANK_SIZE        := 0x0001D000  # Should include FW_DESC_SIZE
 #FW_BANK_SIZE        := 0x00007D000  # Should include FW_DESC_SIZE
 
 FW_DESC_SIZE        := 0x00000064
