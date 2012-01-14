@@ -106,11 +106,13 @@ SRC += $(PIOSSTM32F10X)/pios_gpio.c
 
 
 # PIOS USB related files (seperated to make code maintenance more easy)
+SRC += $(PIOSSTM32F10X)/pios_usb.c
+SRC += $(PIOSSTM32F10X)/pios_usbhook.c
 SRC += $(PIOSSTM32F10X)/pios_usb_hid.c
-SRC += $(PIOSSTM32F10X)/pios_usb_hid_desc.c
 SRC += $(PIOSSTM32F10X)/pios_usb_hid_istr.c
-SRC += $(PIOSSTM32F10X)/pios_usb_hid_prop.c
 SRC += $(PIOSSTM32F10X)/pios_usb_hid_pwr.c
+SRC += $(OPSYSTEM)/pios_usb_board_data.c
+SRC += $(PIOSCOMMON)/pios_usb_desc_hid_only.c
 
 ## PIOS Hardware (Common)
 SRC += $(PIOSCOMMON)/pios_board_info.c
@@ -300,7 +302,9 @@ CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS)) -I.
 
 CFLAGS += -mapcs-frame 
 CFLAGS += -fomit-frame-pointer
+ifeq ($(CODE_SOURCERY), YES)
 CFLAGS += -fpromote-loop-indices
+endif
 
 CFLAGS += -Wall 
 CFLAGS += -Werror
@@ -411,7 +415,7 @@ $(eval $(call PARTIAL_COMPILE_ARM_TEMPLATE, SRCARM))
 $(OUTDIR)/$(TARGET).bin.o: $(OUTDIR)/$(TARGET).bin
 
 # Add jtag targets (program and wipe)
-$(eval $(call JTAG_TEMPLATE,$(OUTDIR)/$(TARGET).bin,$(BL_BANK_BASE),$(BL_BANK_SIZE)))
+$(eval $(call JTAG_TEMPLATE,$(OUTDIR)/$(TARGET).bin,$(BL_BANK_BASE),$(BL_BANK_SIZE),$(OPENOCD_CONFIG)))
 
 .PHONY: elf lss sym hex bin bino
 elf: $(OUTDIR)/$(TARGET).elf

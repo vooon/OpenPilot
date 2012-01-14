@@ -34,7 +34,8 @@
 #include "telemetry.h"
 #include "flighttelemetrystats.h"
 #include "gcstelemetrystats.h"
-#include "telemetrysettings.h"
+#include "hwsettings.h"
+#include "pios_usb.h"		/* PIOS_USB_* */
 
 // Private constants
 #define MAX_QUEUE_SIZE   TELEM_QUEUE_SIZE
@@ -65,7 +66,6 @@ static xTaskHandle telemetryTxTaskHandle;
 static xTaskHandle telemetryRxTaskHandle;
 static uint32_t txErrors;
 static uint32_t txRetries;
-static TelemetrySettingsData settings;
 static uint32_t timeOfLastObjectUpdate;
 static UAVTalkConnection uavTalkCon;
 
@@ -94,7 +94,6 @@ int32_t TelemetryStart(void)
     
 	// Listen to objects of interest
 	GCSTelemetryStatsConnectQueue(priorityQueue);
-	TelemetrySettingsConnectQueue(priorityQueue);
     
 	// Start telemetry tasks
 	xTaskCreate(telemetryTxTask, (signed char *)"TelTx", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY_TX, &telemetryTxTaskHandle);
@@ -117,11 +116,8 @@ int32_t TelemetryStart(void)
  */
 int32_t TelemetryInitialize(void)
 {
-	UAVObjEvent ev;
-    
 	FlightTelemetryStatsInitialize();
 	GCSTelemetryStatsInitialize();
-	TelemetrySettingsInitialize();
 
 	// Initialize vars
 	timeOfLastObjectUpdate = 0;
@@ -132,18 +128,20 @@ int32_t TelemetryInitialize(void)
 	priorityQueue = xQueueCreate(MAX_QUEUE_SIZE, sizeof(UAVObjEvent));
 #endif
 
-    // Get telemetry settings object
+	// Update telemetry settings
+	telemetryPort = PIOS_COM_TELEM_RF;
+	HwSettingsInitialize();
 	updateSettings();
     
 	// Initialise UAVTalk
-	uavTalkCon = UAVTalkInitialize(&transmitData,256);
+	uavTalkCon = UAVTalkInitialize(&transmitData);
     
 	// Create periodic event that will be used to update the telemetry stats
 	txErrors = 0;
 	txRetries = 0;
+	UAVObjEvent ev;
 	memset(&ev, 0, sizeof(UAVObjEvent));
 	EventPeriodicQueueCreate(&ev, priorityQueue, STATS_UPDATE_PERIOD_MS);
-    
 
 	return 0;
 }
@@ -226,8 +224,6 @@ static void processObjEvent(UAVObjEvent * ev)
 		updateTelemetryStats();
 	} else if (ev->obj == GCSTelemetryStatsHandle()) {
 		gcsTelemetryStatsUpdated();
-	} else if (ev->obj == TelemetrySettingsHandle()) {
-		updateSettings();
 	} else {
 		// Only process event if connected to GCS or if object FlightTelemetryStats is updated
 		FlightTelemetryStatsGet(&flightStats);
@@ -313,12 +309,12 @@ static void telemetryRxTask(void *parameters)
 
 	// Task loop
 	while (1) {
-#if defined(PIOS_INCLUDE_USB_HID)
+#if defined(PIOS_INCLUDE_USB)
 		// Determine input port (USB takes priority over telemetry port)
-		if (PIOS_USB_HID_CheckAvailable(0)) {
+		if (PIOS_USB_CheckAvailable(0) && PIOS_COM_TELEM_USB) {
 			inputPort = PIOS_COM_TELEM_USB;
 		} else
-#endif /* PIOS_INCLUDE_USB_HID */
+#endif /* PIOS_INCLUDE_USB */
 		{
 			inputPort = telemetryPort;
 		}
@@ -344,24 +340,25 @@ static void telemetryRxTask(void *parameters)
  * Transmit data buffer to the modem or USB port.
  * \param[in] data Data buffer to send
  * \param[in] length Length of buffer
- * \return 0 Success
+ * \return -1 on failure
+ * \return number of bytes transmitted on success
  */
 static int32_t transmitData(uint8_t * data, int32_t length)
 {
 	uint32_t outputPort;
 
 	// Determine input port (USB takes priority over telemetry port)
-#if defined(PIOS_INCLUDE_USB_HID)
-	if (PIOS_USB_HID_CheckAvailable(0)) {
+#if defined(PIOS_INCLUDE_USB)
+	if (PIOS_USB_CheckAvailable(0) && PIOS_COM_TELEM_USB) {
 		outputPort = PIOS_COM_TELEM_USB;
 	} else
-#endif /* PIOS_INCLUDE_USB_HID */
+#endif /* PIOS_INCLUDE_USB */
 	{
 		outputPort = telemetryPort;
 	}
 
 	if (outputPort) {
-		return PIOS_COM_SendBufferNonBlocking(outputPort, data, length);
+		return PIOS_COM_SendBuffer(outputPort, data, length);
 	} else {
 		return -1;
 	}
@@ -509,27 +506,45 @@ static void updateTelemetryStats()
 }
 
 /**
- * Update the telemetry settings, called on startup and
- * each time the settings object is updated
+ * Update the telemetry settings, called on startup.
+ * FIXME: This should be in the TelemetrySettings object. But objects
+ * have too much overhead yet. Also the telemetry has no any specific
+ * settings, etc. Thus the HwSettings object which contains the
+ * telemetry port speed is used for now.
  */
 static void updateSettings()
 {
-    // Set port
-    telemetryPort = PIOS_COM_TELEM_RF;
+	if (telemetryPort) {
 
-    // Retrieve settings
-    TelemetrySettingsGet(&settings);
+		// Retrieve settings
+		uint8_t speed;
+		HwSettingsTelemetrySpeedGet(&speed);
 
-    if (telemetryPort) {
-	// Set port speed
-	if (settings.Speed == TELEMETRYSETTINGS_SPEED_2400) PIOS_COM_ChangeBaud(telemetryPort, 2400);
-	else if (settings.Speed == TELEMETRYSETTINGS_SPEED_4800) PIOS_COM_ChangeBaud(telemetryPort, 4800);
-	else if (settings.Speed == TELEMETRYSETTINGS_SPEED_9600) PIOS_COM_ChangeBaud(telemetryPort, 9600);
-	else if (settings.Speed == TELEMETRYSETTINGS_SPEED_19200) PIOS_COM_ChangeBaud(telemetryPort, 19200);
-	else if (settings.Speed == TELEMETRYSETTINGS_SPEED_38400) PIOS_COM_ChangeBaud(telemetryPort, 38400);
-	else if (settings.Speed == TELEMETRYSETTINGS_SPEED_57600) PIOS_COM_ChangeBaud(telemetryPort, 57600);
-	else if (settings.Speed == TELEMETRYSETTINGS_SPEED_115200) PIOS_COM_ChangeBaud(telemetryPort, 115200);
-    }
+		// Set port speed
+		switch (speed) {
+		case HWSETTINGS_TELEMETRYSPEED_2400:
+			PIOS_COM_ChangeBaud(telemetryPort, 2400);
+			break;
+		case HWSETTINGS_TELEMETRYSPEED_4800:
+			PIOS_COM_ChangeBaud(telemetryPort, 4800);
+			break;
+		case HWSETTINGS_TELEMETRYSPEED_9600:
+			PIOS_COM_ChangeBaud(telemetryPort, 9600);
+			break;
+		case HWSETTINGS_TELEMETRYSPEED_19200:
+			PIOS_COM_ChangeBaud(telemetryPort, 19200);
+			break;
+		case HWSETTINGS_TELEMETRYSPEED_38400:
+			PIOS_COM_ChangeBaud(telemetryPort, 38400);
+			break;
+		case HWSETTINGS_TELEMETRYSPEED_57600:
+			PIOS_COM_ChangeBaud(telemetryPort, 57600);
+			break;
+		case HWSETTINGS_TELEMETRYSPEED_115200:
+			PIOS_COM_ChangeBaud(telemetryPort, 115200);
+			break;
+		}
+	}
 }
 
 /**

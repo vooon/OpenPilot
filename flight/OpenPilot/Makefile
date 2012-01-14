@@ -37,6 +37,9 @@ OUTDIR := $(TOP)/build/$(TARGET)
 # Set to YES to compile for debugging
 DEBUG ?= YES
 
+# Include objects that are just nice information to show
+DIAGNOSTICS ?= YES
+
 # Set to YES to use the Servo output pins for debugging via scope or logic analyser
 ENABLE_DEBUG_PINS ?= NO
 
@@ -55,13 +58,16 @@ endif
 
 FLASH_TOOL = OPENOCD
 
+
 # List of modules to include
-MODULES = Actuator Telemetry GPS ManualControl Altitude AHRSComms Stabilization Guidance FirmwareIAP
+OPTMODULES = CameraStab GPS
+MODULES = Actuator ManualControl Altitude AHRSComms Stabilization Guidance FirmwareIAP
 PYMODULES = FlightPlan
 #MODULES = Telemetry Example
 #MODULES = Telemetry MK/MKSerial
 #MODULES = Telemetry
 #MODULES += Osd/OsdEtStd
+MODULES += Telemetry
 
 # Paths
 OPSYSTEM = ./System
@@ -125,6 +131,7 @@ PYSRC += ${foreach MOD, ${PYMODULES}, ${wildcard ${OPMODULEDIR}/${MOD}/*.c}}
 SRC += $(PYSRC)
 
 ## MODULES
+SRC += ${foreach MOD, ${OPTMODULES}, ${wildcard ${OPMODULEDIR}/${MOD}/*.c}}
 SRC += ${foreach MOD, ${MODULES}, ${wildcard ${OPMODULEDIR}/${MOD}/*.c}}
 ## OPENPILOT CORE:
 SRC += ${OPMODULEDIR}/System/systemmod.c
@@ -162,7 +169,7 @@ SRC += $(PIOSSTM32F10X)/pios_i2c.c
 SRC += $(PIOSSTM32F10X)/pios_spi.c
 SRC += $(PIOSSTM32F10X)/pios_ppm.c
 SRC += $(PIOSSTM32F10X)/pios_pwm.c
-SRC += $(PIOSSTM32F10X)/pios_spektrum.c
+SRC += $(PIOSSTM32F10X)/pios_dsm.c
 SRC += $(PIOSSTM32F10X)/pios_sbus.c
 SRC += $(PIOSSTM32F10X)/pios_tim.c
 SRC += $(PIOSSTM32F10X)/pios_debug.c
@@ -173,12 +180,13 @@ SRC += $(PIOSSTM32F10X)/pios_wdg.c
 
 
 # PIOS USB related files (seperated to make code maintenance more easy)
+SRC += $(PIOSSTM32F10X)/pios_usb.c
+SRC += $(PIOSSTM32F10X)/pios_usbhook.c
 SRC += $(PIOSSTM32F10X)/pios_usb_hid.c
-SRC += $(PIOSSTM32F10X)/pios_usb_hid_desc.c
-#SRC += $(PIOSSTM32F10X)/pios_usb_hid_endp.c
 SRC += $(PIOSSTM32F10X)/pios_usb_hid_istr.c
-SRC += $(PIOSSTM32F10X)/pios_usb_hid_prop.c
 SRC += $(PIOSSTM32F10X)/pios_usb_hid_pwr.c
+SRC += $(OPSYSTEM)/pios_usb_board_data.c
+SRC += $(PIOSCOMMON)/pios_usb_desc_hid_only.c
 
 ## PIOS Hardware (Common)
 SRC += $(PIOSCOMMON)/pios_crc.c
@@ -307,7 +315,7 @@ EXTRAINCDIRS  += $(RTOSSRCDIR)/portable/GCC/ARM_CM3
 EXTRAINCDIRS  += $(AHRSBOOTLOADERINC)
 EXTRAINCDIRS  += $(PYMITEINC)
 
-EXTRAINCDIRS += ${foreach MOD, ${MODULES} ${PYMODULES}, $(OPMODULEDIR)/${MOD}/inc} ${OPMODULEDIR}/System/inc
+EXTRAINCDIRS += ${foreach MOD, ${OPTMODULES} ${MODULES} ${PYMODULES}, $(OPMODULEDIR)/${MOD}/inc} ${OPMODULEDIR}/System/inc
 
 
 # List any extra directories to look for library files here.
@@ -385,12 +393,14 @@ CSTANDARD = -std=gnu99
 # Flags for C and C++ (arm-elf-gcc/arm-elf-g++)
 
 ifeq ($(DEBUG),YES)
-CFLAGS = -g$(DEBUGF) -DDEBUG
+CFLAGS = -DDEBUG
 endif
 
-# OP has enough memory to always enable optional objects
-CFLAGS += -DDIAGNOSTICS
+ifeq ($(DIAGNOSTICS),YES)
+CFLAGS = -DDIAGNOSTICS
+endif
 
+CFLAGS += -g$(DEBUGF)
 CFLAGS += -O$(OPT)
 CFLAGS += -mcpu=$(MCU)
 CFLAGS += $(CDEFS)
@@ -472,9 +482,6 @@ endif
 endif
 
 # Generate intermediate code
-gencode: ${OUTDIR}/pmlib_img.c ${OUTDIR}/pmlib_nat.c ${OUTDIR}/pmlibusr_img.c ${OUTDIR}/pmlibusr_nat.c ${OUTDIR}/pmfeatures.h 
-
-$(PYSRC): gencode
 
 # Generate code for PyMite
 ${OUTDIR}/pmlib_img.c ${OUTDIR}/pmlib_nat.c ${OUTDIR}/pmlibusr_img.c ${OUTDIR}/pmlibusr_nat.c ${OUTDIR}/pmfeatures.h: $(wildcard ${PYMITELIB}/*.py) $(wildcard ${PYMITEPLAT}/*.py) $(wildcard ${FLIGHTPLANLIB}/*.py) $(wildcard ${FLIGHTPLANS}/*.py) 
@@ -582,4 +589,4 @@ else
 endif
 
 # Listing of phony targets.
-.PHONY : all build clean clean_list gencode install
+.PHONY : all build clean clean_list install

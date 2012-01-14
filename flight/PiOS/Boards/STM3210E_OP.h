@@ -195,10 +195,16 @@ extern uint32_t pios_com_aux_id;
 #define PIOS_PWM_NUM_INPUTS                     8
 
 //-------------------------
-// Receiver SPEKTRUM input
+// Receiver DSM input
 //-------------------------
-#define PIOS_SPEKTRUM_MAX_DEVS			1
-#define PIOS_SPEKTRUM_NUM_INPUTS                12
+#define PIOS_DSM_MAX_DEVS			1
+#define PIOS_DSM_NUM_INPUTS			12
+
+//-------------------------
+// Receiver S.Bus input
+//-------------------------
+#define PIOS_SBUS_MAX_DEVS			0
+#define PIOS_SBUS_NUM_INPUTS			(16+2)
 
 //-------------------------
 // Servo outputs
@@ -303,8 +309,9 @@ extern uint32_t pios_com_aux_id;
 // USB
 //-------------------------
 #define PIOS_USB_ENABLED                        1
-#define PIOS_USB_HID_MAX_DEVS                   1
 #define PIOS_USB_DETECT_GPIO_PORT               GPIOC
+#define PIOS_USB_MAX_DEVS                       1
+#define PIOS_USB_HID_MAX_DEVS                   1
 #define PIOS_USB_DETECT_GPIO_PIN                GPIO_Pin_4
 #define PIOS_USB_DETECT_EXTI_LINE               EXTI_Line4
 #define PIOS_IRQ_USB_PRIORITY                   PIOS_IRQ_PRIO_MID

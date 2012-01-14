@@ -48,7 +48,7 @@ ENABLE_DEBUG_PINS ?= NO
 # Set to Yes to enable the AUX UART which is mapped on the S1 (Tx) and S2 (Rx) servo outputs
 ENABLE_AUX_UART ?= NO
 
-USE_GPS ?= NO
+USE_GPS ?= YES
 
 USE_I2C ?= NO
 
@@ -65,8 +65,17 @@ endif
 FLASH_TOOL = OPENOCD
 
 # List of modules to include
-MODULES = Attitude Stabilization Actuator ManualControl FirmwareIAP CameraStab
-# Telemetry must be last to grab the optional modules
+OPTMODULES = CameraStab ComUsbBridge
+ifeq ($(USE_GPS), YES)
+OPTMODULES += GPS
+endif
+
+ifeq ($(TEST_FAULTS), YES)
+OPTMODULES += Fault
+endif
+
+MODULES = Attitude Stabilization Actuator ManualControl FirmwareIAP
+# Telemetry must be last to grab the optional modules (why?)
 MODULES += Telemetry
 
 # Paths
@@ -120,6 +129,7 @@ OPUAVSYNTHDIR = $(OUTDIR)/../uavobject-synthetics/flight
 
 ifndef TESTAPP
 ## MODULES
+SRC += ${foreach MOD, ${OPTMODULES}, ${wildcard ${OPMODULEDIR}/${MOD}/*.c}}
 SRC += ${foreach MOD, ${MODULES}, ${wildcard ${OPMODULEDIR}/${MOD}/*.c}}
 ## OPENPILOT CORE:
 SRC += ${OPMODULEDIR}/System/systemmod.c
@@ -130,7 +140,6 @@ SRC += $(OPSYSTEM)/taskmonitor.c
 SRC += $(OPUAVTALK)/uavtalk.c
 SRC += $(OPUAVOBJ)/uavobjectmanager.c
 SRC += $(OPUAVOBJ)/eventdispatcher.c
-SRC += $(OPSYSTEM)/pios_usb_hid_desc.c
 else
 ## TESTCODE
 SRC += $(OPTESTS)/test_common.c
@@ -145,6 +154,7 @@ SRC += $(OPUAVSYNTHDIR)/accessorydesired.c
 SRC += $(OPUAVSYNTHDIR)/objectpersistence.c
 SRC += $(OPUAVSYNTHDIR)/gcstelemetrystats.c
 SRC += $(OPUAVSYNTHDIR)/flighttelemetrystats.c
+SRC += $(OPUAVSYNTHDIR)/faultsettings.c
 SRC += $(OPUAVSYNTHDIR)/flightstatus.c
 SRC += $(OPUAVSYNTHDIR)/systemstats.c
 SRC += $(OPUAVSYNTHDIR)/systemalarms.c
@@ -159,13 +169,13 @@ SRC += $(OPUAVSYNTHDIR)/attitudeactual.c
 SRC += $(OPUAVSYNTHDIR)/manualcontrolcommand.c
 SRC += $(OPUAVSYNTHDIR)/i2cstats.c
 SRC += $(OPUAVSYNTHDIR)/watchdogstatus.c
-SRC += $(OPUAVSYNTHDIR)/telemetrysettings.c
 SRC += $(OPUAVSYNTHDIR)/manualcontrolsettings.c
 SRC += $(OPUAVSYNTHDIR)/mixersettings.c
 SRC += $(OPUAVSYNTHDIR)/firmwareiapobj.c
 SRC += $(OPUAVSYNTHDIR)/attitudesettings.c
 SRC += $(OPUAVSYNTHDIR)/camerastabsettings.c
 SRC += $(OPUAVSYNTHDIR)/cameradesired.c
+SRC += $(OPUAVSYNTHDIR)/gpsposition.c
 SRC += $(OPUAVSYNTHDIR)/hwsettings.c
 SRC += $(OPUAVSYNTHDIR)/gcsreceiver.c
 SRC += $(OPUAVSYNTHDIR)/receiveractivity.c
@@ -187,7 +197,7 @@ SRC += $(PIOSSTM32F10X)/pios_i2c.c
 SRC += $(PIOSSTM32F10X)/pios_spi.c
 SRC += $(PIOSSTM32F10X)/pios_ppm.c
 SRC += $(PIOSSTM32F10X)/pios_pwm.c
-SRC += $(PIOSSTM32F10X)/pios_spektrum.c
+SRC += $(PIOSSTM32F10X)/pios_dsm.c
 SRC += $(PIOSSTM32F10X)/pios_sbus.c
 SRC += $(PIOSSTM32F10X)/pios_debug.c
 SRC += $(PIOSSTM32F10X)/pios_gpio.c
@@ -197,11 +207,15 @@ SRC += $(PIOSSTM32F10X)/pios_wdg.c
 SRC += $(PIOSSTM32F10X)/pios_tim.c
 
 
-# PIOS USB related files (seperated to make code maintenance more easy)
+# PIOS USB related files (separated to make code maintenance more easy)
+SRC += $(PIOSSTM32F10X)/pios_usb.c
+SRC += $(PIOSSTM32F10X)/pios_usbhook.c
 SRC += $(PIOSSTM32F10X)/pios_usb_hid.c
+SRC += $(PIOSSTM32F10X)/pios_usb_cdc.c
 SRC += $(PIOSSTM32F10X)/pios_usb_hid_istr.c
-SRC += $(PIOSSTM32F10X)/pios_usb_hid_prop.c
 SRC += $(PIOSSTM32F10X)/pios_usb_hid_pwr.c
+SRC += $(OPSYSTEM)/pios_usb_board_data.c
+SRC += $(PIOSCOMMON)/pios_usb_desc_hid_cdc.c
 
 ## PIOS Hardware (Common)
 SRC += $(PIOSCOMMON)/pios_crc.c
@@ -332,7 +346,7 @@ EXTRAINCDIRS  += $(RTOSSRCDIR)/portable/GCC/ARM_CM3
 EXTRAINCDIRS  += $(AHRSBOOTLOADERINC)
 EXTRAINCDIRS  += $(PYMITEINC)
 
-EXTRAINCDIRS += ${foreach MOD, ${MODULES}, ${OPMODULEDIR}/${MOD}/inc} ${OPMODULEDIR}/System/inc
+EXTRAINCDIRS += ${foreach MOD, ${OPTMODULES} ${MODULES}, ${OPMODULEDIR}/${MOD}/inc} ${OPMODULEDIR}/System/inc
 
 
 # List any extra directories to look for library files here.
@@ -428,6 +442,10 @@ ifeq ($(DIAGNOSTICS),YES)
 CFLAGS = -DDIAGNOSTICS
 endif
 
+ifeq ($(DIAG_TASKS),YES)
+CFLAGS = -DDIAG_TASKS
+endif
+
 CFLAGS += -g$(DEBUGF)
 CFLAGS += -O$(OPT)
 CFLAGS += -mcpu=$(MCU)
@@ -443,7 +461,9 @@ CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS)) -I.
 
 CFLAGS += -mapcs-frame
 CFLAGS += -fomit-frame-pointer
+ifeq ($(CODE_SOURCERY), YES)
 CFLAGS += -fpromote-loop-indices
+endif
 
 CFLAGS += -Wall
 CFLAGS += -Werror

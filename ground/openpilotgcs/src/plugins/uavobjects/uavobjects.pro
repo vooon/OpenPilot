@@ -36,7 +36,6 @@ HEADERS += $$UAVOBJECT_SYNTHETICS/accessorydesired.h \
     $$UAVOBJECT_SYNTHETICS/systemstats.h \
     $$UAVOBJECT_SYNTHETICS/systemalarms.h \
     $$UAVOBJECT_SYNTHETICS/objectpersistence.h \
-    $$UAVOBJECT_SYNTHETICS/telemetrysettings.h \
     $$UAVOBJECT_SYNTHETICS/systemsettings.h \
     $$UAVOBJECT_SYNTHETICS/stabilizationsettings.h \
     $$UAVOBJECT_SYNTHETICS/manualcontrolsettings.h \
@@ -73,7 +72,8 @@ HEADERS += $$UAVOBJECT_SYNTHETICS/accessorydesired.h \
     $$UAVOBJECT_SYNTHETICS/gcsreceiver.h \
     $$UAVOBJECT_SYNTHETICS/receiveractivity.h \
     $$UAVOBJECT_SYNTHETICS/attitudesettings.h \
-    $$UAVOBJECT_SYNTHETICS/cameradesired.h
+    $$UAVOBJECT_SYNTHETICS/cameradesired.h \
+    $$UAVOBJECT_SYNTHETICS/faultsettings.h
 
 SOURCES += $$UAVOBJECT_SYNTHETICS/accessorydesired.cpp \
     $$UAVOBJECT_SYNTHETICS/ahrsstatus.cpp \
@@ -88,7 +88,6 @@ SOURCES += $$UAVOBJECT_SYNTHETICS/accessorydesired.cpp \
     $$UAVOBJECT_SYNTHETICS/systemstats.cpp \
     $$UAVOBJECT_SYNTHETICS/systemalarms.cpp \
     $$UAVOBJECT_SYNTHETICS/objectpersistence.cpp \
-    $$UAVOBJECT_SYNTHETICS/telemetrysettings.cpp \
     $$UAVOBJECT_SYNTHETICS/systemsettings.cpp \
     $$UAVOBJECT_SYNTHETICS/stabilizationsettings.cpp \
     $$UAVOBJECT_SYNTHETICS/manualcontrolsettings.cpp \
@@ -126,4 +125,5 @@ SOURCES += $$UAVOBJECT_SYNTHETICS/accessorydesired.cpp \
     $$UAVOBJECT_SYNTHETICS/gcsreceiver.cpp \
     $$UAVOBJECT_SYNTHETICS/receiveractivity.cpp \
     $$UAVOBJECT_SYNTHETICS/attitudesettings.cpp \
-    $$UAVOBJECT_SYNTHETICS/cameradesired.cpp
+    $$UAVOBJECT_SYNTHETICS/cameradesired.cpp \
+    $$UAVOBJECT_SYNTHETICS/faultsettings.cpp

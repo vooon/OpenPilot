@@ -48,7 +48,7 @@
 #include "taskinfo.h"
 #include "watchdogstatus.h"
 #include "taskmonitor.h"
-#include "pios_config.h"
+#include "pios_iap.h"
 
 
 // Private constants
@@ -114,9 +114,12 @@ int32_t SystemModInitialize(void)
 	// Must registers objects here for system thread because ObjectManager started in OpenPilotInit
 	SystemSettingsInitialize();
 	SystemStatsInitialize();
+	FlightStatusInitialize();
 	ObjectPersistenceInitialize();
-#if defined(DIAGNOSTICS)
+#if defined(DIAG_TASKS)
 	TaskInfoInitialize();
+#endif
+#if defined(DIAGNOSTICS)
 	I2CStatsInitialize();
 	WatchdogStatusInitialize();
 #endif
@@ -135,7 +138,18 @@ static void systemTask(void *parameters)
 	portTickType lastSysTime;
 
 	/* create all modules thread */
-	MODULE_TASKCREATE_ALL
+	MODULE_TASKCREATE_ALL;
+
+	if (mallocFailed) {
+		/* We failed to malloc during task creation,
+		 * system behaviour is undefined.  Reset and let
+		 * the BootFault code recover for us.
+		 */
+		PIOS_SYS_Reset();
+	}
+
+	/* Record a successful boot */
+	PIOS_IAP_WriteBootCount(0);
 
 	// Initialize vars
 	idleCounter = 0;
@@ -389,25 +403,24 @@ static void updateSystemAlarms()
 	EventStats evStats;
 	SystemStatsGet(&stats);
 
-	// Check heap
-	if (stats.HeapRemaining < HEAP_LIMIT_CRITICAL) {
-		AlarmsSet(SYSTEMALARMS_ALARM_OUTOFMEMORY, SYSTEMALARMS_ALARM_CRITICAL);
-	} else if (stats.HeapRemaining < HEAP_LIMIT_WARNING) {
-		AlarmsSet(SYSTEMALARMS_ALARM_OUTOFMEMORY, SYSTEMALARMS_ALARM_WARNING);
-	} else {
-		AlarmsClear(SYSTEMALARMS_ALARM_OUTOFMEMORY);
-	}
-
+	// Check heap, IRQ stack and malloc failures
+	if ( mallocFailed
+	     || (stats.HeapRemaining < HEAP_LIMIT_CRITICAL)
 #if !defined(ARCH_POSIX) && !defined(ARCH_WIN32) && defined(CHECK_IRQ_STACK)
-	// Check IRQ stack
-	if (stats.IRQStackRemaining < IRQSTACK_LIMIT_CRITICAL) {
+	     || (stats.IRQStackRemaining < IRQSTACK_LIMIT_CRITICAL)
+#endif
+	    ) {
 		AlarmsSet(SYSTEMALARMS_ALARM_OUTOFMEMORY, SYSTEMALARMS_ALARM_CRITICAL);
-	} else if (stats.IRQStackRemaining < IRQSTACK_LIMIT_WARNING) {
+	} else if (
+		(stats.HeapRemaining < HEAP_LIMIT_WARNING)
+#if !defined(ARCH_POSIX) && !defined(ARCH_WIN32) && defined(CHECK_IRQ_STACK)
+	     || (stats.IRQStackRemaining < IRQSTACK_LIMIT_WARNING)
+#endif
+	    ) {
 		AlarmsSet(SYSTEMALARMS_ALARM_OUTOFMEMORY, SYSTEMALARMS_ALARM_WARNING);
 	} else {
 		AlarmsClear(SYSTEMALARMS_ALARM_OUTOFMEMORY);
 	}
-#endif
 
 	// Check CPU load
 	if (stats.CPULoad > CPULOAD_LIMIT_CRITICAL) {
@@ -423,13 +436,6 @@ static void updateSystemAlarms()
 		AlarmsSet(SYSTEMALARMS_ALARM_STACKOVERFLOW, SYSTEMALARMS_ALARM_CRITICAL);
 	} else {
 		AlarmsClear(SYSTEMALARMS_ALARM_STACKOVERFLOW);
-	}
-
-	// Check for malloc failures
-	if (mallocFailed) {
-		AlarmsSet(SYSTEMALARMS_ALARM_OUTOFMEMORY, SYSTEMALARMS_ALARM_CRITICAL);
-	} else {
-		AlarmsClear(SYSTEMALARMS_ALARM_OUTOFMEMORY);
 	}
 
 #if defined(PIOS_INCLUDE_SDCARD)
