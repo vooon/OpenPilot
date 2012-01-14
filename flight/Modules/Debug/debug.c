@@ -60,6 +60,7 @@ int32_t DebugInitialize(void)
 		debugEnabled = true;
 	else
 		debugEnabled = false;
+	debugEnabled = true;
 
 	if (debugEnabled)
 	{

@@ -113,21 +113,40 @@ static const struct pios_usart_cfg pios_usart_telem_main_cfg = {
     },
   },
   .rx   = {
+#ifdef MOVECOPTER
+    .gpio = GPIOB,
+#else
     .gpio = GPIOA,
+#endif
     .init = {
+#ifdef MOVECOPTER
+      .GPIO_Pin   = GPIO_Pin_7,
+#else
       .GPIO_Pin   = GPIO_Pin_10,
+#endif
       .GPIO_Speed = GPIO_Speed_2MHz,
       .GPIO_Mode  = GPIO_Mode_IPU,
     },
   },
   .tx   = {
+#ifdef MOVECOPTER
+    .gpio = GPIOB,
+#else
     .gpio = GPIOA,
+#endif
     .init = {
+#ifdef MOVECOPTER
+      .GPIO_Pin   = GPIO_Pin_6,
+#else
       .GPIO_Pin   = GPIO_Pin_9,
+#endif
       .GPIO_Speed = GPIO_Speed_2MHz,
       .GPIO_Mode  = GPIO_Mode_AF_PP,
     },
   },
+#ifdef MOVECOPTER
+  .remap = AFIO_MAPR_USART1_REMAP,
+#endif
 };
 
 static const struct pios_usart_cfg pios_usart_usart2_cfg = {
@@ -450,12 +469,88 @@ const struct pios_pwm_cfg pios_pwm_cfg = {
 	.num_channels = 1,
 };
 
+#if defined(PIOS_INCLUDE_I2C)
+
+#include <pios_i2c_priv.h>
+
+/*
+ * I2C Adapters
+ */
+
+void PIOS_I2C_main_adapter_ev_irq_handler(void);
+void PIOS_I2C_main_adapter_er_irq_handler(void);
+void I2C2_EV_IRQHandler() __attribute__ ((alias ("PIOS_I2C_main_adapter_ev_irq_handler")));
+void I2C2_ER_IRQHandler() __attribute__ ((alias ("PIOS_I2C_main_adapter_er_irq_handler")));
+
+static const struct pios_i2c_adapter_cfg pios_i2c_main_adapter_cfg = {
+  .regs = I2C2,
+  .init = {
+    .I2C_Mode                = I2C_Mode_I2C,
+    .I2C_OwnAddress1         = 0,
+    .I2C_Ack                 = I2C_Ack_Enable,
+    .I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit,
+    .I2C_DutyCycle           = I2C_DutyCycle_2,
+    .I2C_ClockSpeed          = 400000,	/* bits/s */
+  },
+  .transfer_timeout_ms = 50,
+  .scl = {
+    .gpio = GPIOB,
+    .init = {
+      .GPIO_Pin   = GPIO_Pin_10,
+      .GPIO_Speed = GPIO_Speed_10MHz,
+      .GPIO_Mode  = GPIO_Mode_AF_OD,
+    },
+  },
+  .sda = {
+    .gpio = GPIOB,
+    .init = {
+      .GPIO_Pin   = GPIO_Pin_11,
+      .GPIO_Speed = GPIO_Speed_10MHz,
+      .GPIO_Mode  = GPIO_Mode_AF_OD,
+    },
+  },
+  .event = {
+    .flags   = 0,		/* FIXME: check this */
+    .init = {
+      .NVIC_IRQChannel                   = I2C2_EV_IRQn,
+      .NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGHEST,
+      .NVIC_IRQChannelSubPriority        = 0,
+      .NVIC_IRQChannelCmd                = ENABLE,
+    },
+  },
+  .error = {
+    .flags   = 0,		/* FIXME: check this */
+    .init = {
+      .NVIC_IRQChannel                   = I2C2_ER_IRQn,
+      .NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGHEST,
+      .NVIC_IRQChannelSubPriority        = 0,
+      .NVIC_IRQChannelCmd                = ENABLE,
+    },
+  },
+};
+
+uint32_t pios_i2c_main_adapter_id;
+void PIOS_I2C_main_adapter_ev_irq_handler(void)
+{
+  /* Call into the generic code to handle the IRQ for this specific device */
+  PIOS_I2C_EV_IRQ_Handler(pios_i2c_main_adapter_id);
+}
+
+void PIOS_I2C_main_adapter_er_irq_handler(void)
+{
+  /* Call into the generic code to handle the IRQ for this specific device */
+  PIOS_I2C_ER_IRQ_Handler(pios_i2c_main_adapter_id);
+}
+
+#endif /* PIOS_INCLUDE_I2C */
+
 uint32_t rssi_pwm_id;
 
-
 uint32_t pios_com_usart1_id;
+#ifndef MOVECOPTER
 uint32_t pios_com_usart2_id;
 uint32_t pios_com_usart3_id;
+#endif
 
 /**
  * PIOS_Board_Init()
@@ -490,6 +585,19 @@ void PIOS_Board_Init(void) {
 	PIOS_TIM_InitClock(&tim_3_cfg);
 	PIOS_TIM_InitClock(&tim_4_cfg);
 
+#ifndef PIOS_TRANSMITTER_ANALOG
+	/* Configure the rcvr port */
+	{
+		uint32_t pios_ppm_id;
+		PIOS_PPM_Init(&pios_ppm_id, &pios_ppm_cfg);
+
+		uint32_t pios_ppm_rcvr_id;
+		if (PIOS_RCVR_Init(&pios_ppm_rcvr_id, &pios_ppm_rcvr_driver, pios_ppm_id)) {
+			PIOS_Assert(0);
+		}
+		pios_rcvr_group_map[MANUALCONTROLSETTINGS_CHANNELGROUPS_PPM] = pios_ppm_rcvr_id;
+	}
+#endif
 
 	/* Configure USART1 */
 	{
@@ -509,6 +617,7 @@ void PIOS_Board_Init(void) {
 		}
 	}
 
+#ifndef MOVECOPTER
 	/* Configure USART2 */
 	{
 		uint32_t pios_usart2_id;
@@ -543,10 +652,16 @@ void PIOS_Board_Init(void) {
 			PIOS_Assert(0);
 		}
 	}
-
-	PIOS_COM_SendString(PIOS_COM_TELEM_OUT, "Hello OUT\n\r");
-	PIOS_COM_SendString(PIOS_COM_TELEM_GCS, "Hello GCS\n\r");
+#endif
 	PIOS_COM_SendString(PIOS_COM_DEBUG, "Hello Debug\n\r");
+
+#if defined(PIOS_INCLUDE_AK8974)
+	if (PIOS_I2C_Init(&pios_i2c_main_adapter_id, &pios_i2c_main_adapter_cfg)) {
+		PIOS_Assert(0);
+	}
+#include "pios_ak8974.h"
+	PIOS_AK8974_Init();
+#endif  /* PIOS_INCLUDE_AK8974 */
 
 #ifdef PIOS_TRANSMITTER_ANALOG
 	// Initialize switch GPIO pins
@@ -588,21 +703,6 @@ void PIOS_Board_Init(void) {
 
 	// Initialize the XBee RSSI PWM input.
 	PIOS_PWM_Init(&rssi_pwm_id, &pios_pwm_cfg);
-#else
-	/* Configure the rcvr port */
-	uint8_t hwsettings_rcvrport;
-	HwSettingsCC_RcvrPortGet(&hwsettings_rcvrport);
-
-	{
-		uint32_t pios_ppm_id;
-		PIOS_PPM_Init(&pios_ppm_id, &pios_ppm_cfg);
-
-		uint32_t pios_ppm_rcvr_id;
-		if (PIOS_RCVR_Init(&pios_ppm_rcvr_id, &pios_ppm_rcvr_driver, pios_ppm_id)) {
-			PIOS_Assert(0);
-		}
-		pios_rcvr_group_map[MANUALCONTROLSETTINGS_CHANNELGROUPS_PPM] = pios_ppm_rcvr_id;
-	}
 #endif
 
 	/* Remap AFIO pin */

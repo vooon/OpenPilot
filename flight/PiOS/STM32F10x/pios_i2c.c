@@ -822,7 +822,7 @@ static bool PIOS_I2C_validate(struct pios_i2c_adapter * i2c_adapter)
 	return (i2c_adapter->magic == PIOS_I2C_DEV_MAGIC);
 }
 
-#if defined(PIOS_INCLUDE_FREERTOS)
+#if defined(PIOS_INCLUDE_FREERTOS) && 0
 static struct pios_i2c_adapter * PIOS_I2C_alloc(void)
 {
 	struct pios_i2c_adapter * i2c_adapter;

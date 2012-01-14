@@ -312,7 +312,10 @@ static void processObjEvent(UAVObjEvent * ev, RouterComms *comm)
 		retries = 0;
 		success = -1;
 		while (retries < MAX_RETRIES && success == -1) {
-			success = UAVTalkSendObject(comm->com, GCSReceiverHandle(), 0, 0, REQ_TIMEOUT_MS);
+			if(0)
+				success = UAVTalkSendObject(comm->com, GCSReceiverHandle(), 0, 0, REQ_TIMEOUT_MS);
+			else
+				success = 0;
 			++retries;
 		}
 		// Update stats
