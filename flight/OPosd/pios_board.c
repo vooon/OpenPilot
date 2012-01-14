@@ -3,7 +3,7 @@
  *
  * @file       pios_board.c
  * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2010.
- * @brief      Defines board specific static initializers for hardware for the PipBee board.
+ * @brief      Defines board specific static initializers for hardware for the OPOSD board.
  * @see        The GNU Public License (GPL) Version 3
  *
  *****************************************************************************/
@@ -43,7 +43,6 @@
 #define countof(a)   (sizeof(a) / sizeof(*(a)))
 
 /* Private variables ---------------------------------------------------------*/
-USART_InitTypeDef USART_InitStructure;
 //uint8_t TxBuffer2[TxBufferSize2];
 uint8_t TxBuffer3[TxBufferSize3];
 //uint8_t RxBuffer2[TxBufferSize2];
@@ -354,21 +353,25 @@ uint32_t pios_com_telem_usb_id;
 
 uint16_t frameBuffer[GRAPHICS_HEIGHT][GRAPHICS_WIDTH];
 uint16_t maskBuffer[GRAPHICS_HEIGHT][GRAPHICS_WIDTH];
+DMA_InitTypeDef				DMA_InitStructure;
+DMA_InitTypeDef				DMA_InitStructure2;
+/*
+USART_InitTypeDef USART_InitStructure;
+USART_InitTypeDef			USART_InitStructure;
+EXTI_InitTypeDef			EXTI_InitStructure;
 GPIO_InitTypeDef			GPIO_InitStructure;
 TIM_TimeBaseInitTypeDef		TIM_TimeBaseStructure;
 TIM_OCInitTypeDef			TIM_OCInitStructure;
 NVIC_InitTypeDef			NVIC_InitStructure;
 SPI_InitTypeDef				SPI_InitStructure;
-DMA_InitTypeDef				DMA_InitStructure;
-DMA_InitTypeDef				DMA_InitStructure2;
-USART_InitTypeDef			USART_InitStructure;
-EXTI_InitTypeDef			EXTI_InitStructure;
+*/
 
 
 
 
 void SPI_Config(void)
 {
+	SPI_InitTypeDef				SPI_InitStructure;
 	//Set up SPI port.  This acts as a pixel buffer.
 	SPI_InitStructure.SPI_Direction = SPI_Direction_1Line_Tx;
 	//SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
@@ -398,8 +401,13 @@ void SPI_Config(void)
 	SPI_Cmd(SPI2, ENABLE);
 }
 
+extern void PIOS_VIDEO_DMA_Handler(void);
+void DMA1_Channel3_IRQHandler() __attribute__ ((alias("PIOS_VIDEO_DMA_Handler")));
+
+
 void DMA_Config(void)
 {
+	NVIC_InitTypeDef			NVIC_InitStructure;
 	//Set up the DMA to keep the SPI port fed from the framebuffer.
 	DMA_DeInit(DMA1_Channel5);
 	DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(SPI2->DR);
@@ -432,10 +440,46 @@ void DMA_Config(void)
 	DMA_InitStructure2.DMA_Mode = DMA_Mode_Normal;
 	DMA_InitStructure2.DMA_M2M = DMA_M2M_Disable;
 
-	DMA_Init(DMA1_Channel3, &DMA_InitStructure2);
 
+	/* Configure DMA interrupt */
+	NVIC_InitStructure.NVIC_IRQChannel = DMA1_Channel3_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGH;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+
+
+	DMA_Init(DMA1_Channel3, &DMA_InitStructure2);
+	DMA_Cmd(DMA1_Channel3, ENABLE);
+
+	/* Trigger interrupt when for half conversions too to indicate double buffer */
+	DMA_ITConfig(DMA1_Channel3, DMA_IT_TC, ENABLE);
+	DMA_ClearFlag(DMA1_FLAG_TC3);
+	SPI_I2S_DMACmd(SPI1, SPI_I2S_DMAReq_Tx, ENABLE);
 }
 
+
+/**
+ * @brief Interrupt for half and full buffer transfer
+ *
+ * This interrupt handler swaps between the two halfs of the double buffer to make
+ * sure the ahrs uses the most recent data.  Only swaps data when AHRS is idle, but
+ * really this is a pretense of a sanity check since the DMA engine is consantly
+ * running in the background.  Keep an eye on the ekf_too_slow variable to make sure
+ * it's keeping up.
+ */
+void PIOS_VIDEO_DMA_Handler(void)
+{
+	if (DMA_GetFlagStatus(DMA1_FLAG_TC3 /*DMA1_IT_TC1*/)) {	// whole double buffer filled
+		//DMA_ClearFlag(DMA1_FLAG_TC3);
+	}
+	else if (DMA_GetFlagStatus(DMA1_FLAG_HT3 /*DMA1_IT_HT1*/)) {
+		DMA_ClearFlag(DMA1_FLAG_HT3);
+	}
+	else {
+
+	}
+}
 
 static void Clock(uint32_t spektrum_id);
 
@@ -482,6 +526,7 @@ void initUSARTs(void)
 
 void init_USART_dma()
 {
+	DMA_InitTypeDef				DMA_InitStructure;
 	 RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
 
 	/*RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
@@ -506,7 +551,6 @@ void init_USART_dma()
    USART_DMACmd(USART3, USART_DMAReq_Rx, ENABLE);*/
 
 	/*DMA Channel2 USART3 TX*/
-	   DMA_InitTypeDef DMA_InitStructure;
    DMA_DeInit(DMA1_Channel2);
    DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&USART3->DR;
    DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)TxBuffer3;

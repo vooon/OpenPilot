@@ -1,14 +1,39 @@
-/*
- * pios_video.c
+/**
+ ******************************************************************************
+ * @addtogroup PIOS PIOS Core hardware abstraction layer
+ * @{
+ * @addtogroup PIOS_VIDEO Code for OSD video generator
+ * @brief OSD generator, Parts from CL-OSD and SUPEROSD project
+ * @{
  *
- *  Created on: 2.10.2011
- *      Author: Samba
+ * @file       pios_video.c
+ * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2010.
+ * @brief      OSD generator, Parts from CL-OSD and SUPEROSD projects
+ * @see        The GNU Public License (GPL) Version 3
+ *
+ ******************************************************************************
+ */
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #include "pios.h"
 #if defined(PIOS_INCLUDE_VIDEO)
 
 #include "fonts.h"
+#include "font12x18.h"
 
 extern xSemaphoreHandle osdSemaphore;
 
@@ -32,6 +57,8 @@ volatile uint16_t gActiveLine = 0;
 volatile uint16_t gActivePixmapLine = 0;
 
 TTime time;
+
+// simple routines
 
 uint8_t getCharData(uint16_t charPos) {
 	if (charPos >= CHAR_ARRAY_OFFSET && charPos < CHAR_ARRAY_MAX) {
@@ -72,10 +99,17 @@ void printTime(uint16_t x, uint16_t y) {
 	printTextFB(x,y,temp);
 }
 
+uint8_t printCharFB(uint16_t ch, uint16_t x, uint16_t y) {
+	for(uint8_t i = 0; i < 18; i++)
+	{
+		uint8_t c=0;
+			frameBuffer[((y+i)*GRAPHICS_WIDTH)+(x+c)] = font_frame16x18[ch*18+i];
+			maskBuffer[((y+i)*GRAPHICS_WIDTH)+(x+c)] = font_mask16x18[ch*18+i];
+	}
+	return 1;
+}
 
 
-
-// Graphics vars
 
 static unsigned short logo_bits[] = {
    0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
@@ -194,10 +228,6 @@ static unsigned short logo_bits[] = {
    0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000 };
 
 
-
-
-// Functions
-
 uint16_t mirror(uint16_t source)
 {
 	int result = ((source & 0x8000) >> 15) | ((source & 0x4000) >> 13) |
@@ -226,7 +256,7 @@ void copyimage(uint16_t offsetx, uint16_t offsety) {
 	int i=0;
 	  for (uint16_t y = offsety; y < (128+offsety); y++) {
 		  for (uint16_t x = offsetx; x < (8+offsetx); x++) {
-			  frameBuffer[y*GRAPHICS_WIDTH+x] = mirror(logo_bits[(y-offsety)*8+(x-offsetx)]);
+			  frameBuffer[y*GRAPHICS_WIDTH+x] = maskBuffer[y*GRAPHICS_WIDTH+x]  = mirror(logo_bits[(y-offsety)*8+(x-offsetx)]);
 			  i+=2;
 		  }
 	}
@@ -244,17 +274,22 @@ void setPixel(uint16_t x, uint16_t y, uint8_t state) {
 		return;
 	}
 	uint8_t bitPos = 15-(x%16);
-	uint16_t temp = frameBuffer[y*GRAPHICS_WIDTH+x/16];
+	uint16_t tempf = frameBuffer[y*GRAPHICS_WIDTH+x/16];
+	uint16_t tempm = maskBuffer[y*GRAPHICS_WIDTH+x/16];
 	if (state == 0) {
-		temp &= ~(1<<bitPos);
+		tempf &= ~(1<<bitPos);
+		tempm &= ~(1<<bitPos);
 	}
 	else if (state == 1) {
-		temp |= (1<<bitPos);
+		tempf |= (1<<bitPos);
+		tempm |= (1<<bitPos);
 	}
 	else {
-		temp ^= (1<<bitPos);
+		tempf ^= (1<<bitPos);
+		tempm ^= (1<<bitPos);
 	}
-	frameBuffer[y*GRAPHICS_WIDTH+x/16] = temp;
+	frameBuffer[y*GRAPHICS_WIDTH+x/16] = tempf;
+	maskBuffer[y*GRAPHICS_WIDTH+x/16] = tempm;
 }
 
 // Credit for this one goes to wikipedia! :-)
@@ -300,6 +335,197 @@ void swap(uint16_t* a, uint16_t* b) {
 	*a = *b;
 	*b = temp;
 }
+
+
+void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
+	uint8_t steep = abs(y1 - y0) > abs(x1 - x0);
+	if (steep) {
+		swap(&x0, &y0);
+		swap(&x1, &y1);
+	}
+	if (x0 > x1) {
+		swap(&x0, &x1);
+		swap(&y0, &y1);
+	}
+	int16_t deltax = x1 - x0;
+	int16_t deltay = abs(y1 - y0);
+	int16_t error = deltax / 2;
+	int16_t ystep;
+	int16_t y = y0;
+	if (y0 < y1) {
+		ystep = 1;
+	}
+	else {
+		ystep = -1;
+	}
+	for (uint16_t x = x0; x <= x1; ++x) {
+		if (steep) {
+			setPixel(y, x, 1);
+		}
+		else {
+			setPixel(x, y, 1);
+		}
+		error = error - deltay;
+		if (error < 0) {
+			y = y + ystep;
+			error = error + deltax;
+		}
+	}
+}
+
+const static int8_t sinData[91] = {
+  0, 2, 3, 5, 7, 9, 10, 12, 14, 16, 17, 19, 21, 22, 24, 26, 28, 29, 31, 33,
+  34, 36, 37, 39, 41, 42, 44, 45, 47, 48, 50, 52, 53, 54, 56, 57, 59, 60, 62,
+  63, 64, 66, 67, 68, 69, 71, 72, 73, 74, 75, 77, 78, 79, 80, 81, 82, 83, 84,
+  85, 86, 87, 87, 88, 89, 90, 91, 91, 92, 93, 93, 94, 95, 95, 96, 96, 97, 97,
+  97, 98, 98, 98, 99, 99, 99, 99, 100, 100, 100, 100, 100, 100};
+
+static int8_t mySin(uint16_t angle) {
+	uint16_t pos = 0;
+	pos = angle % 360;
+	int8_t mult = 1;
+	// 180-359 is same as 0-179 but negative.
+	if (pos >= 180) {
+		pos = pos - 180;
+		mult = -1;
+	}
+	// 0-89 is equal to 90-179 except backwards.
+	if (pos >= 90) {
+		pos = 180 - pos;
+	}
+	return mult * (int8_t)(sinData[pos]);
+}
+
+static int8_t myCos(uint16_t angle) {
+	return mySin(angle + 90);
+}
+
+//fill the framebuffer with junk, used for debugging
+void fillFrameBuffer(void)
+{
+	uint16_t i;
+	uint16_t j;
+	for(i = 0; i<(BUFFER_VERT_SIZE); i++)
+	{
+		for(j = 0; j<(BUFFER_LINE_LENGTH); j++)
+		{
+			if(j < LEFT_MARGIN)
+			{
+				frameBuffer[i*GRAPHICS_WIDTH+j] = 0;
+			} else if (j > 32){
+				frameBuffer[i*GRAPHICS_WIDTH+j] = 0;
+			} else {
+				frameBuffer[i*GRAPHICS_WIDTH+j] = i*j;
+			}
+		}
+	}
+}
+
+
+/// Draws four points relative to the given center point.
+///
+/// \li centerX + X, centerY + Y
+/// \li centerX + X, centerY - Y
+/// \li centerX - X, centerY + Y
+/// \li centerX - X, centerY - Y
+///
+/// \param centerX the x coordinate of the center point
+/// \param centerY the y coordinate of the center point
+/// \param deltaX the difference between the centerX coordinate and each pixel drawn
+/// \param deltaY the difference between the centerY coordinate and each pixel drawn
+/// \param color the color to draw the pixels with.
+inline void plotFourQuadrants(int32_t centerX, int32_t centerY, int32_t deltaX, int32_t deltaY)
+{
+    setPixel(centerX + deltaX, centerY + deltaY,1);      // Ist      Quadrant
+    setPixel(centerX - deltaX, centerY + deltaY,1);      // IInd     Quadrant
+    setPixel(centerX - deltaX, centerY - deltaY,1);      // IIIrd    Quadrant
+    setPixel(centerX + deltaX, centerY - deltaY,1);      // IVth     Quadrant
+}
+
+/// Implements the midpoint ellipse drawing algorithm which is a bresenham
+/// style DDF.
+///
+/// \param centerX the x coordinate of the center of the ellipse
+/// \param centerY the y coordinate of the center of the ellipse
+/// \param horizontalRadius the horizontal radius of the ellipse
+/// \param verticalRadius the vertical radius of the ellipse
+/// \param color the color of the ellipse border
+void ellipse(int centerX, int centerY, int horizontalRadius, int verticalRadius)
+{
+    int64_t doubleHorizontalRadius = horizontalRadius * horizontalRadius;
+    int64_t doubleVerticalRadius = verticalRadius * verticalRadius;
+
+    int64_t error = doubleVerticalRadius - doubleHorizontalRadius * verticalRadius + (doubleVerticalRadius >> 2);
+
+    int x = 0;
+    int y = verticalRadius;
+    int deltaX = 0;
+    int deltaY = (doubleHorizontalRadius << 1) * y;
+
+    plotFourQuadrants(centerX, centerY, x, y);
+
+    while(deltaY >= deltaX)
+    {
+          x++;
+          deltaX += (doubleVerticalRadius << 1);
+
+          error +=  deltaX + doubleVerticalRadius;
+
+          if(error >= 0)
+          {
+               y--;
+               deltaY -= (doubleHorizontalRadius << 1);
+
+               error -= deltaY;
+          }
+          plotFourQuadrants(centerX, centerY, x, y);
+    }
+
+    error = (int64_t)(doubleVerticalRadius * (x + 1 / 2.0) * (x + 1 / 2.0) + doubleHorizontalRadius * (y - 1) * (y - 1) - doubleHorizontalRadius * doubleVerticalRadius);
+
+    while (y>=0)
+    {
+          error += doubleHorizontalRadius;
+          y--;
+          deltaY -= (doubleHorizontalRadius<<1);
+          error -= deltaY;
+
+          if(error <= 0)
+          {
+               x++;
+               deltaX += (doubleVerticalRadius << 1);
+               error += deltaX;
+          }
+
+          plotFourQuadrants(centerX, centerY, x, y);
+    }
+}
+
+
+void drawArrow(uint16_t x, uint16_t y, uint16_t angle, uint16_t size)
+{
+	int16_t a = myCos(angle);
+	int16_t b = mySin(angle);
+	a = (a * (size/2)) / 100;
+	b = (b * (size/2)) / 100;
+	drawLine((x)-1 - b, (y)-1 + a, (x)-1 + b, (y)-1 - a); //Direction line
+	//drawLine((GRAPHICS_SIZE/2)-1 + a/2, (GRAPHICS_SIZE/2)-1 + b/2, (GRAPHICS_SIZE/2)-1 - a/2, (GRAPHICS_SIZE/2)-1 - b/2); //Arrow bottom line
+	drawLine((x)-1 + b, (y)-1 - a, (x)-1 - a/2, (y)-1 - b/2); // Arrow "wings"
+	drawLine((x)-1 + b, (y)-1 - a, (x)-1 + a/2, (y)-1 + b/2);
+}
+
+void drawBox(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
+{
+	drawLine(x1, y1, x2, y1); //top
+	drawLine(x1, y1, x1, y2); //left
+	drawLine(x2, y1, x2, y2); //right
+	drawLine(x1, y2, x2, y2); //bottom
+}
+
+// simple routines
+
+// SUPEROSD routines, modified
+
 /**
  * write_pixel: Write a pixel at an x,y position to a given surface.
  *
@@ -430,7 +656,7 @@ void write_hline_outlined(unsigned int x0, unsigned int x1, unsigned int y, int 
         // Draw the main body of the line.
         write_hline_lm(x0 + 1, x1 - 1, y - 1, stroke, mmode);
         write_hline_lm(x0 + 1, x1 - 1, y + 1, stroke, mmode);
-        write_hline_lm(x0 + 1, x1 - 1, y, fill, 1);
+        write_hline_lm(x0 + 1, x1 - 1, y, fill, mmode);
         // Draw the endcaps, if any.
         DRAW_ENDCAP_HLINE(endcap0, x0, y, stroke, fill, mmode);
         DRAW_ENDCAP_HLINE(endcap1, x1, y, stroke, fill, mmode);
@@ -510,7 +736,7 @@ void write_vline_outlined(unsigned int x, unsigned int y0, unsigned int y1, int 
         // Draw the main body of the line.
         write_vline_lm(x - 1, y0 + 1, y1 - 1, stroke, mmode);
         write_vline_lm(x + 1, y0 + 1, y1 - 1, stroke, mmode);
-        write_vline_lm(x, y0 + 1, y1 - 1, fill, 1);
+        write_vline_lm(x, y0 + 1, y1 - 1, fill, mmode);
         // Draw the endcaps, if any.
         DRAW_ENDCAP_VLINE(endcap0, x, y0, stroke, fill, mmode);
         DRAW_ENDCAP_VLINE(endcap1, x, y1, stroke, fill, mmode);
@@ -681,19 +907,19 @@ void write_circle_outlined(unsigned int cx, unsigned int cy, unsigned int r, uns
         {
                 if(dashp == 0 || (y % dashp) < (dashp / 2))
                 {
-                        //CIRCLE_PLOT_8(draw_buffer_mask, cx, cy, x + 1, y, mmode);
+                        CIRCLE_PLOT_8(maskBuffer, cx, cy, x + 1, y, mmode);
                         CIRCLE_PLOT_8(frameBuffer, cx, cy, x + 1, y, stroke);
-                        //CIRCLE_PLOT_8(draw_buffer_mask, cx, cy, x, y + 1, mmode);
+                        CIRCLE_PLOT_8(maskBuffer, cx, cy, x, y + 1, mmode);
                         CIRCLE_PLOT_8(frameBuffer, cx, cy, x, y + 1, stroke);
-                        //CIRCLE_PLOT_8(draw_buffer_mask, cx, cy, x - 1, y, mmode);
+                        CIRCLE_PLOT_8(maskBuffer, cx, cy, x - 1, y, mmode);
                         CIRCLE_PLOT_8(frameBuffer, cx, cy, x - 1, y, stroke);
-                        //CIRCLE_PLOT_8(draw_buffer_mask, cx, cy, x, y - 1, mmode);
+                        CIRCLE_PLOT_8(maskBuffer, cx, cy, x, y - 1, mmode);
                         CIRCLE_PLOT_8(frameBuffer, cx, cy, x, y - 1, stroke);
                         if(bmode == 1)
                         {
-                                //CIRCLE_PLOT_8(draw_buffer_mask, cx, cy, x + 1, y + 1, mmode);
+                                CIRCLE_PLOT_8(maskBuffer, cx, cy, x + 1, y + 1, mmode);
                                 CIRCLE_PLOT_8(frameBuffer, cx, cy, x + 1, y + 1, stroke);
-                                //CIRCLE_PLOT_8(draw_buffer_mask, cx, cy, x - 1, y - 1, mmode);
+                                CIRCLE_PLOT_8(maskBuffer, cx, cy, x - 1, y - 1, mmode);
                                 CIRCLE_PLOT_8(frameBuffer, cx, cy, x - 1, y - 1, stroke);
                         }
                 }
@@ -712,7 +938,7 @@ void write_circle_outlined(unsigned int cx, unsigned int cy, unsigned int r, uns
         {
                 if(dashp == 0 || (y % dashp) < (dashp / 2))
                 {
-                        //CIRCLE_PLOT_8(draw_buffer_mask, cx, cy, x, y, mmode);
+                        CIRCLE_PLOT_8(maskBuffer, cx, cy, x, y, mmode);
                         CIRCLE_PLOT_8(frameBuffer, cx, cy, x, y, fill);
                 }
                 error += (y * 2) + 1;
@@ -1089,7 +1315,7 @@ void write_char(char ch, unsigned int x, unsigned int y, int flags, int font)
     int yy, addr_temp, row, row_temp, xshift;
     uint16_t and_mask, or_mask, level_bits;
     struct FontEntry font_info;
-    char lookup;
+    char lookup = 0;
     fetch_font_info(ch, font, &font_info, &lookup);
     // Compute starting address (for x,y) of character.
     int addr = CALC_BUFF_ADDR(x, y);
@@ -1243,7 +1469,7 @@ void write_string(char *str, unsigned int x, unsigned int y, unsigned int xs, un
 */
 void write_string_formatted(char *str, unsigned int x, unsigned int y, unsigned int xs, unsigned int ys, int va, int ha, int flags)
 {
-    int fcode = 0, fptr, font = 0, fwidth, fheight, xx = x, yy = y, max_xx = 0, max_height = 0;
+    int fcode = 0, fptr = 0, font = 0, fwidth = 0, fheight = 0, xx = x, yy = y, max_xx = 0, max_height = 0;
     struct FontEntry font_info;
     // Retrieve sizes of the fonts: bigfont and smallfont.
     fetch_font_info(0, 0, &font_info, NULL);
@@ -1394,191 +1620,10 @@ void write_string_formatted(char *str, unsigned int x, unsigned int y, unsigned 
 }
 
 
-void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
-	uint8_t steep = abs(y1 - y0) > abs(x1 - x0);
-	if (steep) {
-		swap(&x0, &y0);
-		swap(&x1, &y1);
-	}
-	if (x0 > x1) {
-		swap(&x0, &x1);
-		swap(&y0, &y1);
-	}
-	int16_t deltax = x1 - x0;
-	int16_t deltay = abs(y1 - y0);
-	int16_t error = deltax / 2;
-	int16_t ystep;
-	int16_t y = y0;
-	if (y0 < y1) {
-		ystep = 1;
-	}
-	else {
-		ystep = -1;
-	}
-	for (uint16_t x = x0; x <= x1; ++x) {
-		if (steep) {
-			setPixel(y, x, 1);
-		}
-		else {
-			setPixel(x, y, 1);
-		}
-		error = error - deltay;
-		if (error < 0) {
-			y = y + ystep;
-			error = error + deltax;
-		}
-	}
-}
-
-const static int8_t sinData[91] = {
-  0, 2, 3, 5, 7, 9, 10, 12, 14, 16, 17, 19, 21, 22, 24, 26, 28, 29, 31, 33,
-  34, 36, 37, 39, 41, 42, 44, 45, 47, 48, 50, 52, 53, 54, 56, 57, 59, 60, 62,
-  63, 64, 66, 67, 68, 69, 71, 72, 73, 74, 75, 77, 78, 79, 80, 81, 82, 83, 84,
-  85, 86, 87, 87, 88, 89, 90, 91, 91, 92, 93, 93, 94, 95, 95, 96, 96, 97, 97,
-  97, 98, 98, 98, 99, 99, 99, 99, 100, 100, 100, 100, 100, 100};
-
-static int8_t mySin(uint16_t angle) {
-	uint16_t pos = 0;
-	pos = angle % 360;
-	int8_t mult = 1;
-	// 180-359 is same as 0-179 but negative.
-	if (pos >= 180) {
-		pos = pos - 180;
-		mult = -1;
-	}
-	// 0-89 is equal to 90-179 except backwards.
-	if (pos >= 90) {
-		pos = 180 - pos;
-	}
-	return mult * (int8_t)(sinData[pos]);
-}
-
-static int8_t myCos(uint16_t angle) {
-	return mySin(angle + 90);
-}
-
-//fill the framebuffer with junk, used for debugging
-void fillFrameBuffer(void)
-{
-	uint16_t i;
-	uint16_t j;
-	for(i = 0; i<(BUFFER_VERT_SIZE); i++)
-	{
-		for(j = 0; j<(BUFFER_LINE_LENGTH); j++)
-		{
-			if(j < LEFT_MARGIN)
-			{
-				frameBuffer[i*GRAPHICS_WIDTH+j] = 0;
-			} else if (j > 32){
-				frameBuffer[i*GRAPHICS_WIDTH+j] = 0;
-			} else {
-				frameBuffer[i*GRAPHICS_WIDTH+j] = i*j;
-			}
-		}
-	}
-}
+//SUPEROSD-
 
 
-/// Draws four points relative to the given center point.
-///
-/// \li centerX + X, centerY + Y
-/// \li centerX + X, centerY - Y
-/// \li centerX - X, centerY + Y
-/// \li centerX - X, centerY - Y
-///
-/// \param centerX the x coordinate of the center point
-/// \param centerY the y coordinate of the center point
-/// \param deltaX the difference between the centerX coordinate and each pixel drawn
-/// \param deltaY the difference between the centerY coordinate and each pixel drawn
-/// \param color the color to draw the pixels with.
-inline void plotFourQuadrants(int32_t centerX, int32_t centerY, int32_t deltaX, int32_t deltaY)
-{
-    setPixel(centerX + deltaX, centerY + deltaY,1);      // Ist      Quadrant
-    setPixel(centerX - deltaX, centerY + deltaY,1);      // IInd     Quadrant
-    setPixel(centerX - deltaX, centerY - deltaY,1);      // IIIrd    Quadrant
-    setPixel(centerX + deltaX, centerY - deltaY,1);      // IVth     Quadrant
-}
-
-/// Implements the midpoint ellipse drawing algorithm which is a bresenham
-/// style DDF.
-///
-/// \param centerX the x coordinate of the center of the ellipse
-/// \param centerY the y coordinate of the center of the ellipse
-/// \param horizontalRadius the horizontal radius of the ellipse
-/// \param verticalRadius the vertical radius of the ellipse
-/// \param color the color of the ellipse border
-void ellipse(int centerX, int centerY, int horizontalRadius, int verticalRadius)
-{
-    int64_t doubleHorizontalRadius = horizontalRadius * horizontalRadius;
-    int64_t doubleVerticalRadius = verticalRadius * verticalRadius;
-
-    int64_t error = doubleVerticalRadius - doubleHorizontalRadius * verticalRadius + (doubleVerticalRadius >> 2);
-
-    int x = 0;
-    int y = verticalRadius;
-    int deltaX = 0;
-    int deltaY = (doubleHorizontalRadius << 1) * y;
-
-    plotFourQuadrants(centerX, centerY, x, y);
-
-    while(deltaY >= deltaX)
-    {
-          x++;
-          deltaX += (doubleVerticalRadius << 1);
-
-          error +=  deltaX + doubleVerticalRadius;
-
-          if(error >= 0)
-          {
-               y--;
-               deltaY -= (doubleHorizontalRadius << 1);
-
-               error -= deltaY;
-          }
-          plotFourQuadrants(centerX, centerY, x, y);
-    }
-
-    error = (int64_t)(doubleVerticalRadius * (x + 1 / 2.0) * (x + 1 / 2.0) + doubleHorizontalRadius * (y - 1) * (y - 1) - doubleHorizontalRadius * doubleVerticalRadius);
-
-    while (y>=0)
-    {
-          error += doubleHorizontalRadius;
-          y--;
-          deltaY -= (doubleHorizontalRadius<<1);
-          error -= deltaY;
-
-          if(error <= 0)
-          {
-               x++;
-               deltaX += (doubleVerticalRadius << 1);
-               error += deltaX;
-          }
-
-          plotFourQuadrants(centerX, centerY, x, y);
-    }
-}
-
-
-void drawArrow(uint16_t x, uint16_t y, uint16_t angle, uint16_t size)
-{
-	int16_t a = myCos(angle);
-	int16_t b = mySin(angle);
-	a = (a * (size/2)) / 100;
-	b = (b * (size/2)) / 100;
-	drawLine((x)-1 - b, (y)-1 + a, (x)-1 + b, (y)-1 - a); //Direction line
-	//drawLine((GRAPHICS_SIZE/2)-1 + a/2, (GRAPHICS_SIZE/2)-1 + b/2, (GRAPHICS_SIZE/2)-1 - a/2, (GRAPHICS_SIZE/2)-1 - b/2); //Arrow bottom line
-	drawLine((x)-1 + b, (y)-1 - a, (x)-1 - a/2, (y)-1 - b/2); // Arrow "wings"
-	drawLine((x)-1 + b, (y)-1 - a, (x)-1 + a/2, (y)-1 + b/2);
-}
-
-void drawBox(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
-{
-	drawLine(x1, y1, x2, y1); //top
-	drawLine(x1, y1, x1, y2); //left
-	drawLine(x2, y1, x2, y2); //right
-	drawLine(x1, y2, x2, y2); //bottom
-}
-
+// graphics
 
 void drawAttitude(uint16_t x, uint16_t y, int16_t pitch, int16_t roll, uint16_t size)
 {
@@ -1621,30 +1666,44 @@ void drawAttitude(uint16_t x, uint16_t y, int16_t pitch, int16_t roll, uint16_t 
 
 	// scale
 	//0
-	drawLine((x)-1-(size/2+4), (y)-1, (x)-1 - (size/2+1), (y)-1);
-	drawLine((x)-1+(size/2+4), (y)-1, (x)-1 + (size/2+1), (y)-1);
+	//drawLine((x)-1-(size/2+4), (y)-1, (x)-1 - (size/2+1), (y)-1);
+	//drawLine((x)-1+(size/2+4), (y)-1, (x)-1 + (size/2+1), (y)-1);
+	write_line_outlined((x)-1-(size/2+4), (y)-1, (x)-1 - (size/2+1), (y)-1,0,0,0,1);
+	write_line_outlined((x)-1-(size/2+4), (y)-1, (x)-1 - (size/2+1), (y)-1,0,0,0,1);
+
 	//30
-	drawLine((x)-1+indi30x1, (y)-1-indi30y1, (x)-1 + indi30x2, (y)-1 - indi30y2);
-	drawLine((x)-1-indi30x1, (y)-1-indi30y1, (x)-1 - indi30x2, (y)-1 - indi30y2);
+	//drawLine((x)-1+indi30x1, (y)-1-indi30y1, (x)-1 + indi30x2, (y)-1 - indi30y2);
+	//drawLine((x)-1-indi30x1, (y)-1-indi30y1, (x)-1 - indi30x2, (y)-1 - indi30y2);
+	write_line_outlined((x)-1+indi30x1, (y)-1-indi30y1, (x)-1 + indi30x2, (y)-1 - indi30y2,0,0,0,1);
+	write_line_outlined((x)-1-indi30x1, (y)-1-indi30y1, (x)-1 - indi30x2, (y)-1 - indi30y2,0,0,0,1);
 	//60
-	drawLine((x)-1+indi60x1, (y)-1-indi60y1, (x)-1 + indi60x2, (y)-1 - indi60y2);
-	drawLine((x)-1-indi60x1, (y)-1-indi60y1, (x)-1 - indi60x2, (y)-1 - indi60y2);
+	//drawLine((x)-1+indi60x1, (y)-1-indi60y1, (x)-1 + indi60x2, (y)-1 - indi60y2);
+	//drawLine((x)-1-indi60x1, (y)-1-indi60y1, (x)-1 - indi60x2, (y)-1 - indi60y2);
+	write_line_outlined((x)-1+indi60x1, (y)-1-indi60y1, (x)-1 + indi60x2, (y)-1 - indi60y2,0,0,0,1);
+	write_line_outlined((x)-1-indi60x1, (y)-1-indi60y1, (x)-1 - indi60x2, (y)-1 - indi60y2,0,0,0,1);
 	//90
-	drawLine((x)-1, (y)-1-(size/2+4), (x)-1, (y)-1 - (size/2+1));
+	//drawLine((x)-1, (y)-1-(size/2+4), (x)-1, (y)-1 - (size/2+1));
+	write_line_outlined((x)-1, (y)-1-(size/2+4), (x)-1, (y)-1 - (size/2+1),0,0,0,1);
 
 
 	//roll
-	drawLine((x)-1 - b, (y)-1 + a, (x)-1 + b, (y)-1 - a); //Direction line
+	//drawLine((x)-1 - b, (y)-1 + a, (x)-1 + b, (y)-1 - a); //Direction line
+	write_line_outlined((x)-1 - b, (y)-1 + a, (x)-1 + b, (y)-1 - a,0,0,0,1); //Direction line
 	//"wingtips"
-	drawLine((x)-1 - b, (y)-1 + a, (x)-1 - b + d, (y)-1 + a - c);
-	drawLine((x)-1 + b + d, (y)-1 - a - c, (x)-1 + b, (y)-1 - a);
+	//drawLine((x)-1 - b, (y)-1 + a, (x)-1 - b + d, (y)-1 + a - c);
+	//drawLine((x)-1 + b + d, (y)-1 - a - c, (x)-1 + b, (y)-1 - a);
+	write_line_outlined((x)-1 - b, (y)-1 + a, (x)-1 - b + d, (y)-1 + a - c,0,0,0,1);
+	write_line_outlined((x)-1 + b + d, (y)-1 - a - c, (x)-1 + b, (y)-1 - a,0,0,0,1);
 
 	//pitch
-	drawLine((x)-1, (y)-1, (x)-1 - k, (y)-1 - l);
+	//drawLine((x)-1, (y)-1, (x)-1 - k, (y)-1 - l);
+	write_line_outlined((x)-1, (y)-1, (x)-1 - k, (y)-1 - l,0,0,0,1);
 
 
-	drawCircle(x-1, y-1, 5);
-	drawCircle(x-1, y-1, size/2+4);
+	//drawCircle(x-1, y-1, 5);
+	write_circle_outlined(x-1, y-1, 5,0,0,0,1);
+	//drawCircle(x-1, y-1, size/2+4);
+	write_circle_outlined(x-1, y-1, size/2+4,0,0,0,1);
 }
 
 void drawBattery(uint16_t x, uint16_t y, uint8_t battery, uint16_t size)
@@ -1663,6 +1722,10 @@ void drawBattery(uint16_t x, uint16_t y, uint8_t battery, uint16_t size)
 
 	//right
 	drawLine((x)-1+size, (y)-1+2, (x)-1+size, (y)-1+size*3);
+
+	/*write_hline_lm((x)-1+(size/2-size/4),(x)-1 + (size/2+size/4),(y)-1,1,1);
+	write_hline_lm((x)-1+(size/2-size/4),(x)-1 + (size/2+size/4),(y)-1+1,1,1);
+	write_rectangle_outlined((x)-1, (y)-1+2,size,size*3,0,1);*/
 
 	batteryLines = battery*(size*3-2)/100;
 	for(i=0;i<batteryLines;i++)
@@ -1690,14 +1753,13 @@ void setAttitudeOsd(int16_t pitch, int16_t roll, int16_t yaw)
 	m_yaw=yaw;
 }
 
-
 void introText(){
 	//printTextFB((GRAPHICS_WIDTH_REAL/2 - 40)/16,GRAPHICS_HEIGHT_REAL-10,"ver 0.1");
 }
 
 void introGraphics() {
 	/* logo */
-	//copyimage(GRAPHICS_WIDTH_REAL/2-128/2, GRAPHICS_HEIGHT_REAL/2-128/2);
+	copyimage(GRAPHICS_WIDTH_REAL/2-128/2, GRAPHICS_HEIGHT_REAL/2-128/2);
 
 	/* frame */
 	drawBox(0,0,GRAPHICS_WIDTH_REAL-2,GRAPHICS_HEIGHT_REAL-1);
@@ -1736,7 +1798,7 @@ void drawAltitude(uint16_t x, uint16_t y, int16_t alt, uint8_t dir) {
  */
 void hud_draw_vertical_scale(int v, int range, int halign, int x, int y, int height, int mintick_step, int majtick_step, int mintick_len, int majtick_len, int boundtick_len, int max_val, int flags)
 {
-        char temp[15], temp2[15];
+        char temp[15];//, temp2[15];
         struct FontEntry font_info;
         struct FontDimensions dim;
         // Halign should be in a small span.
@@ -1969,6 +2031,7 @@ void hud_draw_linear_compass(int v, int range, int width, int x, int y, int mint
 
 
 
+//main draw function
 void updateGraphics() {
 
 	/*drawBox(2,2,GRAPHICS_WIDTH_REAL-4,GRAPHICS_HEIGHT_REAL-4);
@@ -1976,7 +2039,7 @@ void updateGraphics() {
 	write_filled_rectangle(maskBuffer,2,2,GRAPHICS_WIDTH_REAL-4-2,GRAPHICS_HEIGHT_REAL-4-2,2);
 	write_filled_rectangle(maskBuffer,3,3,GRAPHICS_WIDTH_REAL-4-1,GRAPHICS_HEIGHT_REAL-4-1,0);*/
 	//write_filled_rectangle(maskBuffer,5,5,GRAPHICS_WIDTH_REAL-4-5,GRAPHICS_HEIGHT_REAL-4-5,0);
-	write_rectangle_outlined(10,10,GRAPHICS_WIDTH_REAL-20,GRAPHICS_HEIGHT_REAL-20,0,0);
+	//write_rectangle_outlined(10,10,GRAPHICS_WIDTH_REAL-20,GRAPHICS_HEIGHT_REAL-20,0,0);
 	//drawLine(GRAPHICS_WIDTH_REAL-1, GRAPHICS_HEIGHT_REAL-1,(GRAPHICS_WIDTH_REAL/2)-1, GRAPHICS_HEIGHT_REAL-1 );
 	//drawCircle((GRAPHICS_WIDTH_REAL/2)-1, (GRAPHICS_HEIGHT_REAL/2)-1, (GRAPHICS_HEIGHT_REAL/2)-1);
 	//drawCircle((GRAPHICS_SIZE/2)-1, (GRAPHICS_SIZE/2)-1, (GRAPHICS_SIZE/2)-2);
@@ -1995,11 +2058,32 @@ void updateGraphics() {
 	angleC+=2;
 	//drawArrow(32,GRAPHICS_HEIGHT_REAL-40,angleA,32);
 	//drawAttitude(96,GRAPHICS_HEIGHT_REAL/2,90,0,48);
-	//drawAttitude(GRAPHICS_WIDTH_REAL/2,GRAPHICS_HEIGHT_REAL/2,m_pitch,m_roll,96);
+	drawAttitude(GRAPHICS_WIDTH_REAL/2,GRAPHICS_HEIGHT_REAL/2,m_pitch,m_roll,64);
 	//printTextFB(2,12,"Hello OP-OSD");
 	//printTextFB(1,21,"Hello OP-OSD");
 	//printTextFB(0,2,"Hello OP-OSD");
-	write_string("Hello OP-OSD", 1, 12, 1, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, 1);
+	/*write_hline_outlined(GRAPHICS_WIDTH_REAL/2-30, GRAPHICS_WIDTH_REAL/2+30, GRAPHICS_HEIGHT_REAL/2, 2, 2, 0, 1);
+	write_vline_outlined(GRAPHICS_WIDTH_REAL/2, GRAPHICS_HEIGHT_REAL/2-30, GRAPHICS_HEIGHT_REAL/2+30, 2, 2, 0, 1);
+	write_circle_outlined(GRAPHICS_WIDTH_REAL/2,GRAPHICS_HEIGHT_REAL/2,30,0,0,0,1);*/
+	write_string("Hello OP-OSD", 60, 12, 1, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, 0);
+	/*for(int y=0;y<6;y++)
+	{
+		int yl=y*20;
+		for(int x=0;x<18;x++)
+		{
+			printCharFB(m_batt+x+y*18,x,yl);
+		}
+	}
+	if(angleA%50==0)
+		m_batt++;*/
+	//printCharFB(1,1,70);
+	//printCharFB(2,2,70);
+	/*printCharFB(1,70);
+	printCharFB(2,70);
+	printCharFB(3,70);
+	printCharFB(4,70);
+	printCharFB(5,70);
+	printCharFB(6,70);*/
 	//printTime(10,2);
 	//printTime((GRAPHICS_WIDTH_REAL - 80)/16,GRAPHICS_HEIGHT_REAL-10);
 	//drawBox(0,0,GRAPHICS_WIDTH_REAL-2,GRAPHICS_HEIGHT_REAL-1);
@@ -2018,23 +2102,23 @@ void updateGraphics() {
 		dir=1;
 		m_alt+=m_pitch/2;
 	}
-	//drawBattery(310,20,m_batt,16);
+	drawBattery(208,20,m_batt,16);
 
 	//drawAltitude(200,50,m_alt,dir);
 	//drawArrow(96,GRAPHICS_HEIGHT_REAL/2,angleB,32);
 	//ellipse(50,50,50,30);
     // Draw airspeed (left side.)
-    //hud_draw_vertical_scale(m_batt, 100, -1, 2, (DISP_HEIGHT / 2) + 10, 100, 10, 20, 7, 12, 15, 1000, HUD_VSCALE_FLAG_NO_NEGATIVE);
+    hud_draw_vertical_scale(m_batt, 100, -1, 2, (DISP_HEIGHT / 2) + 10, 100, 10, 20, 7, 12, 15, 1000, HUD_VSCALE_FLAG_NO_NEGATIVE);
     // Draw altimeter (right side.)
-    //hud_draw_vertical_scale(m_alt, 200, +1, 2, (DISP_HEIGHT / 2) + 10, 100, 20, 100, 7, 12, 15, 500, 0);
+    hud_draw_vertical_scale(m_alt, 200, +1, 2, (DISP_HEIGHT / 2) + 10, 100, 20, 100, 7, 12, 15, 500, 0);
     // Draw compass.
-/*    if(m_yaw<0)
+    if(m_yaw<0)
     	hud_draw_linear_compass(360+m_yaw, 150, 120, DISP_WIDTH / 2, DISP_HEIGHT - 20, 15, 30, 7, 12, 0);
     else
     	hud_draw_linear_compass(m_yaw, 150, 120, DISP_WIDTH / 2, DISP_HEIGHT - 20, 15, 30, 7, 12, 0);
-*/
-	write_filled_rectangle(frameBuffer,20,20,30,30,1);
-	write_filled_rectangle(maskBuffer,30,30,30,30,1);
+
+	//write_filled_rectangle(frameBuffer,20,20,30,30,1);
+	//write_filled_rectangle(maskBuffer,30,30,30,30,1);
 	write_vline( frameBuffer,GRAPHICS_WIDTH_REAL-1,0,GRAPHICS_HEIGHT_REAL-1,0);
 	write_vline( maskBuffer,GRAPHICS_WIDTH_REAL-1,0,GRAPHICS_HEIGHT_REAL-1,0);
 }
@@ -2045,15 +2129,15 @@ void initLine() {
 	EXTI_InitTypeDef EXTI_InitStructure;
 	NVIC_InitTypeDef NVIC_InitStructure;
 
-	/* Enable DRDY GPIO clock */
+	/* Enable GPIO clock */
 	RCC_APB2PeriphClockCmd(PIOS_VIDEO_SYNC_CLK | RCC_APB2Periph_AFIO, ENABLE);
 
-	/* Configure EOC pin as input floating */
+	/* Configure Video Sync pin input floating */
 	GPIO_InitStructure.GPIO_Pin = PIOS_VIDEO_SYNC_GPIO_PIN;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
 	GPIO_Init(PIOS_VIDEO_SYNC_GPIO_PORT, &GPIO_InitStructure);
 
-	/* Configure the End Of Conversion (EOC) interrupt */
+	/* Configure the Video Line interrupt */
 	GPIO_EXTILineConfig(PIOS_VIDEO_SYNC_PORT_SOURCE, PIOS_VIDEO_SYNC_PIN_SOURCE);
 	EXTI_InitStructure.EXTI_Line = PIOS_VIDEO_SYNC_EXTI_LINE;
 	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
@@ -2061,28 +2145,21 @@ void initLine() {
 	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
 	EXTI_Init(&EXTI_InitStructure);
 
-	/* Enable and set EOC EXTI Interrupt to the lowest priority */
+	/* Enable and set EXTI Interrupt to the lowest priority */
 	NVIC_InitStructure.NVIC_IRQChannel = PIOS_VIDEO_SYNC_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = PIOS_VIDEO_SYNC_PRIO;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
 
-
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_OD;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-/*
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);
-	GPIO_ResetBits(GPIOA,GPIO_Pin_4);*/
-	//write_filled_rectangle(maskBuffer,0,0,GRAPHICS_WIDTH_REAL-1,GRAPHICS_HEIGHT_REAL-1,0);
 }
 
 void updateLine() {
+if(DMA_GetFlagStatus(DMA1_FLAG_TC3))
+{
 	uint16_t currLine = gActivePixmapLine;
 	static portBASE_TYPE xHigherPriorityTaskWoken;
-	PIOS_DELAY_WaituS(5); // wait 5us to see if H or V sync
+	PIOS_DELAY_WaituS(4); // wait 5us to see if H or V sync
 
 	if(((PIOS_VIDEO_SYNC_GPIO_PORT->IDR & PIOS_VIDEO_SYNC_GPIO_PIN))) { // H sync
 		if (gActiveLine != 0) {
@@ -2090,6 +2167,7 @@ void updateLine() {
 			{
 					DMA_DeInit(DMA1_Channel3);
 					DMA_DeInit(DMA1_Channel5);
+					DMA_ClearFlag(DMA1_FLAG_TC3);
 					DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)&frameBuffer[currLine*GRAPHICS_WIDTH];
 					DMA_InitStructure.DMA_BufferSize = BUFFER_LINE_LENGTH;
 					DMA_Init(DMA1_Channel5, &DMA_InitStructure);
@@ -2100,6 +2178,8 @@ void updateLine() {
 					SPI_I2S_DMACmd(SPI1, SPI_I2S_DMAReq_Tx, ENABLE);
 					DMA_Cmd(DMA1_Channel5, ENABLE);
 					DMA_Cmd(DMA1_Channel3, ENABLE);
+					//DMA_ITConfig(DMA1_Channel3, DMA_IT_TC, ENABLE);
+					DMA_ClearFlag(DMA1_FLAG_TC3);
 			}
 		}
 
@@ -2121,6 +2201,7 @@ void updateLine() {
 		}
 		//USB_LED_TOGGLE;
 	}
+}
 }
 
 bool isOutOfGraphics(void) {
