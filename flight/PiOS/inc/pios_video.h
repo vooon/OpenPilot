@@ -35,6 +35,7 @@
 #include <pios.h>
 
 // *****************************************************************************
+#if defined(PIOS_INCLUDE_VIDEO)
 
 // Text
 #define TEXT_CHAR_HEIGHT 8
@@ -251,4 +252,5 @@ void setAttitudeOsd(int16_t pitch, int16_t roll, int16_t yaw);
 void updateOnceEveryFrame();
 bool isOutOfGraphics(void);
 
+#endif
 #endif /* PIOS_VIDEO_H */
