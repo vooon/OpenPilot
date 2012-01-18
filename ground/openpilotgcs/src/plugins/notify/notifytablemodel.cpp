@@ -209,9 +209,18 @@ bool NotifyTableModel::dropMimeData( const QMimeData * data, Qt::DropAction acti
     int rows = beginRow;
     // read next item from input MIME and drop into the table line by line
     while(!stream.atEnd()) {
-        qint32 ptr;
-        stream >> ptr;
-        NotificationItem* item = reinterpret_cast<NotificationItem*>(ptr);
+        NotificationItem* item;
+	    if( sizeof( intptr_t ) == sizeof( qint32 )) {
+                qint32 ptr;
+                stream >> ptr;
+                item = reinterpret_cast<NotificationItem*>(ptr);
+            } else if( sizeof( intptr_t ) == sizeof( qint64 )) {
+                qint64 ptr;
+                stream >> ptr;
+                item = reinterpret_cast<NotificationItem*>(ptr);
+            } else 
+                Q_ASSERT( false );
+
         int dragged = _list.indexOf(item);
         // we can drag item from top rows to bottom (DOWN_DIRECTION),
         // or from bottom rows to top rows (UP_DIRECTION)
@@ -247,8 +256,13 @@ QMimeData* NotifyTableModel::mimeData(const QModelIndexList& indexes) const
     int rows = 0;
     foreach (const QModelIndex& index, indexes) {
         if (!index.column()) {
-            qint32 item = reinterpret_cast<qint32>(_list.at(index.row()));
-            stream << item;
+            intptr_t item = reinterpret_cast<intptr_t>(_list.at(index.row()));
+	    if( sizeof( intptr_t ) == sizeof( qint32 ))
+                stream << (qint32)item;
+            else if( sizeof( intptr_t ) == sizeof( qint64 ))
+                stream << (qint64)item;
+            else
+                Q_ASSERT( false );
             ++rows;
         }
     }
