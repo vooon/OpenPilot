@@ -49,12 +49,14 @@ private:
     Ui_StabilizationWidget *m_stabilization;
     StabilizationSettings* stabSettings;
     QTimer updateTimer;
+    void refreshUIValues(StabilizationSettings::DataFields &stabData);
 
 private slots:
     virtual void refreshWidgetsValues();
     void updateObjectsFromWidgets();
     void reloadBoardValues();
     void realtimeUpdateToggle(bool);
+    void resetToDefaults();
     void openHelp();
 
     void updateRateRollKP(double);
@@ -74,4 +76,4 @@ private slots:
     void updatePitchILimit(double);
 };
 
-#endif // ConfigStabilizationWidget_H
+#endif // CONFIGSTABILIZATIONWIDGET_H
