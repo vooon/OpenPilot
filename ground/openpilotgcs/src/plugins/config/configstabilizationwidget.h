@@ -53,6 +53,7 @@ private:
 private slots:
     virtual void refreshWidgetsValues();
     void updateObjectsFromWidgets();
+    void reloadBoardValues();
     void realtimeUpdateToggle(bool);
     void openHelp();
 

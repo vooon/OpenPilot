@@ -54,6 +54,9 @@ ConfigStabilizationWidget::ConfigStabilizationWidget(QWidget *parent) : ConfigTa
     connect(&updateTimer, SIGNAL(timeout()), this, SLOT(updateObjectsFromWidgets()));
     connect(m_stabilization->realTimeUpdates, SIGNAL(toggled(bool)), this, SLOT(realtimeUpdateToggle(bool)));
 
+    // connect reload board settings button
+    connect(m_stabilization->reloadBoardValues, SIGNAL(clicked()), this, SLOT (reloadBoardValues()));
+
     // Connect the updates of the stab values
     connect(m_stabilization->rateRollKp, SIGNAL(valueChanged(double)), this, SLOT(updateRateRollKP(double)));
     connect(m_stabilization->rateRollKi, SIGNAL(valueChanged(double)), this, SLOT(updateRateRollKI(double)));
@@ -107,6 +110,11 @@ ConfigStabilizationWidget::ConfigStabilizationWidget(QWidget *parent) : ConfigTa
 ConfigStabilizationWidget::~ConfigStabilizationWidget()
 {
    // Do nothing
+}
+
+void ConfigStabilizationWidget::reloadBoardValues()
+{
+    refreshWidgetsValues();
 }
 
 void ConfigStabilizationWidget::updateRateRollKP(double val)
