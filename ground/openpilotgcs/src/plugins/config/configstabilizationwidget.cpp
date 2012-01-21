@@ -154,7 +154,7 @@ ConfigStabilizationWidget::ConfigStabilizationWidget(QWidget *parent) : ConfigTa
 
 ConfigStabilizationWidget::~ConfigStabilizationWidget()
 {
-   // Do nothing
+    // Do nothing
 }
 
 void ConfigStabilizationWidget::reloadBoardValues()
