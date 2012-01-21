@@ -36,6 +36,27 @@
 #include <QtGui/QWidget>
 #include <QTimer>
 
+// constants for range limits for the dials in basic mode
+const double RATE_KP_MIN = 0.0;
+const double RATE_KP_MAX = 0.01;
+
+const double RATE_KI_MIN = 0.0;
+const double RATE_KI_MAX = 0.01;
+
+const double ATTITUDE_KP_MIN = 0.0;
+const double ATTITUDE_KP_MAX = 10.0;
+
+const double ATTITUDE_KI_MIN = 0.0;
+const double ATTITUDE_KI_MAX = 10.0;
+
+const int FULL_STICK_ANGLE_MIN = 0;
+const int FULL_STICK_ANGLE_MAX = 180;
+
+const int FULL_STICK_RATE_MIN = 0;
+const int FULL_STICK_RATE_MAX = 500;
+
+const int MAXIMUM_RATE_MIN = 0;
+const int MAXIMUM_RATE_MAX = 500;
 
 class ConfigStabilizationWidget: public ConfigTaskWidget
 {
@@ -67,6 +88,9 @@ private slots:
     void updateRatePitchKI(double);
     void updateRatePitchILimit(double);
 
+    void updateRateYawKP(double);
+    void updateRateYawKI(double);
+
     void updateRollKP(double);
     void updateRollKI(double);
     void updateRollILimit(double);
@@ -74,6 +98,16 @@ private slots:
     void updatePitchKP(double);
     void updatePitchKI(double);
     void updatePitchILimit(double);
+
+    void updateBasicPitchProp(int);
+    void updateBasicPitchInt(int);
+    void updateBasicRollProp(int);
+    void updateBasicRollInt(int);
+    void updateBasicYawProp(int);
+    void updateBasicYawInt(int);
+
+    void activateLinkRate(void);
+    void activateLinkRateExpert(void);
 };
 
 #endif // CONFIGSTABILIZATIONWIDGET_H
