@@ -49,14 +49,14 @@ const double ATTITUDE_KP_MAX = 10.0;
 const double ATTITUDE_KI_MIN = 0.0;
 const double ATTITUDE_KI_MAX = 10.0;
 
-const int FULL_STICK_ANGLE_MIN = 0;
-const int FULL_STICK_ANGLE_MAX = 180;
+const double FULL_STICK_ANGLE_MIN = 0;
+const double FULL_STICK_ANGLE_MAX = 180;
 
-const int FULL_STICK_RATE_MIN = 0;
-const int FULL_STICK_RATE_MAX = 500;
+const double FULL_STICK_RATE_MIN = 0;
+const double FULL_STICK_RATE_MAX = 500;
 
-const int MAXIMUM_RATE_MIN = 0;
-const int MAXIMUM_RATE_MAX = 500;
+const double MAXIMUM_RATE_MIN = 0;
+const double MAXIMUM_RATE_MAX = 500;
 
 class ConfigStabilizationWidget: public ConfigTaskWidget
 {
@@ -99,6 +99,21 @@ private slots:
     void updatePitchKI(double);
     void updatePitchILimit(double);
 
+    void updateYawKP(double);
+    void updateYawKI(double);
+
+    void updatePitchMax(int);
+    void updateRollMax(int);
+    void updateYawMax(int);
+
+    void updateManualPitch(int);
+    void updateManualRoll(int);
+    void updateManualYaw(int);
+
+    void updateMaximumPitch(int);
+    void updateMaximumRoll(int);
+    void updateMaximumYaw(int);
+
     void updateBasicPitchProp(int);
     void updateBasicPitchInt(int);
     void updateBasicRollProp(int);
@@ -106,8 +121,29 @@ private slots:
     void updateBasicYawProp(int);
     void updateBasicYawInt(int);
 
+    void updateBasicAttPitchProp(int);
+    void updateBasicAttPitchInt(int);
+    void updateBasicAttRollProp(int);
+    void updateBasicAttRollInt(int);
+    void updateBasicAttYawProp(int);
+    void updateBasicAttYawInt(int);
+
+    void updateBasicLimFsaP(int);
+    void updateBasicLimFsaR(int);
+    void updateBasicLimFsaY(int);
+
+    void updateBasicLimFsrP(int);
+    void updateBasicLimFsrR(int);
+    void updateBasicLimFsrY(int);
+
+    void updateBasicLimMraP(int);
+    void updateBasicLimMraR(int);
+    void updateBasicLimMraY(int);
+
     void activateLinkRate(void);
     void activateLinkRateExpert(void);
+    void activateLinkAttitude(void);
+    void activateLinkAttitudeExpert(void);
 };
 
 #endif // CONFIGSTABILIZATIONWIDGET_H
