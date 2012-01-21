@@ -46,6 +46,20 @@ SRC					+=	$(wildcard $(PERIPHLIB)/src/*.c)
 EXTRAINCDIRS		+=	$(PERIPHLIB)/inc
 
 #
+# ST USB On the Go (OTG) Driver
+#
+USBOTGDRV			 =	$(PIOS_DEVLIB)/Libraries/STM32_USB_OTG_Driver
+SRC					+=	$(wildcard $(USBOTGDRV)/src/*.c)
+EXTRAINCDIRS		+=	$(USBOTGDRV)/inc
+
+#
+# ST USB Device library
+#
+USBDEVLIB			 =	$(PIOS_DEVLIB)/Libraries/STM32_USB_Device_Library
+SRC					+=	$(wildcard $(USBDEVLIB)/src/*.c)
+EXTRAINCDIRS		+=	$(USBDEVLIB)/inc
+
+#
 # FreeRTOS
 #
 # If the application has included the generic FreeRTOS support, then add in

@@ -216,6 +216,15 @@ extern uint32_t pios_com_telem_usb_id;
 #define PIOS_FLASH_DISABLE                      PIOS_SPI_RC_PinSet(PIOS_SPI_FLASH,0,1);
 
 
+//-------------------------
+// USB
+//-------------------------
+#define PIOS_USB_ENABLED                        1
+#define PIOS_USB_HID_MAX_DEVS                   1
+#define PIOS_USB_DETECT_GPIO_PORT               GPIOA
+#define PIOS_USB_DETECT_GPIO_PIN                GPIO_Pin_12
+#define PIOS_USB_DETECT_EXTI_LINE               EXTI_Line12
+#define PIOS_IRQ_USB_PRIORITY                   PIOS_IRQ_PRIO_MID
 
 
 #endif /* STM3210E_INS_H_ */

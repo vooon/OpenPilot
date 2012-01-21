@@ -45,8 +45,8 @@ typedef enum _DEVICE_STATE {
 void Suspend(void);
 void Resume_Init(void);
 void Resume(RESUME_STATE eResumeSetVal);
-RESULT PowerOn(void);
-RESULT PowerOff(void);
+//RESULT PowerOn(void);
+//RESULT PowerOff(void);
 /* External variables --------------------------------------------------------*/
 extern __IO uint32_t bDeviceState;	/* USB device status */
 extern __IO bool fSuspendEnabled;	/* true when suspend is possible */

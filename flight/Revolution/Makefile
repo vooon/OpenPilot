@@ -115,6 +115,8 @@ SRC += ${foreach MOD, ${MODULES}, ${wildcard ${OPMODULEDIR}/${MOD}/*.c}}
 ## OPENPILOT CORE:
 SRC += ${OPMODULEDIR}/System/systemmod.c
 SRC += $(OPSYSTEM)/revolution.c
+SRC += $(OPSYSTEM)/pios_usb_hid_desc.c
+SRC += $(OPSYSTEM)/usbd_usr.c
 SRC += $(OPSYSTEM)/pios_board.c
 SRC += $(OPSYSTEM)/alarms.c
 SRC += $(OPSYSTEM)/taskmonitor.c

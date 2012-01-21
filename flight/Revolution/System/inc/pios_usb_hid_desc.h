@@ -37,19 +37,26 @@
 #define PIOS_HID_SIZ_REPORT_DESC               36
 #define PIOS_HID_SIZ_STRING_LANGID             4
 #define PIOS_HID_SIZ_STRING_VENDOR             28
-#define PIOS_HID_SIZ_STRING_PRODUCT            20
-#define PIOS_HID_SIZ_STRING_SERIAL             52	/* 96 bits, 12 bytes, 24 characters, 48 in unicode */
+#define PIOS_HID_SIZ_STRING_PRODUCT            28
+#define PIOS_HID_SIZ_STRING_SERIAL             26 /* 96 bits, 12 bytes, 24 characters + null */
 
 #define STANDARD_ENDPOINT_DESC_SIZE             0x09
 
-/* Exported functions ------------------------------------------------------- */
-extern const uint8_t PIOS_HID_DeviceDescriptor[PIOS_HID_SIZ_DEVICE_DESC];
+//extern  uint8_t USBD_OtherSpeedCfgDesc[USB_LEN_CFG_DESC]; 
+//extern  uint8_t USBD_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_DESC];
+//extern  uint8_t USBD_LangIDDesc[USB_SIZ_STRING_LANGID];
+
+/* Exported (extern'ed) items ------------------------------------------------------- */
+extern   USBD_DEVICE PIOS_HID_USR_desc; 
+extern       uint8_t PIOS_HID_DeviceDescriptor[PIOS_HID_SIZ_DEVICE_DESC];
+extern       uint8_t PIOS_HID_DeviceDesc[PIOS_HID_SIZ_DEVICE_DESC];
+extern       uint8_t PIOS_HID_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_DESC];
 extern const uint8_t PIOS_HID_ConfigDescriptor[PIOS_HID_SIZ_CONFIG_DESC];
 extern const uint8_t PIOS_HID_ReportDescriptor[PIOS_HID_SIZ_REPORT_DESC];
-extern const uint8_t PIOS_HID_StringLangID[PIOS_HID_SIZ_STRING_LANGID];
+extern       uint8_t PIOS_HID_StringLangID[PIOS_HID_SIZ_STRING_LANGID];
 extern const uint8_t PIOS_HID_StringVendor[PIOS_HID_SIZ_STRING_VENDOR];
 extern const uint8_t PIOS_HID_StringProduct[PIOS_HID_SIZ_STRING_PRODUCT];
-extern uint8_t PIOS_HID_StringSerial[PIOS_HID_SIZ_STRING_SERIAL];
+extern       uint8_t PIOS_HID_StringSerial[PIOS_HID_SIZ_STRING_SERIAL];
 
 #endif /* __USB_DESC_H */
 
