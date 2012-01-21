@@ -27,7 +27,6 @@
 #include "configstabilizationwidget.h"
 
 #include <QDebug>
-#include <QMessagebox>
 #include <QStringList>
 #include <QtGui/QWidget>
 #include <QtGui/QTextEdit>
