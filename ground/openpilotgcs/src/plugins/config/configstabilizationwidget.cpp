@@ -144,8 +144,11 @@ void ConfigStabilizationWidget::updateRateRollKP(double val)
         int basicVal = ( val - RATE_KP_MIN) / ( RATE_KP_MAX - RATE_KP_MIN) * 100;
         m_stabilization->rateRollProp->blockSignals( true );
         m_stabilization->rateRollProp->setValue( basicVal );
-        if (m_stabilization->linkRateRP->isChecked())
+        if (m_stabilization->linkRateRP->isChecked()) {
+            m_stabilization->ratePitchProp->blockSignals( true );
             m_stabilization->ratePitchProp->setValue( basicVal );
+            m_stabilization->ratePitchProp->blockSignals( false );
+        }
         m_stabilization->rateRollProp->blockSignals( false );
         m_stabilization->RPRL->setNum( basicVal );
     }
@@ -167,8 +170,11 @@ void ConfigStabilizationWidget::updateRateRollKI(double val)
         int basicVal = ( val - RATE_KI_MIN) / ( RATE_KI_MAX - RATE_KI_MIN) * 100;
         m_stabilization->rateRollInt->blockSignals( true );
         m_stabilization->rateRollInt->setValue( basicVal );
-        if (m_stabilization->linkRateRP->isChecked())
+        if (m_stabilization->linkRateRP->isChecked()) {
+            m_stabilization->ratePitchInt->blockSignals( true );
             m_stabilization->ratePitchInt->setValue( basicVal );
+            m_stabilization->ratePitchInt->blockSignals( false );
+        }
         m_stabilization->rateRollInt->blockSignals( false );
         m_stabilization->RIRL->setNum( basicVal );
     }
@@ -197,8 +203,11 @@ void ConfigStabilizationWidget::updateRatePitchKP(double val)
         int basicVal = ( val - RATE_KP_MIN) / ( RATE_KP_MAX - RATE_KP_MIN) * 100;
         m_stabilization->ratePitchProp->blockSignals( true );
         m_stabilization->ratePitchProp->setValue( basicVal );
-        if (m_stabilization->linkRateRP->isChecked())
+        if (m_stabilization->linkRateRP->isChecked()) {
+            m_stabilization->rateRollProp->blockSignals( true );
             m_stabilization->rateRollProp->setValue( basicVal );
+            m_stabilization->rateRollProp->blockSignals( false );
+        }
         m_stabilization->ratePitchProp->blockSignals( false );
         m_stabilization->RPPL->setNum( basicVal );
     }
@@ -220,8 +229,11 @@ void ConfigStabilizationWidget::updateRatePitchKI(double val)
         int basicVal = ( val - RATE_KI_MIN) / ( RATE_KI_MAX - RATE_KI_MIN) * 100;
         m_stabilization->ratePitchInt->blockSignals( true );
         m_stabilization->ratePitchInt->setValue( basicVal );
-        if (m_stabilization->linkRateRP->isChecked())
+        if (m_stabilization->linkRateRP->isChecked()) {
+            m_stabilization->rateRollInt->blockSignals( true );
             m_stabilization->rateRollInt->setValue( basicVal );
+            m_stabilization->rateRollInt->blockSignals( false );
+        }
         m_stabilization->ratePitchInt->blockSignals( false );
         m_stabilization->RIPL->setNum( basicVal );
     }
