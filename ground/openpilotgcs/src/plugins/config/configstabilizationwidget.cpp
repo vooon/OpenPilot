@@ -35,6 +35,30 @@
 #include <QDesktopServices>
 #include <QUrl>
 
+// constants for range limits for the dials in basic mode
+static const double RATE_KP_MIN = 0.0;
+static const double RATE_KP_MAX = 0.01;
+
+static const double RATE_KI_MIN = 0.0;
+static const double RATE_KI_MAX = 0.01;
+
+static const double ATTITUDE_KP_MIN = 0.0;
+static const double ATTITUDE_KP_MAX = 10.0;
+
+static const double ATTITUDE_KI_MIN = 0.0;
+static const double ATTITUDE_KI_MAX = 10.0;
+
+static const double FULL_STICK_ANGLE_MIN = 0;
+static const double FULL_STICK_ANGLE_MAX = 180;
+
+static const double FULL_STICK_RATE_MIN = 0;
+static const double FULL_STICK_RATE_MAX = 500;
+
+static const double MAXIMUM_RATE_MIN = 0;
+static const double MAXIMUM_RATE_MAX = 500;
+
+// ------------------------------------------------------
+
 ConfigStabilizationWidget::ConfigStabilizationWidget(QWidget *parent) : ConfigTaskWidget(parent)
 {
     stabSettings = StabilizationSettings::GetInstance(getObjectManager());
@@ -168,11 +192,12 @@ void ConfigStabilizationWidget::updateRateRollKP(double val)
     }
     // update basic tab dial
     if( val < RATE_KP_MIN || val > RATE_KP_MAX ) {
-        m_stabilization->RPRL->setText( "<font color='red'><center>OUT<br/>OF<br/>RANGE</center></font>" );
+        m_stabilization->RPRL->setStyleSheet("QLabel { color : red; }");
+        m_stabilization->RPRL->setText( "OUT\nOF\nRANGE" );
         m_stabilization->rateRollProp->setEnabled( false );
     } else {
         // calc position normalized to 0-100%
-        m_stabilization->RPRL->setText( "<font color='black'>0</font>" );
+        m_stabilization->RPRL->setStyleSheet("QLabel { color : black; }");
         m_stabilization->rateRollProp->setEnabled( true );
         int basicVal = ( val - RATE_KP_MIN) / ( RATE_KP_MAX - RATE_KP_MIN) * 100;
         m_stabilization->rateRollProp->blockSignals( true );
@@ -194,11 +219,12 @@ void ConfigStabilizationWidget::updateRateRollKI(double val)
     }
     // update basic tab dial
     if( val < RATE_KI_MIN || val > RATE_KI_MAX ) {
-        m_stabilization->RIRL->setText( "<font color='red'><center>OUT<br/>OF<br/>RANGE</center></font>" );
+        m_stabilization->RIRL->setStyleSheet("QLabel { color : red; }");
+        m_stabilization->RIRL->setText( "OUT\nOF\nRANGE" );
         m_stabilization->rateRollInt->setEnabled( false );
     } else {
         // calc position normalized to 0-100%
-        m_stabilization->RIRL->setText( "<font color='black'>0</font>" );
+        m_stabilization->RIRL->setStyleSheet("QLabel { color : black; }");
         m_stabilization->rateRollInt->setEnabled( true );
         int basicVal = ( val - RATE_KI_MIN) / ( RATE_KI_MAX - RATE_KI_MIN) * 100;
         m_stabilization->rateRollInt->blockSignals( true );
@@ -227,11 +253,12 @@ void ConfigStabilizationWidget::updateRatePitchKP(double val)
     }
     // update basic tab dial
     if( val < RATE_KP_MIN || val > RATE_KP_MAX ) {
-        m_stabilization->RPPL->setText( "<font color='red'><center>OUT<br/>OF<br/>RANGE</center></font>" );
+        m_stabilization->RPPL->setStyleSheet("QLabel { color : red; }");
+        m_stabilization->RPPL->setText( "OUT\nOF\nRANGE" );
         m_stabilization->ratePitchProp->setEnabled( false );
     } else {
         // calc position normalized to 0-100%
-        m_stabilization->RPPL->setText( "<font color='black'>0</font>" );
+        m_stabilization->RPPL->setStyleSheet("QLabel { color : black; }");
         m_stabilization->ratePitchProp->setEnabled( true );
         int basicVal = ( val - RATE_KP_MIN) / ( RATE_KP_MAX - RATE_KP_MIN) * 100;
         m_stabilization->ratePitchProp->blockSignals( true );
@@ -253,11 +280,12 @@ void ConfigStabilizationWidget::updateRatePitchKI(double val)
     }
     // update basic tab dial
     if( val < RATE_KI_MIN || val > RATE_KI_MAX ) {
-        m_stabilization->RIPL->setText( "<font color='red'><center>OUT<br/>OF<br/>RANGE</center></font>" );
+        m_stabilization->RIPL->setStyleSheet("QLabel { color : red; }");
+        m_stabilization->RIPL->setText( "OUT\nOF\nRANGE" );
         m_stabilization->ratePitchInt->setEnabled( false );
     } else {
         // calc position normalized to 0-100%
-        m_stabilization->RIPL->setText( "<font color='black'>0</font>" );
+        m_stabilization->RIPL->setStyleSheet("QLabel { color : black; }");
         m_stabilization->ratePitchInt->setEnabled( true );
         int basicVal = ( val - RATE_KI_MIN) / ( RATE_KI_MAX - RATE_KI_MIN) * 100;
         m_stabilization->ratePitchInt->blockSignals( true );
@@ -276,11 +304,12 @@ void ConfigStabilizationWidget::updateRateYawKP(double val)
 {
     // update basic tab dial
     if( val < RATE_KP_MIN || val > RATE_KP_MAX ) {
-        m_stabilization->RPYL->setText( "<font color='red'><center>OUT<br/>OF<br/>RANGE</center></font>" );
+        m_stabilization->RPYL->setStyleSheet("QLabel { color : red; }");
+        m_stabilization->RPYL->setText( "OUT\nOF\nRANGE" );
         m_stabilization->rateYawProp->setEnabled( false );
     } else {
         // calc position normalized to 0-100%
-        m_stabilization->RPYL->setText( "<font color='black'>0</font>" );
+        m_stabilization->RPYL->setStyleSheet("QLabel { color : black; }");
         m_stabilization->rateYawProp->setEnabled( true );
         int basicVal = ( val - RATE_KP_MIN) / ( RATE_KP_MAX - RATE_KP_MIN) * 100;
         m_stabilization->rateYawProp->blockSignals( true );
@@ -294,11 +323,12 @@ void ConfigStabilizationWidget::updateRateYawKI(double val)
 {
     // update basic tab dial
     if( val < RATE_KI_MIN || val > RATE_KI_MAX ) {
-        m_stabilization->RIYL->setText( "<font color='red'><center>OUT<br/>OF<br/>RANGE</center></font>" );
+        m_stabilization->RIYL->setStyleSheet("QLabel { color : red; }");
+        m_stabilization->RIYL->setText( "OUT\nOF\nRANGE" );
         m_stabilization->rateYawInt->setEnabled( false );
     } else {
         // calc position normalized to 0-100%
-        m_stabilization->RIYL->setText( "<font color='black'>0</font>" );
+        m_stabilization->RIYL->setStyleSheet("QLabel { color : black; }");
         m_stabilization->rateYawInt->setEnabled( true );
         int basicVal = ( val - RATE_KI_MIN) / ( RATE_KI_MAX - RATE_KI_MIN) * 100;
         m_stabilization->rateYawInt->blockSignals( true );
@@ -323,11 +353,12 @@ void ConfigStabilizationWidget::updateRollKP(double val)
 
     // update basic tab dial
     if( val < ATTITUDE_KP_MIN || val > ATTITUDE_KP_MAX ) {
-        m_stabilization->APRL->setText( "<font color='red'><center>OUT<br/>OF<br/>RANGE</center></font>" );
+        m_stabilization->APRL->setStyleSheet("QLabel { color : red; }");
+        m_stabilization->APRL->setText( "OUT\nOF\nRANGE" );
         m_stabilization->attRollProp->setEnabled( false );
     } else {
         // calc position normalized to 0-100%
-        m_stabilization->APRL->setText( "<font color='black'>0</font>" );
+        m_stabilization->APRL->setStyleSheet("QLabel { color : black; }");
         m_stabilization->attRollProp->setEnabled( true );
         int basicVal = ( val - ATTITUDE_KP_MIN) / ( ATTITUDE_KP_MAX - ATTITUDE_KP_MIN) * 100;
         m_stabilization->attRollProp->blockSignals( true );
@@ -349,11 +380,12 @@ void ConfigStabilizationWidget::updateRollKI(double val)
     }
     // update basic tab dial
     if( val < ATTITUDE_KI_MIN || val > ATTITUDE_KI_MAX ) {
-        m_stabilization->AIRL->setText( "<font color='red'><center>OUT<br/>OF<br/>RANGE</center></font>" );
+        m_stabilization->AIRL->setStyleSheet("QLabel { color : red; }");
+        m_stabilization->AIRL->setText( "OUT\nOF\nRANGE" );
         m_stabilization->attRollInt->setEnabled( false );
     } else {
         // calc position normalized to 0-100%
-        m_stabilization->AIRL->setText( "<font color='black'>0</font>" );
+        m_stabilization->AIRL->setStyleSheet("QLabel { color : black; }");
         m_stabilization->attRollInt->setEnabled( true );
         int basicVal = ( val - ATTITUDE_KI_MIN) / ( ATTITUDE_KI_MAX - ATTITUDE_KI_MIN) * 100;
         m_stabilization->attRollInt->blockSignals( true );
@@ -382,11 +414,12 @@ void ConfigStabilizationWidget::updatePitchKP(double val)
     }
     // update basic tab dial
     if( val < ATTITUDE_KP_MIN || val > ATTITUDE_KP_MAX ) {
-        m_stabilization->APPL->setText( "<font color='red'><center>OUT<br/>OF<br/>RANGE</center></font>" );
+        m_stabilization->APPL->setStyleSheet("QLabel { color : red; }");
+        m_stabilization->APPL->setText( "OUT\nOF\nRANGE" );
         m_stabilization->attPitchProp->setEnabled( false );
     } else {
         // calc position normalized to 0-100%
-        m_stabilization->APPL->setText( "<font color='black'>0</font>" );
+        m_stabilization->APPL->setStyleSheet("QLabel { color : black; }");
         m_stabilization->attPitchProp->setEnabled( true );
         int basicVal = ( val - ATTITUDE_KP_MIN) / ( ATTITUDE_KP_MAX - ATTITUDE_KP_MIN) * 100;
         m_stabilization->attPitchProp->blockSignals( true );
@@ -408,11 +441,12 @@ void ConfigStabilizationWidget::updatePitchKI(double val)
     }
     // update basic tab dial
     if( val < ATTITUDE_KI_MIN || val > ATTITUDE_KI_MAX ) {
-        m_stabilization->AIPL->setText( "<font color='red'><center>OUT<br/>OF<br/>RANGE</center></font>" );
+        m_stabilization->AIPL->setStyleSheet("QLabel { color : red; }");
+        m_stabilization->AIPL->setText( "OUT\nOF\nRANGE" );
         m_stabilization->attPitchInt->setEnabled( false );
     } else {
         // calc position normalized to 0-100%
-        m_stabilization->AIPL->setText( "<font color='black'>0</font>" );
+        m_stabilization->AIPL->setStyleSheet("QLabel { color : black; }");
         m_stabilization->attPitchInt->setEnabled( true );
         int basicVal = ( val - ATTITUDE_KI_MIN) / ( ATTITUDE_KI_MAX - ATTITUDE_KI_MIN) * 100;
         m_stabilization->attPitchInt->blockSignals( true );
@@ -438,11 +472,12 @@ void ConfigStabilizationWidget::updateYawKP(double val)
 {
     // update basic tab dial
     if( val < ATTITUDE_KP_MIN || val > ATTITUDE_KP_MAX ) {
-        m_stabilization->APYL->setText( "<font color='red'><center>OUT<br/>OF<br/>RANGE</center></font>" );
+        m_stabilization->APYL->setStyleSheet("QLabel { color : red; }");
+        m_stabilization->APYL->setText( "OUT\nOF\nRANGE" );
         m_stabilization->attYawProp->setEnabled( false );
     } else {
         // calc position normalized to 0-100%
-        m_stabilization->APYL->setText( "<font color='black'>0</font>" );
+        m_stabilization->APYL->setStyleSheet("QLabel { color : black; }");
         m_stabilization->attYawProp->setEnabled( true );
         int basicVal = ( val - ATTITUDE_KP_MIN) / ( ATTITUDE_KP_MAX - ATTITUDE_KP_MIN) * 100;
         m_stabilization->attYawProp->blockSignals( true );
@@ -456,11 +491,12 @@ void ConfigStabilizationWidget::updateYawKI(double val)
 {
     // update basic tab dial
     if( val < ATTITUDE_KI_MIN || val > ATTITUDE_KI_MAX ) {
-        m_stabilization->AIYL->setText( "<font color='red'><center>OUT<br/>OF<br/>RANGE</center></font>" );
+        m_stabilization->AIYL->setStyleSheet("QLabel { color : red; }");
+        m_stabilization->AIYL->setText( "OUT\nOF\nRANGE" );
         m_stabilization->attYawInt->setEnabled( false );
     } else {
         // calc position normalized to 0-100%
-        m_stabilization->AIYL->setText( "<font color='black'>0</font>" );
+        m_stabilization->AIYL->setStyleSheet("QLabel { color : black; }");
         m_stabilization->attYawInt->setEnabled( true );
         int basicVal = ( val - RATE_KI_MIN) / ( RATE_KI_MAX - RATE_KI_MIN) * 100;
         m_stabilization->attYawInt->blockSignals( true );
@@ -474,11 +510,12 @@ void ConfigStabilizationWidget::updatePitchMax(int val)
 {
     // update basic tab dial
     if( val < FULL_STICK_ANGLE_MIN || val > FULL_STICK_ANGLE_MAX ) {
-        m_stabilization->fsaPL->setText( "<font color='red'><center>OUT<br/>OF<br/>RANGE</center></font>" );
+        m_stabilization->fsaPL->setStyleSheet("QLabel { color : red; }");
+        m_stabilization->fsaPL->setText( "OUT\nOF\nRANGE" );
         m_stabilization->fsaP->setEnabled( false );
     } else {
         // calc position normalized to 0-100%
-        m_stabilization->fsaPL->setText( "<font color='black'>0</font>" );
+        m_stabilization->fsaPL->setStyleSheet("QLabel { color : black; }");
         m_stabilization->fsaP->setEnabled( true );
         int basicVal = ( val - FULL_STICK_ANGLE_MIN ) / ( FULL_STICK_ANGLE_MAX - FULL_STICK_ANGLE_MIN) * 100;
         m_stabilization->fsaP->blockSignals( true );
@@ -492,11 +529,12 @@ void ConfigStabilizationWidget::updateRollMax(int val)
 {
     // update basic tab dial
     if( val < FULL_STICK_ANGLE_MIN || val > FULL_STICK_ANGLE_MAX ) {
-        m_stabilization->fsaRL->setText( "<font color='red'><center>OUT<br/>OF<br/>RANGE</center></font>" );
+        m_stabilization->fsaRL->setStyleSheet("QLabel { color : red; }");
+        m_stabilization->fsaRL->setText( "OUT\nOF\nRANGE" );
         m_stabilization->fsaR->setEnabled( false );
     } else {
         // calc position normalized to 0-100%
-        m_stabilization->fsaRL->setText( "<font color='black'>0</font>" );
+        m_stabilization->fsaRL->setStyleSheet("QLabel { color : black; }");
         m_stabilization->fsaR->setEnabled( true );
         int basicVal = ( val - FULL_STICK_ANGLE_MIN ) / ( FULL_STICK_ANGLE_MAX - FULL_STICK_ANGLE_MIN) * 100;
         m_stabilization->fsaR->blockSignals( true );
@@ -510,11 +548,12 @@ void ConfigStabilizationWidget::updateYawMax(int val)
 {
     // update basic tab dial
     if( val < FULL_STICK_ANGLE_MIN || val > FULL_STICK_ANGLE_MAX ) {
-        m_stabilization->fsaYL->setText( "<font color='red'><center>OUT<br/>OF<br/>RANGE</center></font>" );
+        m_stabilization->fsaYL->setStyleSheet("QLabel { color : red; }");
+        m_stabilization->fsaYL->setText( "OUT\nOF\nRANGE" );
         m_stabilization->fsaY->setEnabled( false );
     } else {
         // calc position normalized to 0-100%
-        m_stabilization->fsaYL->setText( "<font color='black'>0</font>" );
+        m_stabilization->fsaYL->setStyleSheet("QLabel { color : black; }");
         m_stabilization->fsaY->setEnabled( true );
         int basicVal = ( val - FULL_STICK_ANGLE_MIN ) / ( FULL_STICK_ANGLE_MAX - FULL_STICK_ANGLE_MIN) * 100;
         m_stabilization->fsaY->blockSignals( true );
@@ -528,11 +567,12 @@ void ConfigStabilizationWidget::updateManualPitch(int val)
 {
     // update basic tab dial
     if( val < FULL_STICK_RATE_MIN || val > FULL_STICK_RATE_MAX ) {
-        m_stabilization->fsrPL->setText( "<font color='red'><center>OUT<br/>OF<br/>RANGE</center></font>" );
+        m_stabilization->fsrPL->setStyleSheet("QLabel { color : red; }");
+        m_stabilization->fsrPL->setText( "OUT\nOF\nRANGE" );
         m_stabilization->fsrP->setEnabled( false );
     } else {
         // calc position normalized to 0-100%
-        m_stabilization->fsrPL->setText( "<font color='black'>0</font>" );
+        m_stabilization->fsrPL->setStyleSheet("QLabel { color : black; }");
         m_stabilization->fsrP->setEnabled( true );
         int basicVal = ( val - FULL_STICK_RATE_MIN ) / ( FULL_STICK_RATE_MAX - FULL_STICK_RATE_MIN) * 100;
         m_stabilization->fsrP->blockSignals( true );
@@ -546,11 +586,12 @@ void ConfigStabilizationWidget::updateManualRoll(int val)
 {
     // update basic tab dial
     if( val < FULL_STICK_RATE_MIN || val > FULL_STICK_RATE_MAX ) {
-        m_stabilization->fsrRL->setText( "<font color='red'><center>OUT<br/>OF<br/>RANGE</center></font>" );
+        m_stabilization->fsrRL->setStyleSheet("QLabel { color : red; }");
+        m_stabilization->fsrRL->setText( "OUT\nOF\nRANGE" );
         m_stabilization->fsrR->setEnabled( false );
     } else {
         // calc position normalized to 0-100%
-        m_stabilization->fsrRL->setText( "<font color='black'>0</font>" );
+        m_stabilization->fsrRL->setStyleSheet("QLabel { color : black; }");
         m_stabilization->fsrR->setEnabled( true );
         int basicVal = ( val - FULL_STICK_RATE_MIN ) / ( FULL_STICK_RATE_MAX - FULL_STICK_RATE_MIN) * 100;
         m_stabilization->fsrR->blockSignals( true );
@@ -564,11 +605,12 @@ void ConfigStabilizationWidget::updateManualYaw(int val)
 {
     // update basic tab dial
     if( val < FULL_STICK_RATE_MIN || val > FULL_STICK_RATE_MAX ) {
-        m_stabilization->fsrYL->setText( "<font color='red'><center>OUT<br/>OF<br/>RANGE</center></font>" );
+        m_stabilization->fsrYL->setStyleSheet("QLabel { color : red; }");
+        m_stabilization->fsrYL->setText( "OUT\nOF\nRANGE" );
         m_stabilization->fsrY->setEnabled( false );
     } else {
         // calc position normalized to 0-100%
-        m_stabilization->fsrYL->setText( "<font color='black'>0</font>" );
+        m_stabilization->fsrYL->setStyleSheet("QLabel { color : black; }");
         m_stabilization->fsrY->setEnabled( true );
         int basicVal = ( val - FULL_STICK_RATE_MIN ) / ( FULL_STICK_RATE_MAX - FULL_STICK_RATE_MIN) * 100;
         m_stabilization->fsrY->blockSignals( true );
@@ -583,11 +625,12 @@ void ConfigStabilizationWidget::updateMaximumPitch(int val)
 {
     // update basic tab dial
     if( val < MAXIMUM_RATE_MIN || val > MAXIMUM_RATE_MAX ) {
-        m_stabilization->mraPL->setText( "<font color='red'><center>OUT<br/>OF<br/>RANGE</center></font>" );
+        m_stabilization->mraPL->setStyleSheet("QLabel { color : red; }");
+        m_stabilization->mraPL->setText( "OUT\nOF\nRANGE" );
         m_stabilization->mraP->setEnabled( false );
     } else {
         // calc position normalized to 0-100%
-        m_stabilization->mraPL->setText( "<font color='black'>0</font>" );
+        m_stabilization->mraPL->setStyleSheet("QLabel { color : black; }");
         m_stabilization->mraP->setEnabled( true );
         int basicVal = ( val - MAXIMUM_RATE_MIN ) / ( MAXIMUM_RATE_MAX - MAXIMUM_RATE_MIN) * 100;
         m_stabilization->mraP->blockSignals( true );
@@ -601,11 +644,12 @@ void ConfigStabilizationWidget::updateMaximumRoll(int val)
 {
     // update basic tab dial
     if( val < MAXIMUM_RATE_MIN || val > MAXIMUM_RATE_MAX ) {
-        m_stabilization->mraRL->setText( "<font color='red'><center>OUT<br/>OF<br/>RANGE</center></font>" );
+        m_stabilization->mraRL->setStyleSheet("QLabel { color : red; }");
+        m_stabilization->mraRL->setText( "OUT\nOF\nRANGE" );
         m_stabilization->mraR->setEnabled( false );
     } else {
         // calc position normalized to 0-100%
-        m_stabilization->mraRL->setText( "<font color='black'>0</font>" );
+        m_stabilization->mraRL->setStyleSheet("QLabel { color : black; }");
         m_stabilization->mraR->setEnabled( true );
         int basicVal = ( val - MAXIMUM_RATE_MIN ) / ( MAXIMUM_RATE_MAX - MAXIMUM_RATE_MIN) * 100;
         m_stabilization->mraR->blockSignals( true );
@@ -619,11 +663,12 @@ void ConfigStabilizationWidget::updateMaximumYaw(int val)
 {
     // update basic tab dial
     if( val < FULL_STICK_RATE_MIN || val > MAXIMUM_RATE_MAX ) {
-        m_stabilization->mraYL->setText( "<font color='red'><center>OUT<br/>OF<br/>RANGE</center></font>" );
+        m_stabilization->mraYL->setStyleSheet("QLabel { color : red; }");
+        m_stabilization->mraYL->setText( "OUT\nOF\nRANGE" );
         m_stabilization->mraY->setEnabled( false );
     } else {
         // calc position normalized to 0-100%
-        m_stabilization->mraYL->setText( "<font color='black'>0</font>" );
+        m_stabilization->mraYL->setStyleSheet("QLabel { color : black; }");
         m_stabilization->mraY->setEnabled( true );
         int basicVal = ( val - MAXIMUM_RATE_MIN ) / ( MAXIMUM_RATE_MAX - MAXIMUM_RATE_MIN) * 100;
         m_stabilization->mraY->blockSignals( true );

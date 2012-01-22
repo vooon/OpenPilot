@@ -36,28 +36,6 @@
 #include <QtGui/QWidget>
 #include <QTimer>
 
-// constants for range limits for the dials in basic mode
-const double RATE_KP_MIN = 0.0;
-const double RATE_KP_MAX = 0.01;
-
-const double RATE_KI_MIN = 0.0;
-const double RATE_KI_MAX = 0.01;
-
-const double ATTITUDE_KP_MIN = 0.0;
-const double ATTITUDE_KP_MAX = 10.0;
-
-const double ATTITUDE_KI_MIN = 0.0;
-const double ATTITUDE_KI_MAX = 10.0;
-
-const double FULL_STICK_ANGLE_MIN = 0;
-const double FULL_STICK_ANGLE_MAX = 180;
-
-const double FULL_STICK_RATE_MIN = 0;
-const double FULL_STICK_RATE_MAX = 500;
-
-const double MAXIMUM_RATE_MIN = 0;
-const double MAXIMUM_RATE_MAX = 500;
-
 class ConfigStabilizationWidget: public ConfigTaskWidget
 {
     Q_OBJECT
