@@ -6,14 +6,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>696</width>
-    <height>710</height>
+    <width>705</width>
+    <height>711</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
-    <width>696</width>
-    <height>710</height>
+    <width>0</width>
+    <height>0</height>
    </size>
   </property>
   <property name="sizeIncrement">
@@ -30,26 +36,44 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout_5">
+  <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="sizeConstraint">
     <enum>QLayout::SetDefaultConstraint</enum>
    </property>
-   <item row="0" column="0">
+   <item>
     <widget class="QScrollArea" name="scrollArea_5">
+     <property name="font">
+      <font>
+       <pointsize>13</pointsize>
+       <kerning>false</kerning>
+      </font>
+     </property>
      <property name="frameShape">
       <enum>QFrame::NoFrame</enum>
      </property>
+     <property name="lineWidth">
+      <number>1</number>
+     </property>
      <property name="widgetResizable">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
      <widget class="QWidget" name="scrollAreaWidgetContents_5">
       <property name="geometry">
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>672</width>
-        <height>686</height>
+        <width>681</width>
+        <height>687</height>
        </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="autoFillBackground">
+       <bool>true</bool>
       </property>
       <widget class="QTabWidget" name="stabilizationTabbedView">
        <property name="geometry">
@@ -62,14 +86,14 @@
        </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>1</horstretch>
-         <verstretch>1</verstretch>
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
         </sizepolicy>
        </property>
        <property name="sizeIncrement">
         <size>
-         <width>1</width>
-         <height>1</height>
+         <width>0</width>
+         <height>0</height>
         </size>
        </property>
        <property name="autoFillBackground">
@@ -154,7 +178,7 @@
               <x>0</x>
               <y>0</y>
               <width>641</width>
-              <height>488</height>
+              <height>491</height>
              </rect>
             </property>
             <property name="sizePolicy">
@@ -197,10 +221,10 @@
                   <x>0</x>
                   <y>0</y>
                   <width>617</width>
-                  <height>464</height>
+                  <height>467</height>
                  </rect>
                 </property>
-                <widget class="QWidget" name="">
+                <widget class="QWidget" name="layoutWidget">
                  <property name="geometry">
                   <rect>
                    <x>0</x>
@@ -446,11 +470,11 @@
                      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Lucida Grande'; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Lucida Grande'; font-size:14pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:18pt; font-weight:600; color:#ffdc1a;&quot;&gt;Hints&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The &lt;span style=&quot; font-style:italic;&quot;&gt;Rate&lt;/span&gt; stabilization loop (the inner loop) compares the rotation &lt;span style=&quot; font-style:italic;&quot;&gt;rate &lt;/span&gt;measured by the gyro for that axis to a control signal.&lt;/p&gt;
-&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;If you set the stabilization mode for an axis to &lt;span style=&quot; font-style:italic;&quot;&gt;Rate&lt;/span&gt;, the control signal for the Rate (inner) loop comes directly from the transmitter, bypassing the outer loop.&lt;/li&gt;
-&lt;li style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;If instead you set the stabilization mode for that axis to &lt;span style=&quot; font-style:italic;&quot;&gt;Attitude&lt;/span&gt;, the control signal for the Rate loop comes from the Attitude stabilization loop.&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:13pt;&quot;&gt;The &lt;/span&gt;&lt;span style=&quot; font-size:13pt; font-style:italic;&quot;&gt;Rate&lt;/span&gt;&lt;span style=&quot; font-size:13pt;&quot;&gt; stabilization loop (the inner loop) compares the rotation &lt;/span&gt;&lt;span style=&quot; font-size:13pt; font-style:italic;&quot;&gt;rate &lt;/span&gt;&lt;span style=&quot; font-size:13pt;&quot;&gt;measured by the gyro for that axis to a control signal.&lt;/span&gt;&lt;/p&gt;
+&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; font-size:13pt;&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;If you set the stabilization mode for an axis to &lt;span style=&quot; font-style:italic;&quot;&gt;Rate&lt;/span&gt;, the control signal for the Rate (inner) loop comes directly from the transmitter, bypassing the outer loop.&lt;/li&gt;
+&lt;li style=&quot; font-size:13pt;&quot; style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;If instead you set the stabilization mode for that axis to &lt;span style=&quot; font-style:italic;&quot;&gt;Attitude&lt;/span&gt;, the control signal for the Rate loop comes from the Attitude stabilization loop.&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                    </widget>
                   </item>
@@ -1082,9 +1106,9 @@ p, li { white-space: pre-wrap; }
                    <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Lucida Grande'; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Lucida Grande'; font-size:14pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:18pt; font-weight:600; color:#ffdc1a;&quot;&gt;Hints&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The &lt;span style=&quot; font-style:italic;&quot;&gt;Attitude&lt;/span&gt; stabilization loop (the outer loop) compares the rotation &lt;span style=&quot; font-style:italic;&quot;&gt;angle &lt;/span&gt;of an axis with the signal from your transmitter, and sends a signal to the Rate stabilization loop that is the difference of the two.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:13pt;&quot;&gt;The &lt;/span&gt;&lt;span style=&quot; font-size:13pt; font-style:italic;&quot;&gt;Attitude&lt;/span&gt;&lt;span style=&quot; font-size:13pt;&quot;&gt; stabilization loop (the outer loop) compares the rotation &lt;/span&gt;&lt;span style=&quot; font-size:13pt; font-style:italic;&quot;&gt;angle &lt;/span&gt;&lt;span style=&quot; font-size:13pt;&quot;&gt;of an axis with the signal from your transmitter, and sends a signal to the Rate stabilization loop that is the difference of the two.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                  </widget>
                 </item>
@@ -1410,7 +1434,7 @@ p, li { white-space: pre-wrap; }
               <x>0</x>
               <y>0</y>
               <width>641</width>
-              <height>488</height>
+              <height>491</height>
              </rect>
             </property>
             <property name="sizePolicy">
@@ -3270,18 +3294,18 @@ When you change one, the other is updated.</string>
         </widget>
        </widget>
       </widget>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <property name="geometry">
         <rect>
          <x>0</x>
          <y>640</y>
-         <width>672</width>
+         <width>671</width>
          <height>44</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,1,1,1,1,1,1">
         <property name="sizeConstraint">
-         <enum>QLayout::SetMaximumSize</enum>
+         <enum>QLayout::SetDefaultConstraint</enum>
         </property>
         <item>
          <widget class="QCheckBox" name="realTimeUpdates">
@@ -3386,6 +3410,7 @@ Apply or Save button afterwards.</string>
    </item>
   </layout>
  </widget>
+ <layoutdefault spacing="6" margin="11"/>
  <tabstops>
   <tabstop>saveStabilizationToRAM</tabstop>
   <tabstop>rateRollKi</tabstop>
@@ -3670,22 +3695,6 @@ Apply or Save button afterwards.</string>
    </hints>
   </connection>
   <connection>
-   <sender>fsrP</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>fsrPL</receiver>
-   <slot>setNum(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>193</x>
-     <y>241</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>289</x>
-     <y>246</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>fsrR</sender>
    <signal>valueChanged(int)</signal>
    <receiver>fsrRL</receiver>
@@ -3698,38 +3707,6 @@ Apply or Save button afterwards.</string>
     <hint type="destinationlabel">
      <x>458</x>
      <y>245</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>fsrY</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>fsrYL</receiver>
-   <slot>setNum(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>586</x>
-     <y>244</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>637</x>
-     <y>243</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>mraP</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>mraPL</receiver>
-   <slot>setNum(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>247</x>
-     <y>285</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>298</x>
-     <y>289</y>
     </hint>
    </hints>
   </connection>
@@ -3750,6 +3727,38 @@ Apply or Save button afterwards.</string>
    </hints>
   </connection>
   <connection>
+   <sender>fsrP</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>fsrPL</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>193</x>
+     <y>241</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>289</x>
+     <y>246</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fsrY</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>fsrYL</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>586</x>
+     <y>244</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>637</x>
+     <y>243</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
    <sender>mraY</sender>
    <signal>valueChanged(int)</signal>
    <receiver>mraYL</receiver>
@@ -3761,6 +3770,22 @@ Apply or Save button afterwards.</string>
     </hint>
     <hint type="destinationlabel">
      <x>646</x>
+     <y>289</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>mraP</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>mraPL</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>247</x>
+     <y>285</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>298</x>
      <y>289</y>
     </hint>
    </hints>
