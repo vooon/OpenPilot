@@ -677,7 +677,10 @@ static const struct pios_dsm_cfg pios_dsm_flexi_cfg = {
 
 #include <pios_com_priv.h>
 
-#endif /* PIOS_INCLUDE_COM */
+#define PIOS_COM_TELEM_USB_RX_BUF_LEN 512
+#define PIOS_COM_TELEM_USB_TX_BUF_LEN 512
+
+#endif	/* PIOS_INCLUDE_COM */
 
 #if defined(PIOS_INCLUDE_I2C)
 
@@ -1385,6 +1388,7 @@ static const struct pios_usb_hid_cfg pios_usb_hid_main_cfg = {
 };
 #endif	/* PIOS_INCLUDE_USB_HID */
 
+extern const struct pios_com_driver pios_usb_com_driver;
 extern const struct pios_com_driver pios_usart_com_driver;
 
 uint32_t pios_com_aux_id;
@@ -1741,16 +1745,18 @@ void PIOS_Board_Init(void) {
 #if defined(PIOS_INCLUDE_USB_HID)
 	uint32_t pios_usb_hid_id;
 	PIOS_USB_HID_Init(&pios_usb_hid_id, &pios_usb_hid_main_cfg);
-#if defined(brianm_PIOS_INCLUDE_COM)
-	uint8_t * rx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_TELEM_USB_RX_BUF_LEN);
-	uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_TELEM_USB_TX_BUF_LEN);
-	PIOS_Assert(rx_buffer);
-	PIOS_Assert(tx_buffer);
-	if (PIOS_COM_Init(&pios_com_telem_usb_id, &pios_usb_com_driver, pios_usb_hid_id,
-			  rx_buffer, PIOS_COM_TELEM_USB_RX_BUF_LEN,
-			  tx_buffer, PIOS_COM_TELEM_USB_TX_BUF_LEN)) {
-		PIOS_Assert(0);
-	}
+#if defined(PIOS_INCLUDE_COM)
+    {
+        uint8_t * rx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_TELEM_USB_RX_BUF_LEN);
+        uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_TELEM_USB_TX_BUF_LEN);
+        PIOS_Assert(rx_buffer);
+        PIOS_Assert(tx_buffer);
+        if (PIOS_COM_Init(&pios_com_telem_usb_id, &pios_usb_com_driver, pios_usb_hid_id,
+                    rx_buffer, PIOS_COM_TELEM_USB_RX_BUF_LEN,
+                    tx_buffer, PIOS_COM_TELEM_USB_TX_BUF_LEN)) {
+            PIOS_Assert(0);
+        }
+    }
 #endif	/* PIOS_INCLUDE_COM */
 #endif	/* PIOS_INCLUDE_USB_HID */
 

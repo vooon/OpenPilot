@@ -110,7 +110,7 @@ static struct pios_usb_hid_dev * PIOS_USB_HID_alloc(void)
 #endif
 
 /* Rx/Tx status */
-static uint8_t transfer_possible = 0;
+static uint8_t transfer_possible = 1;
 
 /**
  * Initialises USB COM layer
@@ -236,6 +236,7 @@ int32_t PIOS_USB_HID_CheckAvailable(uint8_t id)
 static void PIOS_USB_HID_SendReport(struct pios_usb_hid_dev * usb_hid_dev)
 {
 	uint16_t bytes_to_tx;
+	uint8_t *p;
 
 	if (!usb_hid_dev->tx_out_cb) {
 		return;
@@ -262,7 +263,9 @@ static void PIOS_USB_HID_SendReport(struct pios_usb_hid_dev * usb_hid_dev)
 	/* Always set type as report ID */
 	usb_hid_dev->tx_packet_buffer[0] = 1;
 
-    USBD_HID_SendReport(&USB_OTG_dev, usb_hid_dev->tx_packet_buffer, bytes_to_tx + 1);
+    p = usb_hid_dev->tx_packet_buffer;
+    p += 2;
+    USBD_HID_SendReport(&USB_OTG_dev, usb_hid_dev->tx_packet_buffer, bytes_to_tx );
 
 #if 0
 #ifdef USB_HID
@@ -294,15 +297,20 @@ static void PIOS_USB_HID_RxStart(uint32_t usbcom_id, uint16_t rx_bytes_avail) {
 		return;
 	}
 
-	// If endpoint was stalled and there is now space make it valid
-	PIOS_IRQ_Disable();
+    /* Prepare Out endpoint to receive next packet */
+    DCD_EP_PrepareRx(&USB_OTG_dev,
+            HID_OUT_EP,
+            (uint8_t*)(usb_hid_dev->rx_packet_buffer),
+            PIOS_USB_HID_DATA_LENGTH + 2);
 #if 0
-	if ((GetEPRxStatus(ENDP1) != EP_RX_VALID) && 
-	    (rx_bytes_avail > PIOS_USB_HID_DATA_LENGTH)) {
-		SetEPRxStatus(ENDP1, EP_RX_VALID);
-	}
+    // If endpoint was stalled and there is now space make it valid
+    PIOS_IRQ_Disable();
+    if ((GetEPRxStatus(ENDP1) != EP_RX_VALID) && 
+            (rx_bytes_avail > PIOS_USB_HID_DATA_LENGTH)) {
+        SetEPRxStatus(ENDP1, EP_RX_VALID);
+    }
+    PIOS_IRQ_Enable();
 #endif
-	PIOS_IRQ_Enable();
 }
 
 static void PIOS_USB_HID_TxStart(uint32_t usbcom_id, uint16_t tx_bytes_avail)
@@ -357,14 +365,58 @@ static void PIOS_USB_HID_RegisterTxCallback(uint32_t usbcom_id, pios_com_callbac
 }
 
 /**
+ * @brief Callback used to indicate a transmission from device from host completed
+ */
+uint8_t PIOS_USB_HID_EPn_DataOut_Callback(void *pdev , uint8_t epnum)
+{
+	struct pios_usb_hid_dev * usb_hid_dev = (struct pios_usb_hid_dev *)pios_usb_hid_id;
+
+    /* Get the received data buffer and update the counter */
+    uint16_t USB_Rx_Cnt = ((USB_OTG_CORE_HANDLE*)pdev)->dev.out_ep[epnum].xfer_count;
+
+    /* USB data will be immediately processed, this allow next USB traffic being
+       NAKed till the end of the application Xfer */
+
+    if (USB_Rx_Cnt > sizeof(usb_hid_dev->rx_packet_buffer)) {
+        USB_Rx_Cnt = sizeof(usb_hid_dev->rx_packet_buffer);
+    }
+
+    /* The first byte is report ID (not checked), the second byte is the valid data length */
+    uint16_t headroom;
+    bool need_yield = false;
+#ifdef USB_HID
+    (usb_hid_dev->rx_in_cb)(usb_hid_dev->rx_in_context,
+            &usb_hid_dev->rx_packet_buffer[1],
+            sizeof(usb_hid_dev->rx_packet_buffer)-1,
+            &headroom,
+            &need_yield);
+#else
+    (usb_hid_dev->rx_in_cb)(usb_hid_dev->rx_in_context,
+            &usb_hid_dev->rx_packet_buffer[2],
+            usb_hid_dev->rx_packet_buffer[1],
+            &headroom,
+            &need_yield);
+#endif
+    if (headroom > PIOS_USB_HID_DATA_LENGTH) {
+        /* We have room for a maximum length message */
+        /* Prepare Out endpoint to receive next packet */
+        DCD_EP_PrepareRx(pdev,
+                HID_OUT_EP,
+                (uint8_t*)(usb_hid_dev->rx_packet_buffer),
+                PIOS_USB_HID_DATA_LENGTH + 2);
+    }
+
+    return USBD_OK;
+}
+
+#if 0
+/**
  * @brief Callback used to indicate a transmission from device INto host completed
  * Checks if any data remains, pads it into HID packet and sends.
  */
 void PIOS_USB_HID_EP1_IN_Callback(void)
 {
 	struct pios_usb_hid_dev * usb_hid_dev = (struct pios_usb_hid_dev *)pios_usb_hid_id;
-
-    PIOS_Assert(0);
 
 	bool valid = PIOS_USB_HID_validate(usb_hid_dev);
 	PIOS_Assert(valid);
@@ -388,7 +440,6 @@ void PIOS_USB_HID_EP1_OUT_Callback(void)
 
 	uint32_t DataLength = 0;
 
-#if 0
 	/* Read received data (63 bytes) */
 	/* Get the number of received data on the selected Endpoint */
 	DataLength = GetEPRxCount(ENDP1 & 0x7F);
@@ -434,9 +485,9 @@ void PIOS_USB_HID_EP1_OUT_Callback(void)
 		vPortYieldFromISR();
 	}
 #endif	/* PIOS_INCLUDE_FREERTOS */
-#endif
 }
 
+#endif
 #endif
 
 /**

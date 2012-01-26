@@ -72,6 +72,7 @@ UAVTalkConnection UAVTalkInitialize(UAVTalkOutputStream outputStream, uint32_t m
 	return (UAVTalkConnection) connection;
 }
 
+#if 0  // Dead Code?  Looks like it.
 /**
  * Set the communication output stream
  * \param[in] connection UAVTalkConnection to be used
@@ -109,6 +110,7 @@ UAVTalkOutputStream UAVTalkGetOutputStream(UAVTalkConnection connectionHandle)
     CHECKCONHANDLE(connectionHandle,connection,return NULL);
 	return connection->outStream;
 }
+#endif
 
 /**
  * Get communication statistics counters

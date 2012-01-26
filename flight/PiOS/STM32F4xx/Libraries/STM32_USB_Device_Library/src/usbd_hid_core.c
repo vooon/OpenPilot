@@ -100,6 +100,9 @@ static uint8_t  USBD_HID_Setup (void  *pdev,
 static uint8_t  *USBD_HID_GetCfgDesc (uint8_t speed, uint16_t *length);
 
 static uint8_t  USBD_HID_DataIn (void  *pdev, uint8_t epnum);
+
+extern uint8_t  PIOS_USB_HID_EPn_DataOut_Callback (void  *pdev, uint8_t epnum);
+
 /**
   * @}
   */ 
@@ -116,7 +119,7 @@ USBD_Class_cb_TypeDef  USBD_HID_cb =
   NULL, /*EP0_TxSent*/  
   NULL, /*EP0_RxReady*/
   USBD_HID_DataIn, /*DataIn*/
-  NULL, /*DataOut*/
+  PIOS_USB_HID_EPn_DataOut_Callback, //NULL, /*DataOut*/
   NULL, /*SOF */
   NULL,
   NULL,      
