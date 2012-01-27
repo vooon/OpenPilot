@@ -57,6 +57,8 @@
 #define FAILSAFE_TIMEOUT_MS 100
 #define MAX_MIX_ACTUATORS ACTUATORCOMMAND_CHANNEL_NUMELEM
 
+#define MOTOR_RAMP_UP_TEST_CYCLE_TIME 300000 // Ramp up cycle time in mS.
+
 // Private types
 
 
@@ -146,6 +148,10 @@ static void actuatorTask(void* parameters)
 	portTickType lastSysTime;
 	portTickType thisSysTime;
 	float dT = 0.0f;
+#ifdef MOTOR_RAMP_UP_TEST_CYCLE_TIME
+	uint32_t motorRampValueTicks = 0;
+	float motorRampValue;
+#endif
 
 	ActuatorCommandData command;
 	MixerSettingsData mixerSettings;
@@ -178,11 +184,24 @@ static void actuatorTask(void* parameters)
 			setFailsafe();
 			continue;
 		}
+		bool armed = flightStatus.Armed == FLIGHTSTATUS_ARMED_ARMED;
 
 		// Check how long since last update
 		thisSysTime = xTaskGetTickCount();
 		if(thisSysTime > lastSysTime) // reuse dt in case of wraparound
 			dT = (thisSysTime - lastSysTime) / portTICK_RATE_MS / 1000.0f;
+#ifdef MOTOR_RAMP_UP_TEST_CYCLE_TIME
+		if(thisSysTime > lastSysTime)
+			motorRampValueTicks += (thisSysTime - lastSysTime);
+		else
+			motorRampValueTicks += (int32_t)(dT * portTICK_RATE_MS * 1000.0 + 0.5);
+		motorRampValue = (float)motorRampValueTicks / portTICK_RATE_MS / (float)MOTOR_RAMP_UP_TEST_CYCLE_TIME;
+		if (!armed || (motorRampValue > 1.0))
+		{
+			motorRampValueTicks = 0;
+			motorRampValue = 0.0;
+		}
+#endif
 		lastSysTime = thisSysTime;
 
 		FlightStatusGet(&flightStatus);
@@ -215,11 +234,12 @@ static void actuatorTask(void* parameters)
 
 		AlarmsClear(SYSTEMALARMS_ALARM_ACTUATOR);
 
-		bool armed = flightStatus.Armed == FLIGHTSTATUS_ARMED_ARMED;
 		bool positiveThrottle = desired.Throttle >= 0.00;
 		bool spinWhileArmed = MotorsSpinWhileArmed == ACTUATORSETTINGS_MOTORSSPINWHILEARMED_TRUE;
 
+#ifndef MOTOR_RAMP_UP_TEST_CYCLE_TIME
 		float curve1 = MixerCurve(desired.Throttle,mixerSettings.ThrottleCurve1,MIXERSETTINGS_THROTTLECURVE1_NUMELEM);
+#endif
 		
 		//The source for the secondary curve is selectable
 		float curve2 = 0;
@@ -266,7 +286,13 @@ static void actuatorTask(void* parameters)
 			}
 
 			if((mixers[ct].type == MIXERSETTINGS_MIXER1TYPE_MOTOR) || (mixers[ct].type == MIXERSETTINGS_MIXER1TYPE_SERVO))
+			{
+#ifdef MOTOR_RAMP_UP_TEST_CYCLE_TIME
+				status[ct] = motorRampValue;
+#else
 				status[ct] = ProcessMixer(ct, curve1, curve2, &mixerSettings, &desired, dT);
+#endif
+			}
 			else
 				status[ct] = -1;
 
