@@ -222,15 +222,15 @@ static void ccguidanceTask(UAVObjEvent * ev)
 							initArrayDiffHeadingYaw = FALSE;
 						}
 						arrayDiffHeadingYaw[indexArrayDiffHeadingYaw] = diffHeadingYaw;
-						if (indexArrayDiffHeadingYaw < 5 ) {indexArrayDiffHeadingYaw++;} else indexArrayDiffHeadingYaw = 0;
+						if (indexArrayDiffHeadingYaw < 4 ) {indexArrayDiffHeadingYaw++;} else indexArrayDiffHeadingYaw = 0;
 
 						max = -180;
 						min =  180;
 						diffHeadingYaw = 0;
 
 						for ( i = 0; i < 5; i++) {
-							if (arrayDiffHeadingYaw[i] > max ) { max = arrayDiffHeadingYaw[i];
-							} else if (arrayDiffHeadingYaw[i] < min )  min = arrayDiffHeadingYaw[i];
+							if (arrayDiffHeadingYaw[i] > max )  max = arrayDiffHeadingYaw[i];
+							if (arrayDiffHeadingYaw[i] < min )  min = arrayDiffHeadingYaw[i];
 
 							diffHeadingYaw += arrayDiffHeadingYaw[i];
 						}
