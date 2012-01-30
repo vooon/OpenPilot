@@ -36,6 +36,9 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
+// Private variables
+static UAVObjHandle $(NAME)_handle;
+
 /**
  * Initialize object.
  * \return 0 Success
@@ -44,11 +47,11 @@
 int32_t $(NAME)Initialize(void)
 {
   // Register object with the object manager
-  handle = UAVObjRegister($(NAMEUC)_OBJID, $(NAMEUC)_NAME, $(NAMEUC)_METANAME, 0,
+  $(NAME)_handle = UAVObjRegister($(NAMEUC)_OBJID, $(NAMEUC)_NAME, $(NAMEUC)_METANAME, 0,
 			    $(NAMEUC)_ISSINGLEINST, $(NAMEUC)_ISSETTINGS, $(NAMEUC)_NUMBYTES, &$(NAME)SetDefaults);
 
   // Done
-  if (handle != 0) {
+  if ($(NAME)_handle != 0) {
     return 0;
   } else {
     return -1;
@@ -92,7 +95,7 @@ void $(NAME)SetDefaults(UAVObjHandle obj, uint16_t instId)
  */
 UAVObjHandle $(NAME)Handle()
 {
-  return handle;
+  return $(NAME)_handle;
 }
 
 /**

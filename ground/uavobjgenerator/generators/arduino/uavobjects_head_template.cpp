@@ -35,9 +35,6 @@
 #include "../UAVObj/UAVObj.h"
 #include "UAVObjects.h"
 
-// Private variables
-static UAVObjHandle handle;
-
 /* 
  * This implementation is heavily based on the Linux Kernel initcall
  * infrastructure:
