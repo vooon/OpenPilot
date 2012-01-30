@@ -1,0 +1,86 @@
+#######################################
+# Syntax Coloring Map For UAVObj
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+xQueueHandle	KEYWORD1
+UAVObjHandle	KEYWORD1
+UAVObjUpdateMode	KEYWORD1
+UAVObjMetadata	KEYWORD1
+UAVObjEventType	KEYWORD1
+UAVObjAccessType	KEYWORD1
+UAVObjEvent	KEYWORD1
+UAVObjEventCallback	KEYWORD1
+UAVObjInitializeCallback	KEYWORD1
+UAVObjStats	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+UAVObjInitialize	KEYWORD2
+UAVObjGetStats	KEYWORD2
+UAVObjClearStats	KEYWORD2
+UAVObjRegister	KEYWORD2
+UAVObjGetByID	KEYWORD2
+UAVObjGetByName	KEYWORD2
+UAVObjGetID	KEYWORD2
+UAVObjGetName	KEYWORD2
+UAVObjGetNumBytes	KEYWORD2
+UAVObjGetNumInstances	KEYWORD2
+UAVObjGetLinkedObj	KEYWORD2
+UAVObjCreateInstance	KEYWORD2
+UAVObjIsSingleInstance	KEYWORD2
+UAVObjIsMetaobject	KEYWORD2
+UAVObjIsSettings	KEYWORD2
+UAVObjUnpack	KEYWORD2
+UAVObjPack	KEYWORD2
+UAVObjSetData	KEYWORD2
+UAVObjSetDataField	KEYWORD2
+UAVObjGetData	KEYWORD2
+UAVObjGetDataField	KEYWORD2
+UAVObjSetInstanceData	KEYWORD2
+UAVObjSetInstanceDataField	KEYWORD2
+UAVObjGetInstanceData	KEYWORD2
+UAVObjGetInstanceDataField	KEYWORD2
+UAVObjSetMetadata	KEYWORD2
+UAVObjGetMetadata	KEYWORD2
+UAVObjReadOnly	KEYWORD2
+UAVObjConnectQueue	KEYWORD2
+UAVObjDisconnectQueue	KEYWORD2
+UAVObjConnectCallback	KEYWORD2
+UAVObjDisconnectCallback	KEYWORD2
+UAVObjRequestUpdate	KEYWORD2
+UAVObjRequestInstanceUpdate	KEYWORD2
+UAVObjUpdated	KEYWORD2
+UAVObjInstanceUpdated	KEYWORD2
+UAVObjIterate	KEYWORD2
+
+#######################################
+# Instances (KEYWORD2)
+#######################################
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+UAVOBJ_ALL_INSTANCES	LITERAL1
+UAVOBJ_MAX_INSTANCES	LITERAL1
+EV_MASK_ALL	LITERAL1
+EV_MASK_ALL_UPDATES	LITERAL1
+
+UPDATEMODE_PERIODIC	LITERAL1
+UPDATEMODE_ONCHANGE	LITERAL1
+UPDATEMODE_MANUAL	LITERAL1
+UPDATEMODE_NEVER	LITERAL1
+
+EV_UNPACKED	LITERAL1
+EV_UPDATED	LITERAL1
+EV_UPDATED_MANUAL	LITERAL1
+EV_UPDATE_REQ	LITERAL1
+
+ACCESS_READWRITE	LITERAL1
+ACCESS_READONLY	LITERAL1

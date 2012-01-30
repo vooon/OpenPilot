@@ -1,0 +1,30 @@
+#######################################
+# Syntax Coloring Map For UAVTalk
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+UAVTalkOutputStream	KEYWORD1
+UAVObjHandle	KEYWORD1
+UAVTalkStats	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+UAVTalkInitialize	KEYWORD2
+UAVTalkSendObject	KEYWORD2
+UAVTalkSendObjectRequest	KEYWORD2
+UAVTalkProcessInputStream	KEYWORD2
+UAVTalkGetStats	KEYWORD2
+UAVTalkResetStats	KEYWORD2
+
+#######################################
+# Instances (KEYWORD2)
+#######################################
+
+#######################################
+# Constants (LITERAL1)
+#######################################
