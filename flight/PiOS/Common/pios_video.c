@@ -37,8 +37,34 @@
 
 extern xSemaphoreHandle osdSemaphore;
 
-extern uint16_t frameBuffer[GRAPHICS_HEIGHT*GRAPHICS_WIDTH];
-extern uint16_t maskBuffer[GRAPHICS_HEIGHT*GRAPHICS_WIDTH];
+
+// Define the buffers.
+// For 256x192 pixel mode:
+//   buffer0_level/buffer0_mask becomes buffer_level; and
+//   buffer1_level/buffer1_mask becomes buffer_mask;
+// For 192x128 pixel mode, allocations are as the names are written.
+// divide by 8 because two bytes to a word.
+// Must be allocated in one block, so it is in a struct.
+struct _buffers
+{
+        uint16_t buffer0_level[GRAPHICS_HEIGHT*GRAPHICS_WIDTH];
+        uint16_t buffer0_mask[GRAPHICS_HEIGHT*GRAPHICS_WIDTH];
+        uint16_t buffer1_level[GRAPHICS_HEIGHT*GRAPHICS_WIDTH];
+        uint16_t buffer1_mask[GRAPHICS_HEIGHT*GRAPHICS_WIDTH];
+} buffers;
+
+// Remove the struct definition (makes it easier to write for.)
+#define         buffer0_level   (buffers.buffer0_level)
+#define         buffer0_mask    (buffers.buffer0_mask)
+#define         buffer1_level   (buffers.buffer1_level)
+#define         buffer1_mask    (buffers.buffer1_mask)
+
+// We define pointers to each of these buffers.
+uint16_t *draw_buffer_level;
+uint16_t *draw_buffer_mask;
+uint16_t *disp_buffer_level;
+uint16_t *disp_buffer_mask;
+
 
 extern GPIO_InitTypeDef			GPIO_InitStructure;
 extern TIM_TimeBaseInitTypeDef		TIM_TimeBaseStructure;
@@ -55,8 +81,12 @@ volatile uint8_t gUpdateScreenData = 0;
 
 volatile uint16_t gActiveLine = 0;
 volatile uint16_t gActivePixmapLine = 0;
+volatile uint16_t line=0;
+volatile uint16_t Vsync_update=0;
 
 TTime time;
+
+
 
 // simple routines
 
@@ -69,7 +99,7 @@ uint8_t getCharData(uint16_t charPos) {
 	}
 }
 
-// prints text into framebuffer, 8x2
+// prints text into draw_buffer_level, 8x2
 uint8_t printTextFB(uint16_t x, uint16_t y, const char* str) {
 	uint8_t length = strlen(str);
 	if (x + length >= TEXT_LINE_MAX_CHARS) {
@@ -86,7 +116,7 @@ uint8_t printTextFB(uint16_t x, uint16_t y, const char* str) {
 			word = getCharData(charPos)<<8;
 			charPos = str[j+1] * TEXT_CHAR_HEIGHT + i;
 			word |= getCharData(charPos);
-			frameBuffer[((y+i)*GRAPHICS_WIDTH)+(x + c)] = word;
+			draw_buffer_level[((y+i)*GRAPHICS_WIDTH)+(x + c)] = word;
 			c++;
 		}
 	}
@@ -96,16 +126,17 @@ uint8_t printTextFB(uint16_t x, uint16_t y, const char* str) {
 void printTime(uint16_t x, uint16_t y) {
 	char temp[9]={0};
 	sprintf(temp,"%02d:%02d:%02d",time.hour,time.min,time.sec);
-	printTextFB(x,y,temp);
+	//printTextFB(x,y,temp);
+	write_string(temp, x, y, 1, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, 0);
 }
 
 uint8_t printCharFB(uint16_t ch, uint16_t x, uint16_t y) {
-	for(uint8_t i = 0; i < 18; i++)
+	/*for(uint8_t i = 0; i < 18; i++)
 	{
 		uint8_t c=0;
-			frameBuffer[((y+i)*GRAPHICS_WIDTH)+(x+c)] = font_frame16x18[ch*18+i];
-			maskBuffer[((y+i)*GRAPHICS_WIDTH)+(x+c)] = font_mask16x18[ch*18+i];
-	}
+			draw_buffer_level[((y+i)*GRAPHICS_WIDTH)+(x+c)] = font_frame16x18[ch*18+i];
+			draw_buffer_mask[((y+i)*GRAPHICS_WIDTH)+(x+c)] = font_mask16x18[ch*18+i];
+	}*/
 	return 1;
 }
 
@@ -245,8 +276,8 @@ uint16_t mirror(uint16_t source)
 void clearGraphics() {
 	for (uint16_t x = 0; x < GRAPHICS_WIDTH*GRAPHICS_HEIGHT; ++x) {
 	  //for (uint16_t y = 0; y < GRAPHICS_HEIGHT; ++y) {
-		  frameBuffer[x] = 0x0000;
-		  maskBuffer[x] = 0x0000;
+		  draw_buffer_level[x] = 0x0000;
+		  draw_buffer_mask[x] = 0x0000;
 		//}
 	}
 }
@@ -256,7 +287,7 @@ void copyimage(uint16_t offsetx, uint16_t offsety) {
 	int i=0;
 	  for (uint16_t y = offsety; y < (128+offsety); y++) {
 		  for (uint16_t x = offsetx; x < (8+offsetx); x++) {
-			  frameBuffer[y*GRAPHICS_WIDTH+x] = maskBuffer[y*GRAPHICS_WIDTH+x]  = mirror(logo_bits[(y-offsety)*8+(x-offsetx)]);
+			  draw_buffer_level[y*GRAPHICS_WIDTH+x] = draw_buffer_mask[y*GRAPHICS_WIDTH+x]  = mirror(logo_bits[(y-offsety)*8+(x-offsetx)]);
 			  i+=2;
 		  }
 	}
@@ -274,8 +305,8 @@ void setPixel(uint16_t x, uint16_t y, uint8_t state) {
 		return;
 	}
 	uint8_t bitPos = 15-(x%16);
-	uint16_t tempf = frameBuffer[y*GRAPHICS_WIDTH+x/16];
-	uint16_t tempm = maskBuffer[y*GRAPHICS_WIDTH+x/16];
+	uint16_t tempf = draw_buffer_level[y*GRAPHICS_WIDTH+x/16];
+	uint16_t tempm = draw_buffer_mask[y*GRAPHICS_WIDTH+x/16];
 	if (state == 0) {
 		tempf &= ~(1<<bitPos);
 		tempm &= ~(1<<bitPos);
@@ -288,8 +319,8 @@ void setPixel(uint16_t x, uint16_t y, uint8_t state) {
 		tempf ^= (1<<bitPos);
 		tempm ^= (1<<bitPos);
 	}
-	frameBuffer[y*GRAPHICS_WIDTH+x/16] = tempf;
-	maskBuffer[y*GRAPHICS_WIDTH+x/16] = tempm;
+	draw_buffer_level[y*GRAPHICS_WIDTH+x/16] = tempf;
+	draw_buffer_mask[y*GRAPHICS_WIDTH+x/16] = tempm;
 }
 
 // Credit for this one goes to wikipedia! :-)
@@ -400,7 +431,7 @@ static int8_t myCos(uint16_t angle) {
 	return mySin(angle + 90);
 }
 
-//fill the framebuffer with junk, used for debugging
+//fill the draw_buffer_level with junk, used for debugging
 void fillFrameBuffer(void)
 {
 	uint16_t i;
@@ -411,11 +442,11 @@ void fillFrameBuffer(void)
 		{
 			if(j < LEFT_MARGIN)
 			{
-				frameBuffer[i*GRAPHICS_WIDTH+j] = 0;
+				draw_buffer_level[i*GRAPHICS_WIDTH+j] = 0;
 			} else if (j > 32){
-				frameBuffer[i*GRAPHICS_WIDTH+j] = 0;
+				draw_buffer_level[i*GRAPHICS_WIDTH+j] = 0;
 			} else {
-				frameBuffer[i*GRAPHICS_WIDTH+j] = i*j;
+				draw_buffer_level[i*GRAPHICS_WIDTH+j] = i*j;
 			}
 		}
 	}
@@ -434,7 +465,7 @@ void fillFrameBuffer(void)
 /// \param deltaX the difference between the centerX coordinate and each pixel drawn
 /// \param deltaY the difference between the centerY coordinate and each pixel drawn
 /// \param color the color to draw the pixels with.
-inline void plotFourQuadrants(int32_t centerX, int32_t centerY, int32_t deltaX, int32_t deltaY)
+void plotFourQuadrants(int32_t centerX, int32_t centerY, int32_t deltaX, int32_t deltaY)
 {
     setPixel(centerX + deltaX, centerY + deltaY,1);      // Ist      Quadrant
     setPixel(centerX - deltaX, centerY + deltaY,1);      // IInd     Quadrant
@@ -526,6 +557,22 @@ void drawBox(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
 
 // SUPEROSD routines, modified
 
+
+/**
+ * swap_buffers: Swaps the two buffers. Contents in the display
+ * buffer is seen on the output and the display buffer becomes
+ * the new draw buffer.
+ */
+void swap_buffers()
+{
+        // While we could use XOR swap this is more reliable and
+        // dependable and it's only called a few times per second.
+        // Many compliers should optimise these to EXCH instructions.
+        uint16_t *tmp;
+        SWAP_BUFFS(tmp, disp_buffer_mask, draw_buffer_mask);
+        SWAP_BUFFS(tmp, disp_buffer_level, draw_buffer_level);
+}
+
 /**
  * write_pixel: Write a pixel at an x,y position to a given surface.
  *
@@ -564,8 +611,8 @@ void write_pixel_lm(unsigned int x, unsigned int y, int mmode, int lmode)
         int wordnum = CALC_BUFF_ADDR(x, y);
         // Apply the masks.
         uint16_t mask = 1 << (15 - bitnum);
-        WRITE_WORD_MODE(maskBuffer, wordnum, mask, mmode);
-        WRITE_WORD_MODE(frameBuffer, wordnum, mask, lmode);
+        WRITE_WORD_MODE(draw_buffer_mask, wordnum, mask, mmode);
+        WRITE_WORD_MODE(draw_buffer_level, wordnum, mask, lmode);
 }
 
 
@@ -629,8 +676,8 @@ void write_hline_lm(unsigned int x0, unsigned int x1, unsigned int y, int lmode,
 {
         // TODO: an optimisation would compute the masks and apply to
         // both buffers simultaneously.
-        write_hline(frameBuffer, x0, x1, y, lmode);
-        write_hline(maskBuffer, x0, x1, y, mmode);
+        write_hline(draw_buffer_level, x0, x1, y, lmode);
+        write_hline(draw_buffer_mask, x0, x1, y, mmode);
 }
 
 /**
@@ -709,8 +756,8 @@ void write_vline_lm(unsigned int x, unsigned int y0, unsigned int y1, int lmode,
 {
         // TODO: an optimisation would compute the masks and apply to
         // both buffers simultaneously.
-        write_vline(frameBuffer, x, y0, y1, lmode);
-        write_vline(maskBuffer, x, y0, y1, mmode);
+        write_vline(draw_buffer_level, x, y0, y1, lmode);
+        write_vline(draw_buffer_mask, x, y0, y1, mmode);
 }
 
 /**
@@ -826,8 +873,8 @@ void write_filled_rectangle(uint16_t *buff, unsigned int x, unsigned int y, unsi
  */
 void write_filled_rectangle_lm(unsigned int x, unsigned int y, unsigned int width, unsigned int height, int lmode, int mmode)
 {
-        write_filled_rectangle(maskBuffer, x, y, width, height, mmode);
-        write_filled_rectangle(frameBuffer, x, y, width, height, lmode);
+        write_filled_rectangle(draw_buffer_mask, x, y, width, height, mmode);
+        write_filled_rectangle(draw_buffer_level, x, y, width, height, lmode);
 }
 
 /**
@@ -907,20 +954,20 @@ void write_circle_outlined(unsigned int cx, unsigned int cy, unsigned int r, uns
         {
                 if(dashp == 0 || (y % dashp) < (dashp / 2))
                 {
-                        CIRCLE_PLOT_8(maskBuffer, cx, cy, x + 1, y, mmode);
-                        CIRCLE_PLOT_8(frameBuffer, cx, cy, x + 1, y, stroke);
-                        CIRCLE_PLOT_8(maskBuffer, cx, cy, x, y + 1, mmode);
-                        CIRCLE_PLOT_8(frameBuffer, cx, cy, x, y + 1, stroke);
-                        CIRCLE_PLOT_8(maskBuffer, cx, cy, x - 1, y, mmode);
-                        CIRCLE_PLOT_8(frameBuffer, cx, cy, x - 1, y, stroke);
-                        CIRCLE_PLOT_8(maskBuffer, cx, cy, x, y - 1, mmode);
-                        CIRCLE_PLOT_8(frameBuffer, cx, cy, x, y - 1, stroke);
+                        CIRCLE_PLOT_8(draw_buffer_mask, cx, cy, x + 1, y, mmode);
+                        CIRCLE_PLOT_8(draw_buffer_level, cx, cy, x + 1, y, stroke);
+                        CIRCLE_PLOT_8(draw_buffer_mask, cx, cy, x, y + 1, mmode);
+                        CIRCLE_PLOT_8(draw_buffer_level, cx, cy, x, y + 1, stroke);
+                        CIRCLE_PLOT_8(draw_buffer_mask, cx, cy, x - 1, y, mmode);
+                        CIRCLE_PLOT_8(draw_buffer_level, cx, cy, x - 1, y, stroke);
+                        CIRCLE_PLOT_8(draw_buffer_mask, cx, cy, x, y - 1, mmode);
+                        CIRCLE_PLOT_8(draw_buffer_level, cx, cy, x, y - 1, stroke);
                         if(bmode == 1)
                         {
-                                CIRCLE_PLOT_8(maskBuffer, cx, cy, x + 1, y + 1, mmode);
-                                CIRCLE_PLOT_8(frameBuffer, cx, cy, x + 1, y + 1, stroke);
-                                CIRCLE_PLOT_8(maskBuffer, cx, cy, x - 1, y - 1, mmode);
-                                CIRCLE_PLOT_8(frameBuffer, cx, cy, x - 1, y - 1, stroke);
+                                CIRCLE_PLOT_8(draw_buffer_mask, cx, cy, x + 1, y + 1, mmode);
+                                CIRCLE_PLOT_8(draw_buffer_level, cx, cy, x + 1, y + 1, stroke);
+                                CIRCLE_PLOT_8(draw_buffer_mask, cx, cy, x - 1, y - 1, mmode);
+                                CIRCLE_PLOT_8(draw_buffer_level, cx, cy, x - 1, y - 1, stroke);
                         }
                 }
                 error += (y * 2) + 1;
@@ -938,8 +985,8 @@ void write_circle_outlined(unsigned int cx, unsigned int cy, unsigned int r, uns
         {
                 if(dashp == 0 || (y % dashp) < (dashp / 2))
                 {
-                        CIRCLE_PLOT_8(maskBuffer, cx, cy, x, y, mmode);
-                        CIRCLE_PLOT_8(frameBuffer, cx, cy, x, y, fill);
+                        CIRCLE_PLOT_8(draw_buffer_mask, cx, cy, x, y, mmode);
+                        CIRCLE_PLOT_8(draw_buffer_level, cx, cy, x, y, fill);
                 }
                 error += (y * 2) + 1;
                 y++;
@@ -1084,8 +1131,8 @@ void write_line(uint16_t *buff, unsigned int x0, unsigned int y0, unsigned int x
  */
 void write_line_lm(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1, int mmode, int lmode)
 {
-        write_line(maskBuffer, x0, y0, x1, y1, mmode);
-        write_line(frameBuffer, x0, y0, x1, y1, lmode);
+        write_line(draw_buffer_mask, x0, y0, x1, y1, mmode);
+        write_line(draw_buffer_level, x0, y0, x1, y1, lmode);
 }
 
 /**
@@ -1272,8 +1319,8 @@ void write_word_misaligned_OR(uint16_t *buff, uint16_t word, unsigned int addr, 
  */
 void write_word_misaligned_lm(uint16_t wordl, uint16_t wordm, unsigned int addr, unsigned int xoff, int lmode, int mmode)
 {
-        write_word_misaligned(frameBuffer, wordl, addr, xoff, lmode);
-        write_word_misaligned(maskBuffer, wordm, addr, xoff, mmode);
+        write_word_misaligned(draw_buffer_level, wordl, addr, xoff, lmode);
+        write_word_misaligned(draw_buffer_mask, wordm, addr, xoff, mmode);
 }
 
 /**
@@ -1342,7 +1389,7 @@ void write_char(char ch, unsigned int x, unsigned int y, int flags, int font)
             // We can write mask words easily.
             for(yy = y; yy < y + font_info.height; yy++)
             {
-                    write_word_misaligned_OR(maskBuffer, font_info.data[row] << xshift, addr, wbit);
+                    write_word_misaligned_OR(draw_buffer_mask, font_info.data[row] << xshift, addr, wbit);
                     addr += DISP_WIDTH / 16;
                     row++;
             }
@@ -1359,10 +1406,10 @@ void write_char(char ch, unsigned int x, unsigned int y, int flags, int font)
                             level_bits = ~level_bits;
                     or_mask = font_info.data[row] << xshift;
                     and_mask = (font_info.data[row] & level_bits) << xshift;
-                    write_word_misaligned_OR(frameBuffer, or_mask, addr, wbit);
+                    write_word_misaligned_OR(draw_buffer_level, or_mask, addr, wbit);
                     // If we're not bold write the AND mask.
                     //if(!(flags & FONT_BOLD))
-                            write_word_misaligned_NAND(frameBuffer, and_mask, addr, wbit);
+                            write_word_misaligned_NAND(draw_buffer_level, and_mask, addr, wbit);
                     addr += DISP_WIDTH / 16;
                     row++;
             }
@@ -1627,6 +1674,7 @@ void write_string_formatted(char *str, unsigned int x, unsigned int y, unsigned 
 
 void drawAttitude(uint16_t x, uint16_t y, int16_t pitch, int16_t roll, uint16_t size)
 {
+	PIOS_LED_On(LED2);
 	int16_t a = mySin(roll+360);
 	int16_t b = myCos(roll+360);
 	int16_t c = mySin(roll+90+360)*5/100;
@@ -1669,7 +1717,7 @@ void drawAttitude(uint16_t x, uint16_t y, int16_t pitch, int16_t roll, uint16_t 
 	//drawLine((x)-1-(size/2+4), (y)-1, (x)-1 - (size/2+1), (y)-1);
 	//drawLine((x)-1+(size/2+4), (y)-1, (x)-1 + (size/2+1), (y)-1);
 	write_line_outlined((x)-1-(size/2+4), (y)-1, (x)-1 - (size/2+1), (y)-1,0,0,0,1);
-	write_line_outlined((x)-1-(size/2+4), (y)-1, (x)-1 - (size/2+1), (y)-1,0,0,0,1);
+	//write_line_outlined((x)-1-(size/2+4), (y)-1, (x)-1 - (size/2+1), (y)-1,0,0,0,1);
 
 	//30
 	//drawLine((x)-1+indi30x1, (y)-1-indi30y1, (x)-1 + indi30x2, (y)-1 - indi30y2);
@@ -1701,9 +1749,10 @@ void drawAttitude(uint16_t x, uint16_t y, int16_t pitch, int16_t roll, uint16_t 
 
 
 	//drawCircle(x-1, y-1, 5);
-	write_circle_outlined(x-1, y-1, 5,0,0,0,1);
+	//write_circle_outlined(x-1, y-1, 5,0,0,0,1);
 	//drawCircle(x-1, y-1, size/2+4);
-	write_circle_outlined(x-1, y-1, size/2+4,0,0,0,1);
+	//write_circle_outlined(x-1, y-1, size/2+4,0,0,0,1);
+	PIOS_LED_Off(LED2);
 }
 
 void drawBattery(uint16_t x, uint16_t y, uint8_t battery, uint16_t size)
@@ -1746,11 +1795,26 @@ static int16_t m_yaw=0;
 static int16_t m_batt=0;
 static int16_t m_alt=0;
 
+static uint8_t m_gpsStatus=0;
+static int32_t m_gpsLat=0;
+static int32_t m_gpsLon=0;
+static float m_gpsAlt=0;
+static float m_gpsSpd=0;
+
 void setAttitudeOsd(int16_t pitch, int16_t roll, int16_t yaw)
 {
 	m_pitch=pitch;
 	m_roll=roll;
 	m_yaw=yaw;
+}
+
+void setGpsOsd(uint8_t status, int32_t lat, int32_t lon, float alt, float spd)
+{
+	m_gpsStatus=status;
+	m_gpsLat=lat;
+	m_gpsLon=lon;
+	m_gpsAlt=alt;
+	m_gpsSpd=spd;
 }
 
 void introText(){
@@ -2035,10 +2099,10 @@ void hud_draw_linear_compass(int v, int range, int width, int x, int y, int mint
 void updateGraphics() {
 
 	/*drawBox(2,2,GRAPHICS_WIDTH_REAL-4,GRAPHICS_HEIGHT_REAL-4);
-	write_filled_rectangle(maskBuffer,0,0,GRAPHICS_WIDTH_REAL-2,GRAPHICS_HEIGHT_REAL-2,0);
-	write_filled_rectangle(maskBuffer,2,2,GRAPHICS_WIDTH_REAL-4-2,GRAPHICS_HEIGHT_REAL-4-2,2);
-	write_filled_rectangle(maskBuffer,3,3,GRAPHICS_WIDTH_REAL-4-1,GRAPHICS_HEIGHT_REAL-4-1,0);*/
-	//write_filled_rectangle(maskBuffer,5,5,GRAPHICS_WIDTH_REAL-4-5,GRAPHICS_HEIGHT_REAL-4-5,0);
+	write_filled_rectangle(draw_buffer_mask,0,0,GRAPHICS_WIDTH_REAL-2,GRAPHICS_HEIGHT_REAL-2,0);
+	write_filled_rectangle(draw_buffer_mask,2,2,GRAPHICS_WIDTH_REAL-4-2,GRAPHICS_HEIGHT_REAL-4-2,2);
+	write_filled_rectangle(draw_buffer_mask,3,3,GRAPHICS_WIDTH_REAL-4-1,GRAPHICS_HEIGHT_REAL-4-1,0);*/
+	//write_filled_rectangle(draw_buffer_mask,5,5,GRAPHICS_WIDTH_REAL-4-5,GRAPHICS_HEIGHT_REAL-4-5,0);
 	//write_rectangle_outlined(10,10,GRAPHICS_WIDTH_REAL-20,GRAPHICS_HEIGHT_REAL-20,0,0);
 	//drawLine(GRAPHICS_WIDTH_REAL-1, GRAPHICS_HEIGHT_REAL-1,(GRAPHICS_WIDTH_REAL/2)-1, GRAPHICS_HEIGHT_REAL-1 );
 	//drawCircle((GRAPHICS_WIDTH_REAL/2)-1, (GRAPHICS_HEIGHT_REAL/2)-1, (GRAPHICS_HEIGHT_REAL/2)-1);
@@ -2058,7 +2122,7 @@ void updateGraphics() {
 	angleC+=2;
 	//drawArrow(32,GRAPHICS_HEIGHT_REAL-40,angleA,32);
 	//drawAttitude(96,GRAPHICS_HEIGHT_REAL/2,90,0,48);
-	drawAttitude(GRAPHICS_WIDTH_REAL/2,GRAPHICS_HEIGHT_REAL/2,m_pitch,m_roll,64);
+	drawAttitude(GRAPHICS_WIDTH_REAL/2,GRAPHICS_HEIGHT_REAL/2,m_pitch,m_roll,96);
 	//printTextFB(2,12,"Hello OP-OSD");
 	//printTextFB(1,21,"Hello OP-OSD");
 	//printTextFB(0,2,"Hello OP-OSD");
@@ -2066,6 +2130,11 @@ void updateGraphics() {
 	write_vline_outlined(GRAPHICS_WIDTH_REAL/2, GRAPHICS_HEIGHT_REAL/2-30, GRAPHICS_HEIGHT_REAL/2+30, 2, 2, 0, 1);
 	write_circle_outlined(GRAPHICS_WIDTH_REAL/2,GRAPHICS_HEIGHT_REAL/2,30,0,0,0,1);*/
 	write_string("Hello OP-OSD", 60, 12, 1, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, 0);
+	char temp[20]={0};
+	sprintf(temp,"S%02d,La%02d,Lo%02d",m_gpsStatus,m_gpsLat,m_gpsLon);
+	//printTextFB(x,y,temp);
+	write_string(temp, 20, 28, 1, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, 0);
+
 	/*for(int y=0;y<6;y++)
 	{
 		int yl=y*20;
@@ -2085,7 +2154,7 @@ void updateGraphics() {
 	printCharFB(5,70);
 	printCharFB(6,70);*/
 	//printTime(10,2);
-	//printTime((GRAPHICS_WIDTH_REAL - 80)/16,GRAPHICS_HEIGHT_REAL-10);
+	printTime((GRAPHICS_WIDTH_REAL - 80)/16,GRAPHICS_HEIGHT_REAL-20);
 	//drawBox(0,0,GRAPHICS_WIDTH_REAL-2,GRAPHICS_HEIGHT_REAL-1);
 
 	m_batt++;
@@ -2102,25 +2171,25 @@ void updateGraphics() {
 		dir=1;
 		m_alt+=m_pitch/2;
 	}
-	drawBattery(208,20,m_batt,16);
+	drawBattery(300,GRAPHICS_HEIGHT_REAL-(20*3),m_batt,16);
 
 	//drawAltitude(200,50,m_alt,dir);
 	//drawArrow(96,GRAPHICS_HEIGHT_REAL/2,angleB,32);
 	//ellipse(50,50,50,30);
     // Draw airspeed (left side.)
-    hud_draw_vertical_scale(m_batt, 100, -1, 2, (DISP_HEIGHT / 2) + 10, 100, 10, 20, 7, 12, 15, 1000, HUD_VSCALE_FLAG_NO_NEGATIVE);
+    hud_draw_vertical_scale((int)m_gpsSpd, 100, -1, 2, (DISP_HEIGHT / 2) + 10, 100, 10, 20, 7, 12, 15, 1000, HUD_VSCALE_FLAG_NO_NEGATIVE);
     // Draw altimeter (right side.)
-    hud_draw_vertical_scale(m_alt, 200, +1, 2, (DISP_HEIGHT / 2) + 10, 100, 20, 100, 7, 12, 15, 500, 0);
+    hud_draw_vertical_scale((int)m_gpsAlt, 200, +1, 2, (DISP_HEIGHT / 2) + 10, 100, 20, 100, 7, 12, 15, 500, 0);
     // Draw compass.
     if(m_yaw<0)
     	hud_draw_linear_compass(360+m_yaw, 150, 120, DISP_WIDTH / 2, DISP_HEIGHT - 20, 15, 30, 7, 12, 0);
     else
     	hud_draw_linear_compass(m_yaw, 150, 120, DISP_WIDTH / 2, DISP_HEIGHT - 20, 15, 30, 7, 12, 0);
 
-	//write_filled_rectangle(frameBuffer,20,20,30,30,1);
-	//write_filled_rectangle(maskBuffer,30,30,30,30,1);
-	write_vline( frameBuffer,GRAPHICS_WIDTH_REAL-1,0,GRAPHICS_HEIGHT_REAL-1,0);
-	write_vline( maskBuffer,GRAPHICS_WIDTH_REAL-1,0,GRAPHICS_HEIGHT_REAL-1,0);
+	//write_filled_rectangle(draw_buffer_level,20,20,30,30,1);
+	//write_filled_rectangle(draw_buffer_mask,30,30,30,30,1);
+	write_vline( draw_buffer_level,GRAPHICS_WIDTH_REAL-1,0,GRAPHICS_HEIGHT_REAL-1,0);
+	write_vline( draw_buffer_mask,GRAPHICS_WIDTH_REAL-1,0,GRAPHICS_HEIGHT_REAL-1,0);
 }
 
 
@@ -2130,79 +2199,140 @@ void initLine() {
 	NVIC_InitTypeDef NVIC_InitStructure;
 
 	/* Enable GPIO clock */
-	RCC_APB2PeriphClockCmd(PIOS_VIDEO_SYNC_CLK | RCC_APB2Periph_AFIO, ENABLE);
+	//RCC_APB2PeriphClockCmd(PIOS_VIDEO_SYNC_CLK | RCC_APB2Periph_AFIO, ENABLE);
+	//RCC_AHB1PeriphClockCmd(PIOS_VIDEO_SYNC_CLK, ENABLE);
+	SYSCFG_EXTILineConfig(PIOS_VIDEO_VSYNC_EXTI_PORT_SOURCE, PIOS_VIDEO_VSYNC_EXTI_PIN_SOURCE);
+	SYSCFG_EXTILineConfig(PIOS_VIDEO_HSYNC_EXTI_PORT_SOURCE, PIOS_VIDEO_HSYNC_EXTI_PIN_SOURCE);
 
 	/* Configure Video Sync pin input floating */
-	GPIO_InitStructure.GPIO_Pin = PIOS_VIDEO_SYNC_GPIO_PIN;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-	GPIO_Init(PIOS_VIDEO_SYNC_GPIO_PORT, &GPIO_InitStructure);
+	GPIO_InitStructure.GPIO_Pin = PIOS_VIDEO_VSYNC_GPIO_PIN;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz,
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_Init(PIOS_VIDEO_VSYNC_GPIO_PORT, &GPIO_InitStructure);
+
+	GPIO_InitStructure.GPIO_Pin = PIOS_VIDEO_HSYNC_GPIO_PIN;
+	GPIO_Init(PIOS_VIDEO_HSYNC_GPIO_PORT, &GPIO_InitStructure);
 
 	/* Configure the Video Line interrupt */
-	GPIO_EXTILineConfig(PIOS_VIDEO_SYNC_PORT_SOURCE, PIOS_VIDEO_SYNC_PIN_SOURCE);
-	EXTI_InitStructure.EXTI_Line = PIOS_VIDEO_SYNC_EXTI_LINE;
+	EXTI_InitStructure.EXTI_Line = PIOS_VIDEO_VSYNC_EXTI_LINE;
 	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
 	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
 	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
 	EXTI_Init(&EXTI_InitStructure);
 
+	EXTI_InitStructure.EXTI_Line = PIOS_VIDEO_HSYNC_EXTI_LINE;
+	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising_Falling;
+	EXTI_Init(&EXTI_InitStructure);
+
 	/* Enable and set EXTI Interrupt to the lowest priority */
-	NVIC_InitStructure.NVIC_IRQChannel = PIOS_VIDEO_SYNC_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = PIOS_VIDEO_SYNC_PRIO;
+	NVIC_InitStructure.NVIC_IRQChannel = PIOS_VIDEO_VSYNC_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = PIOS_VIDEO_VSYNC_PRIO;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
 
+	NVIC_InitStructure.NVIC_IRQChannel = PIOS_VIDEO_HSYNC_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = PIOS_VIDEO_HSYNC_PRIO;
+	NVIC_Init(&NVIC_InitStructure);
+
+    draw_buffer_level = buffer0_level;
+    draw_buffer_mask = buffer0_mask;
+    disp_buffer_level = buffer1_level;
+    disp_buffer_mask = buffer1_mask;
 }
 
-void updateLine() {
-if(DMA_GetFlagStatus(DMA1_FLAG_TC3))
-{
-	uint16_t currLine = gActivePixmapLine;
-	static portBASE_TYPE xHigherPriorityTaskWoken;
-	PIOS_DELAY_WaituS(4); // wait 5us to see if H or V sync
-
-	if(((PIOS_VIDEO_SYNC_GPIO_PORT->IDR & PIOS_VIDEO_SYNC_GPIO_PIN))) { // H sync
-		if (gActiveLine != 0) {
+void PIOS_Hsync_ISR() {
+	//uint16_t currLine = gActivePixmapLine;
+	//PIOS_LED_Off(LED3);
+	/*for(int g=0;g<130;g++)
+	{
+		asm("nop");
+	}*/
+	//PIOS_DELAY_WaituS(5); // wait 5us to see if H or V sync
+	if(((PIOS_VIDEO_HSYNC_GPIO_PORT->IDR & PIOS_VIDEO_HSYNC_GPIO_PIN))) {
+		//rising
+		//if (gActiveLine != 0) {
+			//PIOS_LED_On(LED2);
 			if(gLineType == LINE_TYPE_GRAPHICS)
 			{
-					DMA_DeInit(DMA1_Channel3);
-					DMA_DeInit(DMA1_Channel5);
-					DMA_ClearFlag(DMA1_FLAG_TC3);
-					DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)&frameBuffer[currLine*GRAPHICS_WIDTH];
-					DMA_InitStructure.DMA_BufferSize = BUFFER_LINE_LENGTH;
-					DMA_Init(DMA1_Channel5, &DMA_InitStructure);
-					DMA_InitStructure2.DMA_MemoryBaseAddr = (uint32_t)&maskBuffer[currLine*GRAPHICS_WIDTH];
-					DMA_InitStructure2.DMA_BufferSize = BUFFER_LINE_LENGTH;
-					DMA_Init(DMA1_Channel3, &DMA_InitStructure2);
-					SPI_I2S_DMACmd(SPI2, SPI_I2S_DMAReq_Tx, ENABLE);
-					SPI_I2S_DMACmd(SPI1, SPI_I2S_DMAReq_Tx, ENABLE);
-					DMA_Cmd(DMA1_Channel5, ENABLE);
-					DMA_Cmd(DMA1_Channel3, ENABLE);
-					//DMA_ITConfig(DMA1_Channel3, DMA_IT_TC, ENABLE);
-					DMA_ClearFlag(DMA1_FLAG_TC3);
-			}
-		}
+				for(int g=0;g<100;g++)
+				{
+					asm("nop");
+				}
+				// Activate new line
+				//PIOS_LED_On(LED3);
+				//if(DMA_GetFlagStatus(DMA1_Stream5,DMA_FLAG_TCIF5))
+				//if(DMA_GetITStatus(DMA1_Stream5,DMA_IT_TCIF5))
 
-		// We save some time in beginning of line by pre-calculating next type.
+				DMA_Init(DMA2_Stream5, &DMA_InitStructure);
+				DMA_Init(DMA1_Stream5, &DMA_InitStructure2);
+				//SPI_I2S_DMACmd(SPI1, SPI_I2S_DMAReq_Tx, ENABLE);
+				//SPI_I2S_DMACmd(SPI3, SPI_I2S_DMAReq_Tx, ENABLE);
+				DMA_Cmd(DMA2_Stream5, ENABLE);
+				DMA_Cmd(DMA1_Stream5, ENABLE);
+				//DMA_ClearFlag(DMA1_Stream5,DMA_FLAG_TCIF5);
+				//DMA_ITConfig(DMA1_Channel3, DMA_IT_TC, ENABLE);
+				//DMA_ClearITPendingBit(DMA1_Stream5,DMA_IT_TCIF5);
+			}
+		//}
+	}	else
+	{
 		gLineType = LINE_TYPE_UNKNOWN; // Default case
 		gActiveLine++;
-		if (gActiveLine == UPDATE_LINE) {
+		/*if (gActiveLine == UPDATE_LINE) {
 			gUpdateScreenData = 1; // trigger frame update
-			xSemaphoreGiveFromISR(osdSemaphore, &xHigherPriorityTaskWoken);
 		}
-		else if ((gActiveLine >= GRAPHICS_LINE) && (gActiveLine < (GRAPHICS_LINE + GRAPHICS_HEIGHT))) {
+		else */
+		if ((gActiveLine >= GRAPHICS_LINE) && (gActiveLine < (GRAPHICS_LINE + GRAPHICS_HEIGHT))) {
 			gLineType = LINE_TYPE_GRAPHICS;
 			gActivePixmapLine = (gActiveLine - GRAPHICS_LINE);
+			line = gActivePixmapLine*GRAPHICS_WIDTH;
 		}
-	}
-	else { // V sync
-		if(gActiveLine > 200) {
-			gActiveLine = 0;
+		//falling
+		//if (gActiveLine != 0) {
+		//if(DMA_GetFlagStatus(DMA1_Stream5,DMA_FLAG_TCIF5))
+		{
+			//PIOS_LED_Off(LED2);
+			if(gLineType == LINE_TYPE_GRAPHICS)
+			{
+				// Load new line
+				//PIOS_LED_Off(LED3);
+				DMA_DeInit(DMA1_Stream5);
+				DMA_DeInit(DMA2_Stream5);
+				//DMA_Cmd(DMA1_Stream5, DISABLE);
+				//DMA_Cmd(DMA2_Stream5, DISABLE);
+				//SPI_I2S_DMACmd(SPI1, SPI_I2S_DMAReq_Tx, DISABLE);
+				//SPI_I2S_DMACmd(SPI3, SPI_I2S_DMAReq_Tx, DISABLE);
+
+				//DMA_ClearFlag(DMA1_Stream5,DMA_FLAG_TCIF5);
+				DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)&disp_buffer_level[line];
+				DMA_InitStructure2.DMA_Memory0BaseAddr = (uint32_t)&disp_buffer_mask[line];
+			}
 		}
-		//USB_LED_TOGGLE;
+		//}
+		//load next line
+		// We save some time in beginning of line by pre-calculating next type.
 	}
 }
+
+void PIOS_Vsync_ISR() {
+	static portBASE_TYPE xHigherPriorityTaskWoken;
+
+	//if(gActiveLine > 200)
+	{
+		gActiveLine = 0;
+		Vsync_update++;
+		if(Vsync_update>=1)
+		{
+			swap_buffers();
+			Vsync_update=0;
+			xSemaphoreGiveFromISR(osdSemaphore, &xHigherPriorityTaskWoken);
+		}
+		//PIOS_LED_Off(LED2);
+	}
 }
+
 
 bool isOutOfGraphics(void) {
 	return gActiveLine > (GRAPHICS_LINE + GRAPHICS_HEIGHT);
@@ -2211,11 +2341,6 @@ bool isOutOfGraphics(void) {
 void updateOnceEveryFrame() {
 	clearGraphics();
 	updateGraphics();
-}
-
-void PIOS_Video_IRQHandler(void)
-{
-	updateLine();
 }
 
 #endif

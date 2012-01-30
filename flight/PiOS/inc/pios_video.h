@@ -51,14 +51,14 @@
 //#define GRAPHICS_LINE 135
 //#define GRAPHICS_OFFSET 18
 
-#define GRAPHICS_LINE 30
+#define GRAPHICS_LINE 25
 #define GRAPHICS_OFFSET 10
 
 //#define GRAPHICS_WIDTH_REAL 336
 //#define GRAPHICS_HEIGHT_REAL 272
 
-#define GRAPHICS_WIDTH_REAL 304
-#define GRAPHICS_HEIGHT_REAL 128
+#define GRAPHICS_WIDTH_REAL 336
+#define GRAPHICS_HEIGHT_REAL 272
 
 #define GRAPHICS_WIDTH (GRAPHICS_WIDTH_REAL/16)
 #define GRAPHICS_HEIGHT GRAPHICS_HEIGHT_REAL
@@ -239,6 +239,9 @@ void introGraphics();
 void updateGraphics();
 void drawGraphicsLine();
 
+void write_string(char *str, unsigned int x, unsigned int y, unsigned int xs, unsigned int ys, int va, int ha, int flags, int font);
+
+
 extern volatile uint16_t gActiveLine;
 extern volatile uint16_t gActivePixmapLine;
 
@@ -249,6 +252,7 @@ void initLine();
 void updateLine();
 
 void setAttitudeOsd(int16_t pitch, int16_t roll, int16_t yaw);
+void setGpsOsd(uint8_t status, int32_t lat, int32_t lon, float alt, float spd);
 void updateOnceEveryFrame();
 bool isOutOfGraphics(void);
 

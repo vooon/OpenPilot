@@ -152,8 +152,8 @@ static void OpOsdTask(void *parameters)
 	// Loop forever
 	while (1)
 	{
-		DMA_Cmd(DMA1_Channel3, DISABLE);   //prohibit  channel3 for a little time
-    	uint16_t cnt = DMA_GetCurrDataCounter(DMA1_Channel3);
+		DMA_Cmd(DMA1_Stream2, DISABLE);   //prohibit  channel3 for a little time
+    	uint16_t cnt = DMA_GetCurrDataCounter(DMA1_Stream2);
     	rx.wr = rx.buf_size-cnt;
 		if(rx.wr)
 		{
@@ -208,7 +208,7 @@ static void OpOsdTask(void *parameters)
 				}
 			}
 		}
-		DMA_Cmd(DMA1_Channel3, ENABLE);
+		DMA_Cmd(DMA1_Stream2, ENABLE);
 
 
 

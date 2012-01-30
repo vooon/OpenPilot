@@ -66,7 +66,7 @@ TIM4  |                     STOPWATCH                    |
 // *****************************************************************
 // System Settings
 
-#define PIOS_MASTER_CLOCK                       56000000ul
+#define PIOS_MASTER_CLOCK                       108000000ul
 #define PIOS_PERIPHERAL_CLOCK                   (PIOS_MASTER_CLOCK / 2)
 
 // *****************************************************************
@@ -82,7 +82,7 @@ TIM4  |                     STOPWATCH                    |
 // WATCHDOG_SETTINGS
 //------------------------
 #define PIOS_WATCHDOG_TIMEOUT    250
-#define PIOS_WDG_REGISTER        BKP_DR4
+#define PIOS_WDG_REGISTER        RTC_BKP_DR4
 #define PIOS_WDG_ACTUATOR        0x0001
 #define PIOS_WDG_STABILIZATION   0x0002
 #define PIOS_WDG_ATTITUDE        0x0004
@@ -92,13 +92,22 @@ TIM4  |                     STOPWATCH                    |
 // *****************************************************************
 // PIOS_LED
 
-#define PIOS_LED_LED1_GPIO_PORT			GPIOA
-#define PIOS_LED_LED1_GPIO_PIN			GPIO_Pin_3
-#define PIOS_LED_LED1_GPIO_CLK			RCC_APB2Periph_GPIOA
-#define PIOS_LED_NUM				1
-#define PIOS_LED_PORTS				{ PIOS_LED_LED1_GPIO_PORT }
-#define PIOS_LED_PINS				{ PIOS_LED_LED1_GPIO_PIN }
-#define PIOS_LED_CLKS				{ PIOS_LED_LED1_GPIO_CLK }
+#define PIOS_LED_LED1_GPIO_PORT					GPIOD
+#define PIOS_LED_LED1_GPIO_PIN					GPIO_Pin_13 //LD3
+#define PIOS_LED_LED1_GPIO_CLK					RCC_APB2Periph_GPIOD
+#define PIOS_LED_LED2_GPIO_PORT                 GPIOD
+#define PIOS_LED_LED2_GPIO_PIN                  GPIO_Pin_12 //LD4
+#define PIOS_LED_LED2_GPIO_CLK                  RCC_APB2Periph_GPIOD
+#define PIOS_LED_LED3_GPIO_PORT                 GPIOD
+#define PIOS_LED_LED3_GPIO_PIN                  GPIO_Pin_14 //LD5
+#define PIOS_LED_LED3_GPIO_CLK                  RCC_APB2Periph_GPIOD
+#define PIOS_LED_LED4_GPIO_PORT                 GPIOD
+#define PIOS_LED_LED4_GPIO_PIN                  GPIO_Pin_15 //LD6
+#define PIOS_LED_LED4_GPIO_CLK                  RCC_APB2Periph_GPIOD
+#define PIOS_LED_NUM                            4
+#define PIOS_LED_PORTS                          { PIOS_LED_LED1_GPIO_PORT, PIOS_LED_LED2_GPIO_PORT, PIOS_LED_LED3_GPIO_PORT, PIOS_LED_LED4_GPIO_PORT }
+#define PIOS_LED_PINS                           { PIOS_LED_LED1_GPIO_PIN, PIOS_LED_LED2_GPIO_PIN, PIOS_LED_LED3_GPIO_PIN, PIOS_LED_LED4_GPIO_PIN }
+#define PIOS_LED_CLKS                           { PIOS_LED_LED1_GPIO_CLK, PIOS_LED_LED2_GPIO_CLK, PIOS_LED_LED3_GPIO_CLK, PIOS_LED_LED4_GPIO_CLK }
 
 
 #define USB_LED_ON						PIOS_LED_On(LED1)
@@ -138,17 +147,24 @@ extern uint32_t pios_spi_port_id;
 //
 // See also pios_board.c
 //-------------------------
-#define PIOS_USART_MAX_DEVS             1
-
-#define PIOS_USART_RX_BUFFER_SIZE		512
-#define PIOS_USART_TX_BUFFER_SIZE		512
+#define PIOS_USART_MAX_DEVS             5
 
 //-------------------------
 // PIOS_COM
 //
 // See also pios_board.c
 //-------------------------
-#define PIOS_COM_MAX_DEVS               2
+#define PIOS_COM_MAX_DEVS               4
+extern uint32_t pios_com_telem_rf_id;
+extern uint32_t pios_com_gps_id;
+extern uint32_t pios_com_aux_id;
+extern uint32_t pios_com_telem_usb_id;
+#define PIOS_COM_AUX                    (pios_com_aux_id)
+#define PIOS_COM_GPS                    (pios_com_gps_id)
+#define PIOS_COM_TELEM_USB              (pios_com_telem_usb_id)
+#define PIOS_COM_TELEM_RF               (pios_com_telem_rf_id)
+#define PIOS_COM_DEBUG                  PIOS_COM_AUX
+
 
 extern uint32_t pios_com_hkosd_id;
 #define PIOS_COM_OSD                 (pios_com_hkosd_id)
@@ -388,16 +404,34 @@ extern uint32_t pios_com_telem_usb_id;
 
 // *****************************************************************
 // VIDEO
-#define PIOS_VIDEO_SYNC_GPIO_PORT		GPIOB
-#define PIOS_VIDEO_SYNC_GPIO_PIN		GPIO_Pin_12
-#define PIOS_VIDEO_SYNC_PORT_SOURCE		GPIO_PortSourceGPIOB
-#define PIOS_VIDEO_SYNC_PIN_SOURCE		GPIO_PinSource12
-#define PIOS_VIDEO_SYNC_CLK			RCC_APB2Periph_GPIOB
-#define PIOS_VIDEO_SYNC_EXTI_LINE		EXTI_Line12
-#define PIOS_VIDEO_SYNC_IRQn			EXTI15_10_IRQn
-//#define PIOS_VIDEO_SYNC_PRIO			PIOS_IRQ_PRIO_HIGHEST
-#define PIOS_VIDEO_SYNC_PRIO			1
+#define PIOS_VIDEO_HSYNC_GPIO_PORT		GPIOD
+#define PIOS_VIDEO_HSYNC_GPIO_PIN		GPIO_Pin_0
+#define PIOS_VIDEO_HSYNC_PORT_SOURCE		GPIO_PortSourceGPIOD
+#define PIOS_VIDEO_HSYNC_PIN_SOURCE		GPIO_PinSource0
+#define PIOS_VIDEO_HSYNC_CLK				RCC_AHB1Periph_GPIOD
+#define PIOS_VIDEO_HSYNC_EXTI_LINE		EXTI_Line0
+#define PIOS_VIDEO_HSYNC_EXTI_PORT_SOURCE		EXTI_PortSourceGPIOD
+#define PIOS_VIDEO_HSYNC_EXTI_PIN_SOURCE		EXTI_PinSource0
+#define PIOS_VIDEO_HSYNC_IRQn			EXTI0_IRQn
+#define PIOS_VIDEO_HSYNC_PRIO			PIOS_IRQ_PRIO_HIGH
+//#define PIOS_VIDEO_SYNC_PRIO			1
+
+#define PIOS_VIDEO_VSYNC_GPIO_PORT		GPIOC
+#define PIOS_VIDEO_VSYNC_GPIO_PIN		GPIO_Pin_11
+#define PIOS_VIDEO_VSYNC_PORT_SOURCE		GPIO_PortSourceGPIOC
+#define PIOS_VIDEO_VSYNC_PIN_SOURCE		GPIO_PinSource11
+#define PIOS_VIDEO_VSYNC_CLK				RCC_AHB1Periph_GPIOC
+#define PIOS_VIDEO_VSYNC_EXTI_LINE		EXTI_Line11
+#define PIOS_VIDEO_VSYNC_EXTI_PORT_SOURCE		EXTI_PortSourceGPIOC
+#define PIOS_VIDEO_VSYNC_EXTI_PIN_SOURCE		EXTI_PinSource11
+#define PIOS_VIDEO_VSYNC_IRQn			EXTI15_10_IRQn
+#define PIOS_VIDEO_VSYNC_PRIO			PIOS_IRQ_PRIO_HIGHEST
+
 
 // *****************************************************************
+//--------------------------
+// Timer controller settings
+//--------------------------
+#define PIOS_TIM_MAX_DEVS			6
 
 #endif /* PIOS_BOARD_H */

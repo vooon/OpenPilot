@@ -29,11 +29,11 @@
 #define PIOS_CONFIG_H
 
 /* Enable/Disable PiOS Modules */
-#define PIOS_INCLUDE_ADC
+//#define PIOS_INCLUDE_ADC
 #define PIOS_INCLUDE_DELAY
 #define PIOS_INCLUDE_IRQ
 #define PIOS_INCLUDE_LED
-#define PIOS_INCLUDE_SPI
+//#define PIOS_INCLUDE_SPI
 #define PIOS_INCLUDE_SYS
 #define PIOS_INCLUDE_USART
 #define PIOS_INCLUDE_COM
@@ -45,28 +45,26 @@
 #define PIOS_INCLUDE_VIDEO
 //#define PIOS_INCLUDE_WDG
 
+/* Com systems to include */
+#define PIOS_INCLUDE_COM
+//#define PIOS_INCLUDE_COM_TELEM
+#define PIOS_INCLUDE_GPS
+
+
+#define PIOS_INCLUDE_INITCALL           /* Include init call structures */
+#define PIOS_TELEM_PRIORITY_QUEUE       /* Enable a priority queue in telemetry */
+#define PIOS_QUATERNION_STABILIZATION   /* Stabilization options */
+//#define PIOS_GPS_SETS_HOMELOCATION      /* GPS options */
+
 /* Alarm Thresholds */
-#define HEAP_LIMIT_WARNING             220
-#define HEAP_LIMIT_CRITICAL             40
-#define IRQSTACK_LIMIT_WARNING		100
-#define IRQSTACK_LIMIT_CRITICAL		60
-#define CPULOAD_LIMIT_WARNING		85
+#define HEAP_LIMIT_WARNING		4000
+#define HEAP_LIMIT_CRITICAL		1000
+#define IRQSTACK_LIMIT_WARNING		150
+#define IRQSTACK_LIMIT_CRITICAL		80
+#define CPULOAD_LIMIT_WARNING		80
 #define CPULOAD_LIMIT_CRITICAL		95
 
-/* Task stack sizes */
-#define PIOS_ACTUATOR_STACK_SIZE       1020
-#define PIOS_MANUAL_STACK_SIZE          724
-#define PIOS_SYSTEM_STACK_SIZE          460
-#define PIOS_STABILIZATION_STACK_SIZE   524
-#define PIOS_TELEM_STACK_SIZE           500
-#define PIOS_EVENTDISPATCHER_STACK_SIZE 130
-#define IDLE_COUNTS_PER_SEC_AT_NO_LOAD 1995998
-//#define PIOS_QUATERNION_STABILIZATION
-
-// This can't be too high to stop eventdispatcher thread overflowing
-#define PIOS_EVENTDISAPTCHER_QUEUE      10
-
-/* PIOS Initcall infrastructure */
-#define PIOS_INCLUDE_INITCALL
+// This actually needs calibrating
+#define IDLE_COUNTS_PER_SEC_AT_NO_LOAD (8379692)
 
 #endif /* PIOS_CONFIG_H */

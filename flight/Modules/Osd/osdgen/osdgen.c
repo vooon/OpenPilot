@@ -33,6 +33,10 @@
 #include "openpilot.h"
 #include "osdgen.h"
 #include "attitudeactual.h"
+#include "gpsposition.h"
+#include "homelocation.h"
+#include "gpstime.h"
+#include "gpssatellites.h"
 
 
 // ****************
@@ -80,6 +84,16 @@ int32_t osdgenStart(void)
 int32_t osdgenInitialize(void)
 {
 	AttitudeActualInitialize();
+#ifdef PIOS_INCLUDE_GPS
+	GPSPositionInitialize();
+#if !defined(PIOS_GPS_MINIMAL)
+	GPSTimeInitialize();
+	GPSSatellitesInitialize();
+#endif
+#ifdef PIOS_GPS_SETS_HOMELOCATION
+	HomeLocationInitialize();
+#endif
+#endif
 	return 0;
 }
 MODULE_INITCALL(osdgenInitialize, osdgenStart)
@@ -104,14 +118,17 @@ MODULE_INITCALL(osdgenInitialize, osdgenStart)
 static void osdgenTask(void *parameters)
 {
 	portTickType lastSysTime;
+	AttitudeActualData attitude;
+	GPSPositionData gpsData;
 	// Loop forever
 	lastSysTime = xTaskGetTickCount();
 	while (1)
 	{
 		//if (gUpdateScreenData==1) {
-			AttitudeActualData attitude;
+			GPSPositionGet(&gpsData);
 			AttitudeActualGet(&attitude);
 			setAttitudeOsd((int16_t)attitude.Pitch,(int16_t)attitude.Roll,(int16_t)attitude.Yaw);
+			setGpsOsd(gpsData.Status,gpsData.Latitude,gpsData.Longitude,gpsData.Altitude,gpsData.Groundspeed);
 			updateOnceEveryFrame();
 			gUpdateScreenData=0;
 		//}

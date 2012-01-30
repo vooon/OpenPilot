@@ -7,7 +7,7 @@
 
 #ifndef FONT12X18_H_
 #define FONT12X18_H_
-
+/*
 static const uint16_t font_frame16x18[] = {
 0x0000,
 0x0000,
@@ -9780,5 +9780,5 @@ static const uint16_t font_mask16x18[] = {
 0x0000,
 
 };
-
+*/
 #endif /* FONT12X18_H_ */

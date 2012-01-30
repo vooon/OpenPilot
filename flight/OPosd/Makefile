@@ -49,35 +49,33 @@ endif
 FLASH_TOOL = OPENOCD
 
 # List of modules to include
-MODULES = Osd/osdgen Osd/osdinput 
+MODULES = GPS Osd/osdgen Osd/osdinput 
 
 
 # Paths
-AHRS = ./
-AHRSINC = $(AHRS)/inc
 OPSYSTEM = ./
 OPSYSTEMINC = $(OPSYSTEM)/inc
 OPUAVTALK = ../UAVTalk
 OPUAVTALKINC = $(OPUAVTALK)/inc
-OPUAVOBJ = ../UAVObjects
-OPUAVOBJINC = $(OPUAVOBJ)/inc
 OPTESTS  = ./Tests
 OPMODULEDIR = ../Modules
 PIOS = ../PiOS
 PIOSINC = $(PIOS)/inc
 FLIGHTLIB = ../Libraries
 FLIGHTLIBINC = ../Libraries/inc
-PIOSSTM32F10X = $(PIOS)/STM32F10x
+PIOSSTM32F4XX = $(PIOS)/STM32F4xx
 PIOSCOMMON = $(PIOS)/Common
 PIOSBOARDS = $(PIOS)/Boards
-APPLIBDIR = $(PIOSSTM32F10X)/Libraries
+PIOSCOMMONLIB = $(PIOSCOMMON)/Libraries
+PIOS_DEVLIB = $(PIOS)/STM32F4xx
+APPLIBDIR = $(PIOSSTM32F4XX)/Libraries
 STMLIBDIR = $(APPLIBDIR)
 STMSPDDIR = $(STMLIBDIR)/STM32F10x_StdPeriph_Driver
 STMUSBDIR = $(STMLIBDIR)/STM32_USB-FS-Device_Driver
 STMSPDSRCDIR = $(STMSPDDIR)/src
 STMSPDINCDIR = $(STMSPDDIR)/inc
 CMSISDIR  = $(STMLIBDIR)/CMSIS/Core/CM3
-RTOSDIR = $(APPLIBDIR)/FreeRTOS
+RTOSDIR = $(PIOSCOMMONLIB)/FreeRTOS
 RTOSSRCDIR = $(RTOSDIR)/Source
 RTOSINCDIR = $(RTOSSRCDIR)/include
 OPDIR = ../OpenPilot
@@ -140,66 +138,46 @@ SRC += $(OPUAVSYNTHDIR)/attitudeactual.c
 #SRC += $(OPUAVSYNTHDIR)/attitudesettings.c
 #SRC += $(OPUAVSYNTHDIR)/camerastabsettings.c
 #SRC += $(OPUAVSYNTHDIR)/cameradesired.c
-#SRC += $(OPUAVSYNTHDIR)/hwsettings.c
+SRC += $(OPUAVSYNTHDIR)/hwsettings.c
 #SRC += $(OPUAVSYNTHDIR)/gcsreceiver.c
 #SRC += $(OPUAVSYNTHDIR)/receiveractivity.c
 #SRC += $(OPUAVSYNTHDIR)/taskinfo.c
 #SRC += $(OPUAVSYNTHDIR)/mixerstatus.c
 #SRC += $(OPUAVSYNTHDIR)/ratedesired.c
-
+SRC += $(OPUAVSYNTHDIR)/gpsposition.c
+SRC += $(OPUAVSYNTHDIR)/gpssatellites.c
+SRC += $(OPUAVSYNTHDIR)/gpstime.c
 
 ## PIOS Hardware (STM32F10x)
-SRC += $(PIOSSTM32F10X)/pios_adc.c
-SRC += $(PIOSSTM32F10X)/pios_sys.c
-SRC += $(PIOSSTM32F10X)/pios_led.c
-SRC += $(PIOSSTM32F10X)/pios_delay.c
-SRC += $(PIOSSTM32F10X)/pios_usart.c
-SRC += $(PIOSSTM32F10X)/pios_irq.c
-SRC += $(PIOSSTM32F10X)/pios_i2c.c
-SRC += $(PIOSSTM32F10X)/pios_gpio.c
-SRC += $(PIOSSTM32F10X)/pios_spi.c
-SRC += $(PIOSSTM32F10X)/pios_exti.c
-SRC += $(PIOSSTM32F10X)/pios_rtc.c
-SRC += $(PIOSSTM32F10X)/pios_wdg.c
+#SRC += $(PIOSSTM32F4XX)/pios_adc.c
+#SRC += $(PIOSSTM32F4XX)/pios_sys.c
+#SRC += $(PIOSSTM32F4XX)/pios_led.c
+#SRC += $(PIOSSTM32F4XX)/pios_delay.c
+#SRC += $(PIOSSTM32F4XX)/pios_usart.c
+#SRC += $(PIOSSTM32F4XX)/pios_irq.c
+#SRC += $(PIOSSTM32F4XX)/pios_i2c.c
+#SRC += $(PIOSSTM32F4XX)/pios_gpio.c
+#SRC += $(PIOSSTM32F4XX)/pios_spi.c
+#SRC += $(PIOSSTM32F4XX)/pios_exti.c
+#SRC += $(PIOSSTM32F4XX)/pios_rtc.c
+#SRC += $(PIOSSTM32F4XX)/pios_wdg.c
 
 ## PIOS Hardware (Common)
 SRC += $(PIOSCOMMON)/pios_com.c
 #SRC += $(PIOSCOMMON)/pios_hmc5843.c
 SRC += $(PIOSCOMMON)/printf-stdarg.c
-SRC += $(PIOSCOMMON)/pios_iap.c
+#SRC += $(PIOSCOMMON)/pios_iap.c
 SRC += $(PIOSCOMMON)/pios_bl_helper.c
 SRC += $(PIOSCOMMON)/pios_video.c
 
-## CMSIS for STM32
-SRC += $(CMSISDIR)/core_cm3.c
-SRC += $(CMSISDIR)/system_stm32f10x.c
+# optional component libraries
+include $(PIOSCOMMONLIB)/FreeRTOS/library.mk
+#include $(PIOSCOMMONLIB)/dosfs/library.mk
+include $(PIOSCOMMONLIB)/msheap/library.mk
 
-## Used parts of the STM-Library
-SRC += $(STMSPDSRCDIR)/stm32f10x_adc.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_bkp.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_crc.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_dac.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_dma.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_exti.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_flash.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_gpio.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_i2c.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_pwr.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_rcc.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_rtc.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_spi.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_tim.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_usart.c
-SRC += $(STMSPDSRCDIR)/misc.c
+## PIOS Hardware (STM32F4xx)
+include $(PIOS)/STM32F4xx/library.mk
 
-## RTOS
-SRC += $(RTOSSRCDIR)/list.c
-SRC += $(RTOSSRCDIR)/queue.c
-SRC += $(RTOSSRCDIR)/tasks.c
-
-## RTOS Portable
-SRC += $(RTOSSRCDIR)/portable/GCC/ARM_CM3/port.c
-SRC += $(RTOSSRCDIR)/portable/MemMang/heap_1.c
 
 # List C source files here which must be compiled in ARM-Mode (no -mthumb).
 # use file-extension c for "c-only"-files
@@ -222,14 +200,14 @@ CPPSRCARM =
 # Even though the DOS/Win* filesystem matches both .s and .S the same,
 # it will preserve the spelling of the filenames, and gcc itself does
 # care about how the name is spelled on its command-line.
-ASRC = $(PIOSSTM32F10X)/startup_stm32f10x_$(MODEL)$(MODEL_SUFFIX).S
+#ASRC = $(PIOSSTM32F4XX)/startup_stm32f10x_$(MODEL)$(MODEL_SUFFIX).S
 
 # List Assembler source files here which must be assembled in ARM-Mode..
 ASRCARM =
 
 # List any extra directories to look for include files here.
 #    Each directory must be seperated by a space.
-EXTRAINCDIRS  =  $(OPSYSTEM)
+EXTRAINCDIRS  +=  $(OPSYSTEM)
 EXTRAINCDIRS  += $(AHRSINC)
 EXTRAINCDIRS  += $(OPSYSTEMINC)
 EXTRAINCDIRS  += $(OPUAVTALK)
@@ -240,7 +218,7 @@ EXTRAINCDIRS  += $(OPUAVSYNTHDIR)
 EXTRAINCDIRS  += $(PIOS)
 EXTRAINCDIRS  += $(PIOSINC)
 EXTRAINCDIRS  += $(FLIGHTLIBINC)
-EXTRAINCDIRS  += $(PIOSSTM32F10X)
+EXTRAINCDIRS  += $(PIOSSTM32F4XX)
 EXTRAINCDIRS  += $(PIOSCOMMON)
 EXTRAINCDIRS  += $(PIOSBOARDS)
 EXTRAINCDIRS  += $(STMSPDINCDIR)
@@ -269,7 +247,8 @@ EXTRA_LIBDIRS =
 EXTRA_LIBS =
 
 # Path to Linker-Scripts
-LINKERSCRIPTPATH = $(PIOSSTM32F10X)
+LINKERSCRIPTPATH = $(PIOSSTM32F4XX)
+
 
 # Optimization level, can be [0, 1, 2, 3, s].
 # 0 = turn off optimization. s = optimize for size.
@@ -278,9 +257,24 @@ LINKERSCRIPTPATH = $(PIOSSTM32F10X)
 ifeq ($(DEBUG),YES)
 CFLAGS += -O0
 CFLAGS += -DGENERAL_COV
+CFLAGS += -finstrument-functions -ffixed-r10
 else
-CFLAGS += -O3
+CFLAGS += -Os
 endif
+
+
+   
+# common architecture-specific flags from the device-specific library makefile
+CFLAGS += $(ARCHFLAGS)
+
+
+#CFLAGS += -DDIAGNOSTICS
+
+# This is not the best place for these.  Really should abstract out
+# to the board file or something
+CFLAGS += -DSTM32F4XX
+CFLAGS += -DMEM_SIZE=1024000000
+
 
 # Output format. (can be ihex or binary or both)
 #  binary to create a load-image in raw-binary format i.e. for SAM-BA,
@@ -294,10 +288,10 @@ DEBUGF = dwarf-2
 
 # Place project-specific -D (define) and/or
 # -U options for C here.
-CDEFS = -DSTM32F10X_$(MODEL)
+CDEFS += -DSTM32F10X_$(MODEL)
+CDEFS += -DSYSCLK_FREQ=$(SYSCLK_FREQ)
 CDEFS += -DUSE_STDPERIPH_DRIVER
 CDEFS += -DUSE_$(BOARD)
-CDEFS += -DIN_AHRS
 
 # Place project-specific -D and/or -U options for
 # Assembler with preprocessor here.
@@ -351,7 +345,7 @@ CONLYFLAGS += $(CSTANDARD)
 # Assembler flags.
 #  -Wa,...:    tell GCC to pass this to the assembler.
 #  -ahlns:     create listing
-ASFLAGS  = -mcpu=$(MCU) -mthumb -I. -x assembler-with-cpp
+ASFLAGS  = $(ARCHFLAGS) -mthumb -I. -x assembler-with-cpp
 ASFLAGS += $(ADEFS)
 ASFLAGS += -Wa,-adhlns=$(addprefix $(OUTDIR)/, $(notdir $(addsuffix .lst, $(basename $<))))
 ASFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS))
@@ -369,9 +363,9 @@ LDFLAGS += $(patsubst %,-l%,$(EXTRA_LIBS))
 LDFLAGS += $(MATH_LIB)
 LDFLAGS += -lc -lgcc
 
-# Set linker-script name depending on selected submodel name
-LDFLAGS += -T$(LINKERSCRIPTPATH)/link_$(BOARD)_memory.ld
-LDFLAGS += -T$(LINKERSCRIPTPATH)/link_$(BOARD)_sections.ld
+#Linker scripts                                                                                                                                                                                                              
+LDFLAGS += $(addprefix -T,$(LINKER_SCRIPTS_APP))
+
 
 # Define programs and commands.
 REMOVE  = $(REMOVE_CMD) -f

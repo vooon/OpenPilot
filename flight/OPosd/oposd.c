@@ -46,6 +46,15 @@
 /* Prototype of PIOS_Board_Init() function */
 extern void PIOS_Board_Init(void);
 extern void Stack_Change(void);
+static void Stack_Change_Weak () __attribute__ ((weakref ("Stack_Change")));
+
+
+/* Function Prototypes */
+static void initTask(void *parameters);
+/* Local Variables */
+#define INIT_TASK_PRIORITY	(tskIDLE_PRIORITY + configMAX_PRIORITIES - 1)	// max priority
+#define INIT_TASK_STACK		(1024 / 4)										// XXX this seems excessive
+static xTaskHandle initTaskHandle;
 
 // *****************************************************************************
 // Global Variables
@@ -194,15 +203,23 @@ void processReset(void)
 
 int main()
 {
+	int	result;
     // *************
     // init various variables
     // *************
+	/* NOTE: Do NOT modify the following start-up sequence */
+	/* Any new initialization functions should be added in OpenPilotInit() */
+	vPortInitialiseBlocks();
 
-    PIOS_Board_Init();
+	// Bring up System using CMSIS functions, enables the LEDs.
+	PIOS_SYS_Init();
 
-    MODULE_INITIALISE_ALL
-
-    sequenceLEDs();
+	/* For Revolution we use a FreeRTOS task to bring up the system so we can */
+	/* always rely on FreeRTOS primitive */
+	result = xTaskCreate(initTask, (const signed char *)"init",
+						 INIT_TASK_STACK, NULL, INIT_TASK_PRIORITY,
+						 &initTaskHandle);
+	PIOS_Assert(result == pdPASS);
 
     // turn all the leds off
     USB_LED_OFF;
@@ -226,7 +243,7 @@ int main()
 	}*/
 
 	/* swap the stack to use the IRQ stack */
-	Stack_Change();
+	//Stack_Change();
 
 	/* Start the FreeRTOS scheduler which should never returns.*/
 	vTaskStartScheduler();
@@ -282,5 +299,22 @@ int main()
     return 0;
 }
 
+/**
+ * Initialisation task.
+ *
+ * Runs board and module initialisation, then terminates.
+ */
+void
+initTask(void *parameters)
+{
+	/* board driver init */
+	PIOS_Board_Init();
+
+	/* Initialize modules */
+	MODULE_INITIALISE_ALL;
+
+	/* terminate this task */
+	vTaskDelete(NULL);
+}
 
 // *****************************************************************************

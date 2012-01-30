@@ -48,7 +48,6 @@
 #include "taskinfo.h"
 #include "watchdogstatus.h"
 #include "taskmonitor.h"
-#include "pios_iap.h"
 
 
 // Private constants
@@ -116,10 +115,8 @@ int32_t SystemModInitialize(void)
 	SystemStatsInitialize();
 	FlightStatusInitialize();
 	ObjectPersistenceInitialize();
-#if defined(DIAG_TASKS)
-	TaskInfoInitialize();
-#endif
 #if defined(DIAGNOSTICS)
+	TaskInfoInitialize();
 	I2CStatsInitialize();
 	WatchdogStatusInitialize();
 #endif
@@ -138,18 +135,7 @@ static void systemTask(void *parameters)
 	portTickType lastSysTime;
 
 	/* create all modules thread */
-	MODULE_TASKCREATE_ALL;
-
-	if (mallocFailed) {
-		/* We failed to malloc during task creation,
-		 * system behaviour is undefined.  Reset and let
-		 * the BootFault code recover for us.
-		 */
-		PIOS_SYS_Reset();
-	}
-
-	/* Record a successful boot */
-	PIOS_IAP_WriteBootCount(0);
+	MODULE_TASKCREATE_ALL
 
 	// Initialize vars
 	idleCounter = 0;
@@ -379,7 +365,7 @@ static void updateStats()
 	if (now > lastTickCount) {
 		uint32_t dT = (xTaskGetTickCount() - lastTickCount) * portTICK_RATE_MS;	// in ms
 		stats.CPULoad =
-			100 - (uint8_t) round(100.0 * ((float)idleCounter / ((float)dT / 1000.0)) / (float)IDLE_COUNTS_PER_SEC_AT_NO_LOAD);
+			100 - (uint8_t) roundf(100.0f * ((float)idleCounter / ((float)dT / 1000.0f)) / (float)IDLE_COUNTS_PER_SEC_AT_NO_LOAD);
 	} //else: TickCount has wrapped, do not calc now
 	lastTickCount = now;
 	idleCounterClear = 1;

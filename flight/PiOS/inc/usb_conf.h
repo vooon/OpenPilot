@@ -23,6 +23,11 @@
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
 /* External variables --------------------------------------------------------*/
+/*-------------------------------------------------------------*/
+/* EP_NUM */
+/* defines how many endpoints are used by the device */
+/*-------------------------------------------------------------*/
+#define EP_NUM     (2)
 
 #ifndef STM32F10X_CL
 /*-------------------------------------------------------------*/
@@ -34,23 +39,13 @@
 
 /* EP0  */
 /* rx/tx buffer base address */
-#define ENDP0_RXADDR        (0x20)
-#define ENDP0_TXADDR        (0x40)
+#define ENDP0_RXADDR        (0x18)
+#define ENDP0_TXADDR        (0x58)
 
 /* EP1  */
-/* rx/tx buffer base address */
-#define ENDP1_TXADDR        (0x60)
-#define ENDP1_RXADDR        (0x80)
-
-/* EP2 */
-/* rx/tx buffer base address */
-#define ENDP2_TXADDR        (0x100)
-#define ENDP2_RXADDR        (0x140)
-
-/* EP3 */
-/* rx/tx buffer base address */
-#define ENDP3_TXADDR        (0x180)
-#define ENDP3_RXADDR        (0x1C0)
+/* tx buffer base address */
+#define ENDP1_TXADDR        (0x100)
+#define ENDP1_RXADDR        (0x124)
 
 /*-------------------------------------------------------------*/
 /* -------------------   ISTR events  -------------------------*/
@@ -176,7 +171,7 @@
 #define  EP6_IN_Callback   NOP_Process
 #define  EP7_IN_Callback   NOP_Process
 
-#define  EP1_OUT_Callback   NOP_Process
+//#define  EP1_OUT_Callback   NOP_Process
 #define  EP2_OUT_Callback   NOP_Process
 #define  EP3_OUT_Callback   NOP_Process
 #define  EP4_OUT_Callback   NOP_Process
