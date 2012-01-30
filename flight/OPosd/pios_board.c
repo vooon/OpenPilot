@@ -58,23 +58,6 @@ uint8_t RxBuffer3[TxBufferSize3];
  * called from System/openpilot.c
  */
 
-extern uint16_t *disp_buffer_level;
-extern uint16_t *disp_buffer_mask;
-
-DMA_InitTypeDef				DMA_InitStructure;
-DMA_InitTypeDef				DMA_InitStructure2;
-/*
-USART_InitTypeDef USART_InitStructure;
-USART_InitTypeDef			USART_InitStructure;
-EXTI_InitTypeDef			EXTI_InitStructure;
-GPIO_InitTypeDef			GPIO_InitStructure;
-TIM_TimeBaseInitTypeDef		TIM_TimeBaseStructure;
-TIM_OCInitTypeDef			TIM_OCInitStructure;
-NVIC_InitTypeDef			NVIC_InitStructure;
-SPI_InitTypeDef				SPI_InitStructure;
-*/
-
-
 #if defined(PIOS_INCLUDE_RTC)
 /*
  * Realtime Clock (RTC)
@@ -105,9 +88,11 @@ void PIOS_RTC_IRQ_Handler (void)
 
 #endif
 
-#include <pios_usart_priv.h>
 
 #if defined(PIOS_INCLUDE_GPS)
+
+#include <pios_usart_priv.h>
+
 /*
  * GPS USART
  */
@@ -165,9 +150,9 @@ uint32_t pios_com_telem_rf_id;
 
 #if defined(PIOS_INCLUDE_VIDEO)
 
-#include <pios_video_priv.h>
+#include <pios_video.h>
 
-static const struct pios_video_cfg pios_osd_cfg = {
+static const struct pios_video_cfg pios_video_cfg = {
 	.mask = {
 		.regs = SPI3,
 		.remap = GPIO_AF_SPI3,
@@ -221,6 +206,7 @@ static const struct pios_video_cfg pios_osd_cfg = {
 					.DMA_Channel            = DMA_Channel_0,
 					.DMA_PeripheralBaseAddr = (uint32_t) & (SPI3->DR),
 					.DMA_DIR                = DMA_DIR_MemoryToPeripheral,
+					.DMA_BufferSize 		= BUFFER_LINE_LENGTH,
 					.DMA_PeripheralInc      = DMA_PeripheralInc_Disable,
 					.DMA_MemoryInc          = DMA_MemoryInc_Enable,
 					.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord,
@@ -265,16 +251,6 @@ static const struct pios_video_cfg pios_osd_cfg = {
 			},
 		},
 		.slave_count = 1,
-		.ssel = { {
-			.gpio = GPIOD,
-			.init = {
-				.GPIO_Pin = GPIO_Pin_2,
-				.GPIO_Speed = GPIO_Speed_50MHz,
-				.GPIO_Mode  = GPIO_Mode_OUT,
-				.GPIO_OType = GPIO_OType_PP,
-				.GPIO_PuPd = GPIO_PuPd_UP
-			},
-		}, },
 	},
 	.level = {
 			.regs = SPI1,
@@ -293,7 +269,7 @@ static const struct pios_video_cfg pios_osd_cfg = {
 			.use_crc = false,
 			.dma = {
 				.irq = {
-					.flags   = (DMA_IT_TCIF0 | DMA_IT_TEIF0 | DMA_IT_HTIF0),
+					.flags   = (DMA_IT_TCIF5 | DMA_IT_TEIF0 | DMA_IT_HTIF0),
 					.init    = {
 						.NVIC_IRQChannel                   = DMA2_Stream0_IRQn,
 						.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGH,
@@ -327,6 +303,7 @@ static const struct pios_video_cfg pios_osd_cfg = {
 		                .DMA_Channel            = DMA_Channel_3,
 						.DMA_PeripheralBaseAddr = (uint32_t)&(SPI1->DR),
 						.DMA_DIR                = DMA_DIR_MemoryToPeripheral,
+						.DMA_BufferSize 		= BUFFER_LINE_LENGTH,
 						.DMA_PeripheralInc      = DMA_PeripheralInc_Disable,
 						.DMA_MemoryInc          = DMA_MemoryInc_Enable,
 						.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord,
@@ -334,7 +311,7 @@ static const struct pios_video_cfg pios_osd_cfg = {
 						.DMA_Mode               = DMA_Mode_Normal,
 						.DMA_Priority           = DMA_Priority_High,
 						.DMA_FIFOMode           = DMA_FIFOMode_Disable,
-		                /* .DMA_FIFOThreshold */
+						.DMA_FIFOThreshold      = DMA_FIFOThreshold_Full,
 		                .DMA_MemoryBurst        = DMA_MemoryBurst_Single,
 		                .DMA_PeripheralBurst    = DMA_PeripheralBurst_Single,
 					},
@@ -371,16 +348,6 @@ static const struct pios_video_cfg pios_osd_cfg = {
 				},
 			},
 			.slave_count = 1,
-			.ssel = { {
-				.gpio = GPIOB,
-				.init = {
-					.GPIO_Pin   = GPIO_Pin_6,
-					.GPIO_Speed = GPIO_Speed_50MHz,
-					.GPIO_Mode  = GPIO_Mode_OUT,
-					.GPIO_OType = GPIO_OType_PP,
-					.GPIO_PuPd = GPIO_PuPd_UP
-				},
-			}, },
 
 	},
 	.hsync = {
@@ -403,134 +370,49 @@ static const struct pios_video_cfg pios_osd_cfg = {
 			.EXTI_LineCmd = ENABLE,
 		},
 	},
+	.hsync_io = {
+		.gpio = PIOS_VIDEO_HSYNC_GPIO_PORT,
+		.init = {
+			.GPIO_Pin   = PIOS_VIDEO_HSYNC_GPIO_PIN,
+			.GPIO_Speed = GPIO_Speed_50MHz,
+			.GPIO_Mode  = GPIO_Mode_IN,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd = GPIO_PuPd_NOPULL
+		},
+	},
+	.vsync_io = {
+		.gpio = PIOS_VIDEO_VSYNC_GPIO_PORT,
+		.init = {
+			.GPIO_Pin   = PIOS_VIDEO_VSYNC_GPIO_PIN,
+			.GPIO_Speed = GPIO_Speed_50MHz,
+			.GPIO_Mode  = GPIO_Mode_IN,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd = GPIO_PuPd_NOPULL
+		},
+	},
+	.hsync_irq = {
+		.init = {
+				.NVIC_IRQChannel = PIOS_VIDEO_HSYNC_IRQn,
+				.NVIC_IRQChannelPreemptionPriority = PIOS_VIDEO_HSYNC_PRIO,
+				.NVIC_IRQChannelSubPriority = 0,
+				.NVIC_IRQChannelCmd = ENABLE,
+		},
+	},
+	.vsync_irq = {
+		.init = {
+				.NVIC_IRQChannel = PIOS_VIDEO_VSYNC_IRQn,
+				.NVIC_IRQChannelPreemptionPriority = PIOS_VIDEO_VSYNC_PRIO,
+				.NVIC_IRQChannelSubPriority = 0,
+				.NVIC_IRQChannelCmd = ENABLE,
+		},
+	},
 };
 
 
 
-#endif
-
-void SPI_Config(void)
-{
-	SPI_InitTypeDef				SPI_InitStructure;
-
-	GPIO_InitTypeDef GPIO_InitStructure;
-	  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-	  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-	  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-
-	GPIO_PinAFConfig(GPIOC,GPIO_PinSource10,GPIO_AF_SPI3);
-	GPIO_PinAFConfig(GPIOC,GPIO_PinSource12,GPIO_AF_SPI3);
-	GPIO_PinAFConfig(GPIOB,GPIO_PinSource3,GPIO_AF_SPI1);
-	GPIO_PinAFConfig(GPIOB,GPIO_PinSource4,GPIO_AF_SPI1);
-
-	//SPI1 SLAVE FRAMEBUFFER
-	//SPI1 MISO
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
-	GPIO_Init(GPIOB, &GPIO_InitStructure);
-
-	//SPI1 SCK
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
-	GPIO_Init(GPIOB, &GPIO_InitStructure);
-
-	//SPI3 MASTER MASKBUFFER
-	//SPI3 SCK
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
-	GPIO_Init(GPIOC, &GPIO_InitStructure);
-
-	//SPI3 MOSI
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;
-	GPIO_Init(GPIOC, &GPIO_InitStructure);
-
-	//Set up SPI port.  This acts as a pixel buffer.
-	SPI_InitStructure.SPI_Direction = SPI_Direction_1Line_Tx;
-	SPI_InitStructure.SPI_Mode = SPI_Mode_Slave;
-	SPI_InitStructure.SPI_DataSize = SPI_DataSize_16b;
-	SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
-	SPI_InitStructure.SPI_CPHA = SPI_CPHA_2Edge;
-	SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
-	SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_2;
-	SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
-	SPI_InitStructure.SPI_CRCPolynomial = 7;
-	SPI_Init(SPI1, &SPI_InitStructure);
-
-	//Set up SPI port.  This acts as a mask buffer.
-	SPI_InitStructure.SPI_Direction = SPI_Direction_1Line_Tx;
-	SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
-	SPI_InitStructure.SPI_DataSize = SPI_DataSize_16b;
-	SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
-	SPI_InitStructure.SPI_CPHA = SPI_CPHA_2Edge;
-	SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
-	SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_4; // 27 MHz/4
-	SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
-	SPI_InitStructure.SPI_CRCPolynomial = 7;
-	SPI_Init(SPI3, &SPI_InitStructure);
-
-	SPI_Cmd(SPI1, ENABLE);
-	SPI_Cmd(SPI3, ENABLE);
-}
 
 void PIOS_VIDEO_DMA_Handler(void);
 void DMA1_Stream5_IRQHandler(void) __attribute__ ((alias("PIOS_VIDEO_DMA_Handler")));
-
-
-void DMA_Config(void)
-{
-	NVIC_InitTypeDef			NVIC_InitStructure;
-	//Set up the DMA to keep the SPI port fed from the framebuffer.
-
-	DMA_DeInit(DMA2_Stream5);
-	DMA_InitStructure.DMA_Channel = DMA_Channel_3;
-	DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(SPI1->DR);
-	DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)disp_buffer_level[0];
-	DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
-	DMA_InitStructure.DMA_Priority = DMA_Priority_Low;
-	DMA_InitStructure.DMA_BufferSize = BUFFER_LINE_LENGTH;
-	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
-	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
-	DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
-	DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
-	DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;
-	DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
-	DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
-	DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
-	DMA_Init(DMA2_Stream5, &DMA_InitStructure);
-
-	//Set up the DMA to keep the SPI port fed from the framebuffer.
-	DMA_DeInit(DMA1_Stream5);
-	DMA_InitStructure2.DMA_Channel = DMA_Channel_0;
-	DMA_InitStructure2.DMA_PeripheralBaseAddr = (uint32_t)&(SPI3->DR);
-	DMA_InitStructure2.DMA_Memory0BaseAddr = (uint32_t)disp_buffer_mask[0];
-	DMA_InitStructure2.DMA_DIR = DMA_DIR_MemoryToPeripheral;
-	DMA_InitStructure2.DMA_Priority = DMA_Priority_Low;
-	DMA_InitStructure2.DMA_BufferSize = BUFFER_LINE_LENGTH;
-	DMA_InitStructure2.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-	DMA_InitStructure2.DMA_MemoryInc = DMA_MemoryInc_Enable;
-	DMA_InitStructure2.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
-	DMA_InitStructure2.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
-	DMA_InitStructure2.DMA_Mode = DMA_Mode_Normal;
-	DMA_InitStructure2.DMA_FIFOMode = DMA_FIFOMode_Disable;
-	DMA_InitStructure2.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
-	DMA_InitStructure2.DMA_MemoryBurst = DMA_MemoryBurst_Single;
-	DMA_InitStructure2.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
-	DMA_Init(DMA1_Stream5, &DMA_InitStructure2);
-	//
-
-	/* Trigger interrupt when for half conversions too to indicate double buffer */
-	//DMA_ITConfig(DMA1_Stream5, DMA_IT_TC, ENABLE);
-	DMA_ClearFlag(DMA1_Stream5,DMA_FLAG_TCIF5);
-	DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_TCIF5);
-	SPI_I2S_DMACmd(SPI1, SPI_I2S_DMAReq_Tx, ENABLE);
-	SPI_I2S_DMACmd(SPI3, SPI_I2S_DMAReq_Tx, ENABLE);
-	/* Configure DMA interrupt */
-	/*NVIC_InitStructure.NVIC_IRQChannel = DMA1_Stream5_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGHEST;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);*/
-}
-
 
 /**
  * @brief Interrupt for half and full buffer transfer
@@ -553,6 +435,9 @@ void PIOS_VIDEO_DMA_Handler(void)
 
 	}
 }
+
+#endif
+
 
 static void Clock(uint32_t spektrum_id);
 
@@ -777,11 +662,8 @@ void PIOS_Board_Init(void) {
 		PIOS_DEBUG_Assert(0);
 	}*/
 
-	//Setup the SPI port (video is output by its shift register).
-	SPI_Config();
 
-	//Setup the DMA to keep the spi port fed
-	DMA_Config();
+	PIOS_Video_Init(&pios_video_cfg);
 
 	//uint8_t * rx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_HKOSD_RX_BUF_LEN);
 
@@ -792,10 +674,6 @@ void PIOS_Board_Init(void) {
 
 	fifoBuf_init(&rx,RxBuffer3,sizeof(RxBuffer3));
 
-
-    initLine();
-
-	//fillFrameBuffer();
 }
 
 uint16_t supv_timer=0;

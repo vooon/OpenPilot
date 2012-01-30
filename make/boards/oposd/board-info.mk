@@ -5,7 +5,7 @@ HW_TYPE             := 0x00
 
 MCU                 := cortex-m4
 CHIP                := STM32F407VGT6
-BOARD               := STM32103CB_OPOSD
+BOARD               := STM32F4xx_OPOSD
 MODEL               := HD
 MODEL_SUFFIX        := 
 

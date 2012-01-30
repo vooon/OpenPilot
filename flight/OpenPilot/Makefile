@@ -60,13 +60,12 @@ FLASH_TOOL = OPENOCD
 
 
 # List of modules to include
+
 OPTMODULES = CameraStab GPS
 MODULES = Actuator ManualControl Altitude AHRSComms Stabilization Guidance FirmwareIAP
 PYMODULES = FlightPlan
-#MODULES = Telemetry Example
-#MODULES = Telemetry MK/MKSerial
-#MODULES = Telemetry
 #MODULES += Osd/OsdEtStd
+#MODULES += Guidance
 MODULES += Telemetry
 
 # Paths
@@ -177,25 +176,24 @@ SRC += $(PIOSSTM32F10X)/pios_gpio.c
 SRC += $(PIOSSTM32F10X)/pios_exti.c
 SRC += $(PIOSSTM32F10X)/pios_rtc.c
 SRC += $(PIOSSTM32F10X)/pios_wdg.c
+SRC += $(PIOSSTM32F10X)/pios_iap.c
 
 
 # PIOS USB related files (seperated to make code maintenance more easy)
-SRC += $(PIOSSTM32F10X)/pios_usb.c
-SRC += $(PIOSSTM32F10X)/pios_usbhook.c
 SRC += $(PIOSSTM32F10X)/pios_usb_hid.c
+SRC += $(PIOSSTM32F10X)/pios_usb_hid_desc.c
+#SRC += $(PIOSSTM32F10X)/pios_usb_hid_endp.c
 SRC += $(PIOSSTM32F10X)/pios_usb_hid_istr.c
+SRC += $(PIOSSTM32F10X)/pios_usb_hid_prop.c
 SRC += $(PIOSSTM32F10X)/pios_usb_hid_pwr.c
-SRC += $(OPSYSTEM)/pios_usb_board_data.c
-SRC += $(PIOSCOMMON)/pios_usb_desc_hid_only.c
+#SRC += $(PIOSSTM32F10X)/pios_bmp085.c
 
 ## PIOS Hardware (Common)
 SRC += $(PIOSCOMMON)/pios_crc.c
 SRC += $(PIOSCOMMON)/pios_sdcard.c
 SRC += $(PIOSCOMMON)/pios_com.c
-SRC += $(PIOSCOMMON)/pios_bmp085.c
 SRC += $(PIOSCOMMON)/pios_hcsr04.c
 SRC += $(PIOSCOMMON)/pios_i2c_esc.c
-SRC += $(PIOSCOMMON)/pios_iap.c
 SRC += $(PIOSCOMMON)/pios_bl_helper.c
 SRC += $(PIOSCOMMON)/pios_rcvr.c
 SRC += $(PIOSCOMMON)/printf-stdarg.c

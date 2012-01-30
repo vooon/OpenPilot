@@ -44,7 +44,7 @@ void EXTI15_10_IRQHandler(void)
 
 #if defined(PIOS_INCLUDE_FREERTOS)
 	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
-#endif
+#endif /* PIOS_INCLUDE_FREERTOS */
 
 #if defined(PIOS_INCLUDE_VIDEO)
 	if (EXTI_GetITStatus(PIOS_VIDEO_SYNC_EXTI_LINE) != RESET) {
@@ -56,27 +56,28 @@ void EXTI15_10_IRQHandler(void)
 #if defined(PIOS_INCLUDE_BMP085)
 	if (EXTI_GetITStatus(PIOS_BMP085_EOC_EXTI_LINE) != RESET) {
 		/* Read the ADC Value */
-#if defined(PIOS_INCLUDE_FREERTOS)
-		xSemaphoreGiveFromISR(PIOS_BMP085_EOC, &xHigherPriorityTaskWoken);
-#else
-		PIOS_BMP085_EOC=1;
-#endif
+ #if defined(PIOS_INCLUDE_FREERTOS)
+//		xSemaphoreGiveFromISR(PIOS_BMP085_EOC, &xHigherPriorityTaskWoken);
+ #else
+//TOOD: Update BMP driver		PIOS_BMP085_EOC=1;
+ #endif /* PIOS_INCLUDE_FREERTOS */
 
 		/* Clear the EXTI line pending bit */
 		EXTI_ClearITPendingBit(PIOS_BMP085_EOC_EXTI_LINE);
 	}
-#endif
+#endif /* PIOS_INCLUDE_BMP085 */
 
 #if defined(PIOS_INCLUDE_FREERTOS)
 	/* Yield From ISR if needed */
 	portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
-#endif
+#endif /* PIOS_INCLUDE_FREERTOS */
 }
 
 /**
 * Handle external lines 9 to 5 interrupt requests
 */
 extern void PIOS_HMC5843_IRQHandler(void);
+extern void PIOS_HMC5883_IRQHandler(void);
 void EXTI9_5_IRQHandler(void)
 {
 #if defined(PIOS_INCLUDE_HMC5843)
@@ -84,22 +85,51 @@ void EXTI9_5_IRQHandler(void)
 		PIOS_HMC5843_IRQHandler();
 		EXTI_ClearITPendingBit(PIOS_HMC5843_DRDY_EXTI_LINE);
 	}
-#endif
+#elif defined(PIOS_INCLUDE_HMC5883)
+	if (EXTI_GetITStatus(PIOS_HMC5883_DRDY_EXTI_LINE) != RESET) {
+		PIOS_HMC5883_IRQHandler();
+		EXTI_ClearITPendingBit(PIOS_HMC5883_DRDY_EXTI_LINE);
+	}
+#endif /* PIOS_INCLUDE_HMC5843 */
 }
 
 /**
 * Handle external line 4 interrupt requests
 */
-#if defined(PIOS_INCLUDE_USB)
+#if defined(PIOS_INCLUDE_IMU3000)
+extern void PIOS_IMU3000_IRQHandler();
+#endif
+
 void EXTI4_IRQHandler(void)
 {
+#if defined(PIOS_INCLUDE_USB)
 	if (EXTI_GetITStatus(PIOS_USB_DETECT_EXTI_LINE) != RESET) {
 		/* Clear the EXTI line pending bit */
 		EXTI_ClearITPendingBit(PIOS_USB_DETECT_EXTI_LINE);
 	}
+#endif /* PIOS_INCLUDE_USB */
+#if defined (PIOS_INCLUDE_BMA180)
+	if (EXTI_GetITStatus(PIOS_BMA180_DRDY_EXTI_LINE) != RESET) {
+		PIOS_BMA180_IRQHandler();
+		EXTI_ClearITPendingBit(PIOS_BMA180_DRDY_EXTI_LINE);
+	}
+#endif
 }
+
+#if defined(PIOS_INCLUDE_IMU3000)
+extern void PIOS_IMU3000_IRQHandler();
 #endif
-#endif
+void EXTI1_IRQHandler(void)
+{
+#if defined(PIOS_INCLUDE_IMU3000)
+	if (EXTI_GetITStatus(PIOS_IMU3000_INT_EXTI_LINE) != RESET)
+	{
+		PIOS_IMU3000_IRQHandler();
+		EXTI_ClearITPendingBit(PIOS_IMU3000_INT_EXTI_LINE);
+	}
+#endif /* PIOS_INCLUDE_IMU3000 */
+}
+#endif /* PIOS_INCLUDE_EXTI */
 
 /**
   * @}

@@ -37,6 +37,24 @@
 // *****************************************************************************
 #if defined(PIOS_INCLUDE_VIDEO)
 
+
+#include <pios.h>
+#include <pios_stm32.h>
+#include <pios_spi_priv.h>
+
+struct pios_video_cfg {
+	const struct pios_spi_cfg mask;
+	const struct pios_spi_cfg level;
+	struct stm32_exti hsync;
+	struct stm32_exti vsync;
+	struct stm32_gpio hsync_io;
+	struct stm32_gpio vsync_io;
+	struct stm32_irq hsync_irq;
+	struct stm32_irq vsync_irq;
+};
+
+extern void PIOS_Video_Init(const struct pios_video_cfg * cfg);
+
 // Text
 #define TEXT_CHAR_HEIGHT 8
 #define TEXT_INVERTED_OFF 0
@@ -247,9 +265,6 @@ extern volatile uint16_t gActivePixmapLine;
 
 extern volatile uint8_t gUpdateScreenData;
 extern volatile uint8_t gLineType;
-
-void initLine();
-void updateLine();
 
 void setAttitudeOsd(int16_t pitch, int16_t roll, int16_t yaw);
 void setGpsOsd(uint8_t status, int32_t lat, int32_t lon, float alt, float spd);

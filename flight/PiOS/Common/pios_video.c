@@ -37,6 +37,25 @@
 
 extern xSemaphoreHandle osdSemaphore;
 
+static const struct pios_video_cfg * dev_cfg;
+
+static uint16_t angleA=0;
+static int16_t angleB=90;
+static int16_t angleC=0;
+static int16_t sum=2;
+
+static int16_t m_pitch=0;
+static int16_t m_roll=0;
+static int16_t m_yaw=0;
+static int16_t m_batt=0;
+static int16_t m_alt=0;
+
+static uint8_t m_gpsStatus=0;
+static int32_t m_gpsLat=0;
+static int32_t m_gpsLon=0;
+static float m_gpsAlt=0;
+static float m_gpsSpd=0;
+
 
 // Define the buffers.
 // For 256x192 pixel mode:
@@ -66,16 +85,6 @@ uint16_t *disp_buffer_level;
 uint16_t *disp_buffer_mask;
 
 
-extern GPIO_InitTypeDef			GPIO_InitStructure;
-extern TIM_TimeBaseInitTypeDef		TIM_TimeBaseStructure;
-extern TIM_OCInitTypeDef			TIM_OCInitStructure;
-extern NVIC_InitTypeDef			NVIC_InitStructure;
-extern SPI_InitTypeDef				SPI_InitStructure;
-extern DMA_InitTypeDef				DMA_InitStructure;
-extern DMA_InitTypeDef				DMA_InitStructure2;
-extern USART_InitTypeDef			USART_InitStructure;
-extern EXTI_InitTypeDef			EXTI_InitStructure;
-
 volatile uint8_t gLineType = LINE_TYPE_UNKNOWN;
 volatile uint8_t gUpdateScreenData = 0;
 
@@ -85,8 +94,6 @@ volatile uint16_t line=0;
 volatile uint16_t Vsync_update=0;
 
 TTime time;
-
-
 
 // simple routines
 
@@ -275,10 +282,8 @@ uint16_t mirror(uint16_t source)
 
 void clearGraphics() {
 	for (uint16_t x = 0; x < GRAPHICS_WIDTH*GRAPHICS_HEIGHT; ++x) {
-	  //for (uint16_t y = 0; y < GRAPHICS_HEIGHT; ++y) {
 		  draw_buffer_level[x] = 0x0000;
 		  draw_buffer_mask[x] = 0x0000;
-		//}
 	}
 }
 
@@ -1674,7 +1679,6 @@ void write_string_formatted(char *str, unsigned int x, unsigned int y, unsigned 
 
 void drawAttitude(uint16_t x, uint16_t y, int16_t pitch, int16_t roll, uint16_t size)
 {
-	PIOS_LED_On(LED2);
 	int16_t a = mySin(roll+360);
 	int16_t b = myCos(roll+360);
 	int16_t c = mySin(roll+90+360)*5/100;
@@ -1717,7 +1721,7 @@ void drawAttitude(uint16_t x, uint16_t y, int16_t pitch, int16_t roll, uint16_t 
 	//drawLine((x)-1-(size/2+4), (y)-1, (x)-1 - (size/2+1), (y)-1);
 	//drawLine((x)-1+(size/2+4), (y)-1, (x)-1 + (size/2+1), (y)-1);
 	write_line_outlined((x)-1-(size/2+4), (y)-1, (x)-1 - (size/2+1), (y)-1,0,0,0,1);
-	//write_line_outlined((x)-1-(size/2+4), (y)-1, (x)-1 - (size/2+1), (y)-1,0,0,0,1);
+	write_line_outlined((x)-1+(size/2+4), (y)-1, (x)-1 + (size/2+1), (y)-1,0,0,0,1);
 
 	//30
 	//drawLine((x)-1+indi30x1, (y)-1-indi30y1, (x)-1 + indi30x2, (y)-1 - indi30y2);
@@ -1752,7 +1756,6 @@ void drawAttitude(uint16_t x, uint16_t y, int16_t pitch, int16_t roll, uint16_t 
 	//write_circle_outlined(x-1, y-1, 5,0,0,0,1);
 	//drawCircle(x-1, y-1, size/2+4);
 	//write_circle_outlined(x-1, y-1, size/2+4,0,0,0,1);
-	PIOS_LED_Off(LED2);
 }
 
 void drawBattery(uint16_t x, uint16_t y, uint8_t battery, uint16_t size)
@@ -1760,7 +1763,7 @@ void drawBattery(uint16_t x, uint16_t y, uint8_t battery, uint16_t size)
 	int i=0;
 	int batteryLines;
 	//top
-	drawLine((x)-1+(size/2-size/4), (y)-1, (x)-1 + (size/2+size/4), (y)-1);
+	/*drawLine((x)-1+(size/2-size/4), (y)-1, (x)-1 + (size/2+size/4), (y)-1);
 	drawLine((x)-1+(size/2-size/4), (y)-1+1, (x)-1 + (size/2+size/4), (y)-1+1);
 
 	drawLine((x)-1, (y)-1+2, (x)-1 + size, (y)-1+2);
@@ -1770,11 +1773,11 @@ void drawBattery(uint16_t x, uint16_t y, uint8_t battery, uint16_t size)
 	drawLine((x)-1, (y)-1+2, (x)-1, (y)-1+size*3);
 
 	//right
-	drawLine((x)-1+size, (y)-1+2, (x)-1+size, (y)-1+size*3);
+	drawLine((x)-1+size, (y)-1+2, (x)-1+size, (y)-1+size*3);*/
 
-	/*write_hline_lm((x)-1+(size/2-size/4),(x)-1 + (size/2+size/4),(y)-1,1,1);
+	write_hline_lm((x)-1+(size/2-size/4),(x)-1 + (size/2+size/4),(y)-1,1,1);
 	write_hline_lm((x)-1+(size/2-size/4),(x)-1 + (size/2+size/4),(y)-1+1,1,1);
-	write_rectangle_outlined((x)-1, (y)-1+2,size,size*3,0,1);*/
+	write_rectangle_outlined((x)-1, (y)-1+2,size,size*3,0,1);
 
 	batteryLines = battery*(size*3-2)/100;
 	for(i=0;i<batteryLines;i++)
@@ -1782,24 +1785,6 @@ void drawBattery(uint16_t x, uint16_t y, uint8_t battery, uint16_t size)
 		drawLine((x)-1, (y)-1+size*3-i, (x)-1 + size, (y)-1+size*3-i);
 	}
 }
-
-
-static uint16_t angleA=0;
-static int16_t angleB=90;
-static int16_t angleC=0;
-static int16_t sum=2;
-
-static int16_t m_pitch=0;
-static int16_t m_roll=0;
-static int16_t m_yaw=0;
-static int16_t m_batt=0;
-static int16_t m_alt=0;
-
-static uint8_t m_gpsStatus=0;
-static int32_t m_gpsLat=0;
-static int32_t m_gpsLon=0;
-static float m_gpsAlt=0;
-static float m_gpsSpd=0;
 
 void setAttitudeOsd(int16_t pitch, int16_t roll, int16_t yaw)
 {
@@ -2094,7 +2079,6 @@ void hud_draw_linear_compass(int v, int range, int width, int x, int y, int mint
 }
 
 
-
 //main draw function
 void updateGraphics() {
 
@@ -2131,7 +2115,7 @@ void updateGraphics() {
 	write_circle_outlined(GRAPHICS_WIDTH_REAL/2,GRAPHICS_HEIGHT_REAL/2,30,0,0,0,1);*/
 	write_string("Hello OP-OSD", 60, 12, 1, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, 0);
 	char temp[20]={0};
-	sprintf(temp,"S%02d,La%02d,Lo%02d",m_gpsStatus,m_gpsLat,m_gpsLon);
+	sprintf(temp,"S%02d,La%02d,Lo%02d",(int)m_gpsStatus,(int)m_gpsLat,(int)m_gpsLon);
 	//printTextFB(x,y,temp);
 	write_string(temp, 20, 28, 1, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, 0);
 
@@ -2192,57 +2176,8 @@ void updateGraphics() {
 	write_vline( draw_buffer_mask,GRAPHICS_WIDTH_REAL-1,0,GRAPHICS_HEIGHT_REAL-1,0);
 }
 
-
-void initLine() {
-	GPIO_InitTypeDef GPIO_InitStructure;
-	EXTI_InitTypeDef EXTI_InitStructure;
-	NVIC_InitTypeDef NVIC_InitStructure;
-
-	/* Enable GPIO clock */
-	//RCC_APB2PeriphClockCmd(PIOS_VIDEO_SYNC_CLK | RCC_APB2Periph_AFIO, ENABLE);
-	//RCC_AHB1PeriphClockCmd(PIOS_VIDEO_SYNC_CLK, ENABLE);
-	SYSCFG_EXTILineConfig(PIOS_VIDEO_VSYNC_EXTI_PORT_SOURCE, PIOS_VIDEO_VSYNC_EXTI_PIN_SOURCE);
-	SYSCFG_EXTILineConfig(PIOS_VIDEO_HSYNC_EXTI_PORT_SOURCE, PIOS_VIDEO_HSYNC_EXTI_PIN_SOURCE);
-
-	/* Configure Video Sync pin input floating */
-	GPIO_InitStructure.GPIO_Pin = PIOS_VIDEO_VSYNC_GPIO_PIN;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz,
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-	GPIO_Init(PIOS_VIDEO_VSYNC_GPIO_PORT, &GPIO_InitStructure);
-
-	GPIO_InitStructure.GPIO_Pin = PIOS_VIDEO_HSYNC_GPIO_PIN;
-	GPIO_Init(PIOS_VIDEO_HSYNC_GPIO_PORT, &GPIO_InitStructure);
-
-	/* Configure the Video Line interrupt */
-	EXTI_InitStructure.EXTI_Line = PIOS_VIDEO_VSYNC_EXTI_LINE;
-	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
-	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
-	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
-	EXTI_Init(&EXTI_InitStructure);
-
-	EXTI_InitStructure.EXTI_Line = PIOS_VIDEO_HSYNC_EXTI_LINE;
-	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising_Falling;
-	EXTI_Init(&EXTI_InitStructure);
-
-	/* Enable and set EXTI Interrupt to the lowest priority */
-	NVIC_InitStructure.NVIC_IRQChannel = PIOS_VIDEO_VSYNC_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = PIOS_VIDEO_VSYNC_PRIO;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);
-
-	NVIC_InitStructure.NVIC_IRQChannel = PIOS_VIDEO_HSYNC_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = PIOS_VIDEO_HSYNC_PRIO;
-	NVIC_Init(&NVIC_InitStructure);
-
-    draw_buffer_level = buffer0_level;
-    draw_buffer_mask = buffer0_mask;
-    disp_buffer_level = buffer1_level;
-    disp_buffer_mask = buffer1_mask;
-}
-
 void PIOS_Hsync_ISR() {
+	//PIOS_LED_Toggle(LED2);
 	//uint16_t currLine = gActivePixmapLine;
 	//PIOS_LED_Off(LED3);
 	/*for(int g=0;g<130;g++)
@@ -2256,24 +2191,13 @@ void PIOS_Hsync_ISR() {
 			//PIOS_LED_On(LED2);
 			if(gLineType == LINE_TYPE_GRAPHICS)
 			{
-				for(int g=0;g<100;g++)
+				for(int g=0;g<140;g++)
 				{
 					asm("nop");
 				}
 				// Activate new line
-				//PIOS_LED_On(LED3);
-				//if(DMA_GetFlagStatus(DMA1_Stream5,DMA_FLAG_TCIF5))
-				//if(DMA_GetITStatus(DMA1_Stream5,DMA_IT_TCIF5))
-
-				DMA_Init(DMA2_Stream5, &DMA_InitStructure);
-				DMA_Init(DMA1_Stream5, &DMA_InitStructure2);
-				//SPI_I2S_DMACmd(SPI1, SPI_I2S_DMAReq_Tx, ENABLE);
-				//SPI_I2S_DMACmd(SPI3, SPI_I2S_DMAReq_Tx, ENABLE);
-				DMA_Cmd(DMA2_Stream5, ENABLE);
-				DMA_Cmd(DMA1_Stream5, ENABLE);
-				//DMA_ClearFlag(DMA1_Stream5,DMA_FLAG_TCIF5);
-				//DMA_ITConfig(DMA1_Channel3, DMA_IT_TC, ENABLE);
-				//DMA_ClearITPendingBit(DMA1_Stream5,DMA_IT_TCIF5);
+				DMA_Cmd(dev_cfg->level.dma.tx.channel, ENABLE);
+				DMA_Cmd(dev_cfg->mask.dma.tx.channel, ENABLE);
 			}
 		//}
 	}	else
@@ -2297,27 +2221,23 @@ void PIOS_Hsync_ISR() {
 			if(gLineType == LINE_TYPE_GRAPHICS)
 			{
 				// Load new line
-				//PIOS_LED_Off(LED3);
-				DMA_DeInit(DMA1_Stream5);
-				DMA_DeInit(DMA2_Stream5);
-				//DMA_Cmd(DMA1_Stream5, DISABLE);
-				//DMA_Cmd(DMA2_Stream5, DISABLE);
-				//SPI_I2S_DMACmd(SPI1, SPI_I2S_DMAReq_Tx, DISABLE);
-				//SPI_I2S_DMACmd(SPI3, SPI_I2S_DMAReq_Tx, DISABLE);
-
-				//DMA_ClearFlag(DMA1_Stream5,DMA_FLAG_TCIF5);
-				DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)&disp_buffer_level[line];
-				DMA_InitStructure2.DMA_Memory0BaseAddr = (uint32_t)&disp_buffer_mask[line];
+				DMA_Cmd(dev_cfg->mask.dma.tx.channel, DISABLE);
+				DMA_Cmd(dev_cfg->level.dma.tx.channel, DISABLE);
+				DMA_MemoryTargetConfig(dev_cfg->level.dma.tx.channel,(uint32_t)&disp_buffer_level[line],DMA_Memory_0);
+				DMA_MemoryTargetConfig(dev_cfg->mask.dma.tx.channel,(uint32_t)&disp_buffer_mask[line],DMA_Memory_0);
+				DMA_ClearFlag(dev_cfg->mask.dma.tx.channel,DMA_FLAG_TCIF5); // <-- TODO: HARDCODED
+				DMA_ClearFlag(dev_cfg->level.dma.tx.channel,DMA_FLAG_TCIF5); // <-- TODO: HARDCODED
+				DMA_SetCurrDataCounter(dev_cfg->level.dma.tx.channel,BUFFER_LINE_LENGTH);
+				DMA_SetCurrDataCounter(dev_cfg->mask.dma.tx.channel,BUFFER_LINE_LENGTH);
 			}
 		}
 		//}
-		//load next line
-		// We save some time in beginning of line by pre-calculating next type.
 	}
 }
 
 void PIOS_Vsync_ISR() {
 	static portBASE_TYPE xHigherPriorityTaskWoken;
+	//PIOS_LED_Toggle(LED3);
 
 	//if(gActiveLine > 200)
 	{
@@ -2329,7 +2249,6 @@ void PIOS_Vsync_ISR() {
 			Vsync_update=0;
 			xSemaphoreGiveFromISR(osdSemaphore, &xHigherPriorityTaskWoken);
 		}
-		//PIOS_LED_Off(LED2);
 	}
 }
 
@@ -2343,5 +2262,98 @@ void updateOnceEveryFrame() {
 	updateGraphics();
 }
 
+void PIOS_Video_Init(const struct pios_video_cfg * cfg){
+
+	dev_cfg = cfg; // store config before enabling interrupt
+
+	if (cfg->mask.remap) {
+		GPIO_PinAFConfig(cfg->mask.sclk.gpio,
+				__builtin_ctz(cfg->mask.sclk.init.GPIO_Pin),
+				cfg->mask.remap);
+		GPIO_PinAFConfig(cfg->mask.mosi.gpio,
+				__builtin_ctz(cfg->mask.mosi.init.GPIO_Pin),
+				cfg->mask.remap);
+	}
+	if (cfg->level.remap)
+	{
+		GPIO_PinAFConfig(cfg->level.sclk.gpio,
+				GPIO_PinSource3,
+				//__builtin_ctz(cfg->mask.sclk.init.GPIO_Pin),
+				cfg->level.remap);
+		GPIO_PinAFConfig(cfg->level.miso.gpio,
+				GPIO_PinSource4,
+				//__builtin_ctz(cfg->level.miso.init.GPIO_Pin),
+				cfg->level.remap);
+	}
+
+	/* SPI3 MASTER MASKBUFFER */
+	GPIO_Init(cfg->mask.sclk.gpio, (GPIO_InitTypeDef*)&(cfg->mask.sclk.init));
+	GPIO_Init(cfg->mask.mosi.gpio, (GPIO_InitTypeDef*)&(cfg->mask.mosi.init));
+
+	/* SPI1 SLAVE FRAMEBUFFER */
+	GPIO_Init(cfg->level.sclk.gpio, (GPIO_InitTypeDef*)&(cfg->level.sclk.init));
+	GPIO_Init(cfg->level.miso.gpio, (GPIO_InitTypeDef*)&(cfg->level.miso.init));
+
+	/* Initialize the SPI block */
+	SPI_Init(cfg->level.regs, (SPI_InitTypeDef*)&(cfg->level.init));
+	SPI_Init(cfg->mask.regs, (SPI_InitTypeDef*)&(cfg->mask.init));
+
+	/* Enable SPI */
+	SPI_Cmd(cfg->level.regs, ENABLE);
+	SPI_Cmd(cfg->mask.regs, ENABLE);
+
+	/* Configure DMA for SPI Tx MASTER */
+	DMA_Cmd(cfg->mask.dma.tx.channel, DISABLE);
+	DMA_Init(cfg->mask.dma.tx.channel, (DMA_InitTypeDef*)&(cfg->mask.dma.tx.init));
+
+	/* Configure DMA for SPI Tx SLAVE */
+	DMA_Cmd(cfg->level.dma.tx.channel, DISABLE);
+	DMA_Init(cfg->level.dma.tx.channel, (DMA_InitTypeDef*)&(cfg->level.dma.tx.init));
+
+
+	/* Trigger interrupt when for half conversions too to indicate double buffer */
+	//DMA_ITConfig(DMA1_Stream5, DMA_IT_TC, ENABLE);
+	DMA_ClearFlag(cfg->mask.dma.tx.channel,DMA_FLAG_TCIF5);
+	DMA_ClearITPendingBit(cfg->mask.dma.tx.channel, DMA_IT_TCIF5);
+
+	DMA_ClearFlag(cfg->level.dma.tx.channel,DMA_FLAG_TCIF5);
+	DMA_ClearITPendingBit(cfg->level.dma.tx.channel, DMA_IT_TCIF5);
+
+	/* Configure DMA interrupt */
+	/*NVIC_InitStructure.NVIC_IRQChannel = DMA1_Stream5_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGHEST;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);*/
+
+	/* Enable SPI interrupts to DMA */
+	SPI_I2S_DMACmd(cfg->level.regs, SPI_I2S_DMAReq_Tx, ENABLE);
+	SPI_I2S_DMACmd(cfg->mask.regs, SPI_I2S_DMAReq_Tx, ENABLE);
+
+	/* Initialize the GPIO pins */
+	SYSCFG_EXTILineConfig(cfg->vsync.port_source, cfg->vsync.pin_source);
+	SYSCFG_EXTILineConfig(cfg->hsync.port_source, cfg->hsync.pin_source);
+
+	/* Configure Video Sync pin input floating */
+	GPIO_Init(cfg->vsync_io.gpio, (GPIO_InitTypeDef*)&(cfg->vsync_io.init));
+	GPIO_Init(cfg->hsync_io.gpio, (GPIO_InitTypeDef*)&(cfg->hsync_io.init));
+
+	/* Configure the Video Line interrupt */
+	EXTI_Init(&cfg->vsync.init);
+	EXTI_Init(&cfg->hsync.init);
+
+	/* Enable and set EXTI Interrupt to the lowest priority */
+	NVIC_Init(&cfg->vsync_irq.init);
+	NVIC_Init(&cfg->hsync_irq.init);
+
+    draw_buffer_level = buffer0_level;
+    draw_buffer_mask = buffer0_mask;
+    disp_buffer_level = buffer1_level;
+    disp_buffer_mask = buffer1_mask;
+
+}
+
+
 #endif
+
 
