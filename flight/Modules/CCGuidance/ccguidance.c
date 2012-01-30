@@ -195,7 +195,8 @@ static void ccguidanceTask(UAVObjEvent * ev)
 		StabilizationDesiredGet(&stabDesired);
 
 		/* safety */
-		if (positionActual.Status==GPSPOSITION_STATUS_FIX3D) {
+		//if (positionActual.Status==GPSPOSITION_STATUS_FIX3D) {
+		if(1){
 			/* main position hold loop */
 
 			// Calculation of the rate after the turn and the beginning of motion in a straight line.
@@ -205,12 +206,14 @@ static void ccguidanceTask(UAVObjEvent * ev)
 				positionActualEast  = positionActual.Longitude * 1e-7;
 
 				// Calculation errors between the rate of the gyroscope and GPS at a speed not less than the minimum.
-				if (positionActual.Groundspeed > ccguidanceSettings.GroundSpeedCalcCorrectHeadMin ) {
-
+				//if (positionActual.Groundspeed > ccguidanceSettings.GroundSpeedCalcCorrectHeadMin ) {
+				if(1){
 					AttitudeActualGet(&attitudeActual);
 					diffHeadingYaw = attitudeActual.Yaw - positionActual.Heading;
 					while (diffHeadingYaw<-180.) diffHeadingYaw+=360.;
 					while (diffHeadingYaw>180.)  diffHeadingYaw-=360.;
+					ManualControlCommandGet(&manualControl);
+					diffHeadingYaw = manualControl.Throttle;
 
 					/*	Moving average calculation of the median for the correction of the gyroscope axis Yaw.
 						Use to calculate the five element array corrections.
@@ -247,7 +250,8 @@ static void ccguidanceTask(UAVObjEvent * ev)
 					positionDesiredEast
 					);
 				// If the distance to the base less than this, then do not expect a new course.
-				if ( abs(DistanceToBase * 111111) > ccguidanceSettings.RadiusBase) {
+				//if ( abs(DistanceToBase * 111111) > ccguidanceSettings.RadiusBase) {
+				if(1){
 					courseTrue = sphereCourse(
 						positionActualNorth,
 						positionActualEast,
@@ -312,7 +316,9 @@ static void ccguidanceTask(UAVObjEvent * ev)
 					stabDesired.Throttle = manualControl.Throttle;
 				}
 			}
-			stabDesired.Roll = ccguidanceSettings.Roll[CCGUIDANCESETTINGS_ROLL_NEUTRAL];
+			//stabDesired.Roll = ccguidanceSettings.Roll[CCGUIDANCESETTINGS_ROLL_NEUTRAL];
+			thisTime = xTaskGetTickCount();
+			stabDesired.Roll = (thisTime - lastUpdateTime) / portTICK_RATE_MS;
 			AlarmsClear(SYSTEMALARMS_ALARM_GUIDANCE);
 
 		} else {
