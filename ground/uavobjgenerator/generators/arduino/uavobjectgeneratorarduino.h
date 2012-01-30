@@ -35,6 +35,7 @@ public:
     bool generate(UAVObjectParser* gen,QString templatepath,QString outputpath);
     QStringList fieldTypeStrC;
     QString outCode, outInclude, arduinoCodeTemplate, arduinoIncludeTemplate, arduinoHeadTemplate, arduinoEndTemplate;
+    QString outKeywords, arduinoKeywordsHeadTemplate, arduinoKeywordsObjectTemplate;
     QDir arduinoCodePath;
     QDir arduinoOutputPath;
 

@@ -1,0 +1,42 @@
+#######################################
+# $(NAME)
+#######################################
+
+# Object constants
+$(NAMEUC)_OBJID	LITERAL1
+$(NAMEUC)_NAME	LITERAL1
+$(NAMEUC)_METANAME	LITERAL1
+$(NAMEUC)_ISSINGLEINST	LITERAL1
+$(NAMEUC)_ISSETTINGS	LITERAL1
+$(NAMEUC)_NUMBYTES	LITERAL1
+
+# Object access macros
+$(NAME)Get	KEYWORD2
+$(NAME)Set	KEYWORD2
+$(NAME)InstGet	KEYWORD2
+$(NAME)InstSet	KEYWORD2
+$(NAME)ConnectQueue	KEYWORD2
+$(NAME)ConnectCallback	KEYWORD2
+$(NAME)CreateInstance	KEYWORD2
+$(NAME)RequestUpdate	KEYWORD2
+$(NAME)RequestInstUpdate	KEYWORD2
+$(NAME)Updated	KEYWORD2
+$(NAME)InstUpdated	KEYWORD2
+$(NAME)GetMetadata	KEYWORD2
+$(NAME)SetMetadata	KEYWORD2
+$(NAME)ReadOnly	KEYWORD2
+
+# Object data
+$(NAME)Data	KEYWORD1
+
+# Field information
+$(DATAFIELDINFO)
+# Generic interface functions
+$(NAME)Initialize	KEYWORD2
+$(NAME)Handle	KEYWORD2
+$(NAME)SetDefaults	KEYWORD2
+
+# Set/Get functions
+$(SETGETFIELDS)
+
+

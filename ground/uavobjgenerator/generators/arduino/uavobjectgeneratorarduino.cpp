@@ -42,14 +42,18 @@ bool UAVObjectGeneratorArduino::generate(UAVObjectParser* parser,QString templat
   arduinoIncludeTemplate = readFile( arduinoCodePath.absoluteFilePath("uavobjecttemplate.h") );
   arduinoHeadTemplate = readFile( arduinoCodePath.absoluteFilePath("uavobjects_head_template.cpp") );
   arduinoEndTemplate = readFile( arduinoCodePath.absoluteFilePath("uavobjects_end_template.cpp") );
+  arduinoKeywordsHeadTemplate = readFile( arduinoCodePath.absoluteFilePath("keywords_head_template.txt") );
+  arduinoKeywordsObjectTemplate = readFile( arduinoCodePath.absoluteFilePath("keywords_object_template.txt") );
 
   if(arduinoCodeTemplate.isNull() || arduinoIncludeTemplate.isNull() ||
-     arduinoHeadTemplate.isNull() || arduinoEndTemplate.isNull()) {
+     arduinoHeadTemplate.isNull() || arduinoEndTemplate.isNull() ||
+     arduinoKeywordsHeadTemplate.isNull() || arduinoKeywordsObjectTemplate.isNull()) {
     cerr << "Error: Could not open arduino template files." << endl;
     return false;
   }
 
   outCode += arduinoHeadTemplate;
+  outKeywords += arduinoKeywordsHeadTemplate;
 
   for (int objidx = 0; objidx < parser->getNumObjects(); ++objidx) {
     ObjectInfo* info=parser->getObjectByIndex(objidx);
@@ -79,6 +83,13 @@ bool UAVObjectGeneratorArduino::generate(UAVObjectParser* parser,QString templat
     return false;
   }
 
+  res = writeFileIfDiffrent( arduinoOutputPath.absolutePath() +
+				  "/keywords.txt", outKeywords );
+  if (!res) {
+    cout << "Error: Could not write arduino code files" << endl;
+    return false;
+  }
+
   return true; // if we come here everything should be fine
 }
 
@@ -94,10 +105,13 @@ bool UAVObjectGeneratorArduino::process_object(ObjectInfo* info)
   // Replace common tags
   QString includeTemplate = arduinoIncludeTemplate;
   QString codeTemplate = arduinoCodeTemplate;
+  QString keywordsTemplate = arduinoKeywordsObjectTemplate;
   replaceCommonTags(includeTemplate, info);
   replaceCommonTags(codeTemplate, info);
+  replaceCommonTags(keywordsTemplate, info);
   outCode += codeTemplate;
   outInclude += includeTemplate;
+  outKeywords += keywordsTemplate;
 
   // Replace the $(DATAFIELDS) tag
   QString type;
@@ -116,6 +130,9 @@ bool UAVObjectGeneratorArduino::process_object(ObjectInfo* info)
 
   // Replace the $(DATAFIELDINFO) tag
   QString enums;
+  QString keyword1;
+  QString keyword2;
+  QString literal1;
   for (int n = 0; n < info->fields.length(); ++n) {
 
     enums.append(QString("// Field %1 information\r\n").arg(info->fields[n]->name));
@@ -133,8 +150,15 @@ bool UAVObjectGeneratorArduino::process_object(ObjectInfo* info)
 		      .arg( info->fields[n]->name.toUpper() )
 		      .arg( options[m].toUpper().replace(QRegExp(ENUM_SPECIAL_CHARS), "") )
 		      .arg(m) );
+       literal1.append( QString("%1_%2_%3\tLITERAL1\r\n")
+		      .arg( info->name.toUpper() )
+		      .arg( info->fields[n]->name.toUpper() )
+		      .arg( options[m].toUpper().replace(QRegExp(ENUM_SPECIAL_CHARS), "") ) );
       }
       enums.append( QString(" } %1%2Options;\r\n")
+		    .arg( info->name )
+		    .arg( info->fields[n]->name ) );
+      keyword1.append( QString("%1%2Options\tKEYWORD1\r\n")
 		    .arg( info->name )
 		    .arg( info->fields[n]->name ) );
     }
@@ -152,8 +176,15 @@ bool UAVObjectGeneratorArduino::process_object(ObjectInfo* info)
 		      .arg( info->fields[n]->name.toUpper() )
 		      .arg( elemNames[m].toUpper() )
 		      .arg(m) );
+        literal1.append( QString("%1_%2_%3\tLITERAL1\r\n")
+		      .arg( info->name.toUpper() )
+		      .arg( info->fields[n]->name.toUpper() )
+		      .arg( elemNames[m].toUpper() ) );
       }
       enums.append( QString(" } %1%2Elem;\r\n")
+		    .arg( info->name )
+		    .arg( info->fields[n]->name ) );
+      keyword1.append( QString("%1%2Elem\tKEYWORD1\r\n")
 		    .arg( info->name )
 		    .arg( info->fields[n]->name ) );
     }
@@ -165,9 +196,13 @@ bool UAVObjectGeneratorArduino::process_object(ObjectInfo* info)
 		    .arg( info->name.toUpper() )
 		    .arg( info->fields[n]->name.toUpper() )
 		    .arg( info->fields[n]->numElements ) );
+      literal1.append( QString("%1_%2_NUMELEM\tLITERAL1\r\n")
+  		    .arg( info->name.toUpper() )
+		    .arg( info->fields[n]->name.toUpper() ) );
     }
   }
   outInclude.replace(QString("$(DATAFIELDINFO)"), enums);
+  outKeywords.replace(QString("$(DATAFIELDINFO)"), keyword1.append(literal1));
 
   // Replace the $(INITFIELDS) tag
   QString initfields;
@@ -288,15 +323,22 @@ bool UAVObjectGeneratorArduino::process_object(ObjectInfo* info)
 				 .arg( fieldTypeStrC[info->fields[n]->type] )
 				 .arg( info->name )
 				 .arg( info->fields[n]->name ) );
+      keyword2.append( QString("%2%3Set\tKEYWORD1\r\n")
+				 .arg( info->name )
+				 .arg( info->fields[n]->name ) );
 
       /* GET */
       setgetfieldsextern.append( QString("extern void %2%3Get( %1 *New%3 );\r\n")
 				 .arg( fieldTypeStrC[info->fields[n]->type] )
 				 .arg( info->name )
 				 .arg( info->fields[n]->name ) );
+      keyword2.append( QString("%2%3Get\tKEYWORD1\r\n")
+				 .arg( info->name )
+				 .arg( info->fields[n]->name ) );
     }
   }
   outInclude.replace(QString("$(SETGETFIELDSEXTERN)"), setgetfieldsextern);
+  outKeywords.replace(QString("$(SETGETFIELDS)"), keyword2);
 
   return true;
 }
