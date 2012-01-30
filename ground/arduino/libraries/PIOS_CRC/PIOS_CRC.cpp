@@ -51,7 +51,7 @@ PROGMEM uint8_t crc_table[256] = {
  */
 uint8_t PIOS_CRCupdateByte(uint8_t crc, const uint8_t data)
 {
-	return crc_table[crc ^ data];
+	return pgm_read_byte(crc_table + (crc ^ data));
 }
 
 /*
@@ -69,7 +69,7 @@ uint8_t PIOS_CRCupdateCRC(uint8_t crc, const uint8_t* data, int32_t length)
 	register const uint8_t *p = data;
 	
 	while (len--)
-		crc8 = crc_table[crc8 ^ *p++];
+		crc8 = PIOS_CRCupdateByte(crc8, *p++);
 	
 	return crc8;
 }
