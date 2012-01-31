@@ -61,6 +61,9 @@
 #define DEG2RAD (M_PI/180.0)
 //#define GEE 9.81
 #define SAMPLE_PERIOD_MS		100
+//#define DEGREELATLENGTHT 40000000/360;	// length of one degree of longitude, meters
+
+
 // Private types
 
 // Private variables
@@ -145,6 +148,12 @@ static void ccguidanceTask(UAVObjEvent * ev)
 	float max, min;
 	int8_t  i;
 
+	float DistanceToBaseNorth, DistanceToBaseEast;
+	// length of one degree of longitude, meters
+	const float degreeLatLenght = 40000000/360;
+	// length of one degree of latitude parallel to the current, meters
+	static float degreeLonLenght;
+
 	CCGuidanceSettingsGet(&ccguidanceSettings);
 
 	if (!lastUpdateTime) lastUpdateTime = xTaskGetTickCount();
@@ -183,12 +192,14 @@ static void ccguidanceTask(UAVObjEvent * ev)
 			positionDesiredEast = positionActual.Longitude * 1e-7;
 			positionDesiredDown = positionActual.Altitude + positionActual.GeoidSeparation + 1;
 			positionHoldLast = 1;
+			degreeLonLenght = degreeLatLenght * cos(positionDesiredNorth * DEG2RAD);
 		} else if (positionHoldLast != 2 && (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_RETURNTOBASE && ccguidanceSettings.HomeLocationSet == TRUE)) {
 			/* When we RTB, safe home position */
 			positionDesiredNorth = ccguidanceSettings.HomeLocationLatitude * 1e-7;
 			positionDesiredEast = ccguidanceSettings.HomeLocationLongitude * 1e-7;
 			positionDesiredDown = ccguidanceSettings.HomeLocationAltitude + ccguidanceSettings.ReturnTobaseAltitudeOffset ;
 			positionHoldLast = 2;
+			degreeLonLenght = degreeLatLenght * cos(positionDesiredNorth * DEG2RAD);
 			}
 
 		StabilizationDesiredData stabDesired;
@@ -267,26 +278,50 @@ static void ccguidanceTask(UAVObjEvent * ev)
 				}
 
 				// calculate course to target
-				DistanceToBase = sphereDistance(
-					positionActualNorth,
-					positionActualEast,
-					positionDesiredNorth,
-					positionDesiredEast
+
+				if (ccguidanceSettings.SimpleCourseCalc == TRUE) {
+					// calculation of rectangular coordinates
+					DistanceToBaseNorth = (positionDesiredNorth - positionActualNorth) * degreeLatLenght;
+					DistanceToBaseEast = (positionDesiredEast - positionActualEast) * degreeLonLenght;
+					// square of the distance to the base
+					DistanceToBase = (DistanceToBaseNorth * DistanceToBaseNorth) + (DistanceToBaseEast * DistanceToBaseEast);
+					ccguidanceSettings.RadiusBase *=ccguidanceSettings.RadiusBase;
+					// true direction of the base
+					courseTrue = atan2(DistanceToBaseEast, DistanceToBaseNorth) * RAD2DEG;					
+				} else {
+					// calculation method of the shortest course
+					DistanceToBase = sphereDistance(
+						positionActualNorth,
+						positionActualEast,
+						positionDesiredNorth,
+						positionDesiredEast
 					);
-				courseTrue = sphereCourse(
-					positionActualNorth,
-					positionActualEast,
-					positionDesiredNorth,
-					positionDesiredEast,
-					DistanceToBase
+					courseTrue = sphereCourse(
+						positionActualNorth,
+						positionActualEast,
+						positionDesiredNorth,
+						positionDesiredEast,
+						DistanceToBase
 					);
-				// If the distance to the base less than this, then do not expect a new course.
-				if ( abs(DistanceToBase * 111111) > ccguidanceSettings.RadiusBase) {
+					DistanceToBase = abs(DistanceToBase * 111111);
+				}
+
+				if (DistanceToBase > ccguidanceSettings.RadiusBase) {
 				//if(1){
 					courseRelative = courseTrue + diffHeadingYaw;
-					while (courseRelative<-180.) courseRelative+=360.;
-					while (courseRelative>180.)  courseRelative-=360.;
+				} else {
+					if (ccguidanceSettings.CircleAroundBase == TRUE) {
+						/* Circular motion in the area between RadiusBase */
+						if (DistanceToBase < ccguidanceSettings.RadiusBase * 0.5) {
+							courseRelative = courseTrue + diffHeadingYaw + 90 + ccguidanceSettings.CircleAroundBaseHelixAngle;
+						} else {
+							courseRelative = courseTrue + diffHeadingYaw + 90 - ccguidanceSettings.CircleAroundBaseHelixAngle;
+						}
+					}
 				}
+
+				while (courseRelative<-180.) courseRelative+=360.;
+				while (courseRelative>180.)  courseRelative-=360.;
 				stabDesired.Yaw = courseRelative;
 				thisTimesRotateToCourse = 0;
 			}
