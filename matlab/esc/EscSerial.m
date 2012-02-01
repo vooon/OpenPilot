@@ -2,6 +2,8 @@
 classdef EscSerial
     properties
         ser = [];
+		  port=[];
+		  status='closed'
         logging = false;
         configuration = struct( ...
             'RisingKp',int16(40),...
@@ -57,19 +59,30 @@ classdef EscSerial
         end
         
         function self = openPort(self,serport)
+			  if nargin==1
+				  if ~isempty(self.port);
+					  serport=self.port;
+				  else
+					  error('No serial port given.');
+				  end
+			  else
+				  self.port=serport;
+			  end
             self.ser = serial(serport);
             self.ser.BaudRate=115200; %230400;
             self.ser.InputBufferSize=2*1024*1024;
             fopen(self.ser);
+				self.status='open';
         end
         
         function self = closePort(self)
             fclose(self.ser)
-            delete(self.ser)
+            delete(self.ser) %Is there any reason to delete this? It might be useful to be able to refer to how many bytes have been transmitted, etc...
             self.ser = [];
+				self.status='closed';
         end
         
-        function open = isOpen(self)            
+        function open = isOpen(self)      
             open = ~isempty(self.ser) && all(get(self.ser,'status')=='open');
         end
         
@@ -305,15 +318,17 @@ classdef EscSerial
             dat = uint8(fread(self.ser, get(self.ser,'BytesAvailable'), 'uint8'));
             dat = typecast(dat,'uint16');
             dat = double(reshape(dat,4,[]));
-        end
+		  end
 
-        function display(esc)
-            if(isOpen(esc))
-                disp('Esc is connected');
-            else
-                disp('Esc is not connected');
-            end
-        end
+		  % I COMMENTED OUT THIS CODE AND ADDED A FIELD TO THE STRUCT. IT WAS
+		  % OTHERWISE VERY DIFFICULT TO KNOW WHAT FIELDS WHERE IN `esc`
+%         function display(esc)
+%             if(isOpen(esc))
+%                 disp('Esc is connected');
+%             else
+%                 disp('Esc is not connected');
+%             end
+%         end
     end
 end
 

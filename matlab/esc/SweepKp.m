@@ -1,10 +1,10 @@
 
 if ~exist('esc','var');
     esc = EscSerial;
-    esc = openPort(esc,'/dev/tty.usbmodemfd131');
+    esc = openPort(esc,'/dev/tty.usbserial-A600e0WY');
 end
 
-
+adsf
 Kp = [1 2 4 8 10 15 20 25 30 40 50];
 
 for i = 1:length(Kp)

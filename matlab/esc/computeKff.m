@@ -3,11 +3,12 @@ function [esc t rpm setpoint] = computeKff(varargin)
 
 params.esc = [];
 params.port = '/dev/tty.usbmodemfd131';
-params.dt_ms = 1;
+params.dt_ms = 1000; %Go slowly as to have lots of time to reach steady state
 params.low_speed_rpm = 1000;
-params.high_speed_rpm = 6000;
+params.high_speed_rpm = 3000;
 params.test_time_s = 15;
 params = parseVarArgs(params,varargin{:});
+startRPM=450;
 
 % If no esc object passed in, create one
 esc = params.esc;
@@ -30,9 +31,9 @@ esc = setSerialSpeed(esc, 0);
 pause(3.5)
 
 % Start up ESC then ramp it up
-esc = setSerialSpeed(esc, 450);
+esc = setSerialSpeed(esc, startRPM);
 pause(4);
-for i = 450:5:params.low_speed_rpm
+for i = startRPM:5:params.low_speed_rpm
     esc = setSerialSpeed(esc, i);
     pause(0.01);
 end
@@ -63,7 +64,7 @@ while toc < params.test_time_s
     duty_cycle = [duty_cycle dc_];
     
     if mean(rpm) < 100
-        disp('Failed to start or shut down');
+        warn('Failed to start or shut down');
         esc = setSerialSpeed(esc, 0);
         break;
     end
@@ -79,10 +80,14 @@ if opened
     esc = closePort(esc);
 end
 
+%Fit linear curve to data
 b = robustfit(rpm', duty_cycle')
+
+%Scale fit coeffs to appropriate units
 Kff = b(2) * 32176 / 1024 * 32
 Kff2 = -b(1) * 32176 / 1024
 
+%Update esc config
 esc.configuration.Kff = Kff;
 esc.configuration.Kff2 = Kff2;
 esc.configuration.RpmMax = (esc.configuration.MaxDc - b(1)) / b(2);
