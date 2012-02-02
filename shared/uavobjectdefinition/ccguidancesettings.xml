@@ -2,11 +2,12 @@
     <object name="CCGuidanceSettings" singleinstance="true" settings="true">
         <description>Settings for the @ref CCGuidanceModule</description>
 		<field name="Yaw" units="deg" type="float" elementnames="1" defaultvalue="0"/>
-        <field name="Pitch" units="deg" type="float" elementnames="Climb,Sink" defaultvalue="15,-5"/>
-        <field name="Roll" units="deg" type="float" elementnames="Kp,Max,Neutral" defaultvalue="2,35,0"/>
+        <field name="Pitch" units="deg" type="float" elementnames="Kp,Climb,Sink" defaultvalue="1,10,-10"/>
+        <field name="Roll" units="deg" type="float" elementnames="Max,Neutral" defaultvalue="35,0"/>
+		<field name="Trottle" units="" type="float" elementnames="Kp,StepMax,Max,Min" defaultvalue="0.02,0.2,1,0"/>
         <field name="ReturnTobaseAltitudeOffset" units="meter" type="int16" elements="1" defaultvalue="75"/>
-		<field name="RadiusBase" units="meter" type="int16" elementnames="1" defaultvalue="25"/>
-		<field name="CircleAroundBaseHelixAngle" units="degree" type="int16" elementnames="1" defaultvalue="10"/>
+		<field name="RadiusBase" units="meter" type="int16" elementnames="1" defaultvalue="30"/>
+		<field name="CircleAroundBaseHelixAngle" units="deg" type="int16" elementnames="1" defaultvalue="10"/>
 		<field name="CircleAroundBase" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
         <field name="TimesRotateToCourse" units="msec" type="int16" elements="1" defaultvalue="3000"/>
         <field name="MovingAverageMedianYaw" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
@@ -15,11 +16,9 @@
 		<field name="SimpleCourseCalc" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
 		<field name="FaileSaveRTB" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
 		<field name="TrottleAutoSet" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
-		<field name="TrottleMin" units="%" type="float" elementnames="1" defaultvalue="0"/>
-		<field name="TrottleMax" units="%" type="float" elementnames="1" defaultvalue="1"/>
 		<field name="HomeLocationSet" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
-        <field name="HomeLocationLatitude" units="deg * 10e6" type="int32" elements="1" defaultvalue="0"/>
-        <field name="HomeLocationLongitude" units="deg * 10e6" type="int32" elements="1" defaultvalue="0"/>
+        <field name="HomeLocationLatitude" units="deg * 10e7" type="int32" elements="1" defaultvalue="0"/>
+        <field name="HomeLocationLongitude" units="deg * 10e7" type="int32" elements="1" defaultvalue="0"/>
         <field name="HomeLocationAltitude" units="m over geoid" type="float" elements="1" defaultvalue="0"/>
         <field name="UpdatePeriod" units="msec" type="int16" elements="1" defaultvalue="300"/>
         <access gcs="readwrite" flight="readwrite"/>
