@@ -539,19 +539,19 @@ void DMA1_Channel1_IRQHandler(void)
 /* INS functions */
 void panic(int diagnostic_code)
 {
-	// Polarity backwards
-	PIOS_LED_On(LED_ERR);
+	// Turn off error LED.
+	PIOS_LED_Off(LED_ERR);
 	while(1) {
 		for(int i=0; i<diagnostic_code; i++)
 		{
-			PIOS_LED_Toggle(LED_ERR);
+			PIOS_LED_On(LED_ERR);
 			for(int i = 0 ; i < 250; i++) {
-				PIOS_DELAY_WaitmS(1);
+				PIOS_DELAY_WaitmS(1); //Count 1ms intervals in order to allow for possibility of watchdog
 			}
 
-			PIOS_LED_Toggle(LED_ERR);
+			PIOS_LED_Off(LED_ERR);
 			for(int i = 0 ; i < 250; i++) {
-				PIOS_DELAY_WaitmS(1);
+				PIOS_DELAY_WaitmS(1); //Count 1ms intervals in order to allow for possibility of watchdog
 			}
 
 		}
