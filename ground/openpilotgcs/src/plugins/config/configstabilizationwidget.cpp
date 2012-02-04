@@ -1,8 +1,7 @@
 /**
  ******************************************************************************
- *
  * @file       configstabilizationwidget.h
- * @author     E. Lafargue & The OpenPilot Team, http://www.openpilot.org Copyright (C) 2010.
+ * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2012.
  * @addtogroup GCSPlugins GCS Plugins
  * @{
  * @addtogroup ConfigPlugin Config Plugin
@@ -57,7 +56,14 @@ static const double FULL_STICK_RATE_MAX = 500;
 static const double MAXIMUM_RATE_MIN = 0;
 static const double MAXIMUM_RATE_MAX = 500;
 
-// ------------------------------------------------------
+// constants for URLs to be loaded upon clicking the respective buttons
+
+static const QString GENERAL_HELP="http://wiki.openpilot.org/display/Doc/Stabilization+panel";
+static const QString INNER_LOOP_HELP="http://wiki.openpilot.org/display/Doc/Stabilization+panel";
+static const QString OUTER_LOOP_HELP="http://wiki.openpilot.org/display/Doc/Stabilization+panel";
+static const QString STICKRANGE_HELP="http://wiki.openpilot.org/display/Doc/Stabilization+panel";
+
+// ------------------------------------------------------------------------------------------------
 
 ConfigStabilizationWidget::ConfigStabilizationWidget(QWidget *parent) : ConfigTaskWidget(parent)
 {
@@ -167,12 +173,17 @@ ConfigStabilizationWidget::ConfigStabilizationWidget(QWidget *parent) : ConfigTa
 
     // Connect buttons
     connect(m_stabilization->stabilizationResetToDefaults, SIGNAL(clicked()), this, SLOT(resetToDefaults()));
-    connect(m_stabilization->stabilizationHelp, SIGNAL(clicked()), this, SLOT(openHelp()));
     connect(m_stabilization->stabilizationReloadBoardData, SIGNAL(clicked()), this, SLOT (reloadBoardValues()));
     connect(m_stabilization->linkRatePitchRoll, SIGNAL(clicked()), this, SLOT (activateLinkRate()));
     connect(m_stabilization->linkRateRP, SIGNAL(clicked()), this, SLOT (activateLinkRateExpert()));
     connect(m_stabilization->linkAttPitchRoll, SIGNAL(clicked()), this, SLOT (activateLinkAttitude()));
     connect(m_stabilization->linkAttitudeRP, SIGNAL(clicked()), this, SLOT (activateLinkAttitudeExpert()));
+
+    // connect buttons to activate external links to some website
+    connect(m_stabilization->stabilizationHelp, SIGNAL(clicked()), this, SLOT(openHelp()));
+    connect(m_stabilization->wikiLinkStabInner, SIGNAL(clicked()), this, SLOT (wikiLinkStabInner()));
+    connect(m_stabilization->wikiLinkStabOuter, SIGNAL(clicked()), this, SLOT (wikiLinkStabOuter()));
+    connect(m_stabilization->wikiLinkStabSticks, SIGNAL(clicked()), this, SLOT (wikiLinkStabSticks()));
 }
 
 ConfigStabilizationWidget::~ConfigStabilizationWidget()
@@ -1045,5 +1056,20 @@ void ConfigStabilizationWidget::resetToDefaults()
 
 void ConfigStabilizationWidget::openHelp()
 {
-    QDesktopServices::openUrl( QUrl("http://wiki.openpilot.org/display/Doc/Stabilization+panel", QUrl::StrictMode) );
+    QDesktopServices::openUrl( QUrl(GENERAL_HELP, QUrl::StrictMode) );
+}
+
+void ConfigStabilizationWidget::wikiLinkStabInner()
+{
+    QDesktopServices::openUrl( QUrl(INNER_LOOP_HELP, QUrl::StrictMode) );
+}
+
+void ConfigStabilizationWidget::wikiLinkStabOuter()
+{
+    QDesktopServices::openUrl( QUrl(OUTER_LOOP_HELP, QUrl::StrictMode) );
+}
+
+void ConfigStabilizationWidget::wikiLinkStabSticks()
+{
+    QDesktopServices::openUrl( QUrl(STICKRANGE_HELP, QUrl::StrictMode) );
 }

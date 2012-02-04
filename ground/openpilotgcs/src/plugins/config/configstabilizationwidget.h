@@ -1,8 +1,7 @@
 /**
  ******************************************************************************
- *
  * @file       configstabilizationwidget.h
- * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2010.
+ * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2012.
  * @addtogroup GCSPlugins GCS Plugins
  * @{
  * @addtogroup ConfigPlugin Config Plugin
@@ -57,6 +56,9 @@ private slots:
     void realtimeUpdateToggle(bool);
     void resetToDefaults();
     void openHelp();
+    void wikiLinkStabInner();
+    void wikiLinkStabOuter();
+    void wikiLinkStabSticks();
 
     void updateRateRollKP(double);
     void updateRateRollKI(double);
