@@ -48,6 +48,8 @@ private:
     StabilizationSettings* stabSettings;
     QTimer updateTimer;
     void refreshUIValues(StabilizationSettings::DataFields &stabData);
+    void UpdateBasicSetting( double val, QCheckBox *linkBox, QDoubleSpinBox *expertBox,
+                             double min, double max, QSpinBox *basicBox, QSlider *basicSlider, QSlider *basicLinkedSlider );
 
 private slots:
     virtual void refreshWidgetsValues();

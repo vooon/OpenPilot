@@ -196,58 +196,48 @@ void ConfigStabilizationWidget::reloadBoardValues()
     refreshWidgetsValues();
 }
 
-void ConfigStabilizationWidget::updateRateRollKP(double val)
+void ConfigStabilizationWidget::UpdateBasicSetting( double val, QCheckBox *linkBox, QDoubleSpinBox *expertBox,
+                                                    double min, double max, QSpinBox *basicBox, QSlider *basicSlider, QSlider *basicLinkedSlider )
 {
-    if (m_stabilization->linkRateRP->isChecked()) {
-        m_stabilization->ratePitchKp->setValue(val);
+    if ((linkBox != NULL) && (linkBox->isChecked())) {
+        expertBox->setValue(val);
     }
     // update basic tab dial
-    if( val < RATE_KP_MIN || val > RATE_KP_MAX ) {
-        m_stabilization->RPRL->setStyleSheet("QLabel { color : red; }");
-        m_stabilization->RPRL->setText( "OUT\nOF\nRANGE" );
-        m_stabilization->rateRollProp->setEnabled( false );
+    if( val < min || val > max ) {
+        basicBox->setStyleSheet("QSpinBox { color : red; }");
+        basicSlider->setStyleSheet("QSlider { border: 2px solid #F00; }");
+        basicBox->setValue( 0 );
+        basicSlider->setEnabled( false );
+        basicBox->setEnabled( false );
     } else {
         // calc position normalized to 0-100%
-        m_stabilization->RPRL->setStyleSheet("QLabel { color : black; }");
-        m_stabilization->rateRollProp->setEnabled( true );
-        int basicVal = ( val - RATE_KP_MIN) / ( RATE_KP_MAX - RATE_KP_MIN) * 100;
-        m_stabilization->rateRollProp->blockSignals( true );
-        m_stabilization->rateRollProp->setValue( basicVal );
-        if (m_stabilization->linkRateRP->isChecked()) {
-            m_stabilization->ratePitchProp->blockSignals( true );
-            m_stabilization->ratePitchProp->setValue( basicVal );
-            m_stabilization->ratePitchProp->blockSignals( false );
+        basicBox->setStyleSheet("QSpinBox { color : black; }");
+        basicSlider->setStyleSheet("QSlider { border: 0px solid #F00; }");
+        basicSlider->setEnabled( true );
+        basicBox->setEnabled( true );
+        int basicVal = ( val - min) / ( max - min) * 100;
+        basicSlider->blockSignals( true );
+        basicSlider->setValue( basicVal );
+        if ((linkBox != NULL) && (linkBox->isChecked())) {
+            basicLinkedSlider->blockSignals( true );
+            basicLinkedSlider->setValue( basicVal );
+            basicLinkedSlider->blockSignals( false );
         }
-        m_stabilization->rateRollProp->blockSignals( false );
-        m_stabilization->RPRL->setNum( basicVal );
+        basicSlider->blockSignals( false );
+        basicBox->setValue( basicVal );
     }
+}
+
+void ConfigStabilizationWidget::updateRateRollKP(double val)
+{
+    UpdateBasicSetting( val, m_stabilization->linkRateRP, m_stabilization->ratePitchKp,
+                        RATE_KP_MIN, RATE_KP_MAX, m_stabilization->RPRL, m_stabilization->rateRollProp, m_stabilization->ratePitchProp );
 }
 
 void ConfigStabilizationWidget::updateRateRollKI(double val)
 {
-    if (m_stabilization->linkRateRP->isChecked()) {
-        m_stabilization->ratePitchKi->setValue(val);
-    }
-    // update basic tab dial
-    if( val < RATE_KI_MIN || val > RATE_KI_MAX ) {
-        m_stabilization->RIRL->setStyleSheet("QLabel { color : red; }");
-        m_stabilization->RIRL->setText( "OUT\nOF\nRANGE" );
-        m_stabilization->rateRollInt->setEnabled( false );
-    } else {
-        // calc position normalized to 0-100%
-        m_stabilization->RIRL->setStyleSheet("QLabel { color : black; }");
-        m_stabilization->rateRollInt->setEnabled( true );
-        int basicVal = ( val - RATE_KI_MIN) / ( RATE_KI_MAX - RATE_KI_MIN) * 100;
-        m_stabilization->rateRollInt->blockSignals( true );
-        m_stabilization->rateRollInt->setValue( basicVal );
-        if (m_stabilization->linkRateRP->isChecked()) {
-            m_stabilization->ratePitchInt->blockSignals( true );
-            m_stabilization->ratePitchInt->setValue( basicVal );
-            m_stabilization->ratePitchInt->blockSignals( false );
-        }
-        m_stabilization->rateRollInt->blockSignals( false );
-        m_stabilization->RIRL->setNum( basicVal );
-    }
+    UpdateBasicSetting( val, m_stabilization->linkRateRP, m_stabilization->ratePitchKi,
+                        RATE_KI_MIN, RATE_KI_MAX, m_stabilization->RIRL, m_stabilization->rateRollInt, m_stabilization->ratePitchInt );
 }
 
 void ConfigStabilizationWidget::updateRateRollILimit(double val)
@@ -259,60 +249,21 @@ void ConfigStabilizationWidget::updateRateRollILimit(double val)
 
 void ConfigStabilizationWidget::updateRatePitchKP(double val)
 {
-    if (m_stabilization->linkRateRP->isChecked()) {
-        m_stabilization->rateRollKp->setValue(val);
-    }
-    // update basic tab dial
-    if( val < RATE_KP_MIN || val > RATE_KP_MAX ) {
-        m_stabilization->RPPL->setStyleSheet("QLabel { color : red; }");
-        m_stabilization->RPPL->setText( "OUT\nOF\nRANGE" );
-        m_stabilization->ratePitchProp->setEnabled( false );
-    } else {
-        // calc position normalized to 0-100%
-        m_stabilization->RPPL->setStyleSheet("QLabel { color : black; }");
-        m_stabilization->ratePitchProp->setEnabled( true );
-        int basicVal = ( val - RATE_KP_MIN) / ( RATE_KP_MAX - RATE_KP_MIN) * 100;
-        m_stabilization->ratePitchProp->blockSignals( true );
-        m_stabilization->ratePitchProp->setValue( basicVal );
-        if (m_stabilization->linkRateRP->isChecked()) {
-            m_stabilization->rateRollProp->blockSignals( true );
-            m_stabilization->rateRollProp->setValue( basicVal );
-            m_stabilization->rateRollProp->blockSignals( false );
-        }
-        m_stabilization->ratePitchProp->blockSignals( false );
-        m_stabilization->RPPL->setNum( basicVal );
-    }
+    UpdateBasicSetting( val, m_stabilization->linkRateRP, m_stabilization->rateRollKp,
+                        RATE_KP_MIN, RATE_KP_MAX, m_stabilization->RPPL, m_stabilization->ratePitchProp, m_stabilization->rateRollProp );
 }
 
 void ConfigStabilizationWidget::updateRatePitchKI(double val)
 {
-    if (m_stabilization->linkRateRP->isChecked()) {
-        m_stabilization->rateRollKi->setValue(val);
-    }
-    // update basic tab dial
-    if( val < RATE_KI_MIN || val > RATE_KI_MAX ) {
-        m_stabilization->RIPL->setStyleSheet("QLabel { color : red; }");
-        m_stabilization->RIPL->setText( "OUT\nOF\nRANGE" );
-        m_stabilization->ratePitchInt->setEnabled( false );
-    } else {
-        // calc position normalized to 0-100%
-        m_stabilization->RIPL->setStyleSheet("QLabel { color : black; }");
-        m_stabilization->ratePitchInt->setEnabled( true );
-        int basicVal = ( val - RATE_KI_MIN) / ( RATE_KI_MAX - RATE_KI_MIN) * 100;
-        m_stabilization->ratePitchInt->blockSignals( true );
-        m_stabilization->ratePitchInt->setValue( basicVal );
-        if (m_stabilization->linkRateRP->isChecked()) {
-            m_stabilization->rateRollInt->blockSignals( true );
-            m_stabilization->rateRollInt->setValue( basicVal );
-            m_stabilization->rateRollInt->blockSignals( false );
-        }
-        m_stabilization->ratePitchInt->blockSignals( false );
-        m_stabilization->RIPL->setNum( basicVal );
-    }
+    UpdateBasicSetting( val, m_stabilization->linkRateRP, m_stabilization->rateRollKi,
+                        RATE_KI_MIN, RATE_KI_MAX, m_stabilization->RIPL, m_stabilization->ratePitchInt, m_stabilization->rateRollInt );
 }
 
 void ConfigStabilizationWidget::updateRateYawKP(double val)
 {
+    UpdateBasicSetting( val, NULL, NULL, RATE_KP_MIN, RATE_KP_MAX, m_stabilization->RPYL, m_stabilization->rateYawProp, NULL );
+
+    /*
     // update basic tab dial
     if( val < RATE_KP_MIN || val > RATE_KP_MAX ) {
         m_stabilization->RPYL->setStyleSheet("QLabel { color : red; }");
@@ -328,10 +279,13 @@ void ConfigStabilizationWidget::updateRateYawKP(double val)
         m_stabilization->rateYawProp->blockSignals( false );
         m_stabilization->RPYL->setNum( basicVal );
     }
+    */
 }
 
 void ConfigStabilizationWidget::updateRateYawKI(double val)
 {
+    UpdateBasicSetting( val, NULL, NULL, RATE_KI_MIN, RATE_KI_MAX, m_stabilization->RIYL, m_stabilization->rateYawInt, NULL );
+/*
     // update basic tab dial
     if( val < RATE_KI_MIN || val > RATE_KI_MAX ) {
         m_stabilization->RIYL->setStyleSheet("QLabel { color : red; }");
@@ -347,6 +301,7 @@ void ConfigStabilizationWidget::updateRateYawKI(double val)
         m_stabilization->rateYawInt->blockSignals( false );
         m_stabilization->RIYL->setNum( basicVal );
     }
+    */
 }
 
 void ConfigStabilizationWidget::updateRatePitchILimit(double val)

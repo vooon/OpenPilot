@@ -161,9 +161,9 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>-728</y>
+            <y>0</y>
             <width>646</width>
-            <height>1329</height>
+            <height>1279</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -178,7 +178,7 @@
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>420</height>
+               <height>370</height>
               </size>
              </property>
              <property name="title">
@@ -190,25 +190,21 @@
                 <x>0</x>
                 <y>50</y>
                 <width>611</width>
-                <height>361</height>
+                <height>311</height>
                </rect>
               </property>
-              <layout class="QGridLayout" name="gridLayout_4" rowstretch="0,0,0,0,0,0,0" columnstretch="0,0,0,0,0,0,0">
+              <layout class="QGridLayout" name="gridLayout_4" rowstretch="0,0,0,0,0" columnstretch="0,0,0,0,0,0,0">
                <property name="sizeConstraint">
-                <enum>QLayout::SetNoConstraint</enum>
+                <enum>QLayout::SetDefaultConstraint</enum>
                </property>
                <property name="leftMargin">
                 <number>5</number>
                </property>
-               <item row="3" column="0">
+               <property name="rightMargin">
+                <number>5</number>
+               </property>
+               <item row="2" column="0">
                 <widget class="QLabel" name="label_3">
-                 <property name="font">
-                  <font>
-                   <pointsize>14</pointsize>
-                   <weight>75</weight>
-                   <bold>true</bold>
-                  </font>
-                 </property>
                  <property name="autoFillBackground">
                   <bool>false</bool>
                  </property>
@@ -220,15 +216,8 @@
                  </property>
                 </widget>
                </item>
-               <item row="5" column="0">
+               <item row="3" column="0">
                 <widget class="QLabel" name="label_4">
-                 <property name="font">
-                  <font>
-                   <pointsize>14</pointsize>
-                   <weight>75</weight>
-                   <bold>true</bold>
-                  </font>
-                 </property>
                  <property name="autoFillBackground">
                   <bool>false</bool>
                  </property>
@@ -240,12 +229,12 @@
                  </property>
                 </widget>
                </item>
-               <item row="3" column="5">
+               <item row="2" column="5">
                 <widget class="QSlider" name="rateYawProp">
                  <property name="minimumSize">
                   <size>
                    <width>100</width>
-                   <height>50</height>
+                   <height>40</height>
                   </size>
                  </property>
                  <property name="autoFillBackground">
@@ -274,12 +263,12 @@
                  </property>
                 </widget>
                </item>
-               <item row="5" column="5">
+               <item row="3" column="5">
                 <widget class="QSlider" name="rateYawInt">
                  <property name="minimumSize">
                   <size>
                    <width>0</width>
-                   <height>50</height>
+                   <height>40</height>
                   </size>
                  </property>
                  <property name="autoFillBackground">
@@ -308,51 +297,7 @@
                  </property>
                 </widget>
                </item>
-               <item row="4" column="0" colspan="7">
-                <widget class="Line" name="line">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="autoFillBackground">
-                  <bool>false</bool>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
-                 </property>
-                 <property name="lineWidth">
-                  <number>5</number>
-                 </property>
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="0" colspan="7">
-                <widget class="Line" name="line_2">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="autoFillBackground">
-                  <bool>false</bool>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
-                 </property>
-                 <property name="lineWidth">
-                  <number>5</number>
-                 </property>
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1" colspan="3">
+               <item row="0" column="1" colspan="4">
                 <widget class="QPushButton" name="linkRatePitchRoll">
                  <property name="toolTip">
                   <string>Link values of roll and pitch</string>
@@ -371,57 +316,10 @@
                  </property>
                 </widget>
                </item>
-               <item row="3" column="6">
-                <widget class="QLabel" name="RPYL">
-                 <property name="minimumSize">
-                  <size>
-                   <width>30</width>
-                   <height>0</height>
-                  </size>
-                 </property>
-                 <property name="autoFillBackground">
-                  <bool>false</bool>
-                 </property>
-                 <property name="text">
-                  <string>0</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                 </property>
-                 <property name="wordWrap">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="6">
-                <widget class="QLabel" name="RIYL">
-                 <property name="minimumSize">
-                  <size>
-                   <width>30</width>
-                   <height>0</height>
-                  </size>
-                 </property>
-                 <property name="autoFillBackground">
-                  <bool>false</bool>
-                 </property>
-                 <property name="text">
-                  <string>0</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                 </property>
-                 <property name="wordWrap">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="6" column="0" colspan="7">
+               <item row="4" column="0" colspan="7">
                 <widget class="QTextBrowser" name="RateTextBrowser">
                  <property name="autoFillBackground">
                   <bool>false</bool>
-                 </property>
-                 <property name="styleSheet">
-                  <string notr="true">background-color: rgb(142, 191, 255);</string>
                  </property>
                  <property name="frameShape">
                   <enum>QFrame::Box</enum>
@@ -437,7 +335,7 @@
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Lucida Grande'; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:18pt; font-weight:600; color:#ffdc1a;&quot;&gt;Hints&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:14pt; font-weight:600; color:#6a8ec4;&quot;&gt;Hints&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The &lt;span style=&quot; font-style:italic;&quot;&gt;Rate&lt;/span&gt; stabilization loop (the inner loop) compares the rotation &lt;span style=&quot; font-style:italic;&quot;&gt;rate &lt;/span&gt;measured by the gyro for that axis to a control signal.&lt;/p&gt;
 &lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;If you set the stabilization mode for an axis to &lt;span style=&quot; font-style:italic;&quot;&gt;Rate&lt;/span&gt;, the control signal for the Rate (inner) loop comes directly from the transmitter, bypassing the outer loop.&lt;/li&gt;
 &lt;li style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;If instead you set the stabilization mode for that axis to &lt;span style=&quot; font-style:italic;&quot;&gt;Attitude&lt;/span&gt;, the control signal for the Rate loop comes from the Attitude stabilization loop.&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -446,13 +344,6 @@ p, li { white-space: pre-wrap; }
                </item>
                <item row="1" column="1" colspan="2">
                 <widget class="QLabel" name="label_7">
-                 <property name="font">
-                  <font>
-                   <pointsize>14</pointsize>
-                   <weight>75</weight>
-                   <bold>true</bold>
-                  </font>
-                 </property>
                  <property name="autoFillBackground">
                   <bool>false</bool>
                  </property>
@@ -471,13 +362,6 @@ p, li { white-space: pre-wrap; }
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
-                 </property>
-                 <property name="font">
-                  <font>
-                   <pointsize>14</pointsize>
-                   <weight>75</weight>
-                   <bold>true</bold>
-                  </font>
                  </property>
                  <property name="autoFillBackground">
                   <bool>false</bool>
@@ -498,13 +382,6 @@ p, li { white-space: pre-wrap; }
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
-                 <property name="font">
-                  <font>
-                   <pointsize>14</pointsize>
-                   <weight>75</weight>
-                   <bold>true</bold>
-                  </font>
-                 </property>
                  <property name="autoFillBackground">
                   <bool>false</bool>
                  </property>
@@ -516,12 +393,12 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item row="5" column="1">
+               <item row="3" column="1">
                 <widget class="QSlider" name="rateRollInt">
                  <property name="minimumSize">
                   <size>
                    <width>0</width>
-                   <height>50</height>
+                   <height>40</height>
                   </size>
                  </property>
                  <property name="autoFillBackground">
@@ -547,130 +424,49 @@ p, li { white-space: pre-wrap; }
                  </property>
                  <property name="notchesVisible" stdset="0">
                   <bool>false</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="2">
-                <widget class="QLabel" name="RIRL">
-                 <property name="minimumSize">
-                  <size>
-                   <width>30</width>
-                   <height>0</height>
-                  </size>
-                 </property>
-                 <property name="autoFillBackground">
-                  <bool>false</bool>
-                 </property>
-                 <property name="text">
-                  <string>0</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                 </property>
-                 <property name="wordWrap">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="3">
-                <widget class="QSlider" name="ratePitchInt">
-                 <property name="minimumSize">
-                  <size>
-                   <width>100</width>
-                   <height>50</height>
-                  </size>
-                 </property>
-                 <property name="autoFillBackground">
-                  <bool>false</bool>
-                 </property>
-                 <property name="maximum">
-                  <number>100</number>
-                 </property>
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="tickPosition">
-                  <enum>QSlider::TicksBelow</enum>
-                 </property>
-                 <property name="tickInterval">
-                  <number>10</number>
-                 </property>
-                 <property name="wrapping" stdset="0">
-                  <bool>false</bool>
-                 </property>
-                 <property name="notchTarget" stdset="0">
-                  <double>0.000000000000000</double>
-                 </property>
-                 <property name="notchesVisible" stdset="0">
-                  <bool>false</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="4">
-                <widget class="QLabel" name="RIPL">
-                 <property name="minimumSize">
-                  <size>
-                   <width>30</width>
-                   <height>0</height>
-                  </size>
-                 </property>
-                 <property name="autoFillBackground">
-                  <bool>false</bool>
-                 </property>
-                 <property name="text">
-                  <string>0</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                 </property>
-                 <property name="wordWrap">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="4">
-                <widget class="QLabel" name="RPPL">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="minimumSize">
-                  <size>
-                   <width>30</width>
-                   <height>0</height>
-                  </size>
-                 </property>
-                 <property name="autoFillBackground">
-                  <bool>false</bool>
-                 </property>
-                 <property name="midLineWidth">
-                  <number>-10</number>
-                 </property>
-                 <property name="text">
-                  <string>0</string>
-                 </property>
-                 <property name="textFormat">
-                  <enum>Qt::AutoText</enum>
-                 </property>
-                 <property name="scaledContents">
-                  <bool>false</bool>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                 </property>
-                 <property name="wordWrap">
-                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
                <item row="3" column="3">
+                <widget class="QSlider" name="ratePitchInt">
+                 <property name="minimumSize">
+                  <size>
+                   <width>100</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                 <property name="autoFillBackground">
+                  <bool>false</bool>
+                 </property>
+                 <property name="maximum">
+                  <number>100</number>
+                 </property>
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="tickPosition">
+                  <enum>QSlider::TicksBelow</enum>
+                 </property>
+                 <property name="tickInterval">
+                  <number>10</number>
+                 </property>
+                 <property name="wrapping" stdset="0">
+                  <bool>false</bool>
+                 </property>
+                 <property name="notchTarget" stdset="0">
+                  <double>0.000000000000000</double>
+                 </property>
+                 <property name="notchesVisible" stdset="0">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="3">
                 <widget class="QSlider" name="ratePitchProp">
                  <property name="minimumSize">
                   <size>
                    <width>100</width>
-                   <height>50</height>
+                   <height>40</height>
                   </size>
                  </property>
                  <property name="autoFillBackground">
@@ -699,12 +495,12 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item row="3" column="1">
+               <item row="2" column="1">
                 <widget class="QSlider" name="rateRollProp">
                  <property name="minimumSize">
                   <size>
                    <width>100</width>
-                   <height>50</height>
+                   <height>40</height>
                   </size>
                  </property>
                  <property name="autoFillBackground">
@@ -733,27 +529,27 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item row="3" column="2">
-                <widget class="QLabel" name="RPRL">
-                 <property name="minimumSize">
-                  <size>
-                   <width>30</width>
-                   <height>0</height>
-                  </size>
-                 </property>
-                 <property name="autoFillBackground">
-                  <bool>false</bool>
-                 </property>
-                 <property name="text">
-                  <string>0</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                 </property>
-                 <property name="wordWrap">
-                  <bool>true</bool>
+               <item row="2" column="2">
+                <widget class="QSpinBox" name="RPRL">
+                 <property name="maximum">
+                  <number>100</number>
                  </property>
                 </widget>
+               </item>
+               <item row="3" column="2">
+                <widget class="QSpinBox" name="RIRL"/>
+               </item>
+               <item row="2" column="4">
+                <widget class="QSpinBox" name="RPPL"/>
+               </item>
+               <item row="3" column="4">
+                <widget class="QSpinBox" name="RIPL"/>
+               </item>
+               <item row="2" column="6">
+                <widget class="QSpinBox" name="RPYL"/>
+               </item>
+               <item row="3" column="6">
+                <widget class="QSpinBox" name="RIYL"/>
                </item>
               </layout>
              </widget>
@@ -1372,8 +1168,11 @@ p, li { white-space: pre-wrap; }
                 <height>32</height>
                </rect>
               </property>
-              <property name="accessibleName">
+              <property name="toolTip">
                <string>Open Wiki page on Outer Stabilization Loop</string>
+              </property>
+              <property name="accessibleName">
+               <string/>
               </property>
               <property name="text">
                <string>Wiki</string>
@@ -3395,5 +3194,198 @@ Apply or Save button afterwards.</string>
  <resources>
   <include location="../coreplugin/core.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>rateRollProp</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>RPRL</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>180</x>
+     <y>185</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>264</x>
+     <y>182</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>RPRL</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>rateRollProp</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>265</x>
+     <y>188</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>198</x>
+     <y>188</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rateRollInt</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>RIRL</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>162</x>
+     <y>242</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>251</x>
+     <y>242</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>RIRL</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>rateRollInt</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>236</x>
+     <y>244</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>177</x>
+     <y>252</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ratePitchProp</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>RPPL</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>370</x>
+     <y>188</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>448</x>
+     <y>184</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ratePitchInt</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>RIPL</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>379</x>
+     <y>251</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>424</x>
+     <y>246</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>RIPL</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>ratePitchInt</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>421</x>
+     <y>230</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>375</x>
+     <y>227</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>RPPL</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>ratePitchProp</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>413</x>
+     <y>184</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>388</x>
+     <y>201</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rateYawProp</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>RPYL</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>560</x>
+     <y>189</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>606</x>
+     <y>191</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rateYawInt</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>RIYL</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>539</x>
+     <y>220</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>584</x>
+     <y>233</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>RIYL</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>rateYawInt</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>616</x>
+     <y>240</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>537</x>
+     <y>237</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>RPYL</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>rateYawProp</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>595</x>
+     <y>178</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>533</x>
+     <y>166</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
