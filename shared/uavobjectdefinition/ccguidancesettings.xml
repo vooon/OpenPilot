@@ -13,7 +13,6 @@
         <field name="MovingAverageMedianYaw" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
 		<field name="GroundSpeedCalcCorrectHeadMin" units="m/sec" type="uint8" elementnames="1" defaultvalue="2"/>
 		<field name="GroundSpeedMax" units="m/sec" type="uint8" elementnames="1" defaultvalue="15"/>
-		<field name="SimpleCourseCalc" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
 		<field name="FaileSaveRTB" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
 		<field name="TrottleAutoSet" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
 		<field name="HomeLocationSet" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>

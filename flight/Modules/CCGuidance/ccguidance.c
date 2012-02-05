@@ -62,7 +62,7 @@
 //#define GEE 9.81
 //#define SAMPLE_PERIOD_MS		100
 //#define DEGREELATLENGTHT 40000000/360;	// length of one degree of longitude, meters
-
+#define SIMPLE_COURSE_CALCULATION
 
 // Private types
 
@@ -72,8 +72,10 @@ static uint8_t positionHoldLast;
 // Private functions
 static void ccguidanceTask(UAVObjEvent * ev);
 static float bound(float val, float min, float max);
+#if !defined(SIMPLE_COURSE_CALCULATION)
 static float sphereDistance(float lat1,float long1,float lat2,float long2);
 static float sphereCourse(float lat1,float long1,float lat2,float long2, float zeta);
+#endif
 static float arrayDiffHeadingYaw[5];
 
 /**
@@ -149,11 +151,14 @@ static void ccguidanceTask(UAVObjEvent * ev)
 	int8_t  i;
 	float TrottleStep = 0;
 
-	float DistanceToBaseNorth, DistanceToBaseEast;
-	// length of one degree of longitude, meters
+
+// length of one degree of latitude parallel to the current, meters
 	const float degreeLatLenght = 40000000/360;
-	// length of one degree of latitude parallel to the current, meters
+#if defined(SIMPLE_COURSE_CALCULATION)
+	// length of one degree of longitude, meters
 	static float degreeLonLenght;
+	float DistanceToBaseNorth, DistanceToBaseEast;
+#endif
 
 	CCGuidanceSettingsGet(&ccguidanceSettings);
 
@@ -193,14 +198,18 @@ static void ccguidanceTask(UAVObjEvent * ev)
 			positionDesiredEast = positionActual.Longitude * 1e-7;
 			positionDesiredDown = positionActual.Altitude + positionActual.GeoidSeparation + 1;
 			positionHoldLast = 1;
+#if defined(SIMPLE_COURSE_CALCULATION)
 			degreeLonLenght = degreeLatLenght * cos(positionDesiredNorth * DEG2RAD);
+#endif
 		} else if (positionHoldLast != 2 && (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_RETURNTOBASE && ccguidanceSettings.HomeLocationSet == TRUE)) {
 			/* When we RTB, safe home position */
 			positionDesiredNorth = ccguidanceSettings.HomeLocationLatitude * 1e-7;
 			positionDesiredEast = ccguidanceSettings.HomeLocationLongitude * 1e-7;
 			positionDesiredDown = ccguidanceSettings.HomeLocationAltitude + ccguidanceSettings.ReturnTobaseAltitudeOffset ;
 			positionHoldLast = 2;
+#if defined(SIMPLE_COURSE_CALCULATION)
 			degreeLonLenght = degreeLatLenght * cos(positionDesiredNorth * DEG2RAD);
+#endif
 			}
 
 		StabilizationDesiredData stabDesired;
@@ -275,8 +284,7 @@ static void ccguidanceTask(UAVObjEvent * ev)
 				}
 
 				// calculate course to target
-
-				if (ccguidanceSettings.SimpleCourseCalc == TRUE) {
+#if defined(SIMPLE_COURSE_CALCULATION)
 					// calculation Simple method of the course
 					// calculation of rectangular coordinates
 					DistanceToBaseNorth = (positionDesiredNorth - positionActualNorth) * degreeLatLenght;
@@ -285,8 +293,8 @@ static void ccguidanceTask(UAVObjEvent * ev)
 					DistanceToBase = sqrt((DistanceToBaseNorth * DistanceToBaseNorth) + (DistanceToBaseEast * DistanceToBaseEast));
 					// true direction of the base
 					courseTrue = atan2(DistanceToBaseEast, DistanceToBaseNorth) * RAD2DEG;
-				} else {
-					// calculation method of the shortest course
+#else
+				// calculation method of the shortest course
 					DistanceToBase = sphereDistance(
 						positionActualNorth,
 						positionActualEast,
@@ -301,8 +309,7 @@ static void ccguidanceTask(UAVObjEvent * ev)
 						DistanceToBase
 					);
 					DistanceToBase = abs(DistanceToBase * degreeLatLenght);
-				}
-
+#endif
 				if (isnan(courseTrue)) courseTrue=0;
 				
 				if (DistanceToBase > ccguidanceSettings.RadiusBase) {
@@ -395,7 +402,7 @@ static float bound(float val, float min, float max)
 	return val;
 }
 
-
+#if !defined(SIMPLE_COURSE_CALCULATION)
 /**
  * calculate spherical distance and course between two coordinate pairs
  * see http://de.wikipedia.org/wiki/Orthodrome for details
@@ -428,4 +435,4 @@ static float sphereCourse(float lat1, float long1, float lat2, float long2, floa
 		return -angle;
 	}
 }
-
+#endif
