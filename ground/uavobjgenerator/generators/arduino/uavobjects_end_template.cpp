@@ -3,5 +3,5 @@
  * This file is automatically updated by the UAVObjectGenerator.
  */
 void UAVObjectsInitializeAll() {
-  $(OBJINIT)
+$(OBJINIT)
 }

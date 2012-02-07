@@ -38,21 +38,24 @@ bool UAVObjectGeneratorArduino::generate(UAVObjectParser* parser,QString templat
   arduinoOutputPath = QDir( outputpath + QString("arduino") );
   arduinoOutputPath.mkpath(arduinoOutputPath.absolutePath());
 
-  arduinoCodeTemplate = readFile( arduinoCodePath.absoluteFilePath("uavobjecttemplate.cpp") );
-  arduinoIncludeTemplate = readFile( arduinoCodePath.absoluteFilePath("uavobjecttemplate.h") );
-  arduinoHeadTemplate = readFile( arduinoCodePath.absoluteFilePath("uavobjects_head_template.cpp") );
-  arduinoEndTemplate = readFile( arduinoCodePath.absoluteFilePath("uavobjects_end_template.cpp") );
+  arduinoIncludeHeadTemplate = readFile( arduinoCodePath.absoluteFilePath("uavobjects_head_template.h") );
+  arduinoIncludeTemplate = readFile( arduinoCodePath.absoluteFilePath("uavobject_template.h") );
+  arduinoCodeHeadTemplate = readFile( arduinoCodePath.absoluteFilePath("uavobjects_head_template.cpp") );
+  arduinoCodeTemplate = readFile( arduinoCodePath.absoluteFilePath("uavobject_template.cpp") );
+  arduinoCodeEndTemplate = readFile( arduinoCodePath.absoluteFilePath("uavobjects_end_template.cpp") );
   arduinoKeywordsHeadTemplate = readFile( arduinoCodePath.absoluteFilePath("keywords_head_template.txt") );
   arduinoKeywordsObjectTemplate = readFile( arduinoCodePath.absoluteFilePath("keywords_object_template.txt") );
 
-  if(arduinoCodeTemplate.isNull() || arduinoIncludeTemplate.isNull() ||
-     arduinoHeadTemplate.isNull() || arduinoEndTemplate.isNull() ||
-     arduinoKeywordsHeadTemplate.isNull() || arduinoKeywordsObjectTemplate.isNull()) {
+  if (arduinoIncludeHeadTemplate.isNull() || arduinoIncludeTemplate.isNull()
+    || arduinoCodeHeadTemplate.isNull() || arduinoCodeTemplate.isNull()
+    || arduinoCodeEndTemplate.isNull() ||  arduinoKeywordsHeadTemplate.isNull()
+    || arduinoKeywordsObjectTemplate.isNull()) {
     cerr << "Error: Could not open arduino template files." << endl;
     return false;
   }
 
-  outCode += arduinoHeadTemplate;
+  outInclude += arduinoIncludeHeadTemplate;
+  outCode += arduinoCodeHeadTemplate;
   outKeywords += arduinoKeywordsHeadTemplate;
 
   for (int objidx = 0; objidx < parser->getNumObjects(); ++objidx) {
@@ -65,8 +68,8 @@ bool UAVObjectGeneratorArduino::generate(UAVObjectParser* parser,QString templat
   }
 
   // Create the arduino object inialization ocde
-  arduinoEndTemplate.replace( QString("$(OBJINIT)"), arduinoObjInit);
-  outCode += arduinoEndTemplate;
+  arduinoCodeEndTemplate.replace( QString("$(OBJINIT)"), arduinoObjInit);
+  outCode += arduinoCodeEndTemplate;
 
   // Write the arduino code
   bool res = writeFileIfDiffrent( arduinoOutputPath.absolutePath() +

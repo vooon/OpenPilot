@@ -21,26 +21,19 @@
  * @see        The GNU Public License (GPL) Version 3
  *
  *****************************************************************************/
-/*
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
- * for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
 
 // Object constants
 #define $(NAMEUC)_OBJID $(OBJIDHEX)
+#if defined(UAVOBJECTS_INCLUDE_NAME)
 #define $(NAMEUC)_NAME "$(NAME)"
+#else
+#define $(NAMEUC)_NAME NULL
+#endif
+#if defined(UAVOBJECTS_INCLUDE_METANAME)
 #define $(NAMEUC)_METANAME "$(NAME)Meta"
+#else
+#define $(NAMEUC)_METANAME NULL
+#endif
 #define $(NAMEUC)_ISSINGLEINST $(ISSINGLEINST)
 #define $(NAMEUC)_ISSETTINGS $(ISSETTINGS)
 #define $(NAMEUC)_NUMBYTES sizeof($(NAME)Data)
