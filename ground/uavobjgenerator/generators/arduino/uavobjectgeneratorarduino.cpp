@@ -33,7 +33,7 @@ bool UAVObjectGeneratorArduino::generate(UAVObjectParser* parser,QString templat
   fieldTypeStrC << "int8_t" << "int16_t" << "int32_t" <<"uint8_t"
 		<<"uint16_t" << "uint32_t" << "float" << "uint8_t";
 
-  QString arduinoObjInit, objNames;
+  QString arduinoObjInit;
   arduinoCodePath = QDir( templatepath + QString("ground/uavobjgenerator/generators/arduino"));
   arduinoOutputPath = QDir( outputpath + QString("arduino") );
   arduinoOutputPath.mkpath(arduinoOutputPath.absolutePath());
@@ -61,10 +61,12 @@ bool UAVObjectGeneratorArduino::generate(UAVObjectParser* parser,QString templat
   for (int objidx = 0; objidx < parser->getNumObjects(); ++objidx) {
     ObjectInfo* info=parser->getObjectByIndex(objidx);
     process_object(info);
-    arduinoObjInit.append("#ifdef UAVOBJ_INIT_" + info->namelc +"\r\n");
-    arduinoObjInit.append("    " + info->name + "Initialize();\r\n");
-    arduinoObjInit.append("#endif\r\n");
-    objNames.append(" " + info->name);
+
+     arduinoObjInit.append("#if defined(UAVOBJ_INIT_" + info->name.toUpper() + ") "
+       "|| ((defined(UAVOBJ_INIT_ALL) || defined(UAVOBJ_INIT_" + (info->isSettings ? "SETTINGS" : "DATA") +")) "
+       "&& !defined(UAVOBJ_NOINIT_" + info->name.toUpper() + "))\r\n");
+     arduinoObjInit.append("  " + info->name + "Initialize();\r\n");
+     arduinoObjInit.append("#endif\r\n");
   }
 
   // Create the arduino object inialization ocde

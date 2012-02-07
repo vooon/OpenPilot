@@ -41,4 +41,24 @@
 //#define UAVOBJECTS_INCLUDE_NAME
 //#define UAVOBJECTS_INCLUDE_METANAME
 
+/*
+ * UAVObjectsInitializeAll() call behavior configuration.
+ * This defines which objects will be initialized by this call.
+ */
+
+/* This option has the highest priority and forces initialization */
+//#define UAVOBJ_INIT_$(UCNAME)
+
+/* This option initializes all objects except explicitly disabled (see below) */
+#define UAVOBJ_INIT_ALL
+
+/* This option initializes all settings objects except explicitly disabled */
+//#define UAVOBJ_INIT_SETTINGS
+
+/* This option initializes all data objects except explicitly disabled */
+//#define UAVOBJ_INIT_DATA
+
+/* This option disables the initilization of particular object unless forced */
+//#define UAVOBJ_NOINIT_$(UCNAME)
+
 
