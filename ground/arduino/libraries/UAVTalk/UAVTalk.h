@@ -56,6 +56,8 @@ int32_t UAVTalkSendObject(UAVObjHandle obj, uint16_t instId, uint8_t acked,
 			  int32_t timeoutMs);
 int32_t UAVTalkSendObjectRequest(UAVObjHandle obj, uint16_t instId,
 				 int32_t timeoutMs);
+int32_t UAVTalkPackSingleObject(UAVObjHandle obj, uint16_t instId,
+				uint8_t **data, int32_t *len);
 int32_t UAVTalkProcessInputStream(uint8_t rxbyte);
 void UAVTalkGetStats(UAVTalkStats* stats);
 void UAVTalkResetStats();
