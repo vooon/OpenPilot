@@ -122,7 +122,7 @@ int32_t CCGuidanceInitialize()
 		AlarmsSet(SYSTEMALARMS_ALARM_GUIDANCE,SYSTEMALARMS_ALARM_ERROR);
 		return 0;
 	}
-	return -1;	
+	return -1;
 }
 // no macro - optional module
 MODULE_INITCALL(CCGuidanceInitialize, CCGuidanceStart)
@@ -140,10 +140,8 @@ static void ccguidanceTask(UAVObjEvent * ev)
 	portTickType thisTime;
 
 	static portTickType lastUpdateTime = 0;
-	float courseTrue = 0;
-	static float diffHeadingYaw, courseRelative;
-	static float positionDesiredNorth = 0, positionDesiredEast = 0, positionDesiredDown = 0;
-	float positionActualNorth = 0, positionActualEast = 0, DistanceToBase = 0;
+	static float positionDesiredNorth, positionDesiredEast, positionDesiredDown, diffHeadingYaw;
+	float positionActualNorth = 0, positionActualEast = 0, DistanceToBase = 0, course = 0;
 	static uint16_t thisTimesRotateToCourse;
 	static bool	firsRunSetCourse = TRUE, StateSaveCurrentPositionToRTB = FALSE, initArrayDiffHeadingYaw = TRUE;
 	static uint8_t indexArrayDiffHeadingYaw;
@@ -223,7 +221,7 @@ static void ccguidanceTask(UAVObjEvent * ev)
 		if (positionActual.Status==GPSPOSITION_STATUS_FIX3D) {
 			/* main position hold loop */
 			// If first run to activate fixed direction Yaw
-			if (firsRunSetCourse) {
+			if (firsRunSetCourse == TRUE) {
 				// Save current location to HomeLocation if flightStatus = DISARMED
 				if (flightStatus.Armed == FLIGHTSTATUS_ARMED_DISARMED && StateSaveCurrentPositionToRTB == FALSE) {
 					ccguidanceSettings.HomeLocationLatitude	= positionActual.Latitude;
@@ -232,104 +230,121 @@ static void ccguidanceTask(UAVObjEvent * ev)
 					ccguidanceSettings.HomeLocationSet = TRUE;
 					CCGuidanceSettingsSet(&ccguidanceSettings);
 					positionHoldLast = 0;
-					StateSaveCurrentPositionToRTB = TRUE;
 				}
-
+				StateSaveCurrentPositionToRTB = !ccguidanceSettings.HomeLocationEnableRequestSet;
 				AttitudeActualGet(&attitudeActual);
 				stabDesired.Yaw = attitudeActual.Yaw;
 				firsRunSetCourse = FALSE;
 				initArrayDiffHeadingYaw = TRUE;
 				indexArrayDiffHeadingYaw = 0;
 				if (stabDesired.Throttle < ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_MIN]) stabDesired.Throttle = ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_MIN];
-			}
+			} else {
+				// Calculation of the rate after the turn and the beginning of motion in a straight line.
+				if (thisTimesRotateToCourse >= ccguidanceSettings.TimesRotateToCourse) {
+					/* 1. Calculate course */
+					positionActualNorth = positionActual.Latitude * 1e-7;
+					positionActualEast  = positionActual.Longitude * 1e-7;
 
-			// Calculation of the rate after the turn and the beginning of motion in a straight line.
-			if (thisTimesRotateToCourse >= ccguidanceSettings.TimesRotateToCourse) {
-				/* 1. Calculate course */
-				positionActualNorth = positionActual.Latitude * 1e-7;
-				positionActualEast  = positionActual.Longitude * 1e-7;
+					// Calculation errors between the rate of the gyroscope and GPS at a speed not less than the minimum.
+					if (positionActual.Groundspeed > ccguidanceSettings.GroundSpeedCalcCorrectHeadMin ) {
+						AttitudeActualGet(&attitudeActual);
+						diffHeadingYaw = attitudeActual.Yaw - positionActual.Heading;
+						while (diffHeadingYaw<-180.) diffHeadingYaw+=360.;
+						while (diffHeadingYaw>180.)  diffHeadingYaw-=360.;
 
-				// Calculation errors between the rate of the gyroscope and GPS at a speed not less than the minimum.
-				if (positionActual.Groundspeed > ccguidanceSettings.GroundSpeedCalcCorrectHeadMin ) {
-					AttitudeActualGet(&attitudeActual);
-					diffHeadingYaw = attitudeActual.Yaw - positionActual.Heading;
-					while (diffHeadingYaw<-180.) diffHeadingYaw+=360.;
-					while (diffHeadingYaw>180.)  diffHeadingYaw-=360.;
+						/*	Moving average calculation of the median for the correction of the gyroscope axis Yaw.
+							Use to calculate the five element array corrections.
+							On three central elements, we obtain the arithmetic mean.*/
+						if (ccguidanceSettings.MovingAverageMedianYaw == TRUE) {
+							/* Initialize the array first calculated value of the correction.*/
+							if (initArrayDiffHeadingYaw == TRUE) {
+								for (i = 0; i < 5; i++) arrayDiffHeadingYaw[i] = diffHeadingYaw;
+								initArrayDiffHeadingYaw = FALSE;
+							}
+							arrayDiffHeadingYaw[indexArrayDiffHeadingYaw] = diffHeadingYaw;
+							if (indexArrayDiffHeadingYaw < 4 ) {indexArrayDiffHeadingYaw++;} else indexArrayDiffHeadingYaw = 0;
 
-					/*	Moving average calculation of the median for the correction of the gyroscope axis Yaw.
-						Use to calculate the five element array corrections.
-						On three central elements, we obtain the arithmetic mean.*/
-					if (ccguidanceSettings.MovingAverageMedianYaw == TRUE) {
-						/* Initialize the array first calculated value of the correction.*/
-						if (initArrayDiffHeadingYaw == TRUE) {
-							for (i = 0; i < 5; i++) arrayDiffHeadingYaw[i] = diffHeadingYaw;
-							initArrayDiffHeadingYaw = FALSE;
+							max = -180;
+							min =  180;
+							diffHeadingYaw = 0;
+
+							for ( i = 0; i < 5; i++) {
+								if (arrayDiffHeadingYaw[i] > max )  max = arrayDiffHeadingYaw[i];
+								if (arrayDiffHeadingYaw[i] < min )  min = arrayDiffHeadingYaw[i];
+
+								diffHeadingYaw += arrayDiffHeadingYaw[i];
+							}
+							diffHeadingYaw -= min + max;
+							diffHeadingYaw /= 3;
 						}
-						arrayDiffHeadingYaw[indexArrayDiffHeadingYaw] = diffHeadingYaw;
-						if (indexArrayDiffHeadingYaw < 4 ) {indexArrayDiffHeadingYaw++;} else indexArrayDiffHeadingYaw = 0;
-
-						max = -180;
-						min =  180;
-						diffHeadingYaw = 0;
-
-						for ( i = 0; i < 5; i++) {
-							if (arrayDiffHeadingYaw[i] > max )  max = arrayDiffHeadingYaw[i];
-							if (arrayDiffHeadingYaw[i] < min )  min = arrayDiffHeadingYaw[i];
-
-							diffHeadingYaw += arrayDiffHeadingYaw[i];
-						}
-						diffHeadingYaw -= min + max;
-						diffHeadingYaw /= 3;
 					}
-				}
 
-				// calculate course to target
+					// calculate course to target
 #if defined(SIMPLE_COURSE_CALCULATION)
-					// calculation Simple method of the course
-					// calculation of rectangular coordinates
-					DistanceToBaseNorth = (positionDesiredNorth - positionActualNorth) * degreeLatLenght;
-					DistanceToBaseEast = (positionDesiredEast - positionActualEast) * degreeLonLenght;
-					// square of the distance to the base
-					DistanceToBase = sqrt((DistanceToBaseNorth * DistanceToBaseNorth) + (DistanceToBaseEast * DistanceToBaseEast));
-					// true direction of the base
-					courseTrue = atan2(DistanceToBaseEast, DistanceToBaseNorth) * RAD2DEG;
+						// calculation Simple method of the course
+						// calculation of rectangular coordinates
+						DistanceToBaseNorth = (positionDesiredNorth - positionActualNorth) * degreeLatLenght;
+						DistanceToBaseEast = (positionDesiredEast - positionActualEast) * degreeLonLenght;
+						// square of the distance to the base
+						DistanceToBase = sqrt((DistanceToBaseNorth * DistanceToBaseNorth) + (DistanceToBaseEast * DistanceToBaseEast));
+						// true direction of the base
+						course = atan2(DistanceToBaseEast, DistanceToBaseNorth) * RAD2DEG;
 #else
-				// calculation method of the shortest course
-					DistanceToBase = sphereDistance(
-						positionActualNorth,
-						positionActualEast,
-						positionDesiredNorth,
-						positionDesiredEast
-					);
-					courseTrue = sphereCourse(
-						positionActualNorth,
-						positionActualEast,
-						positionDesiredNorth,
-						positionDesiredEast,
-						DistanceToBase
-					);
-					DistanceToBase = abs(DistanceToBase * degreeLatLenght);
+					// calculation method of the shortest course
+						DistanceToBase = sphereDistance(
+							positionActualNorth,
+							positionActualEast,
+							positionDesiredNorth,
+							positionDesiredEast
+						);
+						course = sphereCourse(
+							positionActualNorth,
+							positionActualEast,
+							positionDesiredNorth,
+							positionDesiredEast,
+							DistanceToBase
+						);
+						DistanceToBase = abs(DistanceToBase * degreeLatLenght);
 #endif
-				if (isnan(courseTrue)) courseTrue=0;
-				
-				if (DistanceToBase > ccguidanceSettings.RadiusBase) {
-					courseRelative = courseTrue + diffHeadingYaw;
-				} else {
-					if (ccguidanceSettings.CircleAroundBase == TRUE) {
+					if (isnan(course)) course=0;
+/*
+					if (!((DistanceToBase < ccguidanceSettings.RadiusBase) && (ccguidanceSettings.CircleAroundBase == FALSE))) {
+						course += diffHeadingYaw;
+						// Circular motion in the area between RadiusBase
+						if ((DistanceToBase < ccguidanceSettings.RadiusBase) && (ccguidanceSettings.CircleAroundBase == TRUE)) {
+							if (DistanceToBase < ccguidanceSettings.RadiusBase * 0.5) {
+								course += ccguidanceSettings.CircleAroundBaseHelixAngle[CCGUIDANCESETTINGS_CIRCLEAROUNDBASEHELIXANGLE_EXPANDING];
+							} else {
+								course += ccguidanceSettings.CircleAroundBaseHelixAngle[CCGUIDANCESETTINGS_CIRCLEAROUNDBASEHELIXANGLE_NARROWING];
+							}
+						}
+						while (course<-180.) course+=360.;
+						while (course>180.)  course-=360.;
+						stabDesired.Yaw = course;
+					}
+*/
+					// Correct course for set stabDesired.Yaw
+					course += diffHeadingYaw;
+					if (DistanceToBase > ccguidanceSettings.RadiusBase) {
+						while (course<-180.) course+=360.;
+						while (course>180.)  course-=360.;
+						stabDesired.Yaw = course; //Set new course
+					} else {
 						/* Circular motion in the area between RadiusBase */
-						courseRelative = courseTrue + diffHeadingYaw + 90;
-						if (DistanceToBase < ccguidanceSettings.RadiusBase * 0.5) {
-							courseRelative += ccguidanceSettings.CircleAroundBaseHelixAngle;
-						} else {
-							courseRelative -= ccguidanceSettings.CircleAroundBaseHelixAngle;
+						if (ccguidanceSettings.CircleAroundBase == TRUE) {
+							if (DistanceToBase < ccguidanceSettings.RadiusBase * 0.5) {
+								course += ccguidanceSettings.CircleAroundBaseHelixAngle[CCGUIDANCESETTINGS_CIRCLEAROUNDBASEHELIXANGLE_EXPANDING];
+							} else {
+								course += ccguidanceSettings.CircleAroundBaseHelixAngle[CCGUIDANCESETTINGS_CIRCLEAROUNDBASEHELIXANGLE_NARROWING];
+							}
+						while (course<-180.) course+=360.;
+						while (course>180.)  course-=360.;
+						stabDesired.Yaw = course;	//Set new course
 						}
 					}
-				}
 
-				while (courseRelative<-180.) courseRelative+=360.;
-				while (courseRelative>180.)  courseRelative-=360.;
-				stabDesired.Yaw = courseRelative;
-				thisTimesRotateToCourse = 0;
+					thisTimesRotateToCourse = 0;
+				}
 			}
 
 			/* 2. Altitude */
@@ -377,7 +392,6 @@ static void ccguidanceTask(UAVObjEvent * ev)
 			stabDesired.Throttle = manualControl.Throttle;
 			AlarmsSet(SYSTEMALARMS_ALARM_GUIDANCE,SYSTEMALARMS_ALARM_WARNING);
 		}
-
 		StabilizationDesiredSet(&stabDesired);
 	} else {
 		// reset globals...
