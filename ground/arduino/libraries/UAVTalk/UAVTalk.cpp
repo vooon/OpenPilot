@@ -578,37 +578,42 @@ static int32_t sendSingleObject(UAVObjHandle obj, uint16_t instId,
 }
 
 /**
- * Provides a pointer to static buffer containing the object record
- * suitable for logging (incuding sync byte, length, id, data and crc).
+ * Provides a pointer to buffer containing the object record suitable
+ * for logging (incuding sync byte, length, id, instId, data and crc).
  * \param[in] obj Object handle to send
  * \param[in] instId The instance ID (can NOT be UAVOBJ_ALL_INSTANCES)
- * \param[in] data The provided pointer to static buffer to be set
- * \param[in] len The data length of record to be saved
+ * \param[in] data The provided pointer to static buffer to be returned
+ * \param[in] len The data length of packed record
+ * \param[in] buf Optional buffer for data (uses txBuffer if NULL)
  * \return 0 Success
  * \return -1 Failure
  */
 int32_t UAVTalkPackSingleObject(UAVObjHandle obj, uint16_t instId,
-				uint8_t **data, int32_t *len) {
+				uint8_t **data, int32_t *len,
+				uint8_t *buf) {
   int32_t length;
   int32_t dataOffset;
   uint32_t objId;
         
+  if (!buf)
+    buf = txBuffer;
+
   // Setup type and object id fields
   objId = UAVObjGetID(obj);
-  txBuffer[0] = SYNC_VAL;  // sync byte
-  txBuffer[1] = TYPE_OBJ;
+  buf[0] = SYNC_VAL;  // sync byte
+  buf[1] = TYPE_OBJ;
   // data length inserted here below
-  txBuffer[4] = (uint8_t)(objId & 0xFF);
-  txBuffer[5] = (uint8_t)((objId >> 8) & 0xFF);
-  txBuffer[6] = (uint8_t)((objId >> 16) & 0xFF);
-  txBuffer[7] = (uint8_t)((objId >> 24) & 0xFF);
+  buf[4] = (uint8_t)(objId & 0xFF);
+  buf[5] = (uint8_t)((objId >> 8) & 0xFF);
+  buf[6] = (uint8_t)((objId >> 16) & 0xFF);
+  buf[7] = (uint8_t)((objId >> 24) & 0xFF);
         
   // Setup instance ID if one is required
   if (UAVObjIsSingleInstance(obj)) {
     dataOffset = 8;
   } else {
-    txBuffer[8] = (uint8_t)(instId & 0xFF);
-    txBuffer[9] = (uint8_t)((instId >> 8) & 0xFF);
+    buf[8] = (uint8_t)(instId & 0xFF);
+    buf[9] = (uint8_t)((instId >> 8) & 0xFF);
     dataOffset = 10;
   }
         
@@ -621,19 +626,19 @@ int32_t UAVTalkPackSingleObject(UAVObjHandle obj, uint16_t instId,
         
   // Copy data (if any)
   if (length > 0)
-    if ( UAVObjPack(obj, instId, &txBuffer[dataOffset]) < 0 )
+    if (UAVObjPack(obj, instId, &buf[dataOffset]) < 0)
       return -1;
         
   // Store the packet length
-  txBuffer[2] = (uint8_t)((dataOffset+length) & 0xFF);
-  txBuffer[3] = (uint8_t)(((dataOffset+length) >> 8) & 0xFF);
+  buf[2] = (uint8_t)((dataOffset+length) & 0xFF);
+  buf[3] = (uint8_t)(((dataOffset+length) >> 8) & 0xFF);
 
   // Calculate checksum
-  txBuffer[dataOffset+length] =
-    PIOS_CRCupdateCRC(0, txBuffer, dataOffset+length);
+  buf[dataOffset+length] =
+    PIOS_CRCupdateCRC(0, buf, dataOffset+length);
 
   // Return record data
-  *data = txBuffer;
+  *data = buf;
   *len = dataOffset+length+CHECKSUM_LENGTH;
         
   // Done
