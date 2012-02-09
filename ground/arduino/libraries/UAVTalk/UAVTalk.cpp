@@ -34,6 +34,13 @@
 #include "../PIOS_CRC/PIOS_CRC.h"
 #include "UAVTalk.h"
 
+// Define this to have the default UAVTalk behavior when uninitialized
+// UAVObjects received will increase the rxErrors counter. Since likely
+// on the AVR only few objects will be registered, this is disabled by
+// default, and missing object are just skipped not being treated as
+// errors.
+//#define TREAT_UNINITIALIZED_UAVOBJECTS_AS_ERRORS
+
 // Private constants
 #define SYNC_VAL                        0x3C
 #define TYPE_MASK                       0xF8
@@ -267,9 +274,11 @@ int32_t UAVTalkProcessInputStream(uint8_t rxbyte_in) {
  
     obj = UAVObjGetByID(objId);
     if (obj == 0 && type != TYPE_OBJ_REQ) {
-      //Serial1.print("OBJ ID not found: ");
+      //Serial1.print("ObjectID not found: ");
       //Serial1.println(objId, HEX);
+#if defined(TREAT_UNINITIALIZED_UAVOBJECTS_AS_ERRORS)
       stats.rxErrors++;
+#endif
       state = STATE_SYNC;
       break;
     }
