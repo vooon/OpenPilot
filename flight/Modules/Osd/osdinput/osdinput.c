@@ -152,11 +152,12 @@ static void OpOsdTask(void *parameters)
 	// Loop forever
 	while (1)
 	{
-		DMA_Cmd(DMA1_Stream2, DISABLE);   //prohibit  channel3 for a little time
-    	uint16_t cnt = DMA_GetCurrDataCounter(DMA1_Stream2);
+		//DMA_Cmd(DMA1_Stream2, DISABLE);   //prohibit  channel3 for a little time
+		uint16_t cnt = DMA_GetCurrDataCounter(DMA1_Stream2);
     	rx.wr = rx.buf_size-cnt;
 		if(rx.wr)
 		{
+			PIOS_LED_Toggle(LED2);
 			while (	fifoBuf_getData(&rx, &c, 1) > 0)
 			{
 
@@ -185,6 +186,7 @@ static void OpOsdTask(void *parameters)
 				}
 				if (start_flag && rx_count == 11)
 				{
+					PIOS_LED_Toggle(LED3);
 					if(oposd_rx_buffer[1]==3)
 					{
 						AttitudeActualData attitude;
@@ -208,7 +210,7 @@ static void OpOsdTask(void *parameters)
 				}
 			}
 		}
-		DMA_Cmd(DMA1_Stream2, ENABLE);
+		//DMA_Cmd(DMA1_Stream2, ENABLE);
 
 
 
@@ -256,7 +258,7 @@ static void OpOsdTask(void *parameters)
 				AttitudeActualSet(&attitude);
 			}
 		}*/
-		vTaskDelayUntil(&lastSysTime, 100 / portTICK_RATE_MS);
+		vTaskDelayUntil(&lastSysTime, 50 / portTICK_RATE_MS);
 		// Check for GPS timeout
 		timeNowMs = xTaskGetTickCount() * portTICK_RATE_MS;
 		if ((timeNowMs - timeOfLastUpdateMs) >= GPS_TIMEOUT_MS)

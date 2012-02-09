@@ -111,7 +111,7 @@ static const struct pios_usart_cfg pios_usart_gps_cfg = {
 	.irq = {
 		.init = {
 			.NVIC_IRQChannel = USART1_IRQn,
-			.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_MID,
+			.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_LOW,
 			.NVIC_IRQChannelSubPriority = 0,
 			.NVIC_IRQChannelCmd = ENABLE,
 		},
@@ -171,9 +171,9 @@ static const struct pios_video_cfg pios_video_cfg = {
 		.dma = {
 			.irq = {
 				// Note this is the stream ID that triggers interrupts (in this case RX)
-				.flags = (DMA_IT_TCIF3 | DMA_IT_TEIF3 | DMA_IT_HTIF3),
+				.flags = (DMA_IT_TCIF5),
 				.init = {
-					.NVIC_IRQChannel = DMA1_Stream0_IRQn,
+					.NVIC_IRQChannel = DMA1_Stream5_IRQn,
 					.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGH,
 					.NVIC_IRQChannelSubPriority = 0,
 					.NVIC_IRQChannelCmd = ENABLE,
@@ -201,7 +201,7 @@ static const struct pios_video_cfg pios_video_cfg = {
 				},
 			},
 			.tx = {
-				.channel = DMA1_Stream5,
+				.channel = DMA1_Stream7,
 				.init = {
 					.DMA_Channel            = DMA_Channel_0,
 					.DMA_PeripheralBaseAddr = (uint32_t) & (SPI3->DR),
@@ -269,9 +269,9 @@ static const struct pios_video_cfg pios_video_cfg = {
 			.use_crc = false,
 			.dma = {
 				.irq = {
-					.flags   = (DMA_IT_TCIF5 | DMA_IT_TEIF0 | DMA_IT_HTIF0),
+					.flags   = (DMA_IT_TCIF5),
 					.init    = {
-						.NVIC_IRQChannel                   = DMA2_Stream0_IRQn,
+						.NVIC_IRQChannel                   = DMA2_Stream5_IRQn,
 						.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGH,
 						.NVIC_IRQChannelSubPriority        = 0,
 						.NVIC_IRQChannelCmd                = ENABLE,
@@ -412,7 +412,8 @@ static const struct pios_video_cfg pios_video_cfg = {
 
 
 void PIOS_VIDEO_DMA_Handler(void);
-void DMA1_Stream5_IRQHandler(void) __attribute__ ((alias("PIOS_VIDEO_DMA_Handler")));
+void DMA1_Stream7_IRQHandler(void) __attribute__ ((alias("PIOS_VIDEO_DMA_Handler")));
+void DMA2_Stream5_IRQHandler(void) __attribute__ ((alias("PIOS_VIDEO_DMA_Handler")));
 
 /**
  * @brief Interrupt for half and full buffer transfer
@@ -425,18 +426,206 @@ void DMA1_Stream5_IRQHandler(void) __attribute__ ((alias("PIOS_VIDEO_DMA_Handler
  */
 void PIOS_VIDEO_DMA_Handler(void)
 {
-	if (DMA_GetFlagStatus(DMA1_Stream5,DMA_FLAG_TCIF5)) {	// whole double buffer filled
-		//DMA_ClearFlag(DMA1_FLAG_TC3);
+	if (DMA_GetFlagStatus(DMA1_Stream7,DMA_FLAG_TCIF7)) {	// whole double buffer filled
+		DMA_ClearFlag(DMA1_Stream5,DMA_FLAG_TCIF7);
+		//PIOS_LED_Toggle(LED2);
 	}
-	else if (DMA_GetFlagStatus(DMA1_Stream5,DMA_FLAG_HTIF5)) {
-		DMA_ClearFlag(DMA1_Stream5,DMA_FLAG_HTIF5);
+	else if (DMA_GetFlagStatus(DMA1_Stream7,DMA_FLAG_HTIF7)) {
+		DMA_ClearFlag(DMA1_Stream5,DMA_FLAG_HTIF7);
 	}
 	else {
 
 	}
+
+	if (DMA_GetFlagStatus(DMA2_Stream5,DMA_FLAG_TCIF5)) {	// whole double buffer filled
+		DMA_ClearFlag(DMA2_Stream5,DMA_FLAG_TCIF5);
+		//PIOS_LED_Toggle(LED3);
+	}
+	else if (DMA_GetFlagStatus(DMA2_Stream5,DMA_FLAG_HTIF5)) {
+		DMA_ClearFlag(DMA2_Stream5,DMA_FLAG_HTIF5);
+	}
+	else {
+
+	}
+
 }
 
 #endif
+
+
+/*
+* ADC system
+*/
+
+#include <pios_adc_priv.h>
+
+void PIOS_ADC_handler(void)
+{
+	PIOS_ADC_DMA_Handler();
+}
+
+void DMA2_Stream4_IRQHandler() __attribute__ ((alias("PIOS_ADC_handler")));
+
+const struct pios_adc_cfg pios_adc_cfg = {
+	.dma = {
+			.irq = {
+					.flags = (DMA_FLAG_TCIF4 | DMA_FLAG_TEIF4 | DMA_FLAG_HTIF4),
+					.init = {
+							.NVIC_IRQChannel = DMA2_Stream4_IRQn
+					},
+			},
+			/* XXX there is secret knowledge here regarding the use of ADC1 by the pios_adc code */
+			.rx = {
+					.channel = DMA2_Stream4, // stream0 may be used by SPI1
+					.init = {
+							.DMA_Channel = DMA_Channel_0,
+							.DMA_PeripheralBaseAddr = (uint32_t) & ADC1->DR
+					},
+			}
+	},
+	.half_flag = DMA_IT_HTIF4,
+	.full_flag = DMA_IT_TCIF4,
+};
+
+struct pios_adc_dev pios_adc_devs[] = {
+	{
+		.cfg = &pios_adc_cfg,
+		.callback_function = NULL,
+		.data_queue = NULL
+	},
+};
+
+uint8_t pios_adc_num_devices = NELEMENTS(pios_adc_devs);
+
+
+/* Private define ------------------------------------------------------------*/
+#define DAC_DHR12R2_ADDRESS    0x40007414
+#define DAC_DHR8R1_ADDRESS     0x40007410
+
+
+/* Private variables ---------------------------------------------------------*/
+DAC_InitTypeDef  DAC_InitStructure;
+
+const uint16_t Sine12bit[32] = {
+                      2047, 2447, 2831, 3185, 3498, 3750, 3939, 4056, 4095, 4056,
+                      3939, 3750, 3495, 3185, 2831, 2447, 2047, 1647, 1263, 909,
+                      599, 344, 155, 38, 0, 38, 155, 344, 599, 909, 1263, 1647};
+const uint8_t Escalator8bit[6] = {0x0, 0x33, 0x66, 0x99, 0xCC, 0xFF};
+
+
+/**
+  * @brief  TIM6 Configuration
+  * @note   TIM6 configuration is based on CPU @168MHz and APB1 @42MHz
+  * @note   TIM6 Update event occurs each 37.5MHz/256 = 16.406 KHz
+  * @param  None
+  * @retval None
+  */
+void TIM6_Config(void)
+{
+  TIM_TimeBaseInitTypeDef    TIM_TimeBaseStructure;
+  /* TIM6 Periph clock enable */
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, ENABLE);
+
+  /* Time base configuration */
+  TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
+  TIM_TimeBaseStructure.TIM_Period = 0xFF;
+  TIM_TimeBaseStructure.TIM_Prescaler = 0;
+  TIM_TimeBaseStructure.TIM_ClockDivision = 0;
+  TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+  TIM_TimeBaseInit(TIM6, &TIM_TimeBaseStructure);
+
+  /* TIM6 TRGO selection */
+  TIM_SelectOutputTrigger(TIM6, TIM_TRGOSource_Update);
+
+  /* TIM6 enable counter */
+  TIM_Cmd(TIM6, ENABLE);
+}
+
+
+/**
+  * @brief  DAC  Channel2 SineWave Configuration
+  * @param  None
+  * @retval None
+  */
+void DAC_Ch2_SineWaveConfig(void)
+{
+  DMA_InitTypeDef DMA_InitStructure;
+
+  /* DAC channel2 Configuration */
+  DAC_InitStructure.DAC_Trigger = DAC_Trigger_T6_TRGO;
+  DAC_InitStructure.DAC_WaveGeneration = DAC_WaveGeneration_None;
+  DAC_InitStructure.DAC_OutputBuffer = DAC_OutputBuffer_Enable;
+  DAC_Init(DAC_Channel_2, &DAC_InitStructure);
+
+  /* DMA1_Stream5 channel7 configuration **************************************/
+  DMA_DeInit(DMA1_Stream6);
+  DMA_InitStructure.DMA_Channel = DMA_Channel_7;
+  DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)(uint32_t)&DAC->DHR12R2;
+  DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)&Sine12bit;
+  DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
+  DMA_InitStructure.DMA_BufferSize = 32;
+  DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+  DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
+  DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
+  DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
+  DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
+  DMA_InitStructure.DMA_Priority = DMA_Priority_High;
+  DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;
+  DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_HalfFull;
+  DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
+  DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
+  DMA_Init(DMA1_Stream6, &DMA_InitStructure);
+
+  /* Enable DMA1_Stream5 */
+  DMA_Cmd(DMA1_Stream6, ENABLE);
+
+  /* Enable DAC Channel2 */
+  DAC_Cmd(DAC_Channel_2, ENABLE);
+
+  /* Enable DMA for DAC Channel2 */
+  DAC_DMACmd(DAC_Channel_2, ENABLE);
+}
+
+void DAC_Ch1_SineWaveConfig(void)
+{
+  DMA_InitTypeDef DMA_InitStructure;
+
+  /* DAC channel2 Configuration */
+  DAC_InitStructure.DAC_Trigger = DAC_Trigger_T6_TRGO;
+  DAC_InitStructure.DAC_WaveGeneration = DAC_WaveGeneration_None;
+  DAC_InitStructure.DAC_OutputBuffer = DAC_OutputBuffer_Enable;
+  DAC_Init(DAC_Channel_1, &DAC_InitStructure);
+
+  /* DMA1_Stream5 channel7 configuration **************************************/
+  DMA_DeInit(DMA1_Stream5);
+  DMA_InitStructure.DMA_Channel = DMA_Channel_7;
+  DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)(uint32_t)&DAC->DHR12R1;
+  DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)&Sine12bit;
+  DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
+  DMA_InitStructure.DMA_BufferSize = 32;
+  DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+  DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
+  DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
+  DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
+  DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
+  DMA_InitStructure.DMA_Priority = DMA_Priority_High;
+  DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;
+  DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_HalfFull;
+  DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
+  DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
+  DMA_Init(DMA1_Stream5, &DMA_InitStructure);
+
+  /* Enable DMA1_Stream5 */
+  DMA_Cmd(DMA1_Stream5, ENABLE);
+
+  /* Enable DAC Channel2 */
+  DAC_Cmd(DAC_Channel_1, ENABLE);
+
+  /* Enable DMA for DAC Channel2 */
+  DAC_DMACmd(DAC_Channel_1, ENABLE);
+}
+
+
 
 
 static void Clock(uint32_t spektrum_id);
@@ -653,26 +842,44 @@ void PIOS_Board_Init(void) {
 		PIOS_Assert(0);
 	}*/
 
+/* Preconfiguration before using DAC----------------------------------------*/
+GPIO_InitTypeDef GPIO_InitStructure;
+
+/* DAC Periph clock enable */
+ RCC_APB1PeriphClockCmd(RCC_APB1Periph_DAC, ENABLE);
+
+ /* DAC channel 1 & 2 (DAC_OUT1 = PA.4)(DAC_OUT2 = PA.5) configuration */
+ GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5;
+ GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
+ GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+ GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+ /* TIM6 Configuration ------------------------------------------------------*/
+ TIM6_Config();
+
+ DAC_DeInit();
+ DAC_Ch1_SineWaveConfig();
+ //DAC_Ch2_SineWaveConfig();
 
 	// ADC system
-	// PIOS_ADC_Init();
+	PIOS_ADC_Init();
 
 	// SPI link to master
 	/*if (PIOS_SPI_Init(&pios_spi_port_id, &pios_spi_port_cfg)) {
 		PIOS_DEBUG_Assert(0);
 	}*/
 
+	init_USART_dma();
+	initUSARTs();
+	extern t_fifo_buffer rx;
+	fifoBuf_init(&rx,RxBuffer3,sizeof(RxBuffer3));
 
 	PIOS_Video_Init(&pios_video_cfg);
 
 	//uint8_t * rx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_HKOSD_RX_BUF_LEN);
 
 	//uint8_t test[16];
-	init_USART_dma();
-	initUSARTs();
-	extern t_fifo_buffer rx;
 
-	fifoBuf_init(&rx,RxBuffer3,sizeof(RxBuffer3));
 
 }
 

@@ -192,53 +192,32 @@ extern uint32_t pios_com_telem_usb_id;
 // *****************************************************************
 // ADC
 
-// PIOS_ADC_PinGet(0) = Temperature Sensor (On-board)
-// PIOS_ADC_PinGet(1) = PSU Voltage
+//-------------------------
+// ADC
+// PIOS_ADC_PinGet(0) = External voltage
+// PIOS_ADC_PinGet(1) = AUX1 (PX2IO external pressure port)
+// PIOS_ADC_PinGet(2) = AUX2 (Current sensor, if available)
+// PIOS_ADC_PinGet(3) = AUX3
+// PIOS_ADC_PinGet(4) = VREF
+// PIOS_ADC_PinGet(5) = Temperature sensor
+//-------------------------
 
-#define PIOS_ADC_OVERSAMPLING_RATE			2
+#define PIOS_DMA_PIN_CONFIG \
+{ \
+{GPIOC, GPIO_Pin_0, ADC_Channel_10}, \
+{GPIOC, GPIO_Pin_1, ADC_Channel_11}, \
+{GPIOC, GPIO_Pin_2, ADC_Channel_12}, \
+{GPIOC, GPIO_Pin_3, ADC_Channel_13}, \
+{NULL, 0, ADC_Channel_Vrefint}, /* Voltage reference */\
+{NULL, 0, ADC_Channel_TempSensor} /* Temperature sensor */\
+}
 
-#define PIOS_ADC_USE_TEMP_SENSOR			1
-#define PIOS_ADC_TEMP_SENSOR_ADC			ADC1
-#define PIOS_ADC_TEMP_SENSOR_ADC_CHANNEL	16		// Temperature sensor channel
-//#define PIOS_ADC_TEMP_SENSOR_ADC_CHANNEL	17		// VREF channel
-
-#define PIOS_ADC_PIN1_GPIO_PORT				GPIOB			// Port B (PSU Voltage)
-#define PIOS_ADC_PIN1_GPIO_PIN				GPIO_Pin_1		// PB1 .. ADC12_IN9
-#define PIOS_ADC_PIN1_GPIO_CHANNEL			ADC_Channel_9
-#define PIOS_ADC_PIN1_ADC					ADC2
-#define PIOS_ADC_PIN1_ADC_NUMBER			1
-
-#define PIOS_ADC_NUM_PINS					1
-
-#define PIOS_ADC_PORTS						{ PIOS_ADC_PIN1_GPIO_PORT    }
-#define PIOS_ADC_PINS						{ PIOS_ADC_PIN1_GPIO_PIN     }
-#define PIOS_ADC_CHANNELS					{ PIOS_ADC_PIN1_GPIO_CHANNEL }
-#define PIOS_ADC_MAPPING					{ PIOS_ADC_PIN1_ADC          }
-#define PIOS_ADC_CHANNEL_MAPPING			{ PIOS_ADC_PIN1_ADC_NUMBER   }
-
-#define PIOS_ADC_NUM_CHANNELS				(PIOS_ADC_NUM_PINS + PIOS_ADC_USE_TEMP_SENSOR)
-#define PIOS_ADC_NUM_ADC_CHANNELS			2
-#define PIOS_ADC_USE_ADC2					1
-#define PIOS_ADC_CLOCK_FUNCTION				RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1 | RCC_APB2Periph_ADC2, ENABLE)
-//#define PIOS_ADC_ADCCLK					RCC_PCLK2_Div2	// ADC clock = PCLK2/2
-//#define PIOS_ADC_ADCCLK					RCC_PCLK2_Div4	// ADC clock = PCLK2/4
-//#define PIOS_ADC_ADCCLK					RCC_PCLK2_Div6	// ADC clock = PCLK2/6
-#define PIOS_ADC_ADCCLK						RCC_PCLK2_Div8	// ADC clock = PCLK2/8
-//#define PIOS_ADC_SAMPLE_TIME				ADC_SampleTime_1Cycles5
-//#define PIOS_ADC_SAMPLE_TIME				ADC_SampleTime_7Cycles5
-//#define PIOS_ADC_SAMPLE_TIME				ADC_SampleTime_13Cycles5
-//#define PIOS_ADC_SAMPLE_TIME				ADC_SampleTime_28Cycles5
-//#define PIOS_ADC_SAMPLE_TIME				ADC_SampleTime_41Cycles5
-//#define PIOS_ADC_SAMPLE_TIME				ADC_SampleTime_55Cycles5
-//#define PIOS_ADC_SAMPLE_TIME				ADC_SampleTime_71Cycles5
-#define PIOS_ADC_SAMPLE_TIME				ADC_SampleTime_239Cycles5
-						/* Sample time: */
-						/* With an ADCCLK = 14 MHz and a sampling time of 293.5 cycles: */
-						/* Tconv = 239.5 + 12.5 = 252 cycles = 18�s */
-						/* (1 / (ADCCLK / CYCLES)) = Sample Time (�S) */
-#define PIOS_ADC_IRQ_PRIO                       3
-#define PIOS_ADC_MAX_OVERSAMPLING               1
-#define PIOS_ADC_RATE                           (72.0e6 / 1 / 8 / 252 / (PIOS_ADC_NUM_ADC_CHANNELS >> PIOS_ADC_USE_ADC2))
+/* we have to do all this to satisfy the PIOS_ADC_MAX_SAMPLES define in pios_adc.h */
+/* which is annoying because this then determines the rate at which we generate buffer turnover events */
+/* the objective here is to get enough buffer space to support 100Hz averaging rate */
+#define PIOS_ADC_NUM_CHANNELS 6
+#define PIOS_ADC_MAX_OVERSAMPLING 10
+#define PIOS_ADC_USE_ADC2 0
 
 // *****************************************************************
 // GPIO output pins
@@ -413,7 +392,7 @@ extern uint32_t pios_com_telem_usb_id;
 #define PIOS_VIDEO_HSYNC_EXTI_PORT_SOURCE		EXTI_PortSourceGPIOD
 #define PIOS_VIDEO_HSYNC_EXTI_PIN_SOURCE		EXTI_PinSource0
 #define PIOS_VIDEO_HSYNC_IRQn			EXTI0_IRQn
-#define PIOS_VIDEO_HSYNC_PRIO			PIOS_IRQ_PRIO_HIGH
+#define PIOS_VIDEO_HSYNC_PRIO			PIOS_IRQ_PRIO_HIGHEST
 //#define PIOS_VIDEO_SYNC_PRIO			1
 
 #define PIOS_VIDEO_VSYNC_GPIO_PORT		GPIOC

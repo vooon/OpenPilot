@@ -257,7 +257,34 @@ void introGraphics();
 void updateGraphics();
 void drawGraphicsLine();
 
+void write_char16(char ch, unsigned int x, unsigned int y);
+void swap_buffers();
+void write_pixel(uint16_t *buff, unsigned int x, unsigned int y, int mode);
+void write_pixel_lm(unsigned int x, unsigned int y, int mmode, int lmode);
+void write_hline(uint16_t *buff, unsigned int x0, unsigned int x1, unsigned int y, int mode);
+void write_hline_lm(unsigned int x0, unsigned int x1, unsigned int y, int lmode, int mmode);
+void write_hline_outlined(unsigned int x0, unsigned int x1, unsigned int y, int endcap0, int endcap1, int mode, int mmode);
+void write_vline(uint16_t *buff, unsigned int x, unsigned int y0, unsigned int y1, int mode);
+void write_vline_lm(unsigned int x, unsigned int y0, unsigned int y1, int lmode, int mmode);
+void write_vline_outlined(unsigned int x, unsigned int y0, unsigned int y1, int endcap0, int endcap1, int mode, int mmode);
+void write_filled_rectangle(uint16_t *buff, unsigned int x, unsigned int y, unsigned int width, unsigned int height, int mode);
+void write_filled_rectangle_lm(unsigned int x, unsigned int y, unsigned int width, unsigned int height, int lmode, int mmode);
+void write_rectangle_outlined(unsigned int x, unsigned int y, int width, int height, int mode, int mmode);
+void write_circle(uint16_t *buff, unsigned int cx, unsigned int cy, unsigned int r, unsigned int dashp, int mode);
+void write_circle_outlined(unsigned int cx, unsigned int cy, unsigned int r, unsigned int dashp, int bmode, int mode, int mmode);
+void write_circle_filled(uint16_t *buff, unsigned int cx, unsigned int cy, unsigned int r, int mode);
+void write_line(uint16_t *buff, unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1, int mode);
+void write_line_lm(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1, int mmode, int lmode);
+void write_line_outlined(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1, int endcap0, int endcap1, int mode, int mmode);
+void write_word_misaligned(uint16_t *buff, uint16_t word, unsigned int addr, unsigned int xoff, int mode);
+void write_word_misaligned_NAND(uint16_t *buff, uint16_t word, unsigned int addr, unsigned int xoff);
+void write_word_misaligned_OR(uint16_t *buff, uint16_t word, unsigned int addr, unsigned int xoff);
+void write_word_misaligned_lm(uint16_t wordl, uint16_t wordm, unsigned int addr, unsigned int xoff, int lmode, int mmode);
+//int fetch_font_info(char ch, int font, struct FontEntry *font_info, char *lookup);
+void write_char(char ch, unsigned int x, unsigned int y, int flags, int font);
+//void calc_text_dimensions(char *str, struct FontEntry font, int xs, int ys, struct FontDimensions *dim);
 void write_string(char *str, unsigned int x, unsigned int y, unsigned int xs, unsigned int ys, int va, int ha, int flags, int font);
+void write_string_formatted(char *str, unsigned int x, unsigned int y, unsigned int xs, unsigned int ys, int va, int ha, int flags);
 
 
 extern volatile uint16_t gActiveLine;

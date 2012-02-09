@@ -56,6 +56,9 @@ static int32_t m_gpsLon=0;
 static float m_gpsAlt=0;
 static float m_gpsSpd=0;
 
+static int16_t m_osdLines=0;
+
+uint8_t video_init;
 
 // Define the buffers.
 // For 256x192 pixel mode:
@@ -130,6 +133,19 @@ uint8_t printTextFB(uint16_t x, uint16_t y, const char* str) {
 	return length;
 }
 
+uint8_t printText16(uint16_t x, uint16_t y, const char* str) {
+
+	uint8_t length = strlen(str);
+
+	for(int j=0; j<length; j++)
+	{
+		write_char16(str[j],12*j+x,y);
+	}
+
+	return length;
+}
+
+
 void printTime(uint16_t x, uint16_t y) {
 	char temp[9]={0};
 	sprintf(temp,"%02d:%02d:%02d",time.hour,time.min,time.sec);
@@ -138,13 +154,64 @@ void printTime(uint16_t x, uint16_t y) {
 }
 
 uint8_t printCharFB(uint16_t ch, uint16_t x, uint16_t y) {
-	/*for(uint8_t i = 0; i < 18; i++)
+	for(uint8_t i = 0; i < 18; i++)
 	{
 		uint8_t c=0;
 			draw_buffer_level[((y+i)*GRAPHICS_WIDTH)+(x+c)] = font_frame16x18[ch*18+i];
 			draw_buffer_mask[((y+i)*GRAPHICS_WIDTH)+(x+c)] = font_mask16x18[ch*18+i];
-	}*/
+	}
 	return 1;
+}
+
+void write_char16(char ch, unsigned int x, unsigned int y)
+{
+    int yy, addr_temp, row, row_temp, xshift;
+    uint16_t and_mask, or_mask, level_bits;
+    char lookup = 0;
+    // Compute starting address (for x,y) of character.
+    int addr = CALC_BUFF_ADDR(x, y);
+    int wbit = CALC_BIT_IN_WORD(x);
+    // If font only supports lowercase or uppercase, make the letter
+    // lowercase or uppercase.
+    // How big is the character? We handle characters up to 8 pixels
+    // wide for now. Support for large characters may be added in future.
+    {
+            // Ensure we don't overflow.
+            if(x + wbit > DISP_WIDTH)
+                    return;
+            // Load data pointer.
+            row = ch * 18;
+            row_temp = row;
+            addr_temp = addr;
+            xshift = 16 - 16;
+            // We can write mask words easily.
+            for(yy = y; yy < y + 18; yy++)
+            {
+                    write_word_misaligned_OR(draw_buffer_mask, font_mask16x18[row] << xshift, addr, wbit);
+                    addr += DISP_WIDTH / 16;
+                    row++;
+            }
+            // Level bits are more complicated. We need to set or clear
+            // level bits, but only where the mask bit is set; otherwise,
+            // we need to leave them alone. To do this, for each word, we
+            // construct an AND mask and an OR mask, and apply each individually.
+            row = row_temp;
+            addr = addr_temp;
+            for(yy = y; yy < y + 18; yy++)
+            {
+                    level_bits = font_frame16x18[row];
+                    //if(!(flags & FONT_INVERT)) // data is normally inverted
+                            level_bits = ~level_bits;
+                    or_mask = font_mask16x18[row] << xshift;
+                    and_mask = (font_mask16x18[row] & level_bits) << xshift;
+                    write_word_misaligned_OR(draw_buffer_level, or_mask, addr, wbit);
+                    // If we're not bold write the AND mask.
+                    //if(!(flags & FONT_BOLD))
+                            write_word_misaligned_NAND(draw_buffer_level, and_mask, addr, wbit);
+                    addr += DISP_WIDTH / 16;
+                    row++;
+            }
+    }
 }
 
 
@@ -2078,6 +2145,8 @@ void hud_draw_linear_compass(int v, int range, int width, int x, int y, int mint
         write_string(headingstr, x + 1, majtick_start + textoffset+2, 1, 0, TEXT_VA_MIDDLE, TEXT_HA_CENTER, 1, 0);
 }
 
+static int count=0;
+static int mark=0;
 
 //main draw function
 void updateGraphics() {
@@ -2113,33 +2182,36 @@ void updateGraphics() {
 	/*write_hline_outlined(GRAPHICS_WIDTH_REAL/2-30, GRAPHICS_WIDTH_REAL/2+30, GRAPHICS_HEIGHT_REAL/2, 2, 2, 0, 1);
 	write_vline_outlined(GRAPHICS_WIDTH_REAL/2, GRAPHICS_HEIGHT_REAL/2-30, GRAPHICS_HEIGHT_REAL/2+30, 2, 2, 0, 1);
 	write_circle_outlined(GRAPHICS_WIDTH_REAL/2,GRAPHICS_HEIGHT_REAL/2,30,0,0,0,1);*/
-	write_string("Hello OP-OSD", 60, 12, 1, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, 0);
+	//write_string("Hello OP-OSD", 60, 12, 1, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, 0);
+	//printText16( 60, 12,"Hello OP-OSD");
 	char temp[20]={0};
-	sprintf(temp,"S%02d,La%02d,Lo%02d",(int)m_gpsStatus,(int)m_gpsLat,(int)m_gpsLon);
-	//printTextFB(x,y,temp);
-	write_string(temp, 20, 28, 1, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, 0);
 
-	/*for(int y=0;y<6;y++)
+	sprintf(temp,"S%d, Lat:%02d, Lon:%02d",(int)m_gpsStatus,(int)m_gpsLat,(int)m_gpsLon);
+	write_string(temp, 10, 10, 1, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, 0);
+
+	/*count++;
+	for(int x=1;x<20;x++)
 	{
-		int yl=y*20;
-		for(int x=0;x<18;x++)
-		{
-			printCharFB(m_batt+x+y*18,x,yl);
-		}
+		//printCharFB((mark+x-1)%255,x,40);
+		write_char16((mark+x-1)%255,x*12+40,60);
 	}
-	if(angleA%50==0)
-		m_batt++;*/
-	//printCharFB(1,1,70);
-	//printCharFB(2,2,70);
-	/*printCharFB(1,70);
-	printCharFB(2,70);
-	printCharFB(3,70);
-	printCharFB(4,70);
-	printCharFB(5,70);
-	printCharFB(6,70);*/
-	//printTime(10,2);
+	if(count==12)
+	{
+		mark++;
+		count=0;
+	}*/
+
 	printTime((GRAPHICS_WIDTH_REAL - 80)/16,GRAPHICS_HEIGHT_REAL-20);
-	//drawBox(0,0,GRAPHICS_WIDTH_REAL-2,GRAPHICS_HEIGHT_REAL-1);
+
+	char tempx[20]={0};
+	sprintf(tempx,"Lines:%4d",(int)m_osdLines);
+	write_string(tempx, (GRAPHICS_WIDTH_REAL - 2),10, 1, 0, TEXT_VA_TOP, TEXT_HA_RIGHT, 0, 0);
+
+	sprintf(tempx,"Rssi:%4dV",(int)(PIOS_ADC_PinGet(4)*3000/4096));
+	write_string(tempx, (GRAPHICS_WIDTH_REAL - 2),24, 1, 0, TEXT_VA_TOP, TEXT_HA_RIGHT, 0, 0);
+
+	sprintf(tempx,"Temp:%4dC",(int)(PIOS_ADC_PinGet(5)*0.29296875f-279));
+	write_string(tempx, (GRAPHICS_WIDTH_REAL - 2),38, 1, 0, TEXT_VA_TOP, TEXT_HA_RIGHT, 0, 0);
 
 	m_batt++;
 	uint8_t dir=3;
@@ -2155,11 +2227,13 @@ void updateGraphics() {
 		dir=1;
 		m_alt+=m_pitch/2;
 	}
-	drawBattery(300,GRAPHICS_HEIGHT_REAL-(20*3),m_batt,16);
+
+	drawBattery(GRAPHICS_WIDTH_REAL-20,GRAPHICS_HEIGHT_REAL-(20*3),m_batt,16);
 
 	//drawAltitude(200,50,m_alt,dir);
 	//drawArrow(96,GRAPHICS_HEIGHT_REAL/2,angleB,32);
 	//ellipse(50,50,50,30);
+
     // Draw airspeed (left side.)
     hud_draw_vertical_scale((int)m_gpsSpd, 100, -1, 2, (DISP_HEIGHT / 2) + 10, 100, 10, 20, 7, 12, 15, 1000, HUD_VSCALE_FLAG_NO_NEGATIVE);
     // Draw altimeter (right side.)
@@ -2185,7 +2259,8 @@ void PIOS_Hsync_ISR() {
 		asm("nop");
 	}*/
 	//PIOS_DELAY_WaituS(5); // wait 5us to see if H or V sync
-	if(((PIOS_VIDEO_HSYNC_GPIO_PORT->IDR & PIOS_VIDEO_HSYNC_GPIO_PIN))) {
+	//if(dev_cfg->hsync_io.gpio->IDR & dev_cfg->hsync_io.init.GPIO_Pin) {
+	if(PIOS_VIDEO_HSYNC_GPIO_PORT->IDR & PIOS_VIDEO_HSYNC_GPIO_PIN) {
 		//rising
 		//if (gActiveLine != 0) {
 			//PIOS_LED_On(LED2);
@@ -2198,10 +2273,11 @@ void PIOS_Hsync_ISR() {
 				// Activate new line
 				DMA_Cmd(dev_cfg->level.dma.tx.channel, ENABLE);
 				DMA_Cmd(dev_cfg->mask.dma.tx.channel, ENABLE);
+				video_init=true;
 			}
 		//}
-	}	else
-	{
+	} else {
+		//falling
 		gLineType = LINE_TYPE_UNKNOWN; // Default case
 		gActiveLine++;
 		/*if (gActiveLine == UPDATE_LINE) {
@@ -2213,7 +2289,6 @@ void PIOS_Hsync_ISR() {
 			gActivePixmapLine = (gActiveLine - GRAPHICS_LINE);
 			line = gActivePixmapLine*GRAPHICS_WIDTH;
 		}
-		//falling
 		//if (gActiveLine != 0) {
 		//if(DMA_GetFlagStatus(DMA1_Stream5,DMA_FLAG_TCIF5))
 		{
@@ -2225,8 +2300,8 @@ void PIOS_Hsync_ISR() {
 				DMA_Cmd(dev_cfg->level.dma.tx.channel, DISABLE);
 				DMA_MemoryTargetConfig(dev_cfg->level.dma.tx.channel,(uint32_t)&disp_buffer_level[line],DMA_Memory_0);
 				DMA_MemoryTargetConfig(dev_cfg->mask.dma.tx.channel,(uint32_t)&disp_buffer_mask[line],DMA_Memory_0);
-				DMA_ClearFlag(dev_cfg->mask.dma.tx.channel,DMA_FLAG_TCIF5); // <-- TODO: HARDCODED
-				DMA_ClearFlag(dev_cfg->level.dma.tx.channel,DMA_FLAG_TCIF5); // <-- TODO: HARDCODED
+				//DMA_ClearFlag(dev_cfg->mask.dma.tx.channel,DMA_FLAG_TCIF5); // <-- TODO: HARDCODED
+				//DMA_ClearFlag(dev_cfg->level.dma.tx.channel,DMA_FLAG_TCIF5); // <-- TODO: HARDCODED
 				DMA_SetCurrDataCounter(dev_cfg->level.dma.tx.channel,BUFFER_LINE_LENGTH);
 				DMA_SetCurrDataCounter(dev_cfg->mask.dma.tx.channel,BUFFER_LINE_LENGTH);
 			}
@@ -2240,6 +2315,7 @@ void PIOS_Vsync_ISR() {
 	//PIOS_LED_Toggle(LED3);
 
 	//if(gActiveLine > 200)
+	m_osdLines = gActiveLine;
 	{
 		gActiveLine = 0;
 		Vsync_update++;
@@ -2312,19 +2388,19 @@ void PIOS_Video_Init(const struct pios_video_cfg * cfg){
 
 
 	/* Trigger interrupt when for half conversions too to indicate double buffer */
-	//DMA_ITConfig(DMA1_Stream5, DMA_IT_TC, ENABLE);
-	DMA_ClearFlag(cfg->mask.dma.tx.channel,DMA_FLAG_TCIF5);
+	DMA_ITConfig(cfg->mask.dma.tx.channel, DMA_IT_TC, ENABLE);
+	/*DMA_ClearFlag(cfg->mask.dma.tx.channel,DMA_FLAG_TCIF5);
 	DMA_ClearITPendingBit(cfg->mask.dma.tx.channel, DMA_IT_TCIF5);
 
 	DMA_ClearFlag(cfg->level.dma.tx.channel,DMA_FLAG_TCIF5);
 	DMA_ClearITPendingBit(cfg->level.dma.tx.channel, DMA_IT_TCIF5);
+*/
 
 	/* Configure DMA interrupt */
-	/*NVIC_InitStructure.NVIC_IRQChannel = DMA1_Stream5_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGHEST;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);*/
+	NVIC_Init(&cfg->level.dma.irq.init);
+	NVIC_Init(&cfg->mask.dma.irq.init);
+
+
 
 	/* Enable SPI interrupts to DMA */
 	SPI_I2S_DMACmd(cfg->level.regs, SPI_I2S_DMAReq_Tx, ENABLE);
@@ -2350,7 +2426,6 @@ void PIOS_Video_Init(const struct pios_video_cfg * cfg){
     draw_buffer_mask = buffer0_mask;
     disp_buffer_level = buffer1_level;
     disp_buffer_mask = buffer1_mask;
-
 }
 
 
