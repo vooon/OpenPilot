@@ -119,7 +119,7 @@ int32_t CCGuidanceInitialize()
 		GPSPositionConnectCallback(&ccguidanceTask);
 
 		// indicate error - can only run correctly if GPSPosition is ever set, which will change the alarm state.
-		AlarmsSet(SYSTEMALARMS_ALARM_GUIDANCE,SYSTEMALARMS_ALARM_ERROR);
+		AlarmsSet(SYSTEMALARMS_ALARM_GUIDANCE,SYSTEMALARMS_ALARM_CRITICAL);
 		return 0;
 	}
 	return -1;
