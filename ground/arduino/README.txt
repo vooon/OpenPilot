@@ -15,7 +15,7 @@ The steps for using this library are:
    into your libraries directory:
 
   mkdir <arduino>/libraries/UAVObjects
-  cp build/uavobject-synthetics/arduino/* <arduino>/libraries/UAVObjects
+  cp build/uavobject-synthetics/arduino/UAVObjects/* <arduino>/libraries/UAVObjects
 
 4) Create a sketch that uses the library.  the following is an example:
 

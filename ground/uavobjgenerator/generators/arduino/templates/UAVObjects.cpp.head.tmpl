@@ -81,3 +81,4 @@ extern initmodule_t __module_initcall_start[], __module_initcall_end[];
 #define MODULE_TASKCREATE_ALL  { for (initmodule_t *fn = __module_initcall_start; fn < __module_initcall_end; fn++) \
 									if (fn->fn_tinit) \
 									   (fn->fn_tinit)(); }
+

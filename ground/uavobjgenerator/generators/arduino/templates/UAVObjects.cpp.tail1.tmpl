@@ -1,0 +1,16 @@
+/**
+ * Function used to initialize the first instance of each object.
+ * This file is automatically updated by the UAVObjectGenerator.
+ */
+void UAVObjectsInitializeAll() {
+$(OBJINIT)
+}
+
+/**
+ * Function used to initialize object by id. Useful for dynamic
+ * object initialization on low RAM systems like AVR. But please
+ * note that this links a lot of code due to reference to all
+ * object access functions.
+ */
+int32_t UAVObjInitializeByID(uint32_t id) {
+  switch (id) {

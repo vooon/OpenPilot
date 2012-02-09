@@ -32,19 +32,17 @@
 class UAVObjectGeneratorArduino
 {
 public:
-    bool generate(UAVObjectParser* gen,QString templatepath,QString outputpath);
-    QStringList fieldTypeStrC;
-    QString arduinoIncludeHeadTemplate, arduinoIncludeTemplate;
-    QString arduinoCodeHeadTemplate, arduinoCodeTemplate, arduinoCodeEndTemplate;
-    QString arduinoKeywordsHeadTemplate, arduinoKeywordsObjectTemplate;
-    QString arduinoObjectsTemplate;
-    QString outInclude, outCode, outKeywords, outObjects;
-    QDir arduinoCodePath;
-    QDir arduinoOutputPath;
+    bool generate(UAVObjectParser *parser, QString templatepath, QString outputpath);
 
 private:
-    bool process_object(ObjectInfo* info);
-
+    bool process_object(ObjectInfo *info);
+    QStringList fieldTypeStrC;
+    QString arduinoIncludeObjTemplate;
+    QString arduinoCodeObj1Template, arduinoCodeObj2Template;
+    QString arduinoKeywordsObjTemplate;
+    QString arduinoObjectsObjTemplate;
+    QString codeObj2;
+    QString outInclude, outCode, outKeywords, outObjects;
 };
 
 #endif
