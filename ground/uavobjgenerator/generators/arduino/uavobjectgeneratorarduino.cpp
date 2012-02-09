@@ -78,21 +78,21 @@ bool UAVObjectGeneratorArduino::generate(UAVObjectParser* parser,QString templat
   bool res = writeFileIfDiffrent( arduinoOutputPath.absolutePath() +
 				  "/UAVObjects.cpp", outCode );
   if (!res) {
-    cout << "Error: Could not write arduino code files" << endl;
+    cout << "Error: Could not write arduino code file" << endl;
     return false;
   }
 
   outInclude.append("\nvoid UAVObjectsInitializeAll();\n");
   res = writeFileIfDiffrent( arduinoOutputPath.absolutePath() + "/UAVObjects.h", outInclude );
   if (!res) {
-    cout << "Error: Could not write arduino include files" << endl;
+    cout << "Error: Could not write arduino include file" << endl;
     return false;
   }
 
   res = writeFileIfDiffrent( arduinoOutputPath.absolutePath() +
 				  "/keywords.txt", outKeywords );
   if (!res) {
-    cout << "Error: Could not write arduino code files" << endl;
+    cout << "Error: Could not write arduino keywords file" << endl;
     return false;
   }
 
