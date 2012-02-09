@@ -45,6 +45,7 @@ bool UAVObjectGeneratorArduino::generate(UAVObjectParser* parser,QString templat
   arduinoCodeEndTemplate = readFile( arduinoCodePath.absoluteFilePath("uavobjects_end_template.cpp") );
   arduinoKeywordsHeadTemplate = readFile( arduinoCodePath.absoluteFilePath("keywords_head_template.txt") );
   arduinoKeywordsObjectTemplate = readFile( arduinoCodePath.absoluteFilePath("keywords_object_template.txt") );
+  arduinoObjectsTemplate = readFile( arduinoCodePath.absoluteFilePath("objects_template.lst") );
 
   if (arduinoIncludeHeadTemplate.isNull() || arduinoIncludeTemplate.isNull()
     || arduinoCodeHeadTemplate.isNull() || arduinoCodeTemplate.isNull()
@@ -95,6 +96,13 @@ bool UAVObjectGeneratorArduino::generate(UAVObjectParser* parser,QString templat
     return false;
   }
 
+  res = writeFileIfDiffrent( arduinoOutputPath.absolutePath() +
+				  "/objects.lst", outObjects );
+  if (!res) {
+    cout << "Error: Could not write arduino object list file" << endl;
+    return false;
+  }
+
   return true; // if we come here everything should be fine
 }
 
@@ -111,12 +119,15 @@ bool UAVObjectGeneratorArduino::process_object(ObjectInfo* info)
   QString includeTemplate = arduinoIncludeTemplate;
   QString codeTemplate = arduinoCodeTemplate;
   QString keywordsTemplate = arduinoKeywordsObjectTemplate;
+  QString objectsTemplate = arduinoObjectsTemplate;
   replaceCommonTags(includeTemplate, info);
   replaceCommonTags(codeTemplate, info);
   replaceCommonTags(keywordsTemplate, info);
+  replaceCommonTags(objectsTemplate, info);
   outCode += codeTemplate;
   outInclude += includeTemplate;
   outKeywords += keywordsTemplate;
+  outObjects += objectsTemplate;
 
   // Replace the $(DATAFIELDS) tag
   QString type;

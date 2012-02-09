@@ -36,8 +36,9 @@ public:
     QStringList fieldTypeStrC;
     QString arduinoIncludeHeadTemplate, arduinoIncludeTemplate;
     QString arduinoCodeHeadTemplate, arduinoCodeTemplate, arduinoCodeEndTemplate;
-    QString outInclude, outCode;
-    QString outKeywords, arduinoKeywordsHeadTemplate, arduinoKeywordsObjectTemplate;
+    QString arduinoKeywordsHeadTemplate, arduinoKeywordsObjectTemplate;
+    QString arduinoObjectsTemplate;
+    QString outInclude, outCode, outKeywords, outObjects;
     QDir arduinoCodePath;
     QDir arduinoOutputPath;
 
