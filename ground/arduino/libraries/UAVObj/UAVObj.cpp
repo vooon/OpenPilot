@@ -113,7 +113,7 @@ typedef struct ObjectInstListStruct ObjectInstList;
 struct ObjectListStruct {
   uint32_t id;
   /** The object ID */
-  const char *name;
+  PROGMEM const char *name;
   /** The object name */
   int8_t isMetaobject;
   /** Set to 1 if this is a metaobject */
@@ -208,8 +208,8 @@ void UAVObjClearStats() {
  * \return
  */
 UAVObjHandle
-UAVObjRegister(uint32_t id, const char *name,
-	       const char *metaName, int32_t isMetaobject,
+UAVObjRegister(uint32_t id, PROGMEM const char *name,
+	       PROGMEM const char *metaName, int32_t isMetaobject,
 	       int32_t isSingleInstance, int32_t isSettings,
 	       uint32_t numBytes,
 	       UAVObjInitializeCallback initCb)
@@ -303,7 +303,7 @@ UAVObjHandle UAVObjGetByName(char *name) {
   // Look for object
   LL_FOREACH(objList, objEntry) {
     if (objEntry->name != NULL
-	&& strcmp(objEntry->name, name) == 0) {
+	&& strcmp_P(name, objEntry->name) == 0) {
       // Done, object found
       return (UAVObjHandle) objEntry;
     }
@@ -326,7 +326,7 @@ uint32_t UAVObjGetID(UAVObjHandle obj) {
  * \param[in] obj The object handle
  * \return The object's name
  */
-const char *UAVObjGetName(UAVObjHandle obj) {
+PROGMEM const char *UAVObjGetName(UAVObjHandle obj) {
   return ((ObjectList *) obj)->name;
 }
 

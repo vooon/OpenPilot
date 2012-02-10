@@ -47,8 +47,18 @@ static UAVObjHandle $(NAME)_handle;
 int32_t $(NAME)Initialize(void)
 {
   // Register object with the object manager
-  $(NAME)_handle = UAVObjRegister($(NAMEUC)_OBJID, $(NAMEUC)_NAME, $(NAMEUC)_METANAME, 0,
-			    $(NAMEUC)_ISSINGLEINST, $(NAMEUC)_ISSETTINGS, $(NAMEUC)_NUMBYTES, &$(NAME)SetDefaults);
+  $(NAME)_handle = UAVObjRegister($(NAMEUC)_OBJID,
+#if defined(UAVOBJECTS_INCLUDE_NAME)
+    PSTR($(NAMEUC)_NAME),
+#else
+    NULL,
+#endif
+#if defined(UAVOBJECTS_INCLUDE_METANAME)
+    PSTR($(NAMEUC)_METANAME),
+#else
+    NULL,
+#endif
+    0, $(NAMEUC)_ISSINGLEINST, $(NAMEUC)_ISSETTINGS, $(NAMEUC)_NUMBYTES, &$(NAME)SetDefaults);
 
   // Done
   if ($(NAME)_handle != 0) {
