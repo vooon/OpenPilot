@@ -139,8 +139,8 @@ static void ccguidanceTask(UAVObjEvent * ev)
 	portTickType thisTime;
 
 	static portTickType lastUpdateTime = 0;
-	static float positionDesiredNorth, positionDesiredEast, positionDesiredDown, diffHeadingYaw;
-	float positionActualNorth = 0, positionActualEast = 0, DistanceToBase = 0, course = 0;
+	static float positionDesiredNorth, positionDesiredEast, positionDesiredDown, diffHeadingYaw, DistanceToBase;
+	float positionActualNorth = 0, positionActualEast = 0, course = 0;
 	static uint32_t thisTimesPeriodCorrectBiasYaw;
 	static bool	firsRunSetCourse = TRUE, StateSaveCurrentPositionToRTB = FALSE;
 	float TrottleStep = 0;
@@ -218,7 +218,7 @@ static void ccguidanceTask(UAVObjEvent * ev)
 			/* main position hold loop */
 			// Calculation of the rate after the turn and the beginning of motion in a straight line.
 			if (((thisTimesPeriodCorrectBiasYaw >= ccguidanceSettings.PeriodCorrectBiasYaw) &&
-				(DistanceToBase > ccguidanceSettings.RadiusBase)) ||
+				(DistanceToBase >= ccguidanceSettings.RadiusBase)) ||
 				(firsRunSetCourse == TRUE)) {
 				// Save current location to HomeLocation if flightStatus = DISARMED
 				if (firsRunSetCourse == TRUE) {
@@ -232,17 +232,14 @@ static void ccguidanceTask(UAVObjEvent * ev)
 						CCGuidanceSettingsSet(&ccguidanceSettings);
 						positionHoldLast = 0;
 					}
+					DistanceToBase = ccguidanceSettings.RadiusBase;
 					StateSaveCurrentPositionToRTB = !ccguidanceSettings.HomeLocationEnableRequestSet;
 					thisTimesPeriodCorrectBiasYaw = ccguidanceSettings.PeriodCorrectBiasYaw;
 					if (stabDesired.Throttle < ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_MIN]) stabDesired.Throttle = ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_MIN];
 				}
-
 				// Hold the current direction of flight
 				AttitudeActualGet(&attitudeActual);
 				stabDesired.Yaw = attitudeActual.Yaw;
-				//Substitute the current rate to increase to a maximum, the minimum allowed for the calculation of the course.
-				positionActual.Groundspeed = ccguidanceSettings.GroundSpeedCalcCorrectHeadMin;
-
 				// Calculation errors between the rate of the gyroscope and GPS at a speed not less than the minimum.
 				if ((thisTimesPeriodCorrectBiasYaw >= (ccguidanceSettings.PeriodCorrectBiasYaw + ccguidanceSettings.TimesRotateToCourse)) &&
 					positionActual.Groundspeed >= ccguidanceSettings.GroundSpeedCalcCorrectHeadMin) {
@@ -252,6 +249,8 @@ static void ccguidanceTask(UAVObjEvent * ev)
 					while (diffHeadingYaw>180.)  diffHeadingYaw-=360.;
 					thisTimesPeriodCorrectBiasYaw = 0;
 				}
+				//Substitute the current rate to increase to a maximum speed 33 m/c.
+				ccguidanceSettings.GroundSpeedMax = 33;
 			} else {
 				/* 1. Calculate course */
 				positionActualNorth = positionActual.Latitude * 1e-7;
@@ -284,6 +283,11 @@ static void ccguidanceTask(UAVObjEvent * ev)
 					DistanceToBase = abs(DistanceToBase * degreeLatLenght);
 #endif
 				if (isnan(course)) course=0;
+
+				// Reset thisTimesPeriodCorrectBiasYaw in zone RadiusBase
+				if (DistanceToBase < ccguidanceSettings.RadiusBase) {
+					thisTimesPeriodCorrectBiasYaw = 0;
+					}
 /*
 				if (!((DistanceToBase < ccguidanceSettings.RadiusBase) && (ccguidanceSettings.CircleAroundBase == FALSE))) {
 					course += diffHeadingYaw;
