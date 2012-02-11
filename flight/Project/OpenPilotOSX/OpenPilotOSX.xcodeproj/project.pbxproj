@@ -53,6 +53,7 @@
 		650D8ED212DFE17500D05CC9 /* uavtalk.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = uavtalk.c; sourceTree = "<group>"; };
 		6512D60512ED4CA2008175E5 /* pios_flash_w25x.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pios_flash_w25x.h; sourceTree = "<group>"; };
 		6512D60712ED4CB8008175E5 /* pios_flash_w25x.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pios_flash_w25x.c; sourceTree = "<group>"; };
+		6514861014E7060700118DF5 /* board_hw_defs */ = {isa = PBXFileReference; lastKnownFileType = folder; name = board_hw_defs; path = ../../board_hw_defs; sourceTree = "<group>"; };
 		65173C9F12EBFD1700D6A7CB /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; name = Makefile; path = ../../../Makefile; sourceTree = SOURCE_ROOT; };
 		651913371256C5240039C0A3 /* ahrs_comm_objects.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ahrs_comm_objects.c; sourceTree = "<group>"; };
 		651913381256C5240039C0A3 /* ahrs_spi_comm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ahrs_spi_comm.c; sourceTree = "<group>"; };
@@ -3667,6 +3668,7 @@
 		657CEEB5121DBC49007A1FBE /* flight */ = {
 			isa = PBXGroup;
 			children = (
+				6514861014E7060700118DF5 /* board_hw_defs */,
 				65FF4BB313791C3300146BE4 /* Bootloaders */,
 				65F93B9012EE09280047DB36 /* PipXtreme */,
 				65B7E6AC120DF1CD000C1123 /* AHRS */,
