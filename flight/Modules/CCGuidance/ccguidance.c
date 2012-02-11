@@ -222,17 +222,17 @@ static void ccguidanceTask(UAVObjEvent * ev)
 				(firsRunSetCourse == TRUE)) {
 				// Save current location to HomeLocation if flightStatus = DISARMED
 				if (firsRunSetCourse == TRUE) {
+					firsRunSetCourse = FALSE;
 					if (flightStatus.Armed == FLIGHTSTATUS_ARMED_DISARMED &&
 						StateSaveCurrentPositionToRTB == FALSE) {
-						firsRunSetCourse = FALSE;
 						ccguidanceSettings.HomeLocationLatitude	= positionActual.Latitude;
 						ccguidanceSettings.HomeLocationLongitude = positionActual.Longitude;
 						ccguidanceSettings.HomeLocationAltitude = positionActual.Altitude;
 						ccguidanceSettings.HomeLocationSet = TRUE;
 						CCGuidanceSettingsSet(&ccguidanceSettings);
 						positionHoldLast = 0;
-						StateSaveCurrentPositionToRTB = !ccguidanceSettings.HomeLocationEnableRequestSet;
 					}
+					StateSaveCurrentPositionToRTB = !ccguidanceSettings.HomeLocationEnableRequestSet;
 					thisTimesPeriodCorrectBiasYaw = ccguidanceSettings.PeriodCorrectBiasYaw;
 					if (stabDesired.Throttle < ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_MIN]) stabDesired.Throttle = ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_MIN];
 				}
