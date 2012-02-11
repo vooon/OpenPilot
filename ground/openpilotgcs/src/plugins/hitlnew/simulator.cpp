@@ -190,6 +190,8 @@ void Simulator::onStart()
 
 void Simulator::receiveUpdate()
 {
+    //emit processOutput("Simulator::receiveUpdate()");
+
 	// Update connection timer and status
 	simTimer->setInterval(simTimeout);
 	simTimer->stop();
@@ -201,6 +203,7 @@ void Simulator::receiveUpdate()
 	}
 
 	// Process data
+        qDebug() << "checking for datagrams";
         while(inSocket->hasPendingDatagrams()) {
 		// Receive datagram
 		QByteArray datagram;
@@ -209,7 +212,8 @@ void Simulator::receiveUpdate()
 		quint16 senderPort;
 		inSocket->readDatagram(datagram.data(), datagram.size(),
 							   &sender, &senderPort);
-		//QString datastr(datagram);
+                QString datastr(datagram);
+                qDebug() << "found datagram" + datastr;
 		// Process incomming data
 		processUpdate(datagram);
 	 }
@@ -227,9 +231,7 @@ void Simulator::setupObjects()
         setupOutputObject(posHome, 1000);
         setupOutputObject(attRaw, 10);
         //setupOutputObject(attRaw, 100);
-
-
-
+        setupOutputObject(manCtrlCommand,200);
 }
 
 void Simulator::setupInputObject(UAVObject* obj, int updatePeriod)

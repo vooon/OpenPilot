@@ -47,7 +47,7 @@ private slots:
 	void processReadyRead();
 
 private:
-
+    bool once;
     int udpCounterGCSsend; //keeps track of udp packets sent to FG
     int udpCounterFGrecv; //keeps track of udp packets received by FG
 

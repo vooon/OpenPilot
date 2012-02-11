@@ -42,7 +42,7 @@ ifeq ($(UNAME), Darwin)
 endif
 
 # OpenPilot GCS build configuration (debug | release)
-GCS_BUILD_CONF ?= debug
+GCS_BUILD_CONF ?= release
 
 # Set up misc host tools
 RM=rm

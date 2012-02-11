@@ -67,10 +67,36 @@ void FGSimulator::setupUdpPorts(const QString& host, int inPort, int outPort)
         emit processOutput("Successfully bound to address " + host + " on port " + QString::number(inPort) + "\n");
     else
         emit processOutput("Cannot bind to address " + host + " on port " + QString::number(inPort) + "\n");
+
+    once = false;
 }
 
 bool FGSimulator::setupProcess()
 {
+
+    QMutexLocker locker(&lock);
+    udpCounterGCSsend = 0;
+
+    QString args("--fg-root=\"" + settings.dataPath + "\" " +
+                 "--timeofday=noon " +
+                 "--httpd=5400 " +
+                 "--enable-hud " +
+                 "--in-air " +
+                 "--altitude=3000 " +
+                 "--vc=100 " +
+                 "--log-level=alert " +
+                 "--generic=socket,out,20," + settings.hostAddress + "," +
+                 QString::number(settings.inPort) + ",udp,opfgprotocol" +
+                 "--generic=socket,in,40," + settings.remoteHostAddress + "," +
+                 QString::number(settings.outPort) + ",udp,opfgprotocol");
+
+    emit processOutput("Start Flightgear from the command line with the following arguments: \n\n" + args + "\n\n" +
+                       "You can optionally run Flightgear from a networked computer.\n" +
+                       "Make sure the computer running Flightgear can can ping your local interface adapter. ie." + settings.hostAddress + "\n"
+                       "Remote computer must have the correct OpenPilot protocol installed.");
+
+    return true;
+    /*
 	QMutexLocker locker(&lock);
 
 	// Copy FlightGear generic protocol configuration file to the FG protocol directory
@@ -140,6 +166,7 @@ bool FGSimulator::setupProcess()
         udpCounterGCSsend = 0;
 
 	return true;
+        */
 }
 
 void FGSimulator::processReadyRead()
@@ -207,6 +234,8 @@ void FGSimulator::transmitUpdate()
 
 	QByteArray data = cmd.toAscii();
 
+        qDebug() << "Sending packet to FG";
+
         if(outSocket->writeDatagram(data, QHostAddress(settings.remoteHostAddress), settings.outPort) == -1)
         {
             emit processOutput("Error sending UDP packet to FG: " + outSocket->errorString() + "\n");
@@ -216,7 +245,8 @@ void FGSimulator::transmitUpdate()
     {
         // don't send new packet. Flightgear cannot process UDP fast enough.
         // V1.9.1 reads udp packets at set frequency and will get delayed if packets are sent too fast
-        // V2.0 does not currently work with --generic-protocol
+        // V2.0 DOES NOT currently work with --generic-protocol
+        // V2.4 DOES work with --generic-protocol and reads UDP packets. Yay!
     }
     
     if(!settings.manual)
@@ -235,9 +265,11 @@ void FGSimulator::transmitUpdate()
 void FGSimulator::processUpdate(const QByteArray& inp)
 {
     //TODO: this does not use the FLIGHT_PARAM structure, it should!
-        static char once=0;
-	// Split
+
+    // Split
 	QString data(inp);
+        qDebug() << data;
+
 	QStringList fields = data.split(",");
 	// Get xRate (deg/s)
 //        float xRate = fields[0].toFloat() * 180.0/M_PI;
@@ -252,50 +284,69 @@ void FGSimulator::processUpdate(const QByteArray& inp)
 	// Get xAccel (m/s^2)
 //        float zAccel = fields[5].toFloat() * FT2M;
 	// Get pitch (deg)
-	float pitch = fields[6].toFloat();
+        float pitch = fields[0].toFloat();
 	// Get pitchRate (deg/s)
-        float pitchRate = fields[7].toFloat();
+        float pitchRate = fields[1].toFloat();
 	// Get roll (deg)
-	float roll = fields[8].toFloat();
+        float roll = fields[2].toFloat();
 	// Get rollRate (deg/s)
-        float rollRate = fields[9].toFloat();
+        float rollRate = fields[3].toFloat();
 	// Get yaw (deg)
-	float yaw = fields[10].toFloat();
+        float yaw = fields[4].toFloat();
 	// Get yawRate (deg/s)
-        float yawRate = fields[11].toFloat();
+        float yawRate = fields[5].toFloat();
 	// Get latitude (deg)
-	float latitude = fields[12].toFloat();
+        float latitude = fields[6].toFloat();
 	// Get longitude (deg)
-	float longitude = fields[13].toFloat();
+        float longitude = fields[7].toFloat();
 	// Get heading (deg)
-	float heading = fields[14].toFloat();
+        float heading = fields[8].toFloat();
 	// Get altitude (m)
-	float altitude = fields[15].toFloat() * FT2M;
+        float altitude = fields[9].toFloat() * FT2M;
 	// Get altitudeAGL (m)
-	float altitudeAGL = fields[16].toFloat() * FT2M;
+        float altitudeAGL = fields[10].toFloat() * FT2M;
 	// Get groundspeed (m/s)
-	float groundspeed = fields[17].toFloat() * KT2MPS;
+        float groundspeed = fields[11].toFloat() * KT2MPS;
 	// Get airspeed (m/s)
-//	float airspeed = fields[18].toFloat() * KT2MPS;
+        //float airspeed = fields[12].toFloat() * KT2MPS;
 	// Get temperature (degC)
-	float temperature = fields[19].toFloat();
+        float temperature = fields[12].toFloat();
 	// Get pressure (kpa)
-	float pressure = fields[20].toFloat() * INHG2KPA;
+        float pressure = fields[13].toFloat() * INHG2KPA;
 	// Get VelocityActual Down (cm/s)
-        float velocityActualDown = - fields[21].toFloat() * FPS2CMPS;
+        float positionActualDown = - fields[14].toFloat() * FT2M; //FPS2CMPS;
 	// Get VelocityActual East (cm/s)
-	float velocityActualEast = fields[22].toFloat() * FPS2CMPS;	
+        float positionActualEast = fields[15].toFloat() * FT2M; //FPS2CMPS;
 	// Get VelocityActual Down (cm/s)
-	float velocityActualNorth = fields[23].toFloat() * FPS2CMPS;
+        float positionActualNorth = fields[16].toFloat() * FT2M; //FPS2CMPS;
+        // Get Joystick Axis 1
+        float joystickAxis1 = fields[17].toFloat(); //Roll (fields[17].toFloat()/2 + 1.5) * 1000; //Convert to servo pulse counts
+        // Get Joystick Axis 2
+        float joystickAxis2 = fields[18].toFloat(); //Pitch (fields[18].toFloat()/2 + 1.5) * 1000;
+        // Get Joystick Axis 3
+        float joystickAxis3 = fields[19].toFloat(); //Throttle (fields[19].toFloat()/2 + 1.5) * 1000;
+        // Get Joystick Axis 4
+        float joystickAxis4 = fields[20].toFloat(); //Rudder (fields[20].toFloat()/2 + 1.5) * 1000;
+        // Get Joystick Axis 5
+        float joystickAxis5 = (fields[21].toFloat()/2 + 1.5) * 1000;
+        // Get Joystick Axis 6
+        float joystickAxis6 = (fields[22].toFloat()/2 + 1.5) * 1000;
+        // Get Joystick Axis 7
+        float joystickAxis7 = (fields[23].toFloat()/2 + 1.5) * 1000;
+        // Get Joystick Axis 8
+        float joystickAxis8 = (fields[24].toFloat()/2 + 1.5) * 1000;
 
         // Get UDP packets received by FG
-        int n = fields[24].toInt();
+        int n = fields[25].toInt();
         udpCounterFGrecv = n;
 
         //run once
         HomeLocation::DataFields homeData = posHome->getData();
         if(!once)
         {
+            //Print first packet to GUI
+            emit processOutput("First FG packet:\n" + data);
+
             memset(&homeData, 0, sizeof(HomeLocation::DataFields));
             // Update homelocation
             homeData.Latitude = latitude * 10e6;
@@ -323,19 +374,21 @@ void FGSimulator::processUpdate(const QByteArray& inp)
         }
 	
 	// Update VelocityActual.{Nort,East,Down}
-	VelocityActual::DataFields velocityActualData;
+        /*
+        VelocityActual::DataFields velocityActualData;
 	memset(&velocityActualData, 0, sizeof(VelocityActual::DataFields));
 	velocityActualData.North = velocityActualNorth;
 	velocityActualData.East = velocityActualEast;
 	velocityActualData.Down = velocityActualDown;
 	velActual->setData(velocityActualData);
-	
+        */
+
 	// Update PositionActual.{Nort,East,Down}
 	PositionActual::DataFields positionActualData;
 	memset(&positionActualData, 0, sizeof(PositionActual::DataFields));
-        positionActualData.North = 0; //Currently hardcoded as there is no way of setting up a reference point to calculate distance
-	positionActualData.East = 0; //Currently hardcoded as there is no way of setting up a reference point to calculate distance
-	positionActualData.Down = (altitude * 100); //Multiply by 100 because positionActual expects input in Centimeters.
+        positionActualData.North = positionActualNorth * 100; //Currently hardcoded as there is no way of setting up a reference point to calculate distance
+        positionActualData.East = positionActualEast * 100; //Currently hardcoded as there is no way of setting up a reference point to calculate distance
+        positionActualData.Down = positionActualDown * 100; //(altitude * 100); //Multiply by 100 because positionActual expects input in Centimeters.
         posActual->setData(positionActualData);
 
 	// Update AltitudeActual object
@@ -370,7 +423,7 @@ void FGSimulator::processUpdate(const QByteArray& inp)
         gpsData.Status = GPSPosition::STATUS_FIX3D;
         gpsPos->setData(gpsData);
 
-        float NED[3];
+        /*float NED[3];
         double LLA[3] = {(double) gpsData.Latitude / 1e7, (double) gpsData.Longitude / 1e7, (double) (gpsData.GeoidSeparation + gpsData.Altitude)};
         // convert from cm back to meters
         double ECEF[3] = {(double) (homeData.ECEF[0] / 100), (double) (homeData.ECEF[1] / 100), (double) (homeData.ECEF[2] / 100)};
@@ -380,6 +433,7 @@ void FGSimulator::processUpdate(const QByteArray& inp)
         positionActualData.East = NED[1]*100; //Currently hardcoded as there is no way of setting up a reference point to calculate distance
         positionActualData.Down = NED[2]*100; //Multiply by 100 because positionActual expects input in Centimeters.
         posActual->setData(positionActualData);
+        */
 
         // Update AttitudeRaw object (filtered gyros only for now)
         AttitudeRaw::DataFields rawData;
@@ -392,5 +446,21 @@ void FGSimulator::processUpdate(const QByteArray& inp)
         rawData.gyros[2] = yawRate;
         attRaw->setData(rawData);
         // attRaw->updated();
+
+        // Update Joystick object
+        ManualControlCommand::DataFields man;
+        memset(&man, 0, sizeof(ManualControlCommand::DataFields));
+        man = manCtrlCommand->getData();
+        man.Roll = joystickAxis1;
+        man.Pitch = joystickAxis2;
+        man.Throttle = joystickAxis3;
+        man.Yaw = joystickAxis4;
+        man.Channel[4] = joystickAxis5;
+        man.Channel[5] = joystickAxis6;
+        man.Channel[6] = joystickAxis7;
+        man.Channel[7] = joystickAxis8;
+        man.Connected = true;
+        manCtrlCommand->setData(man);
+
 }
 
