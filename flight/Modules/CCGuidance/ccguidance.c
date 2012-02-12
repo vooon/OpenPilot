@@ -142,7 +142,7 @@ static void ccguidanceTask(UAVObjEvent * ev)
 	static float positionDesiredNorth, positionDesiredEast, positionDesiredDown, diffHeadingYaw, DistanceToBase;
 	float positionActualNorth = 0, positionActualEast = 0, course = 0;
 	static uint32_t thisTimesPeriodCorrectBiasYaw;
-	static bool	firsRunSetCourse = TRUE, StateSaveCurrentPositionToRTB = FALSE;
+	static bool	firsRunSetCourse = TRUE, StateSaveCurrentPositionToRTB = FALSE, fixedHeading = FALSE;
 	float TrottleStep = 0;
 
 
@@ -237,17 +237,20 @@ static void ccguidanceTask(UAVObjEvent * ev)
 					thisTimesPeriodCorrectBiasYaw = ccguidanceSettings.PeriodCorrectBiasYaw;
 					if (stabDesired.Throttle < ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_MIN]) stabDesired.Throttle = ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_MIN];
 				}
-				// Hold the current direction of flight
 				AttitudeActualGet(&attitudeActual);
-				stabDesired.Yaw = attitudeActual.Yaw;
+				// Hold the current direction of flight
+				if (fixedHeading == FALSE) {
+					stabDesired.Yaw = attitudeActual.Yaw;
+					fixedHeading = TRUE;
+					}
 				// Calculation errors between the rate of the gyroscope and GPS at a speed not less than the minimum.
 				if ((thisTimesPeriodCorrectBiasYaw >= (ccguidanceSettings.PeriodCorrectBiasYaw + ccguidanceSettings.TimesRotateToCourse)) &&
 					positionActual.Groundspeed >= ccguidanceSettings.GroundSpeedCalcCorrectHeadMin) {
-					AttitudeActualGet(&attitudeActual);
 					diffHeadingYaw = attitudeActual.Yaw - positionActual.Heading;
 					while (diffHeadingYaw<-180.) diffHeadingYaw+=360.;
 					while (diffHeadingYaw>180.)  diffHeadingYaw-=360.;
 					thisTimesPeriodCorrectBiasYaw = 0;
+					fixedHeading = FALSE;
 				}
 				//Substitute the current rate to increase to a maximum speed 33 m/c.
 				ccguidanceSettings.GroundSpeedMax = 33;
@@ -373,6 +376,7 @@ static void ccguidanceTask(UAVObjEvent * ev)
 		StabilizationDesiredSet(&stabDesired);
 	} else {
 		// reset globals...
+		fixedHeading = FALSE;
 		thisTimesPeriodCorrectBiasYaw = 0;
 		positionHoldLast = 0;
 		firsRunSetCourse = TRUE;
