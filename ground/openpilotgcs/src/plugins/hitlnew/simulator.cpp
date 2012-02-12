@@ -203,7 +203,7 @@ void Simulator::receiveUpdate()
 	}
 
 	// Process data
-        qDebug() << "checking for datagrams";
+       // qDebug() << "checking for datagrams";
         while(inSocket->hasPendingDatagrams()) {
 		// Receive datagram
 		QByteArray datagram;
@@ -213,7 +213,7 @@ void Simulator::receiveUpdate()
 		inSocket->readDatagram(datagram.data(), datagram.size(),
 							   &sender, &senderPort);
                 QString datastr(datagram);
-                qDebug() << "found datagram" + datastr;
+                //qDebug() << "found datagram" + datastr;
 		// Process incomming data
 		processUpdate(datagram);
 	 }

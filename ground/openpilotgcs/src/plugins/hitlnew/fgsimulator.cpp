@@ -196,7 +196,7 @@ void FGSimulator::transmitUpdate()
         {
             // Note: Pitch sign is reversed in FG ?
             ailerons = manCtrlData.Roll;
-            elevator = -manCtrlData.Pitch;
+            elevator = manCtrlData.Pitch;
             rudder = manCtrlData.Yaw;
             throttle = manCtrlData.Throttle;
         }
@@ -207,7 +207,7 @@ void FGSimulator::transmitUpdate()
         actData = actDesired->getData();
 
         ailerons = actData.Roll;
-        elevator = -actData.Pitch;
+        elevator = actData.Pitch;
         rudder = actData.Yaw;
         throttle = actData.Throttle;
     }
@@ -234,7 +234,7 @@ void FGSimulator::transmitUpdate()
 
 	QByteArray data = cmd.toAscii();
 
-        qDebug() << "Sending packet to FG";
+        //qDebug() << "Sending packet to FG";
 
         if(outSocket->writeDatagram(data, QHostAddress(settings.remoteHostAddress), settings.outPort) == -1)
         {
@@ -248,17 +248,18 @@ void FGSimulator::transmitUpdate()
         // V2.0 DOES NOT currently work with --generic-protocol
         // V2.4 DOES work with --generic-protocol and reads UDP packets. Yay!
     }
-    
+
+    /*
     if(!settings.manual)
     {
         actData.Roll = ailerons;
-        actData.Pitch = -elevator;
+        actData.Pitch = elevator;
         actData.Yaw = rudder;
         actData.Throttle = throttle;
         //actData.NumLongUpdates = (float)udpCounterFGrecv;
         //actData.UpdateTime = (float)udpCounterGCSsend;
         actDesired->setData(actData);
-    }
+    }*/
 }
 
 
@@ -266,23 +267,18 @@ void FGSimulator::processUpdate(const QByteArray& inp)
 {
     //TODO: this does not use the FLIGHT_PARAM structure, it should!
 
-    // Split
 	QString data(inp);
-        qDebug() << data;
+        //qDebug() << data;
 
 	QStringList fields = data.split(",");
-	// Get xRate (deg/s)
-//        float xRate = fields[0].toFloat() * 180.0/M_PI;
-	// Get yRate (deg/s)
-//        float yRate = fields[1].toFloat() * 180.0/M_PI;
-	// Get zRate (deg/s)
-//        float zRate = fields[2].toFloat() * 180.0/M_PI;
-	// Get xAccel (m/s^2)
-//        float xAccel = fields[3].toFloat() * FT2M;
-	// Get yAccel (m/s^2)
-//        float yAccel = fields[4].toFloat() * FT2M;
-	// Get xAccel (m/s^2)
-//        float zAccel = fields[5].toFloat() * FT2M;
+
+        //Check for correct number of fields
+        if (fields.length() != 28) {
+            emit processOutput("Number of fields incorrect. Should be 28. Received " + QString(fields.length()) + "\n");
+            emit processOutput("Data string:\n" + data + "\n");
+            return;
+        }
+
 	// Get pitch (deg)
         float pitch = fields[0].toFloat();
 	// Get pitchRate (deg/s)
@@ -305,39 +301,43 @@ void FGSimulator::processUpdate(const QByteArray& inp)
         float altitude = fields[9].toFloat() * FT2M;
 	// Get altitudeAGL (m)
         float altitudeAGL = fields[10].toFloat() * FT2M;
+        // Get xVel,yVel,zVel
+        float velX = fields[11].toFloat();
+        float velY = fields[12].toFloat();
+        float velZ = fields[13].toFloat();
 	// Get groundspeed (m/s)
-        float groundspeed = fields[11].toFloat() * KT2MPS;
+        float groundspeed = sqrt(pow(velX,2) + pow(velY,2));
 	// Get airspeed (m/s)
         //float airspeed = fields[12].toFloat() * KT2MPS;
 	// Get temperature (degC)
-        float temperature = fields[12].toFloat();
+        float temperature = fields[14].toFloat();
 	// Get pressure (kpa)
-        float pressure = fields[13].toFloat() * INHG2KPA;
+        float pressure = fields[15].toFloat() * INHG2KPA;
 	// Get VelocityActual Down (cm/s)
-        float positionActualDown = - fields[14].toFloat() * FT2M; //FPS2CMPS;
+        float positionActualDown = - fields[16].toFloat() * FT2M; //FPS2CMPS;
 	// Get VelocityActual East (cm/s)
-        float positionActualEast = fields[15].toFloat() * FT2M; //FPS2CMPS;
+        float positionActualEast = fields[17].toFloat() * FT2M; //FPS2CMPS;
 	// Get VelocityActual Down (cm/s)
-        float positionActualNorth = fields[16].toFloat() * FT2M; //FPS2CMPS;
+        float positionActualNorth = fields[18].toFloat() * FT2M; //FPS2CMPS;
         // Get Joystick Axis 1
-        float joystickAxis1 = fields[17].toFloat(); //Roll (fields[17].toFloat()/2 + 1.5) * 1000; //Convert to servo pulse counts
+        float joystickAxis1 = fields[19].toFloat(); //Roll (fields[17].toFloat()/2 + 1.5) * 1000;
         // Get Joystick Axis 2
-        float joystickAxis2 = fields[18].toFloat(); //Pitch (fields[18].toFloat()/2 + 1.5) * 1000;
+        float joystickAxis2 = fields[20].toFloat(); //Pitch (fields[18].toFloat()/2 + 1.5) * 1000;
         // Get Joystick Axis 3
-        float joystickAxis3 = fields[19].toFloat(); //Throttle (fields[19].toFloat()/2 + 1.5) * 1000;
+        float joystickAxis3 = fields[21].toFloat(); //Throttle (fields[19].toFloat()/2 + 1.5) * 1000;
         // Get Joystick Axis 4
-        float joystickAxis4 = fields[20].toFloat(); //Rudder (fields[20].toFloat()/2 + 1.5) * 1000;
+        float joystickAxis4 = fields[22].toFloat(); //Rudder (fields[20].toFloat()/2 + 1.5) * 1000;
         // Get Joystick Axis 5
-        float joystickAxis5 = (fields[21].toFloat()/2 + 1.5) * 1000;
+        float joystickAxis5 = (fields[23].toFloat()/2 + 1.5) * 1000; //Convert to servo pulse counts
         // Get Joystick Axis 6
-        float joystickAxis6 = (fields[22].toFloat()/2 + 1.5) * 1000;
+        float joystickAxis6 = (fields[24].toFloat()/2 + 1.5) * 1000;
         // Get Joystick Axis 7
-        float joystickAxis7 = (fields[23].toFloat()/2 + 1.5) * 1000;
+        float joystickAxis7 = (fields[25].toFloat()/2 + 1.5) * 1000;
         // Get Joystick Axis 8
-        float joystickAxis8 = (fields[24].toFloat()/2 + 1.5) * 1000;
+        float joystickAxis8 = (fields[26].toFloat()/2 + 1.5) * 1000;
 
         // Get UDP packets received by FG
-        int n = fields[25].toInt();
+        int n = fields[27].toInt();
         udpCounterFGrecv = n;
 
         //run once
@@ -374,14 +374,13 @@ void FGSimulator::processUpdate(const QByteArray& inp)
         }
 	
 	// Update VelocityActual.{Nort,East,Down}
-        /*
+
         VelocityActual::DataFields velocityActualData;
 	memset(&velocityActualData, 0, sizeof(VelocityActual::DataFields));
-	velocityActualData.North = velocityActualNorth;
-	velocityActualData.East = velocityActualEast;
-	velocityActualData.Down = velocityActualDown;
+        velocityActualData.North = velY;
+        velocityActualData.East = velX; //need to check that this matches the sim coordinate system
+        velocityActualData.Down = velZ;
 	velActual->setData(velocityActualData);
-        */
 
 	// Update PositionActual.{Nort,East,Down}
 	PositionActual::DataFields positionActualData;
@@ -405,10 +404,17 @@ void FGSimulator::processUpdate(const QByteArray& inp)
 	attActualData.Roll = roll;
 	attActualData.Pitch = pitch;
 	attActualData.Yaw = yaw;
-	attActualData.q1 = 0;
-	attActualData.q2 = 0;
-	attActualData.q3 = 0;
-	attActualData.q4 = 0;
+
+        /*
+        float rpy[] = {roll,pitch,yaw};
+        float quat[4] = {0.0};
+        Utils::CoordinateConversions().RPY2Quaternion(rpy,quat);
+
+        attActualData.q1 = quat[0];
+        attActualData.q2 = quat[1];
+        attActualData.q3 = quat[2];
+        attActualData.q4 = quat[3];
+        */
 	attActual->setData(attActualData);
 
 	// Update gps objects
@@ -440,8 +446,6 @@ void FGSimulator::processUpdate(const QByteArray& inp)
         memset(&rawData, 0, sizeof(AttitudeRaw::DataFields));
         rawData = attRaw->getData();
         rawData.gyros[0] = rollRate;
-        //rawData.gyros[1] = cos(DEG2RAD * roll) * pitchRate + sin(DEG2RAD * roll) * yawRate;
-        //rawData.gyros[2] = cos(DEG2RAD * roll) * yawRate - sin(DEG2RAD * roll) * pitchRate;
         rawData.gyros[1] = pitchRate;
         rawData.gyros[2] = yawRate;
         attRaw->setData(rawData);

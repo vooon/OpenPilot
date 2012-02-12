@@ -179,7 +179,7 @@ protected:
 	HomeLocation* posHome;
 	AttitudeRaw* attRaw;
         GPSPosition* gpsPos;
-	GCSTelemetryStats* telStats;
+        GCSTelemetryStats* telStats;
 
 	SimulatorSettings settings;
 
