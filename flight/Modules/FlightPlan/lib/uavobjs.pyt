@@ -93,12 +93,19 @@ class uavreader:
 	for t in types:
 	    fi = filter( lambda x: x['obj'].__class__.__name__ == t, list)
 	    demo_obj = fi[0]['obj']
-	    out = out + """# name: %s
+	    data_out = [ ('timestamp', map(lambda x: x['timestamp'], fi)) ]
+	    for n,f in enumerate(demo_obj.fields): # use item 0 as model
+		if type(f.value) == type(0) or type(f.value) == type(0.0):
+		    data_out.append((f.name, map(lambda x: x['obj'].fields[n].value, fi)))
+
+	    out += """# name: %s
 # type: struct
 # length: %d
-""" % (t, len(demo_obj.fields) + 1)
+""" % (t, len(data_out))
 
-            out = out + """# name: %s
+	    for name,data in data_out:
+		strs = map(lambda x: '%g' % x, data)
+                out  += """# name: %s
 # type: cell
 # rows: 1
 # columns: 1
@@ -106,25 +113,8 @@ class uavreader:
 # type: matrix
 # rows: 1
 # columns: %d
-""" % ('timestamp', len(fi))
-            out         = out + " ".join(map( lambda x: '%g' % (x['timestamp']), fi)) + "\n\n"
-          
-            for n,f in enumerate(demo_obj.fields): # use item 0 as model
-                if type(f.value) == type(0) or type(f.value) == type(0.0):
-		    values = map(lambda x: x['obj'].fields[n].value, fi)
-		    strs   = map(lambda x: '%g' % x, values)
-		else:
-		    strs   = []
-                out = out + """# name: %s
-# type: cell
-# rows: 1
-# columns: 1
-# name: <cell-element>
-# type: matrix
-# rows: 1
-# columns: %d
-""" % (f.__class__.__name__, len(strs))
-		out    = out + " ".join(strs) + "\n\n"
+""" % (name, len(strs))
+		out    += " ".join(strs) + "\n\n"
          
         return out
          
