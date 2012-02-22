@@ -123,6 +123,18 @@ class uavreader:
 		out    += " ".join(strs) + "\n\n"
          
         return out
+        
+    def summarize_error_list(self, errs):
+	syncerrs  = filter(lambda x: type(x) == SyncError, errs)
+	objiderrs = filter(lambda x: type(x) == ObjidError, errs)
+	
+	badids    = set(map(lambda e: e.objID, objiderrs))
+	out       = []
+	if len(syncerrs) > 0:
+	    out.append('bad sync encountered %d times' % (len(syncerrs)))
+	if len(badids) > 0:
+	    out.append('bad objid encountered %d times\nlist of bad objids:\n%s' % (len(badids), sorted(badids)))
+	return '\n'.join(out)
          
 if __name__ == "__main__":
     import sys
@@ -132,3 +144,4 @@ if __name__ == "__main__":
     r            = uavreader()
     msgs, errs, idx = r.unpack(data)
     print r.dump_uav_list_mat_text(msgs)
+    sys.stderr.write(r.summarize_error_list(errs))
