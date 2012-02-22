@@ -16,7 +16,6 @@ class ObjidError(KeyError):
     def __init__(self, bad_id):
 	self.objID = bad_id
 
-import random	
 class uavreader:
     header_names = [ 'timestamp', 'datasize', 'sync', 'msgType', 'msgSize', 'objID' ]
     header_types = [ '=I',        '=q',       '=B',   '=B',      '=H',      '=i'    ]
@@ -30,14 +29,10 @@ class uavreader:
 	    S      = {}
 	    i      = idx
 	    for n,t in self.header_zip:
-		#j  = i + struct.calcsize(t)
                 j  = i + t.size
-		#S[n] = struct.unpack(t, data[i:j])[0]
                 S[n] = t.unpack_from(data, i)[0]
 		i  = j
 		
-            #if random.random() < 0.001: S['sync'] = 0x12
-            #if random.random() < 0.001: S['objID'] = -1
 	    if S['sync'] != self.sync_code or S['msgType'] != self.msgType_code:
 		raise SyncError()
 	    if S['objID'] not in objid_map:
@@ -47,7 +42,6 @@ class uavreader:
 	    o        = c()
 	    i        = o.unpack(data, i)
 	    S['obj'] = o
-	    #S['CRC'] = struct.unpack('=B',data[i:i+1])[0]
             S['CRC'] = self.CRC_type.unpack_from(data, i)[0]
 	    
 	    return S, i + self.CRC_type.size
@@ -62,7 +56,6 @@ class uavreader:
 	    if n == 'sync': 
 	        sync_offset = i
 	        sync_pc     = t
-	    #i += struct.calcsize(t)
             i += t.size
 	header_size = i
         lasti = idx + header_size
@@ -73,7 +66,6 @@ class uavreader:
                 if v == self.sync_code:
                     return i - sync_offset
 	for i in range(lasti, len(data) - 1):
-	    #v = struct.unpack(sync_pc, data[i:i+1])[0]
             v = sync_pc.unpack_from(data,i)[0]
 	    if v == self.sync_code:
 		return i - sync_offset
@@ -86,7 +78,6 @@ class uavreader:
 	    try:
 	        S,i  = self.unpack_one(data,i)
 	        ret.append(S)
-                print 'success at %d' % i
 	    except SyncError:
 		print '# bad sync at %d' % i
 		i = self.next_uavojbect(data,i)
