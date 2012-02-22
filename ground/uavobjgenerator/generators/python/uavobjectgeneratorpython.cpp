@@ -138,13 +138,18 @@ bool UAVObjectGeneratorPython::process_object(ObjectInfo* info)
 bool UAVObjectGeneratorPython::generate_imports(ObjectInfo** objlist, int objnum)
 {
     QString outCode = pythonImportTemplate;
-    QString imports = QString(""	);
+    QString modules = QString("");
+    QString objs    = QString("");
     for (int objidx = 0; objidx < objnum; ++objidx) {
-	if (objidx)
-	    imports.append(", ");
-	imports.append(objlist[objidx]->namelc);
+	if (objidx) {
+	    modules.append(", ");
+	    objs.append(", ");
+	}
+	modules.append(objlist[objidx]->namelc);
+	objs.append(   objlist[objidx]->namelc + "." + objlist[objidx]->name);
     }
-    outCode.replace(QString("$(IMPORTLIST)"), imports);
+    outCode.replace(QString("$(MODULELIST)"), modules);
+    outCode.replace(QString("$(OBJECTLIST)"), objs);
     bool res = writeFileIfDiffrent( pythonOutputPath.absolutePath() + "/uavobjs.py", outCode );
     if (!res) {
         cout << "Error: Could not write Python output files" << endl;

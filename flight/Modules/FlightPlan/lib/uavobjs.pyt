@@ -1,12 +1,11 @@
-import $(IMPORTLIST)
-import struct, inspect, datetime, textwrap
-objlist = [ $(IMPORTLIST) ]
+import $(MODULELIST)
+import struct, datetime, textwrap
+
+objlist = [ $(OBJECTLIST) ]
 
 objid_map = {}
-for s in objlist:
-    for n,o in inspect.getmembers(s):
-	if hasattr(o,'OBJID'):
-	    objid_map[ o.OBJID ] = o
+for o in objlist:
+    objid_map[ o.OBJID ] = o
 
 class SyncError(AssertionError):
     pass
