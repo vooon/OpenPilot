@@ -17,12 +17,12 @@ class ObjidError(KeyError):
 
 class uavreader:
     header_names = [ 'timestamp', 'datasize', 'sync', 'msgType', 'msgSize', 'objID' ]
-    header_types = [ '=I',        '=q',       '=B',   '=B',      '=H',      '=i'    ]
+    header_types = [ '<I',        '<q',       '<B',   '<B',      '<H',      '<i'    ]
     header_types = map( lambda x: struct.Struct(x), header_types )
     header_zip   = zip(header_names, header_types)
     sync_code    = 0x3C
     msgType_code = 0x20
-    CRC_type     = struct.Struct( '=B' )
+    CRC_type     = struct.Struct( '<B' )
 
     def unpack_one(self, data, idx):
 	    S      = {}
@@ -46,7 +46,7 @@ class uavreader:
 	    return S, i + self.CRC_type.size
 	    
     next_chunk_size = 100
-    next_chunk_pack_code = struct.Struct('=100B')  # should really generate from size and header_types
+    next_chunk_pack_code = struct.Struct('<100B')  # should really generate from size and header_types
 
     def next_uavojbect(self, data, idx):
 	# Assumes corrupt object at idx, so begins by skipping a full header

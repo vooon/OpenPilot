@@ -85,14 +85,14 @@ class UAVObjectField:
 		ENUM = 7
 		
 	pack_code_map = { 
-	    'FLOAT32' : '=f',
-	    'INT16'   : '=h',
-	    'INT32'   : '=i',
-	    'INT8'    : '=b',
-	    'UINT16'  : '=H',
-	    'UINT32'  : '=I',
-	    'UINT8'   : '=B',
-	    'ENUM'    : '=B' }
+	    'FLOAT32' : '<f',
+	    'INT16'   : '<h',
+	    'INT32'   : '<i',
+	    'INT8'    : '<b',
+	    'UINT16'  : '<H',
+	    'UINT32'  : '<I',
+	    'UINT8'   : '<B',
+	    'ENUM'    : '<B' }
                    
         ftype_to_pack_code = {}
         for k,v in pack_code_map.iteritems():
@@ -445,7 +445,7 @@ class UAVObject:
 		"""
 		pass 
 	    
-	inst_pack_code = struct.Struct('=H')
+	inst_pack_code = struct.Struct('<H')
 	    
 	def unpack(self, data, idx):	    
 	    if not self.isSingleInst:
