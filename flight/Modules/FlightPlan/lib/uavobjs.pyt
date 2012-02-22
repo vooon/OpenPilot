@@ -89,20 +89,6 @@ class uavreader:
 	
     def dump_uav_list_mat_text(self, list):
 	out   = '# Created by OP UAV tools, %s\n' % (datetime.datetime.now().strftime('%a %b %d %H:%M:%S %Y'))
-        """
-	# name: AccessoryDesired
-	# type: struct
-	# length: 3
-	# name: timestamp
-	# type: cell
-	# rows: 1
-	# columns: 1
-	# name: <cell-element>
-	# type: matrix
-	# rows: 1
-	# columns: 2381
-	"""
-
 	types = set(map(lambda x: x['obj'].__class__.__name__, list))
 	for t in types:
 	    fi = filter( lambda x: x['obj'].__class__.__name__ == t, list)
