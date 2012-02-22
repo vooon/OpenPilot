@@ -132,12 +132,12 @@ class uavreader:
 	objiderrs = filter(lambda x: type(x) == ObjidError, errs)
 	
 	badids    = set(map(lambda e: e.objID, objiderrs))
-	out       = []
+	out       = ''
 	if len(syncerrs) > 0:
-	    out.append('bad sync encountered %d times' % (len(syncerrs)))
+	    out   += 'bad sync encountered %d times\n' % (len(syncerrs))
 	if len(badids) > 0:
-	    out.append('bad objid encountered %d times\nlist of bad objids:\n%s' % (len(badids), sorted(badids)))
-	return '\n'.join(out)
+	    out   += 'bad objid encountered %d times\nlist of bad objids:\n%s\n' % (len(badids), sorted(badids))
+	return out
          
 if __name__ == "__main__":
     import sys
