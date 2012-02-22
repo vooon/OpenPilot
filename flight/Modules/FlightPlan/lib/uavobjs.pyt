@@ -84,7 +84,6 @@ class uavreader:
 	    except ObjidError as e:
 		print '# bad object %d at %d' %(e.objID, i)
 		i = self.next_uavojbect(data,i)
-            if len(ret) % 100 == 0: print len(ret), i
 		
 	return ret, i
 	
