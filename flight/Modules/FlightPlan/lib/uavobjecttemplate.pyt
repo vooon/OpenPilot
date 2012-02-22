@@ -51,7 +51,6 @@ class $(NAME)(UAVObject):
 $(DATAFIELDINIT)
 		# Read field data
 		self.read()
-		self.metadata.read()
 
 
 

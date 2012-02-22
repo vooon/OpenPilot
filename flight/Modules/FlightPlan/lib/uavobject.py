@@ -129,7 +129,6 @@ class UAVObjectField:
 		  
 class UAVObject:
 	def __init__(self, objId):
-		self.metadata = UAVObjectMetadata(objId)
 		self.objId = objId
 		self.instId = 0
 		self.fields = []
