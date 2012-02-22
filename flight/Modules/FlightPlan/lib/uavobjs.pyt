@@ -6,7 +6,6 @@ objid_map = {}
 for s in objlist:
     for n,o in inspect.getmembers(s):
 	if hasattr(o,'OBJID'):
-	    exec( 'from %s import %s' % (s.__name__, n))
 	    objid_map[ o.OBJID ] = o
 
 class SyncError(AssertionError):
