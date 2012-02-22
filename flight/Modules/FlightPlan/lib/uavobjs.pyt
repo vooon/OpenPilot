@@ -1,5 +1,5 @@
 import $(IMPORTLIST)
-import struct, inspect
+import struct, inspect, datetime
 objlist = [ $(IMPORTLIST) ]
 
 objid_map = {}
@@ -88,8 +88,8 @@ class uavreader:
 	return ret, i
 	
     def dump_uav_list_mat_text(self, list):
-	out   = "# Created by OP UAV tools\n"
-	"""	
+	out   = '# Created by OP UAV tools, %s\n' % (datetime.datetime.now().strftime('%a %b %d %H:%M:%S %Y'))
+        """
 	# name: AccessoryDesired
 	# type: struct
 	# length: 3
