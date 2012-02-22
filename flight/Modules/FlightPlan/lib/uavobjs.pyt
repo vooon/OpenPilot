@@ -1,5 +1,5 @@
 import $(IMPORTLIST)
-import struct, inspect, datetime
+import struct, inspect, datetime, textwrap
 objlist = [ $(IMPORTLIST) ]
 
 objid_map = {}
@@ -98,22 +98,24 @@ class uavreader:
 		if type(f.value) == type(0) or type(f.value) == type(0.0):
 		    data_out.append((f.name, map(lambda x: x['obj'].fields[n].value, fi)))
 
-	    out += """# name: %s
-# type: struct
-# length: %d
-""" % (t, len(data_out))
+	    out += textwrap.dedent("""\
+		# name: %s
+		# type: struct
+		# length: %d
+		""") % (t, len(data_out))
 
 	    for name,data in data_out:
 		strs = map(lambda x: '%g' % x, data)
-                out  += """# name: %s
-# type: cell
-# rows: 1
-# columns: 1
-# name: <cell-element>
-# type: matrix
-# rows: 1
-# columns: %d
-""" % (name, len(strs))
+                out  += textwrap.dedent("""\
+		    # name: %s
+		    # type: cell
+		    # rows: 1
+		    # columns: 1
+		    # name: <cell-element>
+		    # type: matrix
+		    # rows: 1
+		    # columns: %d
+		    """) % (name, len(strs))
 		out    += " ".join(strs) + "\n\n"
          
         return out
