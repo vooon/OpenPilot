@@ -41,9 +41,9 @@ class uavreader:
 		i  = j
 		
 	    if S['sync'] != self.sync_code or S['msgType'] != self.msgType_code:
-		raise SyncError()
+		return SyncError(), idx
 	    if S['objID'] not in objid_map:
-		raise ObjidError(S['objID'])
+		return ObjidError(S['objID']), idx
 	    
 	    c        = objid_map[S['objID']]
 	    o        = c()
@@ -71,26 +71,24 @@ class uavreader:
                     
         # search for syncs one by one                    
 	for i in range(lasti, len(data) - 1):
-            v = header_type_map['sync'].unpack_from(data,i)[0]
+            v = self.header_type_map['sync'].unpack_from(data,i)[0]
 	    if v == self.sync_code:
 		return i - self.sync_offset
 	return len(data)      
 	    
     def unpack(self, data, idx = 0):
-	ret    = []
+	msgs   = []
+	errs   = []
 	i      = idx
 	while i < len(data):
-	    try:
-	        S,i  = self.unpack_one(data,i)
-	        ret.append(S)
-	    except SyncError:
-		print '# bad sync at %d' % i
-		i = self.next_uavobject(data,i)
-	    except ObjidError as e:
-		print '# bad object %d at %d' %(e.objID, i)
+	    S,i  = self.unpack_one(data,i)
+	    if not isinstance(S, Exception):
+		msgs.append(S)
+	    else:
+		errs.append(S)
 		i = self.next_uavobject(data,i)
 		
-	return ret, i
+	return msgs, errs, i
 	
     def dump_uav_list_mat_text(self, list):
 	out   = '# Created by OP UAV tools, %s\n' % (datetime.datetime.now().strftime('%a %b %d %H:%M:%S %Y'))
@@ -133,5 +131,5 @@ if __name__ == "__main__":
     f            = open(opl_filename)
     data         = f.read()
     r            = uavreader()
-    T, idx       = r.unpack(data)
-    print r.dump_uav_list_mat_text(T)
+    msgs, errs, idx = r.unpack(data)
+    print r.dump_uav_list_mat_text(msgs)
