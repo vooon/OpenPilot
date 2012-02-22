@@ -93,8 +93,8 @@ class uavreader:
 	    fi = filter( lambda x: x['obj'].__class__.__name__ == t, list)
 	    demo_obj = fi[0]['obj']
 	    data_out = [ ('timestamp', map(lambda x: x['timestamp'], fi)) ]
-	    if demo_obj.isSingleInst:
-		data_out.append(('instanceID', map(lambda x: x['obj'].instID, fi)))
+	    if not demo_obj.isSingleInst:
+		data_out.append(('instanceID', map(lambda x: x['obj'].instId, fi)))
 	    for n,f in enumerate(demo_obj.fields): # use item 0 as model
 		if type(f.value) == type(0) or type(f.value) == type(0.0):
 		    data_out.append((f.name, map(lambda x: x['obj'].fields[n].value, fi)))
