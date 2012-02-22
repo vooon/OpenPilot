@@ -80,7 +80,10 @@ class uavreader:
 	errs   = []
 	i      = idx
 	while i < len(data):
-	    S,i  = self.unpack_one(data,i)
+	    try:
+		S,i  = self.unpack_one(data,i)
+	    except struct.error: # probably at end of data, so return
+		return msgs, errs, i
 	    if not isinstance(S, Exception):
 		msgs.append(S)
 	    else:
