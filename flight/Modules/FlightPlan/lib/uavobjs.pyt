@@ -21,6 +21,7 @@ class uavreader:
     header_zip   = zip(header_names, header_types)
     header_type_map = dict(header_zip)
     sync_code    = 0x3C
+    sync_char    = header_type_map['sync'].pack(sync_code)
     msgType_code = 0x20
     CRC_type     = struct.Struct( '<B' )
     sync_offset  = sum(map(lambda x: x.size, header_types[0:header_names.index('sync')]))
@@ -58,22 +59,9 @@ class uavreader:
 
     def next_uavobject(self, data, idx):
 	# Assumes corrupt object at idx, so begins by skipping a full header
-        lasti = idx + self.header_size
-        
-        # first search for syncs in block of next_chunk_size
-        for i in range(lasti, len(data) - 1 - self.next_chunk_size, self.next_chunk_size):
-            vs = self.next_chunk_pack_code.unpack_from(data, i)
-            lasti = i
-            for i2, v in enumerate(vs):
-                if v == self.sync_code:
-                    return i + i2 - self.sync_offset
-                    
-        # search for syncs one by one                    
-	for i in range(lasti, len(data) - 1):
-            v = self.header_type_map['sync'].unpack_from(data,i)[0]
-	    if v == self.sync_code:
-		return i - self.sync_offset
-	return len(data)      
+        jdx = data.find( self.sync_char, idx + self.header_size)
+        if jdx < 0: return len(data)
+        else:       return jdx - self.sync_offset    
 	    
     def unpack(self, data, idx = 0):
 	msgs   = []
