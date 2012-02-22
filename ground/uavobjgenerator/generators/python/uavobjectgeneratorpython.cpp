@@ -32,17 +32,28 @@ bool UAVObjectGeneratorPython::generate(UAVObjectParser* parser,QString template
     pythonCodePath = QDir( templatepath + QString("flight/Modules/FlightPlan/lib"));
     pythonOutputPath = QDir( outputpath + QString("python") );
     pythonOutputPath.mkpath(pythonOutputPath.absolutePath());
-    pythonCodeTemplate = readFile( pythonCodePath.absoluteFilePath("uavobjecttemplate.pyt") );
-    if (pythonCodeTemplate.isEmpty()) {
+    pythonCodeBase     = readFile(   pythonCodePath.absoluteFilePath("uavobject.py") );
+    pythonCodeTemplate = readFile(   pythonCodePath.absoluteFilePath("uavobjecttemplate.pyt") );
+    pythonImportTemplate = readFile( pythonCodePath.absoluteFilePath("uavobjs.pyt") );
+    
+    if (pythonCodeTemplate.isEmpty() || pythonImportTemplate.isEmpty()) {
         std::cerr << "Problem reading python templates" << endl;
         return false;
     }
+    
+    int objnum  = parser->getNumObjects();
+    //objlist = ObjectInfo[objnum];
+    ObjectInfo **objlist = new ObjectInfo*[objnum];
 
     // Process each object
-    for (int objidx = 0; objidx < parser->getNumObjects(); ++objidx) {
+    for (int objidx = 0; objidx < objnum; ++objidx) {
         ObjectInfo* info=parser->getObjectByIndex(objidx);
+	objlist[objidx] = info;
         process_object(info);
     }
+    
+    generate_imports(objlist, objnum);
+    copy_base();
 
     return true; // if we come here everything should be fine
 }
@@ -97,6 +108,7 @@ bool UAVObjectGeneratorPython::process_object(ObjectInfo* info)
         }
         // Constructor
         datafields.append(QString("\tdef __init__(self):\n"));
+	datafields.append(QString("\t\tself.name = '%1'\n").arg(info->fields[n]->name));
         datafields.append(QString("\t\tUAVObjectField.__init__(self, %1, %2)\n\n").arg(info->fields[n]->type).arg(info->fields[n]->numElements));
     }
     outCode.replace(QString("$(DATAFIELDS)"), datafields);
@@ -109,6 +121,9 @@ bool UAVObjectGeneratorPython::process_object(ObjectInfo* info)
         fields.append(QString("\t\tself.addField(self.%1)\n").arg(info->fields[n]->name));
     }
     outCode.replace(QString("$(DATAFIELDINIT)"), fields);
+    
+    // Replace $(ISSINGLEINST) tags
+    outCode.replace(QString("$(ISSINGLEINST)"), info->isSingleInst ? "1" : "0");
 
     // Write the Python code
     bool res = writeFileIfDiffrent( pythonOutputPath.absolutePath() + "/" + info->namelc + ".py", outCode );
@@ -120,3 +135,33 @@ bool UAVObjectGeneratorPython::process_object(ObjectInfo* info)
     return true;
 }
 
+bool UAVObjectGeneratorPython::generate_imports(ObjectInfo** objlist, int objnum)
+{
+    QString outCode = pythonImportTemplate;
+    QString imports = QString(""	);
+    for (int objidx = 0; objidx < objnum; ++objidx) {
+	if (objidx)
+	    imports.append(", ");
+	imports.append(objlist[objidx]->namelc);
+    }
+    outCode.replace(QString("$(IMPORTLIST)"), imports);
+    bool res = writeFileIfDiffrent( pythonOutputPath.absolutePath() + "/uavobjs.py", outCode );
+    if (!res) {
+        cout << "Error: Could not write Python output files" << endl;
+        return false;
+    }
+    
+    return true;
+}
+
+bool UAVObjectGeneratorPython::copy_base()
+{
+    QString outCode = pythonCodeBase;
+    bool res = writeFileIfDiffrent( pythonOutputPath.absolutePath() + "/uavobject.py", outCode );
+    if (!res) {
+        cout << "Error: Could not write Python output files" << endl;
+        return false;
+    }
+    
+    return true;
+}

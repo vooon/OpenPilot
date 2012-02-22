@@ -36,8 +36,12 @@ public:
 
 private:
     bool process_object(ObjectInfo* info);
+    bool generate_imports(ObjectInfo** list, int num);
+    bool copy_base();
 
+    QString pythonCodeBase;
     QString pythonCodeTemplate;
+    QString pythonImportTemplate;
     QDir pythonCodePath;
     QDir pythonOutputPath;
 };

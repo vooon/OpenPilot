@@ -38,7 +38,10 @@ $(DATAFIELDS)
 # Object $(NAME) definition
 class $(NAME)(UAVObject):
 	# Object constants
-	OBJID = $(UOBJID)
+	OBJID        = $(UOBJID)
+        name         = '$(NAME)'
+        description  = '$(DESCRIPTION)'
+        isSingleInst = $(ISSINGLEINST)
 
 	# Constructor
 	def __init__(self):

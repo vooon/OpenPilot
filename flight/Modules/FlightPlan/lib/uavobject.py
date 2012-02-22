@@ -38,7 +38,9 @@
 
 """
 
-from list import append
+#from list import append
+
+import struct
 
 class UAVObjectMetadata:
 	class UpdateMode:
@@ -81,24 +83,49 @@ class UAVObjectField:
 		UINT32 = 5
 		FLOAT32 = 6
 		ENUM = 7
+		
+	pack_code_map = { 
+	    'FLOAT32' : '=f',
+	    'INT16'   : '=h',
+	    'INT32'   : '=i',
+	    'INT8'    : '=b',
+	    'UINT16'  : '=H',
+	    'UINT32'  : '=I',
+	    'UINT8'   : '=B',
+	    'ENUM'    : '=B' }
+                   
+        ftype_to_pack_code = {}
+        for k,v in pack_code_map.iteritems():
+	    ftype_to_pack_code[getattr(FType,k)] = v
 		 
 	def __init__(self, ftype, numElements):
-		self.ftype = ftype
+		self.ftype       = ftype
 		self.numElements = numElements
+		self.pack_code   = struct.Struct(self.build_pack_code())
 		if ftype == UAVObjectField.FType.FLOAT32:
 			if numElements == 1:
 				self.value = 0.0
 			else:
 				self.value = [] 
 				for n in range(0, numElements):
-					append(self.value, 0.0)
+					self.value.append(0.0)
 		else: 
 			if numElements == 1:
 				self.value = 0
 			else:
 				self.value = [] 
 				for n in range(0, numElements):
-					append(self.value, 0)
+					self.value.append(0)
+					
+	def build_pack_code(self):
+	    base      	= self.ftype_to_pack_code[ self.ftype ]
+	    return '%s%d%s' % (base[0], self.numElements, base[1])
+	    
+	def unpack(self, data, idx):
+	    self.value = self.pack_code.unpack_from(data,idx)
+	    if self.numElements == 1:
+		self.value = self.value[0]
+	    return idx + self.pack_code.size
 		  
 class UAVObject:
 	def __init__(self, objId):
@@ -108,7 +135,7 @@ class UAVObject:
 		self.fields = []
 
 	def addField(self, field):
-		append(self.fields, field)
+		self.fields.append(field)
 
 	def getName(self):
 		"""__NATIVE__
@@ -417,6 +444,18 @@ class UAVObject:
 		return PM_RET_OK;
 		"""
 		pass 
+	    
+	inst_pack_code = struct.Struct('=H')
+	    
+	def unpack(self, data, idx):	    
+	    if not self.isSingleInst:
+		self.instId  = self.inst_pack_code.unpack_from(data, idx)
+		idx          += self.inst_pack_code.size
+	    
+	    for f in self.fields:
+		idx          = f.unpack(data, idx)
+	    
+            return idx
 
 
 
