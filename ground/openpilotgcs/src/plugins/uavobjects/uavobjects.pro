@@ -73,7 +73,7 @@ HEADERS += $$UAVOBJECT_SYNTHETICS/accessorydesired.h \
     $$UAVOBJECT_SYNTHETICS/receiveractivity.h \
     $$UAVOBJECT_SYNTHETICS/attitudesettings.h \
     $$UAVOBJECT_SYNTHETICS/cameradesired.h \
-    $$UAVOBJECT_SYNTHETICS/faultsettings.h
+    $$UAVOBJECT_SYNTHETICS/faultsettings.h \
     $$UAVOBJECT_SYNTHETICS/escsettings.h \
     $$UAVOBJECT_SYNTHETICS/escstatus.h
 
@@ -128,6 +128,6 @@ SOURCES += $$UAVOBJECT_SYNTHETICS/accessorydesired.cpp \
     $$UAVOBJECT_SYNTHETICS/receiveractivity.cpp \
     $$UAVOBJECT_SYNTHETICS/attitudesettings.cpp \
     $$UAVOBJECT_SYNTHETICS/cameradesired.cpp \
-    $$UAVOBJECT_SYNTHETICS/faultsettings.cpp
+    $$UAVOBJECT_SYNTHETICS/faultsettings.cpp \
     $$UAVOBJECT_SYNTHETICS/escsettings.cpp \
     $$UAVOBJECT_SYNTHETICS/escstatus.cpp
