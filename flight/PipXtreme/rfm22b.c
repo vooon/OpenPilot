@@ -309,7 +309,7 @@ void rfm22_startBurstWrite(uint8_t addr)
 	PIOS_SPI_TransferByte(RFM22_PIOS_SPI, 0x80 | addr);
 }
 
-inline void rfm22_burstWrite(uint8_t data)
+void rfm22_burstWrite(uint8_t data)
 {
 	PIOS_SPI_TransferByte(RFM22_PIOS_SPI, data);
 }
@@ -346,7 +346,7 @@ void rfm22_startBurstRead(uint8_t addr)
 	PIOS_SPI_TransferByte(RFM22_PIOS_SPI, addr & 0x7f);
 }
 
-inline uint8_t rfm22_burstRead(void)
+uint8_t rfm22_burstRead(void)
 {
 	return PIOS_SPI_TransferByte(RFM22_PIOS_SPI, 0xff);
 }

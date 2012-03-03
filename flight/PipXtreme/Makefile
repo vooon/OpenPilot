@@ -34,7 +34,7 @@ TARGET := fw_$(BOARD_NAME)
 OUTDIR := $(TOP)/build/$(TARGET)
 
 # Debugging (YES/NO) ?
-DEBUG ?= NO
+DEBUG ?= YES
 
 # Use Code Sourcery toolchain (YES/NO) ?
 CODE_SOURCERY ?= YES

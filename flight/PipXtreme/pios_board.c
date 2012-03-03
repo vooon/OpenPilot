@@ -58,6 +58,10 @@ void PIOS_Board_Init(void) {
 	// Bring up System using CMSIS functions, enables the LEDs.
 	PIOS_SYS_Init();
 
+#if defined(PIOS_INCLUDE_LED)
+	PIOS_LED_Init(&pios_led_cfg);
+#endif	/* PIOS_INCLUDE_LED */
+
 	// turn all the leds on
 	USB_LED_ON;
 	LINK_LED_ON;
