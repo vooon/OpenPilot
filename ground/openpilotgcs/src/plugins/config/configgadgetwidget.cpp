@@ -31,6 +31,7 @@
 #include "configairframewidget.h"
 #include "configccattitudewidget.h"
 #include "configinputwidget.h"
+#include "configfblheliwidget.h"
 #include "configoutputwidget.h"
 #include "configstabilizationwidget.h"
 #include "configcamerastabilizationwidget.h"
@@ -85,6 +86,8 @@ ConfigGadgetWidget::ConfigGadgetWidget(QWidget *parent) : QWidget(parent)
     qwd = new ConfigCameraStabilizationWidget(this);
     ftw->insertTab(ConfigGadgetWidget::camerastabilization, qwd, QIcon(":/configgadget/images/camera.png"), QString("Camera Stab"));
 
+    qwd = new ConfigFBLHeliWidget(this);
+    ftw->insertTab(ConfigGadgetWidget::fblheli, qwd, QIcon(":/configgadget/images/fbl.png"), QString("FBL Heli"));
 
 //    qwd = new ConfigPipXtremeWidget(this);
 //    ftw->insertTab(5, qwd, QIcon(":/configgadget/images/PipXtreme.png"), QString("PipXtreme"));

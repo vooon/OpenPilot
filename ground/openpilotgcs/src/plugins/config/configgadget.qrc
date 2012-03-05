@@ -18,5 +18,6 @@
         <file>images/TX.svg</file>
         <file>images/camera.png</file>
         <file>images/TX2.svg</file>
+        <file>images/fbl.png</file>
     </qresource>
 </RCC>
