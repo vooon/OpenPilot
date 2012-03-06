@@ -61,9 +61,7 @@
 		6519133B1256C52B0039C0A3 /* ahrs_spi_comm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ahrs_spi_comm.h; sourceTree = "<group>"; };
 		651CF9E6120B5D8300EEFD70 /* pios_usb_hid_istr.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pios_usb_hid_istr.c; sourceTree = "<group>"; };
 		651CF9E8120B5D8300EEFD70 /* pios_usb_hid_pwr.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pios_usb_hid_pwr.c; sourceTree = "<group>"; };
-		651CF9EF120B700D00EEFD70 /* pios_usb_hid_desc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pios_usb_hid_desc.h; sourceTree = "<group>"; };
 		651CF9F0120B700D00EEFD70 /* pios_usb_hid_istr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pios_usb_hid_istr.h; sourceTree = "<group>"; };
-		651CF9F1120B700D00EEFD70 /* pios_usb_hid_prop.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pios_usb_hid_prop.h; sourceTree = "<group>"; };
 		651CF9F2120B700D00EEFD70 /* pios_usb_hid_pwr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pios_usb_hid_pwr.h; sourceTree = "<group>"; };
 		651CF9F3120B700D00EEFD70 /* usb_conf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = usb_conf.h; sourceTree = "<group>"; };
 		65209A1812208B0600453371 /* baroaltitude.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = baroaltitude.xml; sourceTree = "<group>"; };
@@ -8005,9 +8003,7 @@
 				65E8F05211EFF25C00BBF654 /* pios_usart_priv.h */,
 				65E8F05311EFF25C00BBF654 /* pios_usb.h */,
 				65E8F05511EFF25C00BBF654 /* pios_usb_hid.h */,
-				651CF9EF120B700D00EEFD70 /* pios_usb_hid_desc.h */,
 				651CF9F0120B700D00EEFD70 /* pios_usb_hid_istr.h */,
-				651CF9F1120B700D00EEFD70 /* pios_usb_hid_prop.h */,
 				651CF9F2120B700D00EEFD70 /* pios_usb_hid_pwr.h */,
 				6526645B122DF972006F9A3C /* pios_wdg.h */,
 				651CF9F3120B700D00EEFD70 /* usb_conf.h */,
