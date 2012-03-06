@@ -170,6 +170,9 @@
 		65A87A911505A0620063E3A0 /* esc_adc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = esc_adc.c; path = ../../ESC/esc_adc.c; sourceTree = "<group>"; };
 		65A87A921505A0720063E3A0 /* esc_adc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = esc_adc.h; sourceTree = "<group>"; };
 		65A87A971505BC070063E3A0 /* pios_softusart.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pios_softusart.c; sourceTree = "<group>"; };
+		65A87A981505EC1B0063E3A0 /* pios_softusart_priv.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pios_softusart_priv.h; sourceTree = "<group>"; };
+		65A87A991505EC1B0063E3A0 /* pios_tim_priv.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pios_tim_priv.h; sourceTree = "<group>"; };
+		65A87A9A1505EC1B0063E3A0 /* pios_tim.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pios_tim.h; sourceTree = "<group>"; };
 		65B35D7F121C261E003EAD18 /* bin.pro */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = bin.pro; sourceTree = "<group>"; };
 		65B35D80121C261E003EAD18 /* openpilotgcs */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = openpilotgcs; sourceTree = "<group>"; };
 		65B35D81121C261E003EAD18 /* openpilotgcs.pri */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = openpilotgcs.pri; sourceTree = "<group>"; };
@@ -2698,6 +2701,7 @@
 		65B367FD121C2620003EAD18 /* systemstats.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = systemstats.xml; sourceTree = "<group>"; };
 		65B367FE121C2620003EAD18 /* telemetrysettings.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = telemetrysettings.xml; sourceTree = "<group>"; };
 		65B367FF121C2620003EAD18 /* src.pro */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = src.pro; sourceTree = "<group>"; };
+		65B675A11506ACDC00DE8500 /* pios_softusart.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pios_softusart.h; path = ../STM32F10x/pios_softusart.h; sourceTree = "<group>"; };
 		65B7E6AE120DF1E2000C1123 /* ahrs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ahrs.c; path = ../../AHRS/ahrs.c; sourceTree = SOURCE_ROOT; };
 		65B7E6B0120DF1E2000C1123 /* ahrs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ahrs.h; sourceTree = "<group>"; };
 		65B7E6B1120DF1E2000C1123 /* ahrs_fsm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ahrs_fsm.h; sourceTree = "<group>"; };
@@ -2771,10 +2775,8 @@
 		65E6DF7A12E02E8E00058553 /* pios_board_posix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pios_board_posix.h; sourceTree = "<group>"; };
 		65E6DF7B12E02E8E00058553 /* pios_config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pios_config.h; sourceTree = "<group>"; };
 		65E6DF7C12E02E8E00058553 /* pios_config_posix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pios_config_posix.h; sourceTree = "<group>"; };
-		65E6DF7D12E02E8E00058553 /* taskmonitor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = taskmonitor.h; sourceTree = "<group>"; };
 		65E6DF7E12E02E8E00058553 /* pios_board.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pios_board.c; sourceTree = "<group>"; };
 		65E6DF7F12E02E8E00058553 /* pios_board_posix.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pios_board_posix.c; sourceTree = "<group>"; };
-		65E6DF8012E02E8E00058553 /* taskmonitor.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = taskmonitor.c; sourceTree = "<group>"; };
 		65E6DF9112E0313E00058553 /* aes.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = aes.c; sourceTree = "<group>"; };
 		65E6E04412E0313F00058553 /* crc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = crc.c; sourceTree = "<group>"; };
 		65E6E04512E0313F00058553 /* gpio_in.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gpio_in.c; sourceTree = "<group>"; };
@@ -7798,7 +7800,6 @@
 				65E6DF7512E02E8E00058553 /* inc */,
 				65E6DF7E12E02E8E00058553 /* pios_board.c */,
 				65E6DF7F12E02E8E00058553 /* pios_board_posix.c */,
-				65E6DF8012E02E8E00058553 /* taskmonitor.c */,
 			);
 			path = System;
 			sourceTree = "<group>";
@@ -7813,7 +7814,6 @@
 				65E6DF7A12E02E8E00058553 /* pios_board_posix.h */,
 				65E6DF7B12E02E8E00058553 /* pios_config.h */,
 				65E6DF7C12E02E8E00058553 /* pios_config_posix.h */,
-				65E6DF7D12E02E8E00058553 /* taskmonitor.h */,
 			);
 			path = inc;
 			sourceTree = "<group>";
@@ -7991,12 +7991,16 @@
 				65E8F04A11EFF25C00BBF654 /* pios_sdcard.h */,
 				65E8F04B11EFF25C00BBF654 /* pios_servo.h */,
 				65FBE14412E7C98100176B5A /* pios_servo_priv.h */,
+				65B675A11506ACDC00DE8500 /* pios_softusart.h */,
+				65A87A981505EC1B0063E3A0 /* pios_softusart_priv.h */,
 				65E8F04C11EFF25C00BBF654 /* pios_dsm.h */,
 				65643CB01413322000A32F59 /* pios_dsm_priv.h */,
 				65E8F04D11EFF25C00BBF654 /* pios_spi.h */,
 				65E8F04E11EFF25C00BBF654 /* pios_spi_priv.h */,
 				65E8F04F11EFF25C00BBF654 /* pios_stm32.h */,
 				65E8F05011EFF25C00BBF654 /* pios_sys.h */,
+				65A87A9A1505EC1B0063E3A0 /* pios_tim.h */,
+				65A87A991505EC1B0063E3A0 /* pios_tim_priv.h */,
 				65E8F05111EFF25C00BBF654 /* pios_usart.h */,
 				65E8F05211EFF25C00BBF654 /* pios_usart_priv.h */,
 				65E8F05311EFF25C00BBF654 /* pios_usb.h */,

@@ -518,6 +518,8 @@ static const struct pios_tim_channel pios_tim_servoport_rcvrport_pins[] = {
 			},
 		},
 	},
+#if !defined(PIOS_INCLUDE_SOFTUSART)
+// For now keep things simple by either using PWM or SOFTUSART
 	{
 		.timer = TIM2,
 		.timer_chan = TIM_Channel_2,
@@ -530,9 +532,50 @@ static const struct pios_tim_channel pios_tim_servoport_rcvrport_pins[] = {
 			},
 		},
 	},
+#endif /* PIOS_INCLUDE_SOFTUSART */
 };
 
 #endif	/* PIOS_INCLUDE_TIM */
+
+#if defined(PIOS_INCLUDE_SOFTUSART)
+
+#include "pios_softusart_priv.h"
+
+static const struct pios_softusart_cfg pios_softusart_cfg = {
+	.half_duplex = true,
+	.tim_ic_init = {
+		.TIM_ICPolarity = TIM_ICPolarity_Rising,
+		.TIM_ICSelection = TIM_ICSelection_DirectTI,
+		.TIM_ICPrescaler = 0,
+		.TIM_ICFilter = 0x0,
+	},
+	.rx = {
+		.timer = TIM2,
+		.timer_chan = TIM_Channel_2,
+		.pin = {
+			.gpio = GPIOA,
+			.init = {
+				.GPIO_Pin   = GPIO_Pin_1,
+				.GPIO_Mode  = GPIO_Mode_AF_PP,
+				.GPIO_Speed = GPIO_Speed_2MHz,
+			},
+		},		
+	},
+	.tx = {
+		.timer = TIM2,
+		.timer_chan = TIM_Channel_2,
+		.pin = {
+			.gpio = GPIOA,
+			.init = {
+				.GPIO_Pin   = GPIO_Pin_1,
+				.GPIO_Mode  = GPIO_Mode_AF_PP,
+				.GPIO_Speed = GPIO_Speed_2MHz,
+			},
+		},		
+	}
+};
+
+#endif /* PIOS_INCLUDE_SOFTUSART */
 
 #if defined(PIOS_INCLUDE_USART)
 
