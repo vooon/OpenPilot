@@ -169,6 +169,8 @@
 		659B3FB7146F5F7D0078D32D /* startup_stm32f10x_HD_OP.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = startup_stm32f10x_HD_OP.S; sourceTree = "<group>"; };
 		659B3FB8146F5F7D0078D32D /* startup_stm32f10x_MD_CC.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = startup_stm32f10x_MD_CC.S; sourceTree = "<group>"; };
 		659ED317122226B60011010E /* ahrssettings.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = ahrssettings.xml; sourceTree = "<group>"; };
+		65A87A911505A0620063E3A0 /* esc_adc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = esc_adc.c; path = ../../ESC/esc_adc.c; sourceTree = "<group>"; };
+		65A87A921505A0720063E3A0 /* esc_adc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = esc_adc.h; sourceTree = "<group>"; };
 		65B35D7F121C261E003EAD18 /* bin.pro */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = bin.pro; sourceTree = "<group>"; };
 		65B35D80121C261E003EAD18 /* openpilotgcs */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = openpilotgcs; sourceTree = "<group>"; };
 		65B35D81121C261E003EAD18 /* openpilotgcs.pri */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = openpilotgcs.pri; sourceTree = "<group>"; };
@@ -3629,6 +3631,7 @@
 				6526C2BC1349D595006FF712 /* Makefile */,
 				6526C2CD1349D898006FF712 /* inc */,
 				6526C2BB1349D595006FF712 /* esc.c */,
+				65A87A911505A0620063E3A0 /* esc_adc.c */,
 				6523559713A78C8C0064F844 /* esc_fsm.c */,
 				65F7ABFE1486EF7C00D21BCB /* esc_settings.c */,
 				65FCBEC81488338600E8BE01 /* esc_serial.c */,
@@ -3642,6 +3645,7 @@
 			isa = PBXGroup;
 			children = (
 				6526C2CE1349D898006FF712 /* esc.h */,
+				65A87A921505A0720063E3A0 /* esc_adc.h */,
 				6523559813A78C970064F844 /* esc_fsm.h */,
 				6526C2CF1349D898006FF712 /* pios_config.h */,
 				65F7ABFD1486EEDE00D21BCB /* esc_settings.h */,
