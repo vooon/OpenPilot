@@ -1,632 +1,1002 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <author/>
- <comment/>
- <exportmacro/>
  <class>ConfigFBLHeliWidget</class>
  <widget class="QWidget" name="ConfigFBLHeliWidget">
-    <property name="geometry">
-	   <rect>
-	    <x>0</x>
-	    <y>0</y>
-	    <width>934</width>
-	    <height>671</height>
-	   </rect>
-	  </property>
-	  <property name="sizePolicy">
-	   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-	    <horstretch>0</horstretch>
-	    <verstretch>0</verstretch>
-	   </sizepolicy>
-	  </property>
-	  <property name="minimumSize">
-	   <size>
-	    <width>0</width>
-	    <height>0</height>
-	   </size>
-	  </property>
-	  <property name="windowTitle">
-	   <string>Form</string>
-	  </property>
-	  <layout class="QGridLayout" name="gridLayout">
-	   <property name="margin">
-	    <number>5</number>
-	   </property>
-	   <item row="0" column="0">
-	    <widget class="QScrollArea" name="scrollArea">
-	     <property name="sizePolicy">
-	      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-	       <horstretch>0</horstretch>
-	       <verstretch>0</verstretch>
-	      </sizepolicy>
-	     </property>
-	     <property name="minimumSize">
-	      <size>
-	       <width>0</width>
-	       <height>0</height>
-	      </size>
-	     </property>
-	     <property name="frameShape">
-	      <enum>QFrame::NoFrame</enum>
-	     </property>
-	     <property name="lineWidth">
-	      <number>0</number>
-	     </property>
-	     <property name="widgetResizable">
-	      <bool>true</bool>
-	     </property>
-	     <widget class="QWidget" name="scrollAreaWidgetContents">
-	      <property name="geometry">
-	       <rect>
-	        <x>0</x>
-	        <y>0</y>
-	        <width>924</width>
-	        <height>661</height>
-	       </rect>
-	      </property>
-	      <property name="sizePolicy">
-	       <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-	        <horstretch>0</horstretch>
-	        <verstretch>0</verstretch>
-	       </sizepolicy>
-	      </property>
-	      <property name="minimumSize">
-	       <size>
-	        <width>924</width>
-	        <height>661</height>
-	       </size>
-	      </property>
-	      <layout class="QGridLayout" name="gridLayout_2">
-	       <property name="margin">
-	        <number>0</number>
-	       </property>
-	       <item row="0" column="0">
-	        <widget class="QTabWidget" name="tabWidget">
-	         <property name="tabShape">
-	          <enum>QTabWidget::Triangular</enum>
-	         </property>
-	         <property name="currentIndex">
-	          <number>0</number>
-	         </property>
-	         <widget class="QWidget" name="preset">
-	          <property name="sizePolicy">
-	           <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-	            <horstretch>0</horstretch>
-	            <verstretch>0</verstretch>
-	           </sizepolicy>
-	          </property>
-	          <property name="minimumSize">
-	           <size>
-	            <width>810</width>
-	            <height>632</height>
-	           </size>
-	          </property>
-	          <attribute name="title">
-	           <string>Preset Setup</string>
-	          </attribute>
-	          <widget class="QWidget" name="">
-	           <property name="geometry">
-	            <rect>
-	             <x>0</x>
-	             <y>0</y>
-	             <width>919</width>
-	             <height>621</height>
-	            </rect>
-	           </property>
-	           <layout class="QGridLayout" name="gridLayout_3" columnstretch="0,1,0,0,0,0,0">
-	            <property name="leftMargin">
-	             <number>10</number>
-	            </property>
-	            <item row="0" column="0">
-	             <widget class="QLabel" name="label">
-	              <property name="text">
-	               <string>Helicopter Model</string>
-	              </property>
-	             </widget>
-	            </item>
-	            <item row="0" column="1">
-	             <widget class="QComboBox" name="comboBox"/>
-	            </item>
-	            <item row="0" column="5" colspan="2">
-	             <widget class="QPushButton" name="pushButton">
-	              <property name="text">
-	               <string>Submit Setup</string>
-	              </property>
-	             </widget>
-	            </item>
-	            <item row="1" column="0" colspan="2">
-	             <widget class="QGroupBox" name="groupBox">
-	              <property name="sizePolicy">
-	               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-	                <horstretch>0</horstretch>
-	                <verstretch>0</verstretch>
-	               </sizepolicy>
-	              </property>
-	              <property name="minimumSize">
-	               <size>
-	                <width>320</width>
-	                <height>0</height>
-	               </size>
-	              </property>
-	              <property name="title">
-	               <string>Main Rotor</string>
-	              </property>
-	              <widget class="QSlider" name="verticalSlider">
-	               <property name="geometry">
-	                <rect>
-	                 <x>20</x>
-	                 <y>60</y>
-	                 <width>22</width>
-	                 <height>451</height>
-	                </rect>
-	               </property>
-	               <property name="maximum">
-	                <number>100</number>
-	               </property>
-	               <property name="orientation">
-	                <enum>Qt::Vertical</enum>
-	               </property>
-	               <property name="tickPosition">
-	                <enum>QSlider::TicksBelow</enum>
-	               </property>
-	               <property name="tickInterval">
-	                <number>5</number>
-	               </property>
-	              </widget>
-	              <widget class="QGraphicsView" name="graphicsView">
-	               <property name="geometry">
-	                <rect>
-	                 <x>50</x>
-	                 <y>60</y>
-	                 <width>101</width>
-	                 <height>451</height>
-	                </rect>
-	               </property>
-	               <property name="frameShape">
-	                <enum>QFrame::NoFrame</enum>
-	               </property>
-	              </widget>
-	              <widget class="QLabel" name="label_2">
-	               <property name="geometry">
-	                <rect>
-	                 <x>10</x>
-	                 <y>30</y>
-	                 <width>62</width>
-	                 <height>16</height>
-	                </rect>
-	               </property>
-	               <property name="text">
-	                <string>Agility</string>
-	               </property>
-	              </widget>
-	              <widget class="QSlider" name="verticalSlider_2">
-	               <property name="geometry">
-	                <rect>
-	                 <x>170</x>
-	                 <y>60</y>
-	                 <width>22</width>
-	                 <height>451</height>
-	                </rect>
-	               </property>
-	               <property name="maximum">
-	                <number>100</number>
-	               </property>
-	               <property name="orientation">
-	                <enum>Qt::Vertical</enum>
-	               </property>
-	               <property name="tickPosition">
-	                <enum>QSlider::TicksBelow</enum>
-	               </property>
-	               <property name="tickInterval">
-	                <number>5</number>
-	               </property>
-	              </widget>
-	              <widget class="QLabel" name="label_3">
-	               <property name="geometry">
-	                <rect>
-	                 <x>160</x>
-	                 <y>30</y>
-	                 <width>71</width>
-	                 <height>16</height>
-	                </rect>
-	               </property>
-	               <property name="text">
-	                <string>Sensitivity</string>
-	               </property>
-	              </widget>
-	              <widget class="QGraphicsView" name="graphicsView_2">
-	               <property name="geometry">
-	                <rect>
-	                 <x>200</x>
-	                 <y>60</y>
-	                 <width>101</width>
-	                 <height>451</height>
-	                </rect>
-	               </property>
-	               <property name="frameShape">
-	                <enum>QFrame::NoFrame</enum>
-	               </property>
-	              </widget>
-	              <widget class="QPushButton" name="pushButton_5">
-	               <property name="geometry">
-	                <rect>
-	                 <x>20</x>
-	                 <y>520</y>
-	                 <width>141</width>
-	                 <height>32</height>
-	                </rect>
-	               </property>
-	               <property name="text">
-	                <string>Add Named Point</string>
-	               </property>
-	              </widget>
-	              <widget class="QPushButton" name="pushButton_6">
-	               <property name="geometry">
-	                <rect>
-	                 <x>170</x>
-	                 <y>520</y>
-	                 <width>141</width>
-	                 <height>32</height>
-	                </rect>
-	               </property>
-	               <property name="text">
-	                <string>Add Named Point</string>
-	               </property>
-	              </widget>
-	             </widget>
-	            </item>
-	            <item row="1" column="4" colspan="3">
-	             <widget class="QGroupBox" name="groupBox_3">
-	              <property name="minimumSize">
-	               <size>
-	                <width>150</width>
-	                <height>0</height>
-	               </size>
-	              </property>
-	              <property name="title">
-	               <string>Collective Pitch</string>
-	              </property>
-	              <widget class="QSlider" name="verticalSlider_5">
-	               <property name="geometry">
-	                <rect>
-	                 <x>40</x>
-	                 <y>80</y>
-	                 <width>22</width>
-	                 <height>181</height>
-	                </rect>
-	               </property>
-	               <property name="maximum">
-	                <number>100</number>
-	               </property>
-	               <property name="orientation">
-	                <enum>Qt::Vertical</enum>
-	               </property>
-	               <property name="tickPosition">
-	                <enum>QSlider::TicksBelow</enum>
-	               </property>
-	               <property name="tickInterval">
-	                <number>5</number>
-	               </property>
-	              </widget>
-	              <widget class="QCheckBox" name="checkBox_2">
-	               <property name="geometry">
-	                <rect>
-	                 <x>30</x>
-	                 <y>30</y>
-	                 <width>141</width>
-	                 <height>20</height>
-	                </rect>
-	               </property>
-	               <property name="text">
-	                <string>symmetric setup</string>
-	               </property>
-	              </widget>
-	              <widget class="QGraphicsView" name="graphicsView_5">
-	               <property name="geometry">
-	                <rect>
-	                 <x>80</x>
-	                 <y>80</y>
-	                 <width>101</width>
-	                 <height>181</height>
-	                </rect>
-	               </property>
-	               <property name="frameShape">
-	                <enum>QFrame::NoFrame</enum>
-	               </property>
-	              </widget>
-	              <widget class="QPushButton" name="pushButton_9">
-	               <property name="geometry">
-	                <rect>
-	                 <x>40</x>
-	                 <y>270</y>
-	                 <width>141</width>
-	                 <height>32</height>
-	                </rect>
-	               </property>
-	               <property name="text">
-	                <string>Add Named Point</string>
-	               </property>
-	              </widget>
-	              <widget class="QLabel" name="label_6">
-	               <property name="geometry">
-	                <rect>
-	                 <x>30</x>
-	                 <y>50</y>
-	                 <width>141</width>
-	                 <height>20</height>
-	                </rect>
-	               </property>
-	               <property name="text">
-	                <string>Maximum</string>
-	               </property>
-	              </widget>
-	              <widget class="QLabel" name="label_7">
-	               <property name="geometry">
-	                <rect>
-	                 <x>30</x>
-	                 <y>300</y>
-	                 <width>141</width>
-	                 <height>20</height>
-	                </rect>
-	               </property>
-	               <property name="text">
-	                <string>Minimum</string>
-	               </property>
-	              </widget>
-	              <widget class="QGraphicsView" name="graphicsView_6">
-	               <property name="geometry">
-	                <rect>
-	                 <x>80</x>
-	                 <y>330</y>
-	                 <width>101</width>
-	                 <height>181</height>
-	                </rect>
-	               </property>
-	               <property name="frameShape">
-	                <enum>QFrame::NoFrame</enum>
-	               </property>
-	              </widget>
-	              <widget class="QSlider" name="verticalSlider_6">
-	               <property name="geometry">
-	                <rect>
-	                 <x>40</x>
-	                 <y>330</y>
-	                 <width>22</width>
-	                 <height>181</height>
-	                </rect>
-	               </property>
-	               <property name="maximum">
-	                <number>100</number>
-	               </property>
-	               <property name="orientation">
-	                <enum>Qt::Vertical</enum>
-	               </property>
-	               <property name="tickPosition">
-	                <enum>QSlider::TicksBelow</enum>
-	               </property>
-	               <property name="tickInterval">
-	                <number>5</number>
-	               </property>
-	              </widget>
-	              <widget class="QPushButton" name="pushButton_10">
-	               <property name="geometry">
-	                <rect>
-	                 <x>40</x>
-	                 <y>520</y>
-	                 <width>141</width>
-	                 <height>32</height>
-	                </rect>
-	               </property>
-	               <property name="text">
-	                <string>Add Named Point</string>
-	               </property>
-	              </widget>
-	             </widget>
-	            </item>
-	            <item row="2" column="6">
-	             <widget class="QPushButton" name="pushButton_2">
-	              <property name="text">
-	               <string>Reset</string>
-	              </property>
-	             </widget>
-	            </item>
-	            <item row="2" column="4">
-	             <widget class="QPushButton" name="pushButton_4">
-	              <property name="text">
-	               <string>Load</string>
-	              </property>
-	             </widget>
-	            </item>
-	            <item row="2" column="2" colspan="2">
-	             <widget class="QComboBox" name="comboBox_2"/>
-	            </item>
-	            <item row="2" column="5">
-	             <widget class="QPushButton" name="pushButton_3">
-	              <property name="text">
-	               <string>Save</string>
-	              </property>
-	             </widget>
-	            </item>
-	            <item row="0" column="2">
-	             <widget class="QCheckBox" name="checkBox">
-	              <property name="text">
-	               <string>show only validated setups</string>
-	              </property>
-	             </widget>
-	            </item>
-	            <item row="0" column="3" colspan="2">
-	             <spacer name="horizontalSpacer">
-	              <property name="orientation">
-	               <enum>Qt::Horizontal</enum>
-	              </property>
-	              <property name="sizeHint" stdset="0">
-	               <size>
-	                <width>40</width>
-	                <height>20</height>
-	               </size>
-	              </property>
-	             </spacer>
-	            </item>
-	            <item row="1" column="2" colspan="2">
-	             <widget class="QGroupBox" name="groupBox_2">
-	              <property name="minimumSize">
-	               <size>
-	                <width>320</width>
-	                <height>0</height>
-	               </size>
-	              </property>
-	              <property name="title">
-	               <string>Tail Rotor</string>
-	              </property>
-	              <widget class="QSlider" name="verticalSlider_3">
-	               <property name="geometry">
-	                <rect>
-	                 <x>20</x>
-	                 <y>60</y>
-	                 <width>22</width>
-	                 <height>451</height>
-	                </rect>
-	               </property>
-	               <property name="maximum">
-	                <number>100</number>
-	               </property>
-	               <property name="orientation">
-	                <enum>Qt::Vertical</enum>
-	               </property>
-	               <property name="tickPosition">
-	                <enum>QSlider::TicksBelow</enum>
-	               </property>
-	               <property name="tickInterval">
-	                <number>5</number>
-	               </property>
-	              </widget>
-	              <widget class="QSlider" name="verticalSlider_4">
-	               <property name="geometry">
-	                <rect>
-	                 <x>170</x>
-	                 <y>60</y>
-	                 <width>22</width>
-	                 <height>451</height>
-	                </rect>
-	               </property>
-	               <property name="maximum">
-	                <number>100</number>
-	               </property>
-	               <property name="orientation">
-	                <enum>Qt::Vertical</enum>
-	               </property>
-	               <property name="tickPosition">
-	                <enum>QSlider::TicksBelow</enum>
-	               </property>
-	               <property name="tickInterval">
-	                <number>5</number>
-	               </property>
-	              </widget>
-	              <widget class="QLabel" name="label_4">
-	               <property name="geometry">
-	                <rect>
-	                 <x>160</x>
-	                 <y>30</y>
-	                 <width>71</width>
-	                 <height>16</height>
-	                </rect>
-	               </property>
-	               <property name="text">
-	                <string>Sensitivity</string>
-	               </property>
-	              </widget>
-	              <widget class="QPushButton" name="pushButton_7">
-	               <property name="geometry">
-	                <rect>
-	                 <x>20</x>
-	                 <y>520</y>
-	                 <width>141</width>
-	                 <height>32</height>
-	                </rect>
-	               </property>
-	               <property name="text">
-	                <string>Add Named Point</string>
-	               </property>
-	              </widget>
-	              <widget class="QLabel" name="label_5">
-	               <property name="geometry">
-	                <rect>
-	                 <x>10</x>
-	                 <y>30</y>
-	                 <width>62</width>
-	                 <height>16</height>
-	                </rect>
-	               </property>
-	               <property name="text">
-	                <string>Yaw Rate</string>
-	               </property>
-	              </widget>
-	              <widget class="QGraphicsView" name="graphicsView_3">
-	               <property name="geometry">
-	                <rect>
-	                 <x>200</x>
-	                 <y>60</y>
-	                 <width>101</width>
-	                 <height>451</height>
-	                </rect>
-	               </property>
-	               <property name="frameShape">
-	                <enum>QFrame::NoFrame</enum>
-	               </property>
-	              </widget>
-	              <widget class="QPushButton" name="pushButton_8">
-	               <property name="geometry">
-	                <rect>
-	                 <x>170</x>
-	                 <y>520</y>
-	                 <width>141</width>
-	                 <height>32</height>
-	                </rect>
-	               </property>
-	               <property name="text">
-	                <string>Add Named Point</string>
-	               </property>
-	              </widget>
-	              <widget class="QGraphicsView" name="graphicsView_4">
-	               <property name="geometry">
-	                <rect>
-	                 <x>50</x>
-	                 <y>60</y>
-	                 <width>101</width>
-	                 <height>451</height>
-	                </rect>
-	               </property>
-	               <property name="frameShape">
-	                <enum>QFrame::NoFrame</enum>
-	               </property>
-	              </widget>
-	             </widget>
-	            </item>
-	           </layout>
-	          </widget>
-	         </widget>
-	         <widget class="QWidget" name="swash">
-	          <attribute name="title">
-	           <string>Swashplate Setup</string>
-	          </attribute>
-	         </widget>
-	         <widget class="QWidget" name="curves">
-	          <attribute name="title">
-	           <string>Curves</string>
-	          </attribute>
-	         </widget>
-	         <widget class="QWidget" name="expert">
-	          <attribute name="title">
-	           <string>Expert Mode</string>
-	          </attribute>
-	         </widget>
-	        </widget>
-	       </item>
-	      </layout>
-	     </widget>
-	    </widget>
-	   </item>
-	  </layout>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>934</width>
+    <height>671</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>0</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <property name="margin">
+    <number>5</number>
+   </property>
+   <item row="0" column="1">
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="lineWidth">
+      <number>0</number>
+     </property>
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>924</width>
+        <height>661</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>924</width>
+        <height>661</height>
+       </size>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <property name="margin">
+        <number>0</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QTabWidget" name="tabWidget">
+         <property name="tabShape">
+          <enum>QTabWidget::Triangular</enum>
+         </property>
+         <property name="currentIndex">
+          <number>2</number>
+         </property>
+         <widget class="QWidget" name="preset">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>810</width>
+            <height>632</height>
+           </size>
+          </property>
+          <attribute name="title">
+           <string>Preset Setup</string>
+          </attribute>
+          <widget class="QWidget" name="layoutWidget">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>919</width>
+             <height>621</height>
+            </rect>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_3" columnstretch="0,1,0,0,0,0,0">
+            <property name="leftMargin">
+             <number>10</number>
+            </property>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>Helicopter Model</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="comboBox"/>
+            </item>
+            <item row="0" column="5" colspan="2">
+             <widget class="QPushButton" name="pushButton">
+              <property name="text">
+               <string>Submit Setup</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0" colspan="2">
+             <widget class="QGroupBox" name="groupBox">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>320</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="title">
+               <string>Main Rotor</string>
+              </property>
+              <widget class="QSlider" name="verticalSlider">
+               <property name="geometry">
+                <rect>
+                 <x>20</x>
+                 <y>60</y>
+                 <width>22</width>
+                 <height>451</height>
+                </rect>
+               </property>
+               <property name="maximum">
+                <number>100</number>
+               </property>
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="tickPosition">
+                <enum>QSlider::TicksBelow</enum>
+               </property>
+               <property name="tickInterval">
+                <number>5</number>
+               </property>
+              </widget>
+              <widget class="QGraphicsView" name="graphicsView">
+               <property name="geometry">
+                <rect>
+                 <x>50</x>
+                 <y>60</y>
+                 <width>101</width>
+                 <height>451</height>
+                </rect>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+              </widget>
+              <widget class="QLabel" name="label_2">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>30</y>
+                 <width>62</width>
+                 <height>16</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>Agility</string>
+               </property>
+              </widget>
+              <widget class="QSlider" name="verticalSlider_2">
+               <property name="geometry">
+                <rect>
+                 <x>170</x>
+                 <y>60</y>
+                 <width>22</width>
+                 <height>451</height>
+                </rect>
+               </property>
+               <property name="maximum">
+                <number>100</number>
+               </property>
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="tickPosition">
+                <enum>QSlider::TicksBelow</enum>
+               </property>
+               <property name="tickInterval">
+                <number>5</number>
+               </property>
+              </widget>
+              <widget class="QLabel" name="label_3">
+               <property name="geometry">
+                <rect>
+                 <x>160</x>
+                 <y>30</y>
+                 <width>71</width>
+                 <height>16</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>Sensitivity</string>
+               </property>
+              </widget>
+              <widget class="QGraphicsView" name="graphicsView_2">
+               <property name="geometry">
+                <rect>
+                 <x>200</x>
+                 <y>60</y>
+                 <width>101</width>
+                 <height>451</height>
+                </rect>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+              </widget>
+              <widget class="QPushButton" name="pushButton_5">
+               <property name="geometry">
+                <rect>
+                 <x>20</x>
+                 <y>520</y>
+                 <width>141</width>
+                 <height>32</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>Add Named Point</string>
+               </property>
+              </widget>
+              <widget class="QPushButton" name="pushButton_6">
+               <property name="geometry">
+                <rect>
+                 <x>170</x>
+                 <y>520</y>
+                 <width>141</width>
+                 <height>32</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>Add Named Point</string>
+               </property>
+              </widget>
+             </widget>
+            </item>
+            <item row="1" column="4" colspan="3">
+             <widget class="QGroupBox" name="groupBox_3">
+              <property name="minimumSize">
+               <size>
+                <width>150</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="title">
+               <string>Collective Pitch</string>
+              </property>
+              <widget class="QSlider" name="verticalSlider_5">
+               <property name="geometry">
+                <rect>
+                 <x>40</x>
+                 <y>80</y>
+                 <width>22</width>
+                 <height>181</height>
+                </rect>
+               </property>
+               <property name="maximum">
+                <number>100</number>
+               </property>
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="tickPosition">
+                <enum>QSlider::TicksBelow</enum>
+               </property>
+               <property name="tickInterval">
+                <number>5</number>
+               </property>
+              </widget>
+              <widget class="QCheckBox" name="checkBox_2">
+               <property name="geometry">
+                <rect>
+                 <x>30</x>
+                 <y>30</y>
+                 <width>141</width>
+                 <height>20</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>symmetric setup</string>
+               </property>
+              </widget>
+              <widget class="QGraphicsView" name="graphicsView_5">
+               <property name="geometry">
+                <rect>
+                 <x>80</x>
+                 <y>80</y>
+                 <width>101</width>
+                 <height>181</height>
+                </rect>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+              </widget>
+              <widget class="QPushButton" name="pushButton_9">
+               <property name="geometry">
+                <rect>
+                 <x>40</x>
+                 <y>270</y>
+                 <width>141</width>
+                 <height>32</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>Add Named Point</string>
+               </property>
+              </widget>
+              <widget class="QLabel" name="label_6">
+               <property name="geometry">
+                <rect>
+                 <x>30</x>
+                 <y>50</y>
+                 <width>141</width>
+                 <height>20</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>Maximum</string>
+               </property>
+              </widget>
+              <widget class="QLabel" name="label_7">
+               <property name="geometry">
+                <rect>
+                 <x>30</x>
+                 <y>300</y>
+                 <width>141</width>
+                 <height>20</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>Minimum</string>
+               </property>
+              </widget>
+              <widget class="QGraphicsView" name="graphicsView_6">
+               <property name="geometry">
+                <rect>
+                 <x>80</x>
+                 <y>330</y>
+                 <width>101</width>
+                 <height>181</height>
+                </rect>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+              </widget>
+              <widget class="QSlider" name="verticalSlider_6">
+               <property name="geometry">
+                <rect>
+                 <x>40</x>
+                 <y>330</y>
+                 <width>22</width>
+                 <height>181</height>
+                </rect>
+               </property>
+               <property name="maximum">
+                <number>100</number>
+               </property>
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="tickPosition">
+                <enum>QSlider::TicksBelow</enum>
+               </property>
+               <property name="tickInterval">
+                <number>5</number>
+               </property>
+              </widget>
+              <widget class="QPushButton" name="pushButton_10">
+               <property name="geometry">
+                <rect>
+                 <x>40</x>
+                 <y>520</y>
+                 <width>141</width>
+                 <height>32</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>Add Named Point</string>
+               </property>
+              </widget>
+             </widget>
+            </item>
+            <item row="2" column="6">
+             <widget class="QPushButton" name="pushButton_2">
+              <property name="text">
+               <string>Reset</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="4">
+             <widget class="QPushButton" name="pushButton_4">
+              <property name="text">
+               <string>Load</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="2" colspan="2">
+             <widget class="QComboBox" name="comboBox_2"/>
+            </item>
+            <item row="2" column="5">
+             <widget class="QPushButton" name="pushButton_3">
+              <property name="text">
+               <string>Save</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QCheckBox" name="checkBox">
+              <property name="text">
+               <string>show only validated setups</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="3" colspan="2">
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item row="1" column="2" colspan="2">
+             <widget class="QGroupBox" name="groupBox_2">
+              <property name="minimumSize">
+               <size>
+                <width>320</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="title">
+               <string>Tail Rotor</string>
+              </property>
+              <widget class="QSlider" name="verticalSlider_3">
+               <property name="geometry">
+                <rect>
+                 <x>20</x>
+                 <y>60</y>
+                 <width>22</width>
+                 <height>451</height>
+                </rect>
+               </property>
+               <property name="maximum">
+                <number>100</number>
+               </property>
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="tickPosition">
+                <enum>QSlider::TicksBelow</enum>
+               </property>
+               <property name="tickInterval">
+                <number>5</number>
+               </property>
+              </widget>
+              <widget class="QSlider" name="verticalSlider_4">
+               <property name="geometry">
+                <rect>
+                 <x>170</x>
+                 <y>60</y>
+                 <width>22</width>
+                 <height>451</height>
+                </rect>
+               </property>
+               <property name="maximum">
+                <number>100</number>
+               </property>
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="tickPosition">
+                <enum>QSlider::TicksBelow</enum>
+               </property>
+               <property name="tickInterval">
+                <number>5</number>
+               </property>
+              </widget>
+              <widget class="QLabel" name="label_4">
+               <property name="geometry">
+                <rect>
+                 <x>160</x>
+                 <y>30</y>
+                 <width>71</width>
+                 <height>16</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>Sensitivity</string>
+               </property>
+              </widget>
+              <widget class="QPushButton" name="pushButton_7">
+               <property name="geometry">
+                <rect>
+                 <x>20</x>
+                 <y>520</y>
+                 <width>141</width>
+                 <height>32</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>Add Named Point</string>
+               </property>
+              </widget>
+              <widget class="QLabel" name="label_5">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>30</y>
+                 <width>62</width>
+                 <height>16</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>Yaw Rate</string>
+               </property>
+              </widget>
+              <widget class="QGraphicsView" name="graphicsView_3">
+               <property name="geometry">
+                <rect>
+                 <x>200</x>
+                 <y>60</y>
+                 <width>101</width>
+                 <height>451</height>
+                </rect>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+              </widget>
+              <widget class="QPushButton" name="pushButton_8">
+               <property name="geometry">
+                <rect>
+                 <x>170</x>
+                 <y>520</y>
+                 <width>141</width>
+                 <height>32</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>Add Named Point</string>
+               </property>
+              </widget>
+              <widget class="QGraphicsView" name="graphicsView_4">
+               <property name="geometry">
+                <rect>
+                 <x>50</x>
+                 <y>60</y>
+                 <width>101</width>
+                 <height>451</height>
+                </rect>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+              </widget>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+         <widget class="QWidget" name="swash">
+          <attribute name="title">
+           <string>Swashplate Setup</string>
+          </attribute>
+         </widget>
+         <widget class="QWidget" name="curves">
+          <attribute name="title">
+           <string>Curves</string>
+          </attribute>
+          <widget class="QWidget" name="gridLayoutWidget">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>911</width>
+             <height>631</height>
+            </rect>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_4" columnstretch="1,0,0" rowminimumheight="0">
+            <item row="0" column="2">
+             <widget class="QGroupBox" name="groupBox_4">
+              <property name="title">
+               <string>Curve Details</string>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_5">
+               <item row="3" column="0" colspan="2">
+                <widget class="QTableView" name="curveDetailTable"/>
+               </item>
+               <item row="9" column="0" colspan="2">
+                <widget class="QPushButton" name="fblGenerateCurve">
+                 <property name="text">
+                  <string>Generate Curve</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0" colspan="2">
+                <widget class="QComboBox" name="fblCurveSelector">
+                 <item>
+                  <property name="text">
+                   <string>Throttle</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Aileron/Elevator</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Collective Pitch</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Tail Rotor</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item row="4" column="0">
+                <widget class="QLabel" name="label_9">
+                 <property name="text">
+                  <string>Interpolation Points</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="1">
+                <widget class="QSpinBox" name="fblNumIntPoints"/>
+               </item>
+               <item row="5" column="0">
+                <widget class="QLabel" name="label_10">
+                 <property name="text">
+                  <string>Curve Type</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="0">
+                <widget class="QLabel" name="label_11">
+                 <property name="text">
+                  <string>Maximum Point</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="7" column="0">
+                <widget class="QLabel" name="label_12">
+                 <property name="text">
+                  <string>Minimum Point</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="0">
+                <widget class="QLabel" name="label_13">
+                 <property name="text">
+                  <string>Expo %</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="1">
+                <widget class="QComboBox" name="comboBox_3"/>
+               </item>
+               <item row="6" column="1">
+                <widget class="QSpinBox" name="fblMaximumPoint"/>
+               </item>
+               <item row="7" column="1">
+                <widget class="QSpinBox" name="fblMinimumPoint"/>
+               </item>
+               <item row="8" column="1">
+                <widget class="QSpinBox" name="fblExpoPercent"/>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QWidget" name="widget" native="true">
+              <layout class="QGridLayout" name="gridLayout_6">
+               <item row="0" column="0">
+                <widget class="QLabel" name="fblThrottleTitle">
+                 <property name="text">
+                  <string>Throttle</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" colspan="2">
+                <widget class="MixerCurveWidget" name="fblThrottleCurve" native="true">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>120</width>
+                   <height>120</height>
+                  </size>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">background:transparent</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="7" column="0">
+                <widget class="QLabel" name="fblCollTitle">
+                 <property name="text">
+                  <string>Collective Pitch</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QCheckBox" name="fblTmThrottle">
+                 <property name="text">
+                  <string>Test Mode</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="0" colspan="2">
+                <widget class="QCheckBox" name="fblPtThrottle">
+                 <property name="text">
+                  <string>Passthrough</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="0" colspan="2">
+                <widget class="MixerCurveWidget" name="fblThrottleCurve_3" native="true">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>120</width>
+                   <height>120</height>
+                  </size>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">background:transparent</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="2" colspan="2">
+                <widget class="MixerCurveWidget" name="fblThrottleCurve_2" native="true">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>120</width>
+                   <height>120</height>
+                  </size>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">background:transparent</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="2" colspan="2">
+                <widget class="MixerCurveWidget" name="fblThrottleCurve_4" native="true">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>120</width>
+                   <height>120</height>
+                  </size>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">background:transparent</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="2">
+                <widget class="QCheckBox" name="fblTmAilElv">
+                 <property name="text">
+                  <string>Test Mode</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="2" colspan="2">
+                <widget class="QCheckBox" name="fblPtAilElv">
+                 <property name="text">
+                  <string>Passthrough</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="7" column="2">
+                <widget class="QLabel" name="fblTailTitle">
+                 <property name="text">
+                  <string>Tail Rotor</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="9" column="0">
+                <widget class="QCheckBox" name="fblTmColl">
+                 <property name="text">
+                  <string>Test Mode</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="10" column="0">
+                <widget class="QCheckBox" name="fblPtColl">
+                 <property name="text">
+                  <string>Passthrough</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="9" column="2">
+                <widget class="QCheckBox" name="fblTmTail">
+                 <property name="text">
+                  <string>Test Mode</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="10" column="2" colspan="2">
+                <widget class="QCheckBox" name="fblPtTail">
+                 <property name="text">
+                  <string>Passthrough</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="12" column="0" colspan="4">
+                <widget class="QSlider" name="fblTestSlider">
+                 <property name="minimum">
+                  <number>-100</number>
+                 </property>
+                 <property name="maximum">
+                  <number>100</number>
+                 </property>
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="tickPosition">
+                  <enum>QSlider::TicksBothSides</enum>
+                 </property>
+                 <property name="tickInterval">
+                  <number>5</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="13" column="0" colspan="2">
+                <widget class="QLabel" name="fblTestSliderLabel">
+                 <property name="text">
+                  <string>Test Slider</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="2">
+                <widget class="QLabel" name="fblAilElvTitle">
+                 <property name="text">
+                  <string>Aileron/Elevator</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QLabel" name="fblThrottleVal">
+                 <property name="text">
+                  <string>Value: +100%</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="9" column="1">
+                <widget class="QLabel" name="fblCollVal">
+                 <property name="text">
+                  <string>Value: +100%</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="3">
+                <widget class="QLabel" name="fblAilEvlVal">
+                 <property name="text">
+                  <string>Value: +100%</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="9" column="3">
+                <widget class="QLabel" name="fblTailVal">
+                 <property name="text">
+                  <string>Value: +100%</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="0" colspan="4">
+                <widget class="Line" name="sepMed">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="11" column="0" colspan="4">
+                <widget class="Line" name="sepBot">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="13" column="2" colspan="2">
+                <widget class="QLabel" name="fblTestSliderVal">
+                 <property name="text">
+                  <string>Value: 0%</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+         <widget class="QWidget" name="expert">
+          <attribute name="title">
+           <string>Expert Mode</string>
+          </attribute>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
  </widget>
- <pixmapfunction/>
+ <customwidgets>
+  <customwidget>
+   <class>MixerCurveWidget</class>
+   <extends>QWidget</extends>
+   <header>mixercurvewidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
  <connections/>
 </ui>
