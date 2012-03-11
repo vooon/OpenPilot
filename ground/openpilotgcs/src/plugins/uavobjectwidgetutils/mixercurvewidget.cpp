@@ -32,8 +32,6 @@
 #include <QtGui>
 #include <QDebug>
 
-
-
 /*
  * Initialize the widget
  */
@@ -51,6 +49,10 @@ MixerCurveWidget::MixerCurveWidget(QWidget *parent) : QGraphicsView(parent)
     // |                    |
     // |--------------------|
 
+    // init test stuff
+    testLinePos = 50;
+    testMode = false;
+    expoPercent = 0;
 
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -58,7 +60,6 @@ MixerCurveWidget::MixerCurveWidget(QWidget *parent) : QGraphicsView(parent)
 
     curveMin=0.0;
     curveMax=1.0;
-
 
     setFrameStyle(QFrame::NoFrame);
     setStyleSheet("background:transparent");
@@ -73,12 +74,10 @@ MixerCurveWidget::MixerCurveWidget(QWidget *parent) : QGraphicsView(parent)
     plot->setZValue(-1);
     scene->setSceneRect(plot->boundingRect());
     setScene(scene);
-
 }
 
 MixerCurveWidget::~MixerCurveWidget()
 {
-
 }
 
 /**
@@ -133,6 +132,21 @@ void MixerCurveWidget::initCurve(QList<double> points)
 
 }
 
+void MixerCurveWidget::clearCurve( void )
+{
+    foreach( Node *node, nodeList ) {
+        QList<Edge*> edges = node->edges();
+        foreach( Edge *edge, edges ) {
+            if( scene()->items().contains( edge ))
+                scene()->removeItem( edge );
+            else
+                delete edge;
+        }
+        scene()->removeItem( node );
+        delete node;
+    }
+    nodeList.clear();
+}
 
 /**
   Returns the current curve settings
@@ -159,7 +173,7 @@ void MixerCurveWidget::initLinearCurve(quint32 numPoints, double maxValue)
     initCurve(points);
 }
 /**
-  Setd the current curve settings
+  Set the current curve settings
   */
 void MixerCurveWidget::setCurve(QList<double> points)
 {
@@ -201,8 +215,6 @@ void MixerCurveWidget::resizeEvent(QResizeEvent* event)
     fitInView(plot, Qt::KeepAspectRatio);
 }
 
-
-
 void MixerCurveWidget::itemMoved(double itemValue)
 {
     QList<double> list = getCurve();
@@ -221,4 +233,35 @@ void MixerCurveWidget::setRange(double min, double max)
 {
     curveMin = min;
     curveMax = max;
+}
+
+void MixerCurveWidget::setExpo( int percent )
+{
+    expoPercent = percent;
+}
+
+int MixerCurveWidget::getExpo( void )
+{
+    return expoPercent;
+}
+
+int MixerCurveWidget::showStickResponse( int input )
+{
+    testLinePos = input;
+    double scenePos = ( 0.5 + ( 0.5 * ( input / 100.0 ))) * scene()->width();
+
+    if( testLine )
+        scene()->removeItem( testLine );
+    testLine = scene()->addLine( QLineF( scenePos, 0.0, scenePos, scene()->height()), QPen( Qt::red, 2, Qt::DashLine, Qt::RoundCap, Qt::RoundJoin ));
+
+    // calculate stick response and return this value
+
+    return input;
+}
+
+void MixerCurveWidget::endTestMode( void )
+{
+    testMode = false;
+    scene()->removeItem( testLine );
+    testLine = NULL;
 }

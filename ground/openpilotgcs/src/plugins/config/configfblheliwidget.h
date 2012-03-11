@@ -29,7 +29,7 @@
 #define CONFIGFBLHELIWIDGET_H
 
 #include <QWidget>
-
+#include "../uavobjectwidgetutils/configtaskwidget.h"
 
 //--------------- Preset Tab BEGIN ---------------
 //--------------- Preset Tab END -----------------
@@ -38,6 +38,14 @@
 //--------------- Swash Tab END -----------------
 
 //--------------- Curves Tab BEGIN ---------------
+static const int THROTTLE_CURVE = 0;
+static const int AILELV_CURVE = 1;
+static const int COLLECTIVE_CURVE = 2;
+static const int TAIL_CURVE = 3;
+static const int THROTTLE_CURVE_SEL = 1;
+static const int AILELV_CURVE_SEL = 2;
+static const int COLLECTIVE_CURVE_SEL = 4;
+static const int TAIL_CURVE_SEL = 8;
 //--------------- Curves Tab END -----------------
 
 //--------------- Expert Tab BEGIN ---------------
@@ -48,7 +56,7 @@ namespace Ui {
     class ConfigFBLHeliWidget;
 }
 
-class ConfigFBLHeliWidget : public QWidget
+class ConfigFBLHeliWidget : public ConfigTaskWidget
 {
     Q_OBJECT
 
@@ -79,6 +87,9 @@ private:
     //--------------- Swash Tab END -----------------
 
     //--------------- Curves Tab BEGIN ---------------
+    int currentCurveBank;
+    void setupCurve( MixerCurveWidget *widget, UAVObjectField *data );
+    void selectCurve( int curve );
     //--------------- Curves Tab END -----------------
 
     //--------------- Expert Tab BEGIN ---------------
@@ -94,6 +105,8 @@ protected:
     //--------------- Swash Tab END -----------------
 
     //--------------- Curves Tab BEGIN ---------------
+    void setupCurves( int bank, int which = 15 );
+    void initCurveUi( void );
     //--------------- Curves Tab END -----------------
 
     //--------------- Expert Tab BEGIN ---------------
@@ -109,6 +122,16 @@ private slots:
     //--------------- Swash Tab END -----------------
 
     //--------------- Curves Tab BEGIN ---------------
+    void on_fblTestSlider_valueChanged( int value );
+    void on_fblTmThrottle_toggled( bool checked );
+    void on_fblTmAilElv_toggled( bool checked );
+    void on_fblTmColl_toggled( bool checked );
+    void on_fblTmTail_toggled( bool checked );
+    void on_fblPtThrottle_toggled( bool checked );
+    void on_fblPtAilElv_toggled( bool checked );
+    void on_fblPtColl_toggled( bool checked );
+    void on_fblPtTail_toggled( bool checked );
+    void on_fblCurveSelector_activated( int index );
     //--------------- Curves Tab END -----------------
 
     //--------------- Expert Tab BEGIN ---------------

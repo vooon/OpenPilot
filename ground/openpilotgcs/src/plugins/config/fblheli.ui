@@ -83,7 +83,7 @@
           <enum>QTabWidget::Triangular</enum>
          </property>
          <property name="currentIndex">
-          <number>2</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="preset">
           <property name="sizePolicy">
@@ -616,20 +616,57 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>911</width>
+             <width>921</width>
              <height>631</height>
             </rect>
            </property>
-           <layout class="QGridLayout" name="gridLayout_4" columnstretch="1,0,0" rowminimumheight="0">
+           <layout class="QGridLayout" name="gridLayout_4" columnstretch="1,0,0,0">
+            <item row="0" column="0">
+             <widget class="QComboBox" name="comboBox_4">
+              <item>
+               <property name="text">
+                <string>Setting Bank 1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Setting Bank 2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Setting Bank 3</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="0" column="3">
+             <widget class="QPushButton" name="fblSaveBank">
+              <property name="text">
+               <string>Save</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QPushButton" name="fblResetBank">
+              <property name="text">
+               <string>Reset</string>
+              </property>
+             </widget>
+            </item>
             <item row="0" column="2">
+             <widget class="QPushButton" name="fblLoadBank">
+              <property name="text">
+               <string>Load</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1" colspan="3">
              <widget class="QGroupBox" name="groupBox_4">
               <property name="title">
                <string>Curve Details</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_5">
-               <item row="3" column="0" colspan="2">
-                <widget class="QTableView" name="curveDetailTable"/>
-               </item>
                <item row="9" column="0" colspan="2">
                 <widget class="QPushButton" name="fblGenerateCurve">
                  <property name="text">
@@ -637,7 +674,7 @@
                  </property>
                 </widget>
                </item>
-               <item row="0" column="0" colspan="2">
+               <item row="2" column="0" colspan="2">
                 <widget class="QComboBox" name="fblCurveSelector">
                  <item>
                   <property name="text">
@@ -661,70 +698,293 @@
                  </item>
                 </widget>
                </item>
-               <item row="4" column="0">
+               <item row="5" column="0">
                 <widget class="QLabel" name="label_9">
                  <property name="text">
                   <string>Interpolation Points</string>
                  </property>
                 </widget>
                </item>
-               <item row="4" column="1">
-                <widget class="QSpinBox" name="fblNumIntPoints"/>
+               <item row="5" column="1">
+                <widget class="QSpinBox" name="fblNumIntPoints">
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                 <property name="minimum">
+                  <number>2</number>
+                 </property>
+                 <property name="maximum">
+                  <number>10</number>
+                 </property>
+                 <property name="value">
+                  <number>2</number>
+                 </property>
+                </widget>
                </item>
-               <item row="5" column="0">
+               <item row="6" column="0">
                 <widget class="QLabel" name="label_10">
                  <property name="text">
                   <string>Curve Type</string>
                  </property>
                 </widget>
                </item>
-               <item row="6" column="0">
+               <item row="7" column="0">
                 <widget class="QLabel" name="label_11">
                  <property name="text">
                   <string>Maximum Point</string>
                  </property>
                 </widget>
                </item>
-               <item row="7" column="0">
+               <item row="8" column="0">
                 <widget class="QLabel" name="label_12">
                  <property name="text">
                   <string>Minimum Point</string>
                  </property>
                 </widget>
                </item>
-               <item row="8" column="0">
-                <widget class="QLabel" name="label_13">
-                 <property name="text">
-                  <string>Expo %</string>
+               <item row="7" column="1">
+                <widget class="QSpinBox" name="fblMaximumPoint">
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                 <property name="suffix">
+                  <string>%</string>
+                 </property>
+                 <property name="minimum">
+                  <number>-100</number>
+                 </property>
+                 <property name="maximum">
+                  <number>100</number>
+                 </property>
+                 <property name="value">
+                  <number>100</number>
                  </property>
                 </widget>
-               </item>
-               <item row="5" column="1">
-                <widget class="QComboBox" name="comboBox_3"/>
-               </item>
-               <item row="6" column="1">
-                <widget class="QSpinBox" name="fblMaximumPoint"/>
-               </item>
-               <item row="7" column="1">
-                <widget class="QSpinBox" name="fblMinimumPoint"/>
                </item>
                <item row="8" column="1">
-                <widget class="QSpinBox" name="fblExpoPercent"/>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="QWidget" name="widget" native="true">
-              <layout class="QGridLayout" name="gridLayout_6">
-               <item row="0" column="0">
-                <widget class="QLabel" name="fblThrottleTitle">
-                 <property name="text">
-                  <string>Throttle</string>
+                <widget class="QSpinBox" name="fblMinimumPoint">
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                 <property name="suffix">
+                  <string>%</string>
+                 </property>
+                 <property name="minimum">
+                  <number>-100</number>
+                 </property>
+                 <property name="maximum">
+                  <number>100</number>
+                 </property>
+                 <property name="value">
+                  <number>-100</number>
                  </property>
                 </widget>
                </item>
-               <item row="1" column="0" colspan="2">
+               <item row="6" column="1">
+                <widget class="QComboBox" name="comboBox_3">
+                 <item>
+                  <property name="text">
+                   <string>Flat</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Linear Rise</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Linear Fall</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Single Expo</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Symmetric Expo</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>V-Shape</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item row="4" column="0" colspan="2">
+                <widget class="QTableWidget" name="curveDetailTable">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="frameShape">
+                  <enum>QFrame::Box</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
+                 </property>
+                 <property name="lineWidth">
+                  <number>2</number>
+                 </property>
+                 <property name="midLineWidth">
+                  <number>0</number>
+                 </property>
+                 <property name="alternatingRowColors">
+                  <bool>true</bool>
+                 </property>
+                 <property name="selectionMode">
+                  <enum>QAbstractItemView::NoSelection</enum>
+                 </property>
+                 <property name="cornerButtonEnabled">
+                  <bool>false</bool>
+                 </property>
+                 <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+                  <bool>false</bool>
+                 </attribute>
+                 <attribute name="horizontalHeaderStretchLastSection">
+                  <bool>true</bool>
+                 </attribute>
+                 <attribute name="verticalHeaderStretchLastSection">
+                  <bool>false</bool>
+                 </attribute>
+                 <row>
+                  <property name="text">
+                   <string>1</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>2</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>3</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>4</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>5</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>-</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>-</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>-</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>-</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>-</string>
+                  </property>
+                 </row>
+                 <column>
+                  <property name="text">
+                   <string>Stick Position</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>Output Value</string>
+                  </property>
+                 </column>
+                 <item row="0" column="0">
+                  <property name="text">
+                   <string>-100%</string>
+                  </property>
+                 </item>
+                 <item row="0" column="1">
+                  <property name="text">
+                   <string/>
+                  </property>
+                 </item>
+                 <item row="1" column="0">
+                  <property name="text">
+                   <string>-50%</string>
+                  </property>
+                 </item>
+                 <item row="1" column="1">
+                  <property name="text">
+                   <string/>
+                  </property>
+                 </item>
+                 <item row="2" column="0">
+                  <property name="text">
+                   <string>0%</string>
+                  </property>
+                 </item>
+                 <item row="2" column="1">
+                  <property name="text">
+                   <string/>
+                  </property>
+                 </item>
+                 <item row="3" column="0">
+                  <property name="text">
+                   <string>50%</string>
+                  </property>
+                 </item>
+                 <item row="3" column="1">
+                  <property name="text">
+                   <string/>
+                  </property>
+                 </item>
+                 <item row="4" column="0">
+                  <property name="text">
+                   <string>100%</string>
+                  </property>
+                 </item>
+                 <item row="4" column="1">
+                  <property name="text">
+                   <string/>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+              </layout>
+              <zorder>fblGenerateCurve</zorder>
+              <zorder>curveDetailTable</zorder>
+              <zorder>fblCurveSelector</zorder>
+              <zorder>label_9</zorder>
+              <zorder>fblNumIntPoints</zorder>
+              <zorder>label_10</zorder>
+              <zorder>label_11</zorder>
+              <zorder>label_12</zorder>
+              <zorder>fblMaximumPoint</zorder>
+              <zorder>fblMinimumPoint</zorder>
+              <zorder>comboBox_3</zorder>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QWidget" name="widget" native="true">
+              <layout class="QGridLayout" name="gridLayout_6" columnstretch="0,0,0,0,0,0">
+               <property name="margin">
+                <number>5</number>
+               </property>
+               <item row="1" column="1" colspan="2">
                 <widget class="MixerCurveWidget" name="fblThrottleCurve" native="true">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
@@ -743,13 +1003,6 @@
                  </property>
                 </widget>
                </item>
-               <item row="7" column="0">
-                <widget class="QLabel" name="fblCollTitle">
-                 <property name="text">
-                  <string>Collective Pitch</string>
-                 </property>
-                </widget>
-               </item>
                <item row="2" column="0">
                 <widget class="QCheckBox" name="fblTmThrottle">
                  <property name="text">
@@ -757,15 +1010,8 @@
                  </property>
                 </widget>
                </item>
-               <item row="5" column="0" colspan="2">
-                <widget class="QCheckBox" name="fblPtThrottle">
-                 <property name="text">
-                  <string>Passthrough</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="8" column="0" colspan="2">
-                <widget class="MixerCurveWidget" name="fblThrottleCurve_3" native="true">
+               <item row="8" column="1" colspan="2">
+                <widget class="MixerCurveWidget" name="fblCollCurve" native="true">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                    <horstretch>0</horstretch>
@@ -783,8 +1029,8 @@
                  </property>
                 </widget>
                </item>
-               <item row="1" column="2" colspan="2">
-                <widget class="MixerCurveWidget" name="fblThrottleCurve_2" native="true">
+               <item row="1" column="4" colspan="2">
+                <widget class="MixerCurveWidget" name="fblAilElvCurve" native="true">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                    <horstretch>0</horstretch>
@@ -802,8 +1048,8 @@
                  </property>
                 </widget>
                </item>
-               <item row="8" column="2" colspan="2">
-                <widget class="MixerCurveWidget" name="fblThrottleCurve_4" native="true">
+               <item row="8" column="4" colspan="2">
+                <widget class="MixerCurveWidget" name="fblTailCurve" native="true">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                    <horstretch>0</horstretch>
@@ -821,24 +1067,10 @@
                  </property>
                 </widget>
                </item>
-               <item row="2" column="2">
+               <item row="2" column="3">
                 <widget class="QCheckBox" name="fblTmAilElv">
                  <property name="text">
                   <string>Test Mode</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="2" colspan="2">
-                <widget class="QCheckBox" name="fblPtAilElv">
-                 <property name="text">
-                  <string>Passthrough</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="7" column="2">
-                <widget class="QLabel" name="fblTailTitle">
-                 <property name="text">
-                  <string>Tail Rotor</string>
                  </property>
                 </widget>
                </item>
@@ -849,28 +1081,150 @@
                  </property>
                 </widget>
                </item>
-               <item row="10" column="0">
+               <item row="11" column="0">
                 <widget class="QCheckBox" name="fblPtColl">
                  <property name="text">
                   <string>Passthrough</string>
                  </property>
                 </widget>
                </item>
-               <item row="9" column="2">
+               <item row="9" column="3">
                 <widget class="QCheckBox" name="fblTmTail">
                  <property name="text">
                   <string>Test Mode</string>
                  </property>
                 </widget>
                </item>
-               <item row="10" column="2" colspan="2">
+               <item row="11" column="3">
                 <widget class="QCheckBox" name="fblPtTail">
                  <property name="text">
                   <string>Passthrough</string>
                  </property>
                 </widget>
                </item>
-               <item row="12" column="0" colspan="4">
+               <item row="14" column="0" colspan="3">
+                <widget class="QLabel" name="fblTestSliderLabel">
+                 <property name="text">
+                  <string>Test Slider</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1" colspan="2">
+                <widget class="QLabel" name="fblThrottleVal">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Output Value: +100%</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="9" column="1" colspan="2">
+                <widget class="QLabel" name="fblCollVal">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Output Value: +100%</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="4" colspan="2">
+                <widget class="QLabel" name="fblAilElvVal">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Output Value: +100%</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="9" column="4" colspan="2">
+                <widget class="QLabel" name="fblTailVal">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string> Output Value: +100%</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="0" colspan="6">
+                <widget class="Line" name="sepMed">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="12" column="0" colspan="6">
+                <widget class="Line" name="sepBot">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="14" column="3" colspan="3">
+                <widget class="QLabel" name="fblTestSliderVal">
+                 <property name="text">
+                  <string>Stick Input: +000%</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="13" column="0" colspan="6">
                 <widget class="QSlider" name="fblTestSlider">
                  <property name="minimum">
                   <number>-100</number>
@@ -889,84 +1243,149 @@
                  </property>
                 </widget>
                </item>
-               <item row="13" column="0" colspan="2">
-                <widget class="QLabel" name="fblTestSliderLabel">
+               <item row="4" column="0">
+                <widget class="QCheckBox" name="fblPtThrottle">
                  <property name="text">
-                  <string>Test Slider</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignCenter</set>
+                  <string>Passthrough</string>
                  </property>
                 </widget>
                </item>
-               <item row="0" column="2">
+               <item row="4" column="3">
+                <widget class="QCheckBox" name="fblPtAilElv">
+                 <property name="text">
+                  <string>Passthrough</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="2">
+                <widget class="QSpinBox" name="fblThrottleExpo">
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                 <property name="suffix">
+                  <string>%</string>
+                 </property>
+                 <property name="maximum">
+                  <number>60</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="1">
+                <widget class="QLabel" name="label_15">
+                 <property name="text">
+                  <string>Expo</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="4">
+                <widget class="QLabel" name="label_16">
+                 <property name="text">
+                  <string>Expo</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="5">
+                <widget class="QSpinBox" name="fblAilElvExpo">
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                 <property name="suffix">
+                  <string>%</string>
+                 </property>
+                 <property name="maximum">
+                  <number>60</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="11" column="1">
+                <widget class="QLabel" name="label_17">
+                 <property name="text">
+                  <string>Expo</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="11" column="4">
+                <widget class="QLabel" name="label_18">
+                 <property name="text">
+                  <string>Expo</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="11" column="5">
+                <widget class="QSpinBox" name="fblTailExpo">
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                 <property name="suffix">
+                  <string>%</string>
+                 </property>
+                 <property name="maximum">
+                  <number>60</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="11" column="2">
+                <widget class="QSpinBox" name="fblCollExpo">
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                 <property name="suffix">
+                  <string>%</string>
+                 </property>
+                 <property name="maximum">
+                  <number>60</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="3">
+                <widget class="QLabel" name="fblTailTitle">
+                 <property name="text">
+                  <string>Tail Rotor</string>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="0">
+                <widget class="QLabel" name="fblCollTitle">
+                 <property name="text">
+                  <string>Collective Pitch</string>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="fblThrottleTitle">
+                 <property name="text">
+                  <string>Throttle</string>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="3">
                 <widget class="QLabel" name="fblAilElvTitle">
                  <property name="text">
                   <string>Aileron/Elevator</string>
                  </property>
-                </widget>
-               </item>
-               <item row="2" column="1">
-                <widget class="QLabel" name="fblThrottleVal">
-                 <property name="text">
-                  <string>Value: +100%</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                 </property>
-                </widget>
-               </item>
-               <item row="9" column="1">
-                <widget class="QLabel" name="fblCollVal">
-                 <property name="text">
-                  <string>Value: +100%</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="3">
-                <widget class="QLabel" name="fblAilEvlVal">
-                 <property name="text">
-                  <string>Value: +100%</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                 </property>
-                </widget>
-               </item>
-               <item row="9" column="3">
-                <widget class="QLabel" name="fblTailVal">
-                 <property name="text">
-                  <string>Value: +100%</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                 </property>
-                </widget>
-               </item>
-               <item row="6" column="0" colspan="4">
-                <widget class="Line" name="sepMed">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="11" column="0" colspan="4">
-                <widget class="Line" name="sepBot">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="13" column="2" colspan="2">
-                <widget class="QLabel" name="fblTestSliderVal">
-                 <property name="text">
-                  <string>Value: 0%</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignCenter</set>
+                 <property name="wordWrap">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>

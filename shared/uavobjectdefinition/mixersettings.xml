@@ -28,6 +28,26 @@
         <field name="Mixer9Vector" units="" type="int8" elements="5" elementnames="ThrottleCurve1,ThrottleCurve2,Roll,Pitch,Yaw" defaultvalue="0"/>
         <field name="Mixer10Type" units="" type="enum" elements="1" options="Disabled,Motor,Servo,CameraRoll,CameraPitch,CameraYaw,Accessory0,Accessory1,Accessory2,Accessory3,Accessory4,Accessory5" defaultvalue="Disabled"/>
         <field name="Mixer10Vector" units="" type="int8" elements="5" elementnames="ThrottleCurve1,ThrottleCurve2,Roll,Pitch,Yaw" defaultvalue="0"/>
+        <!-- FBL HELI STUFF -->
+        <field name="fblThrottleCurveB0" units="percent" type="float" elements="5" elementnames="0,25,50,75,100" defaultvalue="0,0,0,0,0"/>
+	<field name="fblThrottleCurveB1" units="percent" type="float" elements="5" elementnames="0,25,50,75,100" defaultvalue="0,0,0,0,0"/>
+	<field name="fblThrottleCurveB2" units="percent" type="float" elements="5" elementnames="0,25,50,75,100" defaultvalue="0,0,0,0,0"/>
+        <field name="fblAilElvCurveB0" units="percent" type="float" elements="5" elementnames="0,25,50,75,100" defaultvalue="0,0,0,0,0"/>
+        <field name="fblAilElvCurveB1" units="percent" type="float" elements="5" elementnames="0,25,50,75,100" defaultvalue="0,0,0,0,0"/>
+        <field name="fblAilElvCurveB2" units="percent" type="float" elements="5" elementnames="0,25,50,75,100" defaultvalue="0,0,0,0,0"/>
+	<field name="fblCollectiveCurveB0" units="percent" type="float" elements="5" elementnames="0,25,50,75,100" defaultvalue="0,0,0,0,0"/>
+	<field name="fblCollectiveCurveB1" units="percent" type="float" elements="5" elementnames="0,25,50,75,100" defaultvalue="0,0,0,0,0"/>
+	<field name="fblCollectiveCurveB2" units="percent" type="float" elements="5" elementnames="0,25,50,75,100" defaultvalue="0,0,0,0,0"/>
+	<field name="fblTailCurveB0" units="percent" type="float" elements="5" elementnames="0,25,50,75,100" defaultvalue="0,0,0,0,0"/>
+	<field name="fblTailCurveB1" units="percent" type="float" elements="5" elementnames="0,25,50,75,100" defaultvalue="0,0,0,0,0"/>
+	<field name="fblTailCurveB2" units="percent" type="float" elements="5" elementnames="0,25,50,75,100" defaultvalue="0,0,0,0,0"/>
+        <field name="fblPassthroughB0" units="" type="enum" elements="4" options="FALSE,TRUE" elementnames="thr,ailelv,coll,tail" defaultvalue="FALSE,FALSE,FALSE,FALSE"/>
+        <field name="fblPassthroughB1" units="" type="enum" elements="4" options="FALSE,TRUE" elementnames="thr,ailelv,coll,tail" defaultvalue="FALSE,FALSE,FALSE,FALSE"/>
+        <field name="fblPassthroughB2" units="" type="enum" elements="4" options="FALSE,TRUE" elementnames="thr,ailelv,coll,tail" defaultvalue="FALSE,FALSE,FALSE,FALSE"/>
+        <field name="fblExpoB0" units="percent" type="float" elements="4" elementnames="throttle,ailelv,collective,tail" defaultvalue="0,0,0,0"/>
+        <field name="fblExpoB1" units="percent" type="float" elements="4" elementnames="throttle,ailelv,collective,tail" defaultvalue="0,0,0,0"/>
+        <field name="fblExpoB2" units="percent" type="float" elements="4" elementnames="throttle,ailelv,collective,tail" defaultvalue="0,0,0,0"/>
+        <!-- FBL HELI STUFF END -->
         <access gcs="readwrite" flight="readwrite"/>
         <telemetrygcs acked="true" updatemode="onchange" period="0"/>
         <telemetryflight acked="true" updatemode="onchange" period="0"/>

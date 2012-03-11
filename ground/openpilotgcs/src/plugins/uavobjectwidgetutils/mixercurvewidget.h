@@ -47,9 +47,15 @@ public:
    QList<double> getCurve();
    void initLinearCurve(quint32 numPoints, double maxValue);
    void setCurve(QList<double>);
+   void clearCurve( void );
    void setMin(double value);
    void setMax(double value);
    void setRange(double min, double max);
+   void setExpo( int percent );
+   int getExpo( void );
+
+   int showStickResponse( int input );
+   void endTestMode( void );
 
 signals:
    void curveUpdated(QList<double>, double );
@@ -61,11 +67,14 @@ private:
    QList<Node*> nodeList;
    double curveMin;
    double curveMax;
+   int expoPercent;
+   int testLinePos;
+   bool testMode;
+   QGraphicsLineItem *testLine;
 
 protected:
     void showEvent(QShowEvent *event);
     void resizeEvent(QResizeEvent *event);
-
 
 };
 #endif /* MIXERCURVEWIDGET_H_ */
