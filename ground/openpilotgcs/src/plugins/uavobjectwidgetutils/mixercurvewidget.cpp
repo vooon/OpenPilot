@@ -31,6 +31,7 @@
 
 #include <QtGui>
 #include <QDebug>
+#include <algorithm>
 
 /*
  * Initialize the widget
@@ -247,6 +248,7 @@ int MixerCurveWidget::getExpo( void )
 
 int MixerCurveWidget::showStickResponse( int input )
 {
+    QList<double> list = getCurve();
     testLinePos = input;
     double scenePos = ( 0.5 + ( 0.5 * ( input / 100.0 ))) * scene()->width();
 
@@ -255,13 +257,26 @@ int MixerCurveWidget::showStickResponse( int input )
     testLine = scene()->addLine( QLineF( scenePos, 0.0, scenePos, scene()->height()), QPen( Qt::red, 2, Qt::DashLine, Qt::RoundCap, Qt::RoundJoin ));
 
     // calculate stick response and return this value
+    double divider = scene()->width() / ( nodeList.size() - 1 );
+    double basePoint = scenePos / divider;
+    double fract, intpart;
+    fract = modf( basePoint, &intpart );
+    int edgeStart = (int)intpart;
 
-    return input;
+    // get start point value
+    int startVal = -100 + ( 200 * list.at( edgeStart ));
+    // get end point value
+    int endVal = -100 + ( 200 * list.at(( edgeStart + 1 ) % list.size()));
+
+    // interpolate real point
+    double curveVal = startVal + (( endVal - startVal ) * fract );
+
+    return curveVal;
 }
 
 void MixerCurveWidget::endTestMode( void )
 {
     testMode = false;
     scene()->removeItem( testLine );
-    testLine = NULL;
+    testLine = 0;
 }

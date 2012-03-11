@@ -200,22 +200,22 @@ void ConfigFBLHeliWidget::on_fblTestSlider_valueChanged(int value)
     // check what curves are in test mode and propagate the value to them to show the line
     if( ui->fblTmThrottle->isChecked( )) {
         response = ui->fblThrottleCurve->showStickResponse( value );
-        labelVal = QString( "Output Value: %1%2%" ).arg( value >= 0 ? "+" : "-" ).arg( abs( response ), 3, 10, QChar( '0' ));
+        labelVal = QString( "Output Value: %1%2%" ).arg( response >= 0 ? "+" : "-" ).arg( abs( response ), 3, 10, QChar( '0' ));
         ui->fblThrottleVal->setText( labelVal );
     }
     if( ui->fblTmAilElv->isChecked( )) {
         response = ui->fblAilElvCurve->showStickResponse( value );
-        labelVal = QString( "Output Value: %1%2%" ).arg( value >= 0 ? "+" : "-" ).arg( abs( response ), 3, 10, QChar( '0' ));
+        labelVal = QString( "Output Value: %1%2%" ).arg( response >= 0 ? "+" : "-" ).arg( abs( response ), 3, 10, QChar( '0' ));
         ui->fblAilElvVal->setText( labelVal );
     }
     if( ui->fblTmColl->isChecked( )) {
         response = ui->fblCollCurve->showStickResponse( value );
-        labelVal = QString( "Output Value: %1%2%" ).arg( value >= 0 ? "+" : "-" ).arg( abs( response ), 3, 10, QChar( '0' ));
+        labelVal = QString( "Output Value: %1%2%" ).arg( response >= 0 ? "+" : "-" ).arg( abs( response ), 3, 10, QChar( '0' ));
         ui->fblCollVal->setText( labelVal );
     }
     if( ui->fblTmTail->isChecked( )) {
         response = ui->fblTailCurve->showStickResponse( value );
-        labelVal = QString( "Output Value: %1%2%" ).arg( value >= 0 ? "+" : "-" ).arg( abs( response ), 3, 10, QChar( '0' ));
+        labelVal = QString( "Output Value: %1%2%" ).arg( response >= 0 ? "+" : "-" ).arg( abs( response ), 3, 10, QChar( '0' ));
         ui->fblTailVal->setText( labelVal );
     }
 }
