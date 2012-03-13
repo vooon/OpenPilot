@@ -19,5 +19,6 @@
         <file>images/camera.png</file>
         <file>images/TX2.svg</file>
         <file>images/fbl.png</file>
+        <file>images/curve-bg-disabled.svg</file>
     </qresource>
 </RCC>

@@ -200,22 +200,22 @@ void ConfigFBLHeliWidget::on_fblTestSlider_valueChanged(int value)
     // check what curves are in test mode and propagate the value to them to show the line
     if( ui->fblTmThrottle->isChecked( )) {
         response = ui->fblThrottleCurve->showStickResponse( value );
-        labelVal = QString( "Output Value: %1%2%" ).arg( response >= 0 ? "+" : "-" ).arg( abs( response ), 3, 10, QChar( '0' ));
+        labelVal = QString( "Output: %1%2%" ).arg( response >= 0 ? "+" : "-" ).arg( abs( response ), 3, 10, QChar( '0' ));
         ui->fblThrottleVal->setText( labelVal );
     }
     if( ui->fblTmAilElv->isChecked( )) {
         response = ui->fblAilElvCurve->showStickResponse( value );
-        labelVal = QString( "Output Value: %1%2%" ).arg( response >= 0 ? "+" : "-" ).arg( abs( response ), 3, 10, QChar( '0' ));
+        labelVal = QString( "Output: %1%2%" ).arg( response >= 0 ? "+" : "-" ).arg( abs( response ), 3, 10, QChar( '0' ));
         ui->fblAilElvVal->setText( labelVal );
     }
     if( ui->fblTmColl->isChecked( )) {
         response = ui->fblCollCurve->showStickResponse( value );
-        labelVal = QString( "Output Value: %1%2%" ).arg( response >= 0 ? "+" : "-" ).arg( abs( response ), 3, 10, QChar( '0' ));
+        labelVal = QString( "Output: %1%2%" ).arg( response >= 0 ? "+" : "-" ).arg( abs( response ), 3, 10, QChar( '0' ));
         ui->fblCollVal->setText( labelVal );
     }
     if( ui->fblTmTail->isChecked( )) {
         response = ui->fblTailCurve->showStickResponse( value );
-        labelVal = QString( "Output Value: %1%2%" ).arg( response >= 0 ? "+" : "-" ).arg( abs( response ), 3, 10, QChar( '0' ));
+        labelVal = QString( "Output: %1%2%" ).arg( response >= 0 ? "+" : "-" ).arg( abs( response ), 3, 10, QChar( '0' ));
         ui->fblTailVal->setText( labelVal );
     }
 }
@@ -269,13 +269,19 @@ void ConfigFBLHeliWidget::on_fblPtThrottle_toggled( bool checked )
 {
     if( checked ) {
         ui->fblThrottleCurve->clearCurve();
+        ui->fblThrottleCurve->showDisabledBg( true );
         ui->fblThrottleCurve->setEnabled( false );
+        ui->fblThrottleExpo->setEnabled( false );
+        ui->fblThrottleExpoLabel->setEnabled( false );
         ui->fblTmThrottle->setChecked( false );
         ui->fblTmThrottle->setEnabled( false );
     } else {
         setupCurves( currentCurveBank, THROTTLE_CURVE_SEL );
         ui->fblThrottleCurve->setEnabled( true );
         ui->fblTmThrottle->setEnabled( true );
+        ui->fblThrottleExpo->setEnabled( true );
+        ui->fblThrottleExpoLabel->setEnabled( true );
+        ui->fblThrottleCurve->showDisabledBg( false );
     }
 }
 
@@ -283,13 +289,19 @@ void ConfigFBLHeliWidget::on_fblPtAilElv_toggled( bool checked )
 {
     if( checked ) {
         ui->fblAilElvCurve->clearCurve();
+        ui->fblAilElvCurve->showDisabledBg( true );
         ui->fblAilElvCurve->setEnabled( false );
+        ui->fblAilElvExpo->setEnabled( false );
+        ui->fblAilElvExpoLabel->setEnabled( false );
         ui->fblTmAilElv->setChecked( false );
         ui->fblTmAilElv->setEnabled( false );
     } else {
         setupCurves( currentCurveBank, AILELV_CURVE_SEL );
         ui->fblAilElvCurve->setEnabled( true );
         ui->fblTmAilElv->setEnabled( true );
+        ui->fblAilElvExpo->setEnabled( true );
+        ui->fblAilElvExpoLabel->setEnabled( true );
+        ui->fblAilElvCurve->showDisabledBg( false );
     }
 }
 
@@ -297,13 +309,19 @@ void ConfigFBLHeliWidget::on_fblPtColl_toggled( bool checked )
 {
     if( checked ) {
         ui->fblCollCurve->clearCurve();
+        ui->fblCollCurve->showDisabledBg( true );
         ui->fblCollCurve->setEnabled( false );
+        ui->fblCollExpo->setEnabled( false );
+        ui->fblCollExpoLabel->setEnabled( false );
         ui->fblTmColl->setChecked( false );
         ui->fblTmColl->setEnabled( false );
     } else {
         setupCurves( currentCurveBank, COLLECTIVE_CURVE_SEL );
         ui->fblCollCurve->setEnabled( true );
         ui->fblTmColl->setEnabled( true );
+        ui->fblCollExpo->setEnabled( true );
+        ui->fblCollExpoLabel->setEnabled( true );
+        ui->fblCollCurve->showDisabledBg( false );
     }
 }
 
@@ -311,13 +329,19 @@ void ConfigFBLHeliWidget::on_fblPtTail_toggled( bool checked )
 {
     if( checked ) {
         ui->fblTailCurve->clearCurve();
+        ui->fblTailCurve->showDisabledBg( true );
         ui->fblTailCurve->setEnabled( false );
+        ui->fblTailExpo->setEnabled( false );
+        ui->fblTailExpoLabel->setEnabled( false );
         ui->fblTmTail->setChecked( false );
         ui->fblTmTail->setEnabled( false );
     } else {
         setupCurves( currentCurveBank, TAIL_CURVE_SEL );
         ui->fblTailCurve->setEnabled( true );
         ui->fblTmTail->setEnabled( true );
+        ui->fblTailExpo->setEnabled( true );
+        ui->fblTailExpoLabel->setEnabled( true );
+        ui->fblTailCurve->showDisabledBg( false );
     }
 }
 

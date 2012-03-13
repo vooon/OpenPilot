@@ -57,12 +57,15 @@ public:
    int showStickResponse( int input );
    void endTestMode( void );
 
+   void showDisabledBg( bool disabled );
+
 signals:
    void curveUpdated(QList<double>, double );
 
 private slots:
 
 private:
+   QSvgRenderer *renderer;
    QGraphicsSvgItem *plot;
    QList<Node*> nodeList;
    double curveMin;
@@ -71,6 +74,7 @@ private:
    int testLinePos;
    bool testMode;
    QGraphicsLineItem *testLine;
+   QGraphicsTextItem *overlayText;
 
 protected:
     void showEvent(QShowEvent *event);

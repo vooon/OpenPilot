@@ -55,6 +55,7 @@ MixerCurveWidget::MixerCurveWidget(QWidget *parent) : QGraphicsView(parent)
     testMode = false;
     expoPercent = 0;
     testLine = 0;
+    overlayText = 0;
 
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -67,11 +68,10 @@ MixerCurveWidget::MixerCurveWidget(QWidget *parent) : QGraphicsView(parent)
     setStyleSheet("background:transparent");
 
     QGraphicsScene *scene = new QGraphicsScene(this);
-    QSvgRenderer *renderer = new QSvgRenderer();
+    renderer = new QSvgRenderer();
     plot = new QGraphicsSvgItem();
     renderer->load(QString(":/configgadget/images/curve-bg.svg"));
     plot->setSharedRenderer(renderer);
-    //plot->setElementId("map");
     scene->addItem(plot);
     plot->setZValue(-1);
     scene->setSceneRect(plot->boundingRect());
@@ -280,4 +280,15 @@ void MixerCurveWidget::endTestMode( void )
     testMode = false;
     scene()->removeItem( testLine );
     testLine = 0;
+}
+
+void MixerCurveWidget::showDisabledBg( bool disabled )
+{
+    if( disabled ) {
+        renderer->load(QString( ":/configgadget/images/curve-bg-disabled.svg" ));
+        plot->setSharedRenderer( renderer );
+    } else {
+        renderer->load(QString( ":/configgadget/images/curve-bg.svg" ));
+        plot->setSharedRenderer( renderer );
+    }
 }
