@@ -115,6 +115,12 @@ public:
 
     void updateEditorGeometry(QWidget *editor,
         const QStyleOptionViewItem &option, const QModelIndex &index) const;
+
+    void setMaxVal( int nmax );
+    void setMinVal( int nmin );
+
+private:
+    int minVal, maxVal;
 };
 
 #endif // CONFIGAIRFRAMEWIDGET_H

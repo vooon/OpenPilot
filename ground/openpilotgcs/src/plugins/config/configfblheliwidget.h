@@ -29,6 +29,7 @@
 #define CONFIGFBLHELIWIDGET_H
 
 #include <QWidget>
+#include <QMessageBox>
 #include "../uavobjectwidgetutils/configtaskwidget.h"
 
 //--------------- Preset Tab BEGIN ---------------
@@ -88,8 +89,10 @@ private:
 
     //--------------- Curves Tab BEGIN ---------------
     int currentCurveBank;
+    bool setupPhase;
     void setupCurve( MixerCurveWidget *widget, UAVObjectField *data );
     void selectCurve( int curve );
+    void updateCurveTable( QList<double> &values );
     //--------------- Curves Tab END -----------------
 
     //--------------- Expert Tab BEGIN ---------------
@@ -132,10 +135,17 @@ private slots:
     void on_fblPtColl_toggled( bool checked );
     void on_fblPtTail_toggled( bool checked );
     void on_fblCurveSelector_activated( int index );
+    void updateThrottleCurve( QList<double> list, double value );
+    void updateAilElvCurve( QList<double> list, double value );
+    void updateCollCurve( QList<double> list, double value );
+    void updateTailCurve( QList<double> list, double value );
+    void on_curveDetailTable_itemChanged(QTableWidgetItem *item);
     //--------------- Curves Tab END -----------------
 
     //--------------- Expert Tab BEGIN ---------------
     //--------------- Expert Tab END -----------------
+
+
 
 public slots:
 

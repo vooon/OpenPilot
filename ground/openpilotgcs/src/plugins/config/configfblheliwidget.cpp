@@ -28,6 +28,7 @@
 #include "systemsettings.h"
 #include "mixersettings.h"
 
+#include "configairframewidget.h"
 #include "configfblheliwidget.h"
 #include "ui_fblheli.h"
 
@@ -73,15 +74,31 @@ void ConfigFBLHeliWidget::initCurveUi( void )
     ui->fblCollVal->hide();
     ui->fblTailVal->hide();
 
-    // set table cell alignment
+    // set delegate for editable row
+    SpinBoxDelegate *sbd = new SpinBoxDelegate();
+    sbd->setMinVal( -100 );
+    sbd->setMaxVal( 100 );
+    ui->curveDetailTable->setItemDelegateForColumn( 1, sbd );
+
+    // set table cell alignment, set first column read only
     for( int i = 0; i < ui->curveDetailTable->columnCount(); i++ )
         for( int j = 0; j < ui->curveDetailTable->rowCount(); j++ )
-            if( ui->curveDetailTable->item( j, i ))
+            if( ui->curveDetailTable->item( j, i )) {
+                if( i == 0 )
+                    ui->curveDetailTable->item( j, i )->setFlags( ui->curveDetailTable->item( j, i )->flags() & ~Qt::ItemIsEditable );
                 ui->curveDetailTable->item( j, i )->setTextAlignment( Qt::AlignRight );
+            }
+
+    // setup slot assignments for connection curve widgets -> table values
+    connect( ui->fblThrottleCurve, SIGNAL( curveUpdated( QList<double>, double )), this, SLOT( updateThrottleCurve( QList<double>, double )));
+    connect( ui->fblAilElvCurve, SIGNAL( curveUpdated( QList<double>, double )), this, SLOT( updateAilElvCurve( QList<double>, double )));
+    connect( ui->fblCollCurve, SIGNAL( curveUpdated( QList<double>, double )), this, SLOT( updateCollCurve( QList<double>, double )));
+    connect( ui->fblTailCurve, SIGNAL( curveUpdated( QList<double>, double )), this, SLOT( updateTailCurve( QList<double>, double )));
 }
 
 void ConfigFBLHeliWidget::setupCurves( int bank, int which )
 {
+    setupPhase = true;
     // setup string for bank transfer name generation
     QString objName;
     UAVObjectField *field;
@@ -127,6 +144,7 @@ void ConfigFBLHeliWidget::setupCurves( int bank, int which )
         Q_ASSERT(field);
         setupCurve( ui->fblTailCurve, field );
     }
+    setupPhase = false;
 }
 
 void ConfigFBLHeliWidget::setupCurve( MixerCurveWidget *widget, UAVObjectField *data )
@@ -175,10 +193,15 @@ void ConfigFBLHeliWidget::selectCurve( int curve )
     QList<double> curveValues = curCurve->getCurve();
     ui->fblNumIntPoints->setValue( curveValues.size());
 
+    updateCurveTable( curveValues );
+}
+
+void ConfigFBLHeliWidget::updateCurveTable( QList<double> &values )
+{
     int cellVal = 0, minVal = 100, maxVal = -100;
-    for( int i = 0; i < curveValues.size(); i++ ) {
+    for( int i = 0; i < values.size(); i++ ) {
         // calc string value
-        cellVal = -100 + curveValues.at( i ) * 200;
+        cellVal = -100 + values.at( i ) * 200;
         if( cellVal > maxVal )
             maxVal = cellVal;
         if( cellVal < minVal )
@@ -348,6 +371,79 @@ void ConfigFBLHeliWidget::on_fblPtTail_toggled( bool checked )
 void ConfigFBLHeliWidget::on_fblCurveSelector_activated( int index )
 {
     selectCurve( index );
+}
+
+void ConfigFBLHeliWidget::updateThrottleCurve( QList<double> list, double value )
+{
+    Q_UNUSED( value );
+
+    // update table if this curve is currently selected
+    if( ui->fblCurveSelector->currentIndex() == 0 )
+        updateCurveTable( list );
+}
+
+void ConfigFBLHeliWidget::updateAilElvCurve( QList<double> list, double value )
+{
+    Q_UNUSED( value );
+
+    // update table if this curve is currently selected
+    if( ui->fblCurveSelector->currentIndex() == 1 )
+        updateCurveTable( list );
+}
+
+void ConfigFBLHeliWidget::updateCollCurve( QList<double> list, double value )
+{
+    Q_UNUSED( value );
+
+    // update table if this curve is currently selected
+    if( ui->fblCurveSelector->currentIndex() == 2 )
+        updateCurveTable( list );
+}
+
+void ConfigFBLHeliWidget::updateTailCurve( QList<double> list, double value )
+{
+    Q_UNUSED( value );
+
+    // update table if this curve is currently selected
+    if( ui->fblCurveSelector->currentIndex() == 3 )
+        updateCurveTable( list );
+}
+
+void ConfigFBLHeliWidget::on_curveDetailTable_itemChanged( QTableWidgetItem *item )
+{
+    // check if the column is the one to check
+    if( item->column() != 1 || setupPhase )
+        return;
+
+    // get changed value
+    bool check;
+    int value = item->text().toInt( &check );
+
+    if( check ) {
+        // set value to curve
+        // select corresponding widget for data retrieval
+        MixerCurveWidget* curCurve;
+
+        switch( ui->fblCurveSelector->currentIndex()) {
+            case THROTTLE_CURVE:
+                curCurve = ui->fblThrottleCurve;
+                break;
+            case AILELV_CURVE:
+                curCurve = ui->fblAilElvCurve;
+                break;
+            case COLLECTIVE_CURVE:
+                curCurve = ui->fblCollCurve;
+                break;
+            case TAIL_CURVE:
+                curCurve = ui->fblTailCurve;
+                break;
+        }
+
+        // set curve data to data area
+        QList<double> curveValues = curCurve->getCurve();
+        curveValues[ item->row() ] = ( 0.5 + ( 0.5 * ( value / 100.0 )));
+        curCurve->setCurve( curveValues );
+    }
 }
 
 
