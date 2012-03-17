@@ -1,8 +1,8 @@
 /**
  ******************************************************************************
  *
- * @file       configcamerafblheliwidget.cpp
- * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2011.
+ * @file       configfblheliwidget.cpp
+ * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2012.
  * @addtogroup GCSPlugins GCS Plugins
  * @{
  * @addtogroup ConfigPlugin Config Plugin
@@ -31,6 +31,7 @@
 #include "configairframewidget.h"
 #include "configfblheliwidget.h"
 #include "ui_fblheli.h"
+
 
 ConfigFBLHeliWidget::ConfigFBLHeliWidget(QWidget *parent) :
     ConfigTaskWidget(parent),
@@ -522,7 +523,6 @@ void ConfigFBLHeliWidget::on_fblGenerateCurve_clicked()
             newCurveValues.append( ( 0.5 + ( 0.5 * ( minVal / 100.0 ))));
             for( int i = 1; i < numPoints / 2 + 1; i++ )
                 newCurveValues.append( ( 0.5 + ( 0.5 * (( minVal + i * increment ) / 100.0 ))));
-        break;
             break;
         default:
             // not to happen
@@ -534,6 +534,22 @@ void ConfigFBLHeliWidget::on_fblGenerateCurve_clicked()
     curCurve->initCurve( newCurveValues );
     updateCurveTable( newCurveValues );
     curCurve->blockSignals( false );
+}
+
+
+void ConfigFBLHeliWidget::on_fblResetBank_clicked()
+{
+
+}
+
+void ConfigFBLHeliWidget::on_fblLoadBank_clicked()
+{
+
+}
+
+void ConfigFBLHeliWidget::on_fblSaveBank_clicked()
+{
+
 }
 
 //--------------- Curves Tab END -----------------
