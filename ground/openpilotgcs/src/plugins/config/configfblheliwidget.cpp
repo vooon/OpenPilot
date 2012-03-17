@@ -128,6 +128,12 @@ void ConfigFBLHeliWidget::setupCurves( int bank, int which )
         field = obj->getField( objName );
         Q_ASSERT(field);
         setupCurve( ui->fblAilElvCurve, field );
+
+        objName = QString( "fblExpoB%1" ).arg( bank );
+        field = obj->getField( objName );
+        Q_ASSERT(field);
+        ui->fblAilElvCurve->setExpo( field->getValue( 1 ).toInt( ));
+        ui->fblAilElvExpo->setValue( field->getValue( 1 ).toInt( ));
     }
 
     // set collective pitch curve to widget
@@ -136,6 +142,12 @@ void ConfigFBLHeliWidget::setupCurves( int bank, int which )
         field = obj->getField( objName );
         Q_ASSERT(field);
         setupCurve( ui->fblCollCurve, field );
+
+        objName = QString( "fblExpoB%1" ).arg( bank );
+        field = obj->getField( objName );
+        Q_ASSERT(field);
+        ui->fblCollCurve->setExpo( field->getValue( 2 ).toInt( ));
+        ui->fblCollExpo->setValue( field->getValue( 2 ).toInt( ));
     }
 
     // set tail curve to widget
@@ -144,8 +156,16 @@ void ConfigFBLHeliWidget::setupCurves( int bank, int which )
         field = obj->getField( objName );
         Q_ASSERT(field);
         setupCurve( ui->fblTailCurve, field );
+
+        objName = QString( "fblExpoB%1" ).arg( bank );
+        field = obj->getField( objName );
+        Q_ASSERT(field);
+        ui->fblTailCurve->setExpo( field->getValue( 3 ).toInt( ));
+        ui->fblTailExpo->setValue( field->getValue( 3 ).toInt( ));
     }
     setupPhase = false;
+
+    currentCurveBank = bank;
 }
 
 void ConfigFBLHeliWidget::setupCurve( MixerCurveWidget *widget, UAVObjectField *data )
@@ -539,17 +559,119 @@ void ConfigFBLHeliWidget::on_fblGenerateCurve_clicked()
 
 void ConfigFBLHeliWidget::on_fblResetBank_clicked()
 {
-
+    if( QMessageBox::question( this,
+                               "Confirm",
+                               QString( "Are you sure you want to reset to saved values of Bank %1?" ).arg( currentCurveBank + 1 ),
+                               QMessageBox::Ok | QMessageBox::Cancel ) == QMessageBox::Ok ) {
+        setupCurves( currentCurveBank );
+        ui->fblBankSelector->setCurrentIndex( currentCurveBank );
+    }
 }
 
 void ConfigFBLHeliWidget::on_fblLoadBank_clicked()
 {
-
+    if( QMessageBox::question( this,
+                               "Confirm",
+                               QString( "Are you sure you want to load the values of Bank %1?" ).arg( ui->fblBankSelector->currentIndex() + 1 ),
+                               QMessageBox::Ok | QMessageBox::Cancel ) == QMessageBox::Ok ) {
+        setupCurves( ui->fblBankSelector->currentIndex() );
+    }
 }
 
 void ConfigFBLHeliWidget::on_fblSaveBank_clicked()
 {
+    if( QMessageBox::question( this,
+                               "Confirm",
+                               QString( "Are you sure you want to save the current values to Bank %1?" ).arg( ui->fblBankSelector->currentIndex() + 1 ),
+                               QMessageBox::Ok | QMessageBox::Cancel ) == QMessageBox::Ok ) {
 
+        int bank = ui->fblBankSelector->currentIndex();
+
+        // retrieve mixer settings from uav objects
+        MixerSettings * mixerSettings = MixerSettings::GetInstance(getObjectManager());
+        Q_ASSERT(mixerSettings);
+        MixerSettings::DataFields mixerSettingsData = mixerSettings->getData();
+
+        // to avoid code duplication get pointers to the bank objects and use them
+        float *curExpo, *curves[ 4 ];
+
+        switch( bank ) {
+            case 0:
+                curves[ 0 ] = mixerSettingsData.fblThrottleCurveB0;
+                curves[ 1 ] = mixerSettingsData.fblAilElvCurveB0;
+                curves[ 2 ] = mixerSettingsData.fblCollectiveCurveB0;
+                curves[ 3 ] = mixerSettingsData.fblTailCurveB0;
+                curExpo = mixerSettingsData.fblExpoB0;
+                break;
+            case 1:
+                curves[ 0 ] = mixerSettingsData.fblThrottleCurveB1;
+                curves[ 1 ] = mixerSettingsData.fblAilElvCurveB1;
+                curves[ 2 ] = mixerSettingsData.fblCollectiveCurveB1;
+                curves[ 3 ] = mixerSettingsData.fblTailCurveB1;
+                curExpo = mixerSettingsData.fblExpoB1;
+                break;
+            case 2:
+                curves[ 0 ] = mixerSettingsData.fblThrottleCurveB2;
+                curves[ 1 ] = mixerSettingsData.fblAilElvCurveB2;
+                curves[ 2 ] = mixerSettingsData.fblCollectiveCurveB2;
+                curves[ 3 ] = mixerSettingsData.fblTailCurveB2;
+                curExpo = mixerSettingsData.fblExpoB2;
+                break;
+            default:
+                Q_ASSERT( false );
+        }
+        // save expo settings to matching bank
+        curExpo[ 0 ] = ui->fblThrottleCurve->getExpo();
+        curExpo[ 1 ] = ui->fblAilElvCurve->getExpo();
+        curExpo[ 2 ] = ui->fblCollCurve->getExpo();
+        curExpo[ 3 ] = ui->fblTailCurve->getExpo();
+
+        QList<double> curveValues;
+        // save curve values
+        for( int i = 0; i < 4; i++ ) {
+            switch( i ) {
+                case 0:
+                    curveValues = ui->fblThrottleCurve->getCurve();
+                    break;
+                case 1:
+                    curveValues = ui->fblAilElvCurve->getCurve();
+                    break;
+                case 2:
+                    curveValues = ui->fblCollCurve->getCurve();
+                    break;
+                case 3:
+                    curveValues = ui->fblTailCurve->getCurve();
+                    break;
+            }
+
+            for( int j = 0; j < curveValues.size(); j++ ) {
+                curves[ i ][ j ] = curveValues[ j ];
+            }
+        }
+
+        mixerSettings->setData(mixerSettingsData);
+        mixerSettings->updated();
+    }
+}
+
+void ConfigFBLHeliWidget::on_fblThrottleExpo_valueChanged( int arg1 )
+{
+    ui->fblThrottleCurve->setExpo( arg1 );
+}
+
+void ConfigFBLHeliWidget::on_fblAilElvExpo_valueChanged( int arg1 )
+{
+    ui->fblAilElvCurve->setExpo( arg1 );
+}
+
+void ConfigFBLHeliWidget::on_fblCollExpo_valueChanged( int arg1 )
+{
+    ui->fblCollCurve->setExpo( arg1 );
+}
+
+void ConfigFBLHeliWidget::on_fblTailExpo_valueChanged( int arg1 )
+{
+    ui->fblTailCurve->setExpo( arg1 );
 }
 
 //--------------- Curves Tab END -----------------
@@ -560,3 +682,4 @@ void ConfigFBLHeliWidget::on_fblSaveBank_clicked()
 
 
 //--------------- Expert Tab END -----------------
+

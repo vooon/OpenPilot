@@ -282,11 +282,34 @@ private slots:
     //! slot for save button for bank switching, saves bank settings
     void on_fblSaveBank_clicked();
 
+    //! callback slot method for changed expo value for the throttle curve
+    /*!
+      \param arg1 new expo value entered
+    */
+    void on_fblThrottleExpo_valueChanged(int arg1);
+
+    //! callback slot method for changed expo value for the Aileron/Elevator curve
+    /*!
+      \param arg1 new expo value entered
+    */
+    void on_fblAilElvExpo_valueChanged(int arg1);
+
+    //! callback slot method for changed expo value for the Collective Pitch curve
+    /*!
+      \param arg1 new expo value entered
+    */
+    void on_fblCollExpo_valueChanged(int arg1);
+
+    //! callback slot method for changed expo value for the Tail Rotor curve
+    /*!
+      \param arg1 new expo value entered
+    */
+    void on_fblTailExpo_valueChanged(int arg1);
+
     //--------------- Curves Tab END -----------------
 
     //--------------- Expert Tab BEGIN ---------------
     //--------------- Expert Tab END -----------------
-
 
 public slots:
 
