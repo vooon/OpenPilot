@@ -48,6 +48,8 @@
 SpinBoxDelegate::SpinBoxDelegate(QObject *parent)
      : QItemDelegate(parent)
  {
+    maxVal = 127;
+    minVal = -127;
  }
 
 QWidget *SpinBoxDelegate::createEditor(QWidget *parent,
@@ -55,10 +57,20 @@ QWidget *SpinBoxDelegate::createEditor(QWidget *parent,
     const QModelIndex &/* index */) const
 {
     QSpinBox *editor = new QSpinBox(parent);
-    editor->setMinimum(-127);
-    editor->setMaximum(127);
+    editor->setMinimum( minVal );
+    editor->setMaximum( maxVal );
 
     return editor;
+}
+
+void SpinBoxDelegate::setMaxVal( int nmax )
+{
+    maxVal = nmax;
+}
+
+void SpinBoxDelegate::setMinVal( int nmin )
+{
+    minVal = nmin;
 }
 
 void SpinBoxDelegate::setEditorData(QWidget *editor,

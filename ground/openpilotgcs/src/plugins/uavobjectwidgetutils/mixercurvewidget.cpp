@@ -90,12 +90,11 @@ MixerCurveWidget::~MixerCurveWidget()
   */
 void MixerCurveWidget::initCurve(QList<double> points)
 {
-
     if (points.length() < 2)
         return; // We need at least 2 points on a curve!
 
-    // First of all, reset the list
-    // TODO: one edge might not get deleted properly, small mem leak maybe...
+        // First of all, reset the list
+        // TODO: one edge might not get deleted properly, small mem leak maybe...
         foreach (Node *node, nodeList ) {
             QList<Edge*> edges = node->edges();
             foreach(Edge *edge, edges) {
@@ -199,7 +198,6 @@ void MixerCurveWidget::setCurve(QList<double> points)
         }
     }
 }
-
 
 void MixerCurveWidget::showEvent(QShowEvent *event)
 {
