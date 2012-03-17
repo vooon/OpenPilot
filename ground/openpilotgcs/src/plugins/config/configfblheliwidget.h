@@ -35,6 +35,7 @@
 #include <QtDeclarative/QDeclarativeContext>
 #include "stabilizationsettings.h"
 #include <QMessageBox>
+
 #include "../uavobjectwidgetutils/configtaskwidget.h"
 
 //--------------- Preset Tab BEGIN ---------------
@@ -139,10 +140,16 @@ private:
     //--------------- Curves Tab END -----------------
 
     //--------------- Expert Tab BEGIN ---------------
-    StabilizationSettings* stabilizationSettings;
-    QDeclarativeEngine* engine;
-    QDeclarativeComponent* component;
-    QObject *scriptInstance;
+    StabilizationSettings* stabilizationSettings; /*!< reference to the stabilization settings UAVObject updated by QML script*/
+    QDeclarativeEngine* engine;                   /*!< The QML scripting engine */
+    QDeclarativeComponent* component;             /*!< The QML scripting component*/
+    QObject *scriptInstance;                      /*!< The compiled QML script instance the is executed when slider value changes */
+
+
+    //! Setup the expert tab class scope variables
+    /*!
+      This method gets the stabilizationSettings and engine instances.
+    */
     void setupExpert();
 
     //--------------- Expert Tab END -----------------
@@ -320,6 +327,10 @@ private slots:
     //--------------- Curves Tab END -----------------
 
     //--------------- Expert Tab BEGIN ---------------
+    //! callback slot method for changed stability or agility slider value
+    /*!
+      \param value not used
+    */
     void evaluateScript(int value);
     void updateScript();
     void on_btnEvaluateScript_clicked();

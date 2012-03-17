@@ -690,23 +690,31 @@ void ConfigFBLHeliWidget::on_fblTailExpo_valueChanged( int arg1 )
 
 void ConfigFBLHeliWidget::setupExpert()
 {
+    //Get the StabilizationSettings instance from the UAVObjectManager
     ExtensionSystem::PluginManager* pm = ExtensionSystem::PluginManager::instance();
     UAVObjectManager* objManager = pm->getObject<UAVObjectManager>();
     stabilizationSettings = StabilizationSettings::GetInstance(objManager);
 
+    //Register the StabilizationSettings type for use by QML
     qmlRegisterType<StabilizationSettings>("OpenPilot", 1, 0, "StabilizationSettings");
+
+    //Connect the signals to slots
     connect(ui->agilCyclic, SIGNAL(valueChanged(int)), this, SLOT(evaluateScript(int)));
     connect(ui->sensCyclic, SIGNAL(valueChanged(int)), this, SLOT(evaluateScript(int)));
     connect(ui->agilTail, SIGNAL(valueChanged(int)), this, SLOT(evaluateScript(int)));
     connect(ui->sensTail, SIGNAL(valueChanged(int)), this, SLOT(evaluateScript(int)));
-    //connect(ui->scrptCyclic, SIGNAL(textChanged()), this, SLOT(updateScript()));
 
+    //Setup the QML engine
     engine = new QDeclarativeEngine();
     component = new QDeclarativeComponent(engine);
 
     QDeclarativeContext* ctx = engine->rootContext();
+
+    //Make the stabilizationSettings available to the QML context by the name stabilizationSettings
     ctx->setContextProperty("stabSettings",stabilizationSettings);
 
+    //StabilizationSettings does not make the enums available to the reflection framework, so we need to
+    //put the enum values into the script context. (The uavobjectgenerator would need to be extended to expose enums)
     ctx->setContextProperty("MANUALRATE_ROLL",StabilizationSettings::MANUALRATE_ROLL);
     ctx->setContextProperty("MANUALRATE_PITCH",StabilizationSettings::MANUALRATE_PITCH);
     ctx->setContextProperty("MANUALRATE_YAW",StabilizationSettings::MANUALRATE_YAW);
@@ -751,6 +759,7 @@ void ConfigFBLHeliWidget::updateScript()
 {
     qDebug() << "Script Updating";
 
+    //Get the script for the correct version
     QString script;
     if (QT_VERSION > QT_VERSION_CHECK(4,7,0))
         script.append("import QtQuick 1.1\n");
@@ -760,15 +769,18 @@ void ConfigFBLHeliWidget::updateScript()
 
     //qDebug() << script;
 
+    //Convert script to unicode blob
     QTextCodec *codec = QTextCodec::codecForLocale();
     QByteArray encodedString = codec->fromUnicode(script);
     component->setData(encodedString, QUrl());
 
+    //Get rid of old script instance
     if(scriptInstance){
         delete scriptInstance;
         scriptInstance = 0;
     }
 
+    //Get the compiled script
     scriptInstance = component->create();
     qDebug() << "Script Updated";
 }
@@ -777,9 +789,11 @@ void ConfigFBLHeliWidget::evaluateScript(int value)
 {
     qDebug() << "Evaluating Script";
 
+    //Make sure we have new script instance incase it was discarded due to syntax error
     if(!scriptInstance)
         updateScript();
 
+    //Invoke the script
     QMetaObject::invokeMethod(
                 scriptInstance,
                 "updateStabSettings",
@@ -789,6 +803,7 @@ void ConfigFBLHeliWidget::evaluateScript(int value)
                 Q_ARG(QVariant,QVariant(ui->agilTail->value() / 1000.0))
                 );
 
+    //If any error occured, get rid of the stale script
     if(component->errors().length() > 0)
     {
         qDebug() << component->errorString();
@@ -800,6 +815,7 @@ void ConfigFBLHeliWidget::evaluateScript(int value)
         component = new QDeclarativeComponent(engine);
     }
 
+    //The is a workarround to get the UAVObject.objectUpdated event to emit
     StabilizationSettings::DataFields stabilizationSettingsData = stabilizationSettings->getData();
     stabilizationSettings->setData(stabilizationSettingsData);
 
@@ -808,6 +824,7 @@ void ConfigFBLHeliWidget::evaluateScript(int value)
 
 void ConfigFBLHeliWidget::on_btnEvaluateScript_clicked()
 {
+    //Get new script instance
     delete scriptInstance; scriptInstance = 0;
     delete component; component = 0;
 
