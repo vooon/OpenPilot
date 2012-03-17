@@ -83,7 +83,7 @@
           <enum>QTabWidget::Triangular</enum>
          </property>
          <property name="currentIndex">
-          <number>2</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="preset">
           <property name="sizePolicy">
@@ -106,7 +106,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>919</width>
+             <width>930</width>
              <height>621</height>
             </rect>
            </property>
@@ -148,7 +148,7 @@
               <property name="title">
                <string>Main Rotor</string>
               </property>
-              <widget class="QSlider" name="verticalSlider">
+              <widget class="QSlider" name="agilCyclic">
                <property name="geometry">
                 <rect>
                  <x>20</x>
@@ -158,7 +158,10 @@
                 </rect>
                </property>
                <property name="maximum">
-                <number>100</number>
+                <number>1000</number>
+               </property>
+               <property name="value">
+                <number>180</number>
                </property>
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
@@ -167,7 +170,7 @@
                 <enum>QSlider::TicksBelow</enum>
                </property>
                <property name="tickInterval">
-                <number>5</number>
+                <number>50</number>
                </property>
               </widget>
               <widget class="QGraphicsView" name="graphicsView">
@@ -196,7 +199,7 @@
                 <string>Agility</string>
                </property>
               </widget>
-              <widget class="QSlider" name="verticalSlider_2">
+              <widget class="QSlider" name="sensCyclic">
                <property name="geometry">
                 <rect>
                  <x>170</x>
@@ -206,7 +209,13 @@
                 </rect>
                </property>
                <property name="maximum">
+                <number>1000</number>
+               </property>
+               <property name="pageStep">
                 <number>100</number>
+               </property>
+               <property name="value">
+                <number>300</number>
                </property>
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
@@ -215,7 +224,7 @@
                 <enum>QSlider::TicksBelow</enum>
                </property>
                <property name="tickInterval">
-                <number>5</number>
+                <number>50</number>
                </property>
               </widget>
               <widget class="QLabel" name="label_3">
@@ -475,7 +484,7 @@
               <property name="title">
                <string>Tail Rotor</string>
               </property>
-              <widget class="QSlider" name="verticalSlider_3">
+              <widget class="QSlider" name="agilTail">
                <property name="geometry">
                 <rect>
                  <x>20</x>
@@ -485,6 +494,12 @@
                 </rect>
                </property>
                <property name="maximum">
+                <number>1000</number>
+               </property>
+               <property name="pageStep">
+                <number>100</number>
+               </property>
+               <property name="value">
                 <number>100</number>
                </property>
                <property name="orientation">
@@ -494,10 +509,10 @@
                 <enum>QSlider::TicksBelow</enum>
                </property>
                <property name="tickInterval">
-                <number>5</number>
+                <number>50</number>
                </property>
               </widget>
-              <widget class="QSlider" name="verticalSlider_4">
+              <widget class="QSlider" name="sensTail">
                <property name="geometry">
                 <rect>
                  <x>170</x>
@@ -507,7 +522,16 @@
                 </rect>
                </property>
                <property name="maximum">
+                <number>1000</number>
+               </property>
+               <property name="singleStep">
+                <number>10</number>
+               </property>
+               <property name="pageStep">
                 <number>100</number>
+               </property>
+               <property name="value">
+                <number>550</number>
                </property>
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
@@ -516,7 +540,7 @@
                 <enum>QSlider::TicksBelow</enum>
                </property>
                <property name="tickInterval">
-                <number>5</number>
+                <number>50</number>
                </property>
               </widget>
               <widget class="QLabel" name="label_4">
@@ -616,7 +640,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>921</width>
+             <width>953</width>
              <height>631</height>
             </rect>
            </property>
@@ -1388,6 +1412,93 @@
           <attribute name="title">
            <string>Expert Mode</string>
           </attribute>
+          <widget class="QWidget" name="gridLayoutWidget_2">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>9</y>
+             <width>891</width>
+             <height>201</height>
+            </rect>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_7">
+            <item row="1" column="0">
+             <widget class="QPushButton" name="btnEvaluateScript">
+              <property name="text">
+               <string>Evaluate</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <spacer name="horizontalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item row="0" column="0" colspan="2">
+             <widget class="QPlainTextEdit" name="scrptCyclic">
+              <property name="plainText">
+               <string>//sensCyclic - 
+//agilCyclic -
+//sensTail -
+//agilTail - 
+stabSettings.setManualRate(MANUALRATE_ROLL, 50 + 550 * agilCyclic )
+stabSettings.setManualRate(MANUALRATE_PITCH, 50 + 550 * agilCyclic )
+stabSettings.setManualRate(MANUALRATE_YAW, 50 + 550 * agilTail )
+
+stabSettings.setMaximumRate(MAXIMUMRATE_ROLL, 300)
+stabSettings.setMaximumRate(MAXIMUMRATE_PITCH, 300)
+stabSettings.setMaximumRate(MAXIMUMRATE_YAW, 300)
+
+stabSettings.setRollRatePID(ROLLRATEPID_KP, 0.0005 + 0.0055 * sensCyclic)
+stabSettings.setRollRatePID(ROLLRATEPID_KI, stabSettings.getRollRatePID(ROLLRATEPID_KP))
+stabSettings.setRollRatePID(ROLLRATEPID_KD, 0)
+stabSettings.setRollRatePID(ROLLRATEPID_ILIMIT, stabSettings.getRollRatePID(ROLLRATEPID_KI) * 100)
+
+stabSettings.setPitchRatePID(PITCHRATEPID_KP, stabSettings.getRollRatePID(ROLLRATEPID_KP))
+stabSettings.setPitchRatePID(PITCHRATEPID_KI, stabSettings.getRollRatePID(ROLLRATEPID_KP))
+stabSettings.setPitchRatePID(PITCHRATEPID_KD, 0.0)
+stabSettings.setPitchRatePID(PITCHRATEPID_ILIMIT,stabSettings.getRollRatePID(ROLLRATEPID_ILIMIT))
+
+stabSettings.setYawRatePID(YAWRATEPID_KP,0.0005 + 0.0055 * sensTail )
+stabSettings.setYawRatePID(YAWRATEPID_KI,0.0005 + 0.0055 * sensTail )
+stabSettings.setYawRatePID(YAWRATEPID_KD,0)
+stabSettings.setYawRatePID(YAWRATEPID_ILIMIT,stabSettings.getYawRatePID(YAWRATEPID_KI) * 100)
+
+stabSettings.setRollPI(ROLLPI_KP, stabSettings.getRollRatePID(ROLLRATEPID_KP) * 1000)
+stabSettings.setRollPI(ROLLPI_KI, stabSettings.getRollPI(ROLLPI_KP))
+stabSettings.setRollPI(ROLLPI_ILIMIT, stabSettings.getRollPI(ROLLPI_KP) * 25)
+
+stabSettings.setPitchPI(PITCHPI_KP, stabSettings.getRollPI(ROLLPI_KP))
+stabSettings.setPitchPI(PITCHPI_KI, stabSettings.getRollPI(ROLLPI_KI))
+stabSettings.setPitchPI(PITCHPI_ILIMIT, stabSettings.getPitchPI(PITCHPI_KI) * 25)
+
+stabSettings.setYawPI(YAWPI_KP, 2)
+stabSettings.setYawPI(YAWPI_KI, 0)
+stabSettings.setYawPI(YAWPI_ILIMIT, 50)
+
+stabSettings.setGyroTau(0.005)
+stabSettings.setWeakLevelingKp(0.1)
+stabSettings.setRollMax(55)
+stabSettings.setPitchMax(55)
+stabSettings.setYawMax(35)
+stabSettings.setMaxAxisLock(15)
+stabSettings.setMaxAxisLockRate(2)
+stabSettings.setMaxWeakLevelingRate(5)
+stabSettings.setLowThrottleZeroIntegral(1)
+</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
          </widget>
         </widget>
        </item>

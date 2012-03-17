@@ -42,11 +42,19 @@ ConfigFBLHeliWidget::ConfigFBLHeliWidget(QWidget *parent) :
     initCurveUi();
     setupCurves( currentCurveBank );
     selectCurve( THROTTLE_CURVE );
+
+    //Expert Tab Setup
+    setupExpert();
 }
 
 ConfigFBLHeliWidget::~ConfigFBLHeliWidget()
 {
     delete ui;
+
+
+    delete scriptInstance;
+    delete component;
+    delete engine;
 }
 
 //--------------- Preset Tab BEGIN ---------------
@@ -357,5 +365,134 @@ void ConfigFBLHeliWidget::on_fblCurveSelector_activated( int index )
 
 //--------------- Expert Tab BEGIN ---------------
 
+void ConfigFBLHeliWidget::setupExpert()
+{
+    ExtensionSystem::PluginManager* pm = ExtensionSystem::PluginManager::instance();
+    UAVObjectManager* objManager = pm->getObject<UAVObjectManager>();
+    stabilizationSettings = StabilizationSettings::GetInstance(objManager);
+
+    qmlRegisterType<StabilizationSettings>("OpenPilot", 1, 0, "StabilizationSettings");
+    connect(ui->agilCyclic, SIGNAL(valueChanged(int)), this, SLOT(evaluateScript(int)));
+    connect(ui->sensCyclic, SIGNAL(valueChanged(int)), this, SLOT(evaluateScript(int)));
+    connect(ui->agilTail, SIGNAL(valueChanged(int)), this, SLOT(evaluateScript(int)));
+    connect(ui->sensTail, SIGNAL(valueChanged(int)), this, SLOT(evaluateScript(int)));
+    //connect(ui->scrptCyclic, SIGNAL(textChanged()), this, SLOT(updateScript()));
+
+    engine = new QDeclarativeEngine();
+    component = new QDeclarativeComponent(engine);
+
+    QDeclarativeContext* ctx = engine->rootContext();
+    ctx->setContextProperty("stabSettings",stabilizationSettings);
+
+    ctx->setContextProperty("MANUALRATE_ROLL",StabilizationSettings::MANUALRATE_ROLL);
+    ctx->setContextProperty("MANUALRATE_PITCH",StabilizationSettings::MANUALRATE_PITCH);
+    ctx->setContextProperty("MANUALRATE_YAW",StabilizationSettings::MANUALRATE_YAW);
+
+    ctx->setContextProperty("MAXIMUMRATE_ROLL",StabilizationSettings::MAXIMUMRATE_ROLL);
+    ctx->setContextProperty("MAXIMUMRATE_PITCH",StabilizationSettings::MAXIMUMRATE_PITCH);
+    ctx->setContextProperty("MAXIMUMRATE_YAW",StabilizationSettings::MAXIMUMRATE_YAW);
+
+    ctx->setContextProperty("ROLLRATEPID_KP",StabilizationSettings::ROLLRATEPID_KP);
+    ctx->setContextProperty("ROLLRATEPID_KI",StabilizationSettings::ROLLRATEPID_KI);
+    ctx->setContextProperty("ROLLRATEPID_KD",StabilizationSettings::ROLLRATEPID_KD);
+    ctx->setContextProperty("ROLLRATEPID_ILIMIT",StabilizationSettings::ROLLRATEPID_ILIMIT);
+
+    ctx->setContextProperty("PITCHRATEPID_KP",StabilizationSettings::PITCHRATEPID_KP);
+    ctx->setContextProperty("PITCHRATEPID_KI",StabilizationSettings::PITCHRATEPID_KI);
+    ctx->setContextProperty("PITCHRATEPID_KD",StabilizationSettings::PITCHRATEPID_KD);
+    ctx->setContextProperty("PITCHRATEPID_ILIMIT",StabilizationSettings::PITCHRATEPID_ILIMIT);
+
+    ctx->setContextProperty("YAWRATEPID_KP",StabilizationSettings::YAWRATEPID_KP);
+    ctx->setContextProperty("YAWRATEPID_KI",StabilizationSettings::YAWRATEPID_KI);
+    ctx->setContextProperty("YAWRATEPID_KD",StabilizationSettings::YAWRATEPID_KD);
+    ctx->setContextProperty("YAWRATEPID_ILIMIT",StabilizationSettings::YAWRATEPID_ILIMIT);
+
+    ctx->setContextProperty("ROLLPI_KP",StabilizationSettings::ROLLPI_KP );
+    ctx->setContextProperty("ROLLPI_KI",StabilizationSettings::ROLLPI_KI );
+    ctx->setContextProperty("ROLLPI_ILIMIT",StabilizationSettings::ROLLPI_ILIMIT);
+
+    ctx->setContextProperty("PITCHPI_KP",StabilizationSettings::PITCHPI_KP);
+    ctx->setContextProperty("PITCHPI_KI",StabilizationSettings::PITCHPI_KI);
+    ctx->setContextProperty("PITCHPI_ILIMIT",StabilizationSettings::PITCHPI_ILIMIT);
+
+    ctx->setContextProperty("YAWPI_KP",StabilizationSettings::YAWPI_KP);
+    ctx->setContextProperty("YAWPI_KI",StabilizationSettings::YAWPI_KI);
+    ctx->setContextProperty("YAWPI_ILIMIT",StabilizationSettings::YAWPI_ILIMIT);
+
+
+    scriptInstance = 0;
+    updateScript();
+}
+
+void ConfigFBLHeliWidget::updateScript()
+{
+    qDebug() << "Script Updating";
+
+    QString script;
+    if (QT_VERSION > QT_VERSION_CHECK(4,7,0))
+        script.append("import QtQuick 1.1\n");
+    else
+        script.append("import Qt 4.7\n");
+    script.append("import OpenPilot 1.0\n\nItem {\nfunction updateStabSettings(sensCyclic,agilCyclic,sensTail,agilTail){\n"+ui->scrptCyclic->toPlainText()+"\n}\n}");
+
+    //qDebug() << script;
+
+    QTextCodec *codec = QTextCodec::codecForLocale();
+    QByteArray encodedString = codec->fromUnicode(script);
+    component->setData(encodedString, QUrl());
+
+    if(scriptInstance){
+        delete scriptInstance;
+        scriptInstance = 0;
+    }
+
+    scriptInstance = component->create();
+    qDebug() << "Script Updated";
+}
+
+void ConfigFBLHeliWidget::evaluateScript(int value)
+{
+    qDebug() << "Evaluating Script";
+
+    if(!scriptInstance)
+        updateScript();
+
+    QMetaObject::invokeMethod(
+                scriptInstance,
+                "updateStabSettings",
+                Q_ARG(QVariant,QVariant(ui->sensCyclic->value() / 1000.0)),
+                Q_ARG(QVariant,QVariant(ui->agilCyclic->value() / 1000.0)),
+                Q_ARG(QVariant,QVariant(ui->sensTail->value() / 1000.0)),
+                Q_ARG(QVariant,QVariant(ui->agilTail->value() / 1000.0))
+                );
+
+    if(component->errors().length() > 0)
+    {
+        qDebug() << component->errorString();
+        component->errors().clear();
+
+        delete scriptInstance; scriptInstance = 0;
+        delete component; component = 0;
+
+        component = new QDeclarativeComponent(engine);
+    }
+
+    StabilizationSettings::DataFields stabilizationSettingsData = stabilizationSettings->getData();
+    stabilizationSettings->setData(stabilizationSettingsData);
+
+    qDebug() << "Evaluated Script";
+}
+
+void ConfigFBLHeliWidget::on_btnEvaluateScript_clicked()
+{
+    delete scriptInstance; scriptInstance = 0;
+    delete component; component = 0;
+
+    component = new QDeclarativeComponent(engine);
+
+    evaluateScript(0);
+}
 
 //--------------- Expert Tab END -----------------
+
+

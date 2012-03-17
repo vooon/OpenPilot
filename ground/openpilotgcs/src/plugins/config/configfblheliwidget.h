@@ -29,6 +29,13 @@
 #define CONFIGFBLHELIWIDGET_H
 
 #include <QWidget>
+#include <QtDeclarative>
+#include <QtDeclarative/QDeclarativeEngine>
+#include <QtDeclarative/QDeclarativeComponent>
+#include <QtDeclarative/QDeclarativeContext>
+
+
+#include "stabilizationsettings.h"
 #include "../uavobjectwidgetutils/configtaskwidget.h"
 
 //--------------- Preset Tab BEGIN ---------------
@@ -93,6 +100,12 @@ private:
     //--------------- Curves Tab END -----------------
 
     //--------------- Expert Tab BEGIN ---------------
+    StabilizationSettings* stabilizationSettings;
+    QDeclarativeEngine* engine;
+    QDeclarativeComponent* component;
+    QObject *scriptInstance;
+    void setupExpert();
+
     //--------------- Expert Tab END -----------------
 
 
@@ -135,7 +148,11 @@ private slots:
     //--------------- Curves Tab END -----------------
 
     //--------------- Expert Tab BEGIN ---------------
+    void evaluateScript(int value);
+    void updateScript();
+    void on_btnEvaluateScript_clicked();
     //--------------- Expert Tab END -----------------
+
 
 public slots:
 
