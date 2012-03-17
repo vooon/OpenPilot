@@ -140,12 +140,11 @@ private slots:
     void updateCollCurve( QList<double> list, double value );
     void updateTailCurve( QList<double> list, double value );
     void on_curveDetailTable_itemChanged(QTableWidgetItem *item);
+    void on_fblGenerateCurve_clicked();
     //--------------- Curves Tab END -----------------
 
     //--------------- Expert Tab BEGIN ---------------
     //--------------- Expert Tab END -----------------
-
-
 
 public slots:
 

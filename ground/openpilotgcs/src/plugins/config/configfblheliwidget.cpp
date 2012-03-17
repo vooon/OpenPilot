@@ -198,7 +198,16 @@ void ConfigFBLHeliWidget::selectCurve( int curve )
 
 void ConfigFBLHeliWidget::updateCurveTable( QList<double> &values )
 {
+    if( values.size() < 2 )
+        return;
+
     int cellVal = 0, minVal = 100, maxVal = -100;
+
+    // set all fields to "-"
+    for( int col = 0; col < 2; col++ )
+        for( int row = 0; row < 10; row++ )
+            ui->curveDetailTable->item( row, col )->setData(  Qt::DisplayRole, QVariant( "-" ));
+
     for( int i = 0; i < values.size(); i++ ) {
         // calc string value
         cellVal = -100 + values.at( i ) * 200;
@@ -207,6 +216,8 @@ void ConfigFBLHeliWidget::updateCurveTable( QList<double> &values )
         if( cellVal < minVal )
             minVal = cellVal;
         ui->curveDetailTable->item( i, 1 )->setData( Qt::DisplayRole, QVariant( cellVal ));
+        QString posVal = QString( "%1%" ).arg( -100 + ( i * 200 / ( values.size() - 1 )));
+        ui->curveDetailTable->item( i, 0 )->setData( Qt::DisplayRole, QVariant( posVal ));
     }
     ui->fblMaximumPoint->setValue( maxVal );
     ui->fblMinimumPoint->setValue( minVal );
@@ -446,6 +457,84 @@ void ConfigFBLHeliWidget::on_curveDetailTable_itemChanged( QTableWidgetItem *ite
     }
 }
 
+void ConfigFBLHeliWidget::on_fblGenerateCurve_clicked()
+{
+    // find curve to deal with
+    MixerCurveWidget* curCurve;
+
+    switch( ui->fblCurveSelector->currentIndex()) {
+        case THROTTLE_CURVE:
+            curCurve = ui->fblThrottleCurve;
+            break;
+        case AILELV_CURVE:
+            curCurve = ui->fblAilElvCurve;
+            break;
+        case COLLECTIVE_CURVE:
+            curCurve = ui->fblCollCurve;
+            break;
+        case TAIL_CURVE:
+            curCurve = ui->fblTailCurve;
+            break;
+    }
+
+    // generate point field
+    QList<double> newCurveValues;
+    // get curve parameters entered
+    int numPoints = ui->fblNumIntPoints->text().toInt();
+    QString maxValText = ui->fblMaximumPoint->text();
+    QString minValText = ui->fblMinimumPoint->text();
+    // rip off % sign at end
+    maxValText.chop( 1 );
+    minValText.chop( 1 );
+    int maxVal = maxValText.toInt();
+    int minVal = minValText.toInt();
+    int increment;
+
+    // generate curve using given parameters
+    switch( ui->fblCurveType->currentIndex()) {
+        case 0:
+            // flat, generate
+            for( int i = 0; i < numPoints; i++ )
+                newCurveValues.append( ( 0.5 + ( 0.5 * ( maxVal / 100.0 ))));
+            break;
+        case 1:
+            // linear rise
+            increment = ( maxVal - minVal) / ( numPoints - 1 );
+            for( int i = 0; i < numPoints; i++ )
+                newCurveValues.append( ( 0.5 + ( 0.5 * (( minVal + i * increment ) / 100.0 ))));
+            break;
+        case 2:
+            // linear fall
+            increment = ( maxVal - minVal) / ( numPoints - 1 );
+            for( int i = 0; i < numPoints; i++ )
+                newCurveValues.append( ( 0.5 + ( 0.5 * (( maxVal - i * increment ) / 100.0 ))));
+            break;
+        case 3:
+            // works only with odd number of points, check and inform user if not OK
+            if( numPoints % 2 != 1 ) {
+                QMessageBox::critical(0, "ERROR", "V shape curve only available for an odd number of interpolation points!");
+                return;
+            }
+            // V shape
+            increment = ( maxVal - minVal) / ( numPoints - 1 ) * 2;
+            for( int i = 0; i < numPoints / 2 ; i++ )
+                newCurveValues.append( ( 0.5 + ( 0.5 * (( maxVal - i * increment ) / 100.0 ))));
+            newCurveValues.append( ( 0.5 + ( 0.5 * ( minVal / 100.0 ))));
+            for( int i = 1; i < numPoints / 2 + 1; i++ )
+                newCurveValues.append( ( 0.5 + ( 0.5 * (( minVal + i * increment ) / 100.0 ))));
+        break;
+            break;
+        default:
+            // not to happen
+            Q_ASSERT( false );
+    }
+    // set new curve
+    curCurve->blockSignals( true );
+    curCurve->clearCurve();
+    curCurve->initCurve( newCurveValues );
+    updateCurveTable( newCurveValues );
+    curCurve->blockSignals( false );
+}
 
 //--------------- Curves Tab END -----------------
 
