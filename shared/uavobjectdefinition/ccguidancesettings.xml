@@ -6,8 +6,8 @@
 		<field name="Roll" units="deg" type="float" elementnames="Max,Neutral" defaultvalue="35,0"/>
 		<field name="Trottle" units="" type="float" elementnames="Kp,StepMax,Max,Min" defaultvalue="0.02,0.2,1,0"/>
 		<field name="ReturnTobaseAltitudeOffset" units="meter" type="int16" elements="1" defaultvalue="75"/>
-		<field name="RadiusBase" units="meter" type="uint16" elementnames="1" defaultvalue="50"/>
-		<field name="CircleAroundBaseHelixAngle" units="deg" type="int8" elementnames="Narrowing,Expanding" defaultvalue="45,55"/>
+		<field name="RadiusBase" units="meter" type="uint16" elementnames="1" defaultvalue="100"/>
+		<field name="CircleAroundBaseAngle" units="deg" type="int8" elements="1" defaultvalue="50"/>
 		<field name="CircleAroundBase" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
 		<field name="TacksFlight" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
 		<field name="TacksAngle" units="deg" type="int8" elementnames="1" defaultvalue="30"/>

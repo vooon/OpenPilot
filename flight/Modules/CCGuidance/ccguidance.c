@@ -243,6 +243,7 @@ static void ccguidanceTask(UAVObjEvent * ev)
 					TacksAngleRight = TRUE;
 					TacksNumsRemain = 0;
 					thisTimesPeriodCorrectBiasYaw = 0;
+					DistanceToBaseOld = 0;
 				}
 
 				// Calculation errors between the rate of the gyroscope and GPS at a speed not less than the minimum.
@@ -294,7 +295,6 @@ static void ccguidanceTask(UAVObjEvent * ev)
 				if (DistanceToBase > ccguidanceSettings.RadiusBase) {
 					// Calculation ground speed to base
 					SpeedToRTB = ((DistanceToBaseOld - DistanceToBase) / thisTimesPeriodCorrectBiasYaw) * 1000;
-					DistanceToBaseOld = DistanceToBase;
 					
 					// algorithm flight tacks
 					if (ccguidanceSettings.TacksFlight == TRUE) {
@@ -310,9 +310,10 @@ static void ccguidanceTask(UAVObjEvent * ev)
 							}
 						} else {
 							// If speed is not sufficient to base, set the number of left and right tacks until the next inspection.
-							if (SpeedToRTB < 1)  TacksNumsRemain = ccguidanceSettings.TacksNums;
+							if ((SpeedToRTB < 1) && (DistanceToBaseOld != 0)) TacksNumsRemain = ccguidanceSettings.TacksNums;
 						}
 					}
+					DistanceToBaseOld = DistanceToBase;
 					
 					while (course<-180.) course+=360.;
 					while (course>180.)  course-=360.;
@@ -321,11 +322,7 @@ static void ccguidanceTask(UAVObjEvent * ev)
 				} else {
 					/* Circular motion in the area between RadiusBase */
 					if (ccguidanceSettings.CircleAroundBase == TRUE) {
-						if (DistanceToBase < ccguidanceSettings.RadiusBase * 0.5) {
-							course += ccguidanceSettings.CircleAroundBaseHelixAngle[CCGUIDANCESETTINGS_CIRCLEAROUNDBASEHELIXANGLE_EXPANDING];
-						} else {
-							course += ccguidanceSettings.CircleAroundBaseHelixAngle[CCGUIDANCESETTINGS_CIRCLEAROUNDBASEHELIXANGLE_NARROWING];
-						}
+						course += ccguidanceSettings.CircleAroundBaseAngle;
 						while (course<-180.) course+=360.;
 						while (course>180.)  course-=360.;
 						stabDesired.Yaw = course;	//Set new course
@@ -334,6 +331,7 @@ static void ccguidanceTask(UAVObjEvent * ev)
 					SpeedToRTB = positionActual.Groundspeed;
 					TacksAngleRight = TRUE;
 					TacksNumsRemain = 0;
+					DistanceToBaseOld = 0;
 				}
 				thisTimesPeriodCorrectBiasYaw = 0;
 			}
