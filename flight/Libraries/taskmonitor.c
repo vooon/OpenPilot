@@ -50,6 +50,7 @@ int32_t TaskMonitorInitialize(void)
 #if defined(DIAG_TASKS)
 	lastMonitorTime = portGET_RUN_TIME_COUNTER_VALUE();
 #endif
+	TaskInfoInitialize();
 	return 0;
 }
 
