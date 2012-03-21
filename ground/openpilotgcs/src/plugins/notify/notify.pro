@@ -6,21 +6,23 @@ include(../../openpilotgcsplugin.pri)
 include(../../plugins/coreplugin/coreplugin.pri) 
 include(notifyplugin_dependencies.pri)
 
-QT        += phonon
+QT        += multimedia
 
 HEADERS += notifyplugin.h \  
     notifypluginoptionspage.h \
     notifyitemdelegate.h \
     notifytablemodel.h \
     notificationitem.h \
-    notifylogging.h
+    notifylogging.h \
+    mediaobject.h
 
 SOURCES += notifyplugin.cpp \  
     notifypluginoptionspage.cpp \
     notifyitemdelegate.cpp \
     notifytablemodel.cpp \
     notificationitem.cpp \
-    notifylogging.cpp
+    notifylogging.cpp \
+    mediaobject.cpp
  
 OTHER_FILES += NotifyPlugin.pluginspec
 

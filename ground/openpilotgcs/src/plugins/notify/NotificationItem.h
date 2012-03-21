@@ -203,6 +203,4 @@ private:
     bool _mute;
 };
 
-Q_DECLARE_METATYPE(NotificationItem*)
-
 #endif // NotificationItem_H

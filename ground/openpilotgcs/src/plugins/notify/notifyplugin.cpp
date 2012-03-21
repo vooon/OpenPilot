@@ -25,20 +25,22 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "notifyplugin.h"
-#include "notificationitem.h"
-#include "notifypluginoptionspage.h"
-#include "notifylogging.h"
-#include <coreplugin/icore.h>
+#include <QtCore>
+#include <QSettings>
+#include <QQueue>
 #include <QDebug>
 #include <QtPlugin>
 #include <QStringList>
-
-#include <extensionsystem/pluginmanager.h>
-
+#include <QItemSelectionModel>
+#include <QComboBox>
 #include <iostream>
 #include "qxttimer.h"
-#include "backendcapabilities.h"
+
+
+#include "notifypluginoptionspage.h"
+#include "notifylogging.h"
+#include "notifyplugin.h"
+
 
 static const QString VERSION = "1.0.0";
 
@@ -47,14 +49,14 @@ static const QString VERSION = "1.0.0";
 
 SoundNotifyPlugin::SoundNotifyPlugin()
 {
-    phonon.mo = NULL;
+    //phonon.mo = NULL;
 }
 
 SoundNotifyPlugin::~SoundNotifyPlugin()
 {
     Core::ICore::instance()->saveSettings(this);
-    if (phonon.mo != NULL)
-        delete phonon.mo;
+    //if (phonon.mo != NULL)
+    //    delete phonon.mo;
 }
 
 bool SoundNotifyPlugin::initialize(const QStringList& args, QString *errMsg)
@@ -176,10 +178,10 @@ void SoundNotifyPlugin::connectNotifications()
         if (obj != NULL)
             disconnect(obj,SIGNAL(objectUpdated(UAVObject*)),this,SLOT(on_arrived_Notification(UAVObject*)));
     }
-    if (phonon.mo != NULL) {
-        delete phonon.mo;
-        phonon.mo = NULL;
-    }
+//    if (phonon.mo != NULL) {
+//        delete phonon.mo;
+//        phonon.mo = NULL;
+//    }
 
     if (!enableSound) return;
 
@@ -215,16 +217,17 @@ void SoundNotifyPlugin::connectNotifications()
 
     if (_notificationList.isEmpty()) return;
     // set notification message to current event
-    phonon.mo = Phonon::createPlayer(Phonon::NotificationCategory);
-    phonon.mo->clearQueue();
-    phonon.firstPlay = true;
-    QList<Phonon::AudioOutputDevice> audioOutputDevices =
-              Phonon::BackendCapabilities::availableAudioOutputDevices();
-    foreach(Phonon::AudioOutputDevice dev, audioOutputDevices) {
-        qNotifyDebug() << "Notify: Audio Output device: " << dev.name() << " - " << dev.description();
-    }
-    connect(phonon.mo, SIGNAL(stateChanged(Phonon::State,Phonon::State)),
-        this, SLOT(stateChanged(Phonon::State,Phonon::State)));
+    //phonon.mo = Phonon::createPlayer(Phonon::NotificationCategory);
+    //phonon.mo->clearQueue();
+    //phonon.clearQueue();
+    //phonon.firstPlay = true;
+//    QList<Phonon::AudioOutputDevice> audioOutputDevices =
+//              Phonon::BackendCapabilities::availableAudioOutputDevices();
+//    foreach(Phonon::AudioOutputDevice dev, audioOutputDevices) {
+//        qNotifyDebug() << "Notify: Audio Output device: " << dev.name() << " - " << dev.description();
+//    }
+    connect(&phonon, SIGNAL(stateChanged(QAudio::State)),
+                this, SLOT(stateChanged(QAudio::State)));
 }
 
 void SoundNotifyPlugin::on_arrived_Notification(UAVObject *object)
@@ -315,9 +318,9 @@ void SoundNotifyPlugin::on_expiredTimer_Notification()
     }
 }
 
-void SoundNotifyPlugin::stateChanged(Phonon::State newstate, Phonon::State oldstate)
+void SoundNotifyPlugin::stateChanged(QAudio::State newstate)
 {
-    Q_UNUSED(oldstate)
+    //Q_UNUSED(oldstate)
 
     //qNotifyDebug() << "File length (ms): " << phonon.mo->totalTime();
 
@@ -329,8 +332,8 @@ void SoundNotifyPlugin::stateChanged(Phonon::State newstate, Phonon::State oldst
     if (phonon.mo->totalTime()>0)
         phonon.mo->setTransitionTime(phonon.mo->totalTime());
 #endif
-    if ((newstate  == Phonon::PausedState) ||
-       (newstate  == Phonon::StoppedState))
+    if ((newstate  == QAudio::SuspendedState) ||
+       (newstate  == QAudio::StoppedState))
     {
         qNotifyDebug() << "New State: " << QVariant(newstate).toString();
 
@@ -347,12 +350,14 @@ void SoundNotifyPlugin::stateChanged(Phonon::State newstate, Phonon::State oldst
             playNotification(notification);
         }
     } else {
-        if (newstate  == Phonon::ErrorState) {
-            if (phonon.mo->errorType()==0) {
+        /*
+        if (newstate  == QAudio::ErrorState) {
+            if (phonon.errorType()==0) {
                 qDebug() << "Phonon::ErrorState: ErrorType = " << phonon.mo->errorType();
                 phonon.mo->clearQueue();
             }
         }
+        */
     }
 }
 
@@ -459,13 +464,13 @@ bool SoundNotifyPlugin::playNotification(NotificationItem* notification)
         return false;
 
     // Check: race condition, if phonon.mo got deleted don't go further
-    if (phonon.mo == NULL)
-        return false;
+    //if (phonon.mo == NULL)
+    //    return false;
 
     //qNotifyDebug() << "Phonon State: " << phonon.mo->state();
 
-    if ((phonon.mo->state()==Phonon::PausedState)
-        || (phonon.mo->state()==Phonon::StoppedState)
+    if ((phonon.state() == QAudio::SuspendedState)
+        || (phonon.state() == QAudio::StoppedState)
             || phonon.firstPlay)
     {
         _nowPlayingNotification = notification;
@@ -498,14 +503,14 @@ bool SoundNotifyPlugin::playNotification(NotificationItem* notification)
                         this, SLOT(on_timerRepeated_Notification()), Qt::UniqueConnection);
             }
         }
-        phonon.mo->clear();
+        phonon.clear();
         qNotifyDebug() << "play: " << notification->toString();
         foreach (QString item, notification->toSoundList()) {
-            Phonon::MediaSource *ms = new Phonon::MediaSource(item);
-            ms->setAutoDelete(true);
-            phonon.mo->enqueue(*ms);
+            //Phonon::MediaSource *ms = new Phonon::MediaSource(item);
+            //ms->setAutoDelete(true);
+            phonon.enqueue(item);
         }
-        phonon.mo->play();
+        phonon.play();
         phonon.firstPlay = false; // On Linux, you sometimes have to nudge Phonon to play 1 time before
                                   // the state is not "Loading" anymore.
         return true;

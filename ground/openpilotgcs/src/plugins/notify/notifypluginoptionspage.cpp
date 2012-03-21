@@ -25,27 +25,32 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "notifypluginoptionspage.h"
-#include <coreplugin/icore.h>
-#include "notificationitem.h"
-#include "ui_notifypluginoptionspage.h"
-#include "extensionsystem/pluginmanager.h"
-#include "utils/pathutils.h"
-
+#include <QtCore>
 #include <QFileDialog>
 #include <QtAlgorithms>
+#include <QDebug>
+#include <QString>
+#include <QSettings>
 #include <QStringList>
-#include <QtCore/QSettings>
-#include <QTableWidget>
-#include <QPalette>
 #include <QBuffer>
+#include <QTableWidget>
 #include <QSpinBox>
 #include <QLineEdit>
+#include <QSpinBox>
+#include <QPalette>
 
+#include "notifylogging.h"
+#include "mediaobject.h"
+
+#include "notificationitem.h"
+#include "ui_notifypluginoptionspage.h"
+
+#include "utils/pathutils.h"
 #include "notifyplugin.h"
 #include "notifyitemdelegate.h"
 #include "notifytablemodel.h"
-#include "notifylogging.h"
+#include "notifypluginoptionspage.h"
+
 
 static const char* cStrEqualTo = "Equal to";
 static const char* cStrLargeThan = "Large than";
@@ -125,8 +130,9 @@ void NotifyPluginOptionsPage::finish()
     disconnect(_optionsPage->UAVObjectField, SIGNAL(currentIndexChanged(QString)),
                this, SLOT(on_changedIndex_UAVField(QString)));
 
-    disconnect(_testSound.data(),SIGNAL(stateChanged(Phonon::State,Phonon::State)),
-               this,SLOT(on_changed_playButtonText(Phonon::State,Phonon::State)));
+    disconnect(_testSound.data(),SIGNAL(stateChanged(QAudio::State)),
+               this,SLOT(on_changed_playButtonText(QAudio::State)));
+
     if (_testSound) {
         _testSound->stop();
         _testSound->clear();
@@ -154,10 +160,11 @@ void NotifyPluginOptionsPage::initButtons()
 
 void NotifyPluginOptionsPage::initPhononPlayer()
 {
-    _testSound.reset(Phonon::createPlayer(Phonon::NotificationCategory));
-    connect(_testSound.data(),SIGNAL(stateChanged(Phonon::State,Phonon::State)),
-        this,SLOT(on_changed_playButtonText(Phonon::State,Phonon::State)));
-    connect(_testSound.data(), SIGNAL(finished(void)), this, SLOT(on_FinishedPlaying(void)));
+    _testSound.reset(new PhononObject);
+    //_testSound.reset(Phonon::createPlayer(Phonon::NotificationCategory));
+    connect(_testSound.data(),SIGNAL(stateChanged(QAudio::State)),
+        this,SLOT(on_changed_playButtonText(QAudio::State)));
+    //connect(_testSound.data(), SIGNAL(finished(void)), this, SLOT(on_FinishedPlaying(void)));
 }
 
 void NotifyPluginOptionsPage::initRulesTable()
@@ -513,15 +520,15 @@ void NotifyPluginOptionsPage::on_changedIndex_soundLanguage(int index)
 }
 
 
-void  NotifyPluginOptionsPage::on_changed_playButtonText(Phonon::State newstate, Phonon::State oldstate)
+void  NotifyPluginOptionsPage::on_changed_playButtonText(QAudio::State newstate)
 {
     //Q_ASSERT(Phonon::ErrorState != newstate);
 
-    if (newstate  == Phonon::PausedState || newstate  == Phonon::StoppedState) {
+    if (newstate  == QAudio::SuspendedState || newstate  == QAudio::StoppedState) {
         _optionsPage->buttonPlayNotification->setText("Play");
         _optionsPage->buttonPlayNotification->setIcon(QPixmap(":/notify/images/play.png"));
     } else {
-        if (newstate  == Phonon::PlayingState) {
+        if (newstate  == QAudio::ActiveState) {
             _optionsPage->buttonPlayNotification->setText("Stop");
             _optionsPage->buttonPlayNotification->setIcon(QPixmap(":/notify/images/stop.png"));
         }
@@ -562,12 +569,12 @@ void NotifyPluginOptionsPage::on_clicked_buttonTestSoundNotification()
     notification = _privListNotifications.at(_notifyRulesSelection->currentIndex().row());
     QStringList sequence = notification->toSoundList();
     if (sequence.isEmpty()) {
-        qNotifyDebug() << "message sequense is empty!";
+        qNotifyDebug() << "message sequence is empty!";
         return;
     }
     foreach(QString item, sequence) {
         qNotifyDebug() << item;
-        _testSound->enqueue(Phonon::MediaSource(item));
+        _testSound->enqueue(item);
     }
     _testSound->play();
 }
@@ -632,8 +639,9 @@ void  NotifyPluginOptionsPage::on_FinishedPlaying()
 void NotifyPluginOptionsPage::on_toggled_checkEnableSound(bool state)
 {
     bool state1 = 1^state;
-
+/*
     QList<Phonon::Path> listOutputs = _testSound->outputPaths();
     Phonon::AudioOutput * audioOutput = (Phonon::AudioOutput*)listOutputs.last().sink();
     audioOutput->setMuted(state1);
+*/
 }

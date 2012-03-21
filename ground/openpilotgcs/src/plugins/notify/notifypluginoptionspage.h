@@ -29,21 +29,15 @@
 #ifndef NOTIFYPLUGINOPTIONSPAGE_H
 #define NOTIFYPLUGINOPTIONSPAGE_H
 
+#include <QItemSelectionModel>
+#include <QComboBox>
+
 #include "coreplugin/dialogs/ioptionspage.h"
 #include "uavobjectmanager.h"
 #include "uavobject.h"
 
-#include "QString"
-#include <QStringList>
-#include <QItemSelectionModel>
-#include <QDebug>
-#include <QtCore/QSettings>
-#include <phonon/MediaObject>
-#include <phonon/Path>
-#include <phonon/AudioOutput>
-#include <phonon/Global>
-#include <QComboBox>
-#include <QSpinBox>
+#include "mediaobject.h"
+#include "notificationitem.h"
 
 class NotifyTableModel;
 class NotificationItem;
@@ -54,6 +48,9 @@ namespace Ui {
 };
 
 using namespace Core;
+
+//class QComboBox;
+//class QItemSelectionModel;
 
 class NotifyPluginOptionsPage : public IOptionsPage
 {
@@ -93,7 +90,7 @@ private slots:
     void on_clicked_buttonSoundFolder(const QString& path);
     void on_changedIndex_UAVObject(QString val);
     void on_changedIndex_UAVField(QString val);
-    void on_changed_playButtonText(Phonon::State newstate, Phonon::State oldstate);
+    void on_changed_playButtonText(QAudio::State newstate);
     void on_toggled_checkEnableSound(bool state);
 
     /**
@@ -134,7 +131,7 @@ private:
     SoundNotifyPlugin* _owner;
 
     //! Media object uses to test sound playing
-    QScopedPointer<Phonon::MediaObject> _testSound;
+    QScopedPointer<PhononObject> _testSound;
 
     QScopedPointer<NotifyTableModel> _notifyRulesModel;
     QItemSelectionModel* _notifyRulesSelection;

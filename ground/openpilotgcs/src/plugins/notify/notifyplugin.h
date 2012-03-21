@@ -27,27 +27,19 @@
 #ifndef SOUNDNOTIFYPLUGIN_H
 #define SOUNDNOTIFYPLUGIN_H
 
-#include <extensionsystem/iplugin.h> 
+#include <coreplugin/icore.h>
 #include <coreplugin/iconfigurableplugin.h>
+#include <extensionsystem/pluginmanager.h>
+#include <extensionsystem/iplugin.h>
+
 #include "uavtalk/telemetrymanager.h"
 #include "uavobjectmanager.h"
 #include "uavobject.h"
+
+#include "mediaobject.h"
 #include "notificationitem.h"
 
-#include <QSettings>
-#include <phonon/MediaObject>
-#include <phonon/Path>
-#include <phonon/AudioOutput>
-#include <phonon/Global>
-
 class NotifyPluginOptionsPage;
-
-typedef struct {
-	Phonon::MediaObject* mo;
-	NotificationItem* notify;
-	bool firstPlay;
-} PhononObject, *pPhononObject;
-
 
 class SoundNotifyPlugin : public Core::IConfigurablePlugin
 {
@@ -86,13 +78,15 @@ private slots:
     void on_arrived_Notification(UAVObject *object);
     void on_timerRepeated_Notification(void);
     void on_expiredTimer_Notification(void);
-    void stateChanged(Phonon::State newstate, Phonon::State oldstate);
+
+    //void stateChanged(Phonon::State newstate, Phonon::State oldstate);
+    void stateChanged(QAudio::State newstate);
 
 private:
     bool enableSound;
-    QList< QList<Phonon::MediaSource>* > lstMediaSource;
+    //QList< QList<Phonon::MediaSource>* > lstMediaSource;
     QStringList mediaSource;
-    QMultiMap<QString, PhononObject> mapMediaObjects;
+    //QMultiMap<QString, PhononObject> mapMediaObjects;
     QSettings* settings;
 
     QList<UAVDataObject*> lstNotifiedUAVObjects;
