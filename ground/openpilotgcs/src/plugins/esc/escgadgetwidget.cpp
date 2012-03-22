@@ -39,6 +39,15 @@
 #define NO_PORT         0
 #define SERIAL_PORT     1
 
+class SleepThread : public QThread
+{
+public:
+    static void usleep(unsigned long usecs)
+    {
+        QThread::usleep(usecs);
+    }
+};
+
 // constructor
 EscGadgetWidget::EscGadgetWidget(QWidget *parent) :
     QWidget(parent),
@@ -463,7 +472,7 @@ void EscGadgetWidget::updateCode()
     escSerial->bootloader();
     disconnectPort();
 
-    usleep(550000);
+    SleepThread::usleep(550000);
     rescueCode();
 
     connectPort();
