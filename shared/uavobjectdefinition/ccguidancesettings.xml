@@ -22,6 +22,10 @@
 		<field name="HomeLocationLatitude" units="deg * 10e7" type="int32" elements="1" defaultvalue="0"/>
 		<field name="HomeLocationLongitude" units="deg * 10e7" type="int32" elements="1" defaultvalue="0"/>
 		<field name="HomeLocationAltitude" units="m over geoid" type="float" elements="1" defaultvalue="0"/>
+		<field name="TargetLocationSet" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
+		<field name="TargetLocationLatitude" units="deg * 10e7" type="int32" elements="1" defaultvalue="0"/>
+		<field name="TargetLocationLongitude" units="deg * 10e7" type="int32" elements="1" defaultvalue="0"/>
+		<field name="TargetLocationAltitude" units="m over geoid" type="float" elements="1" defaultvalue="0"/>
 		<field name="UpdatePeriod" units="msec" type="uint16" elements="1" defaultvalue="300"/>
 		<access gcs="readwrite" flight="readwrite"/>
 		<telemetrygcs acked="true" updatemode="onchange" period="0"/>

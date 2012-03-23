@@ -179,19 +179,25 @@ static void ccguidanceTask(UAVObjEvent * ev)
 	if ((PARSE_FLIGHT_MODE(flightStatus.FlightMode) == FLIGHTMODE_GUIDANCE) &&
 		((systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_FIXEDWING) ||
 		 (systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_FIXEDWINGELEVON) ||
-		 (systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_FIXEDWINGVTAIL) ))
+		 (systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_FIXEDWINGVTAIL) ||
+		 (systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_VTOL) ||
+		 (systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_QUADP) ||
+		 (systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_QUADX) ||
+		 (systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_HEXA) ))
 	{
 		GPSPositionData positionActual;
 		GPSPositionGet(&positionActual);
 
 		if(positionHoldLast != 1 && (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_POSITIONHOLD ||
-		  (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_RETURNTOBASE && ccguidanceSettings.HomeLocationSet == FALSE)))
+		  (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_RETURNTOBASE && ccguidanceSettings.HomeLocationSet == FALSE) ||
+		  (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_FLIGHTTOTARGET && ccguidanceSettings.TargetLocationSet == FALSE)))
 		  {
 			/* When enter position hold mode save current position */
 			positionDesiredNorth = positionActual.Latitude * 1e-7;
 			positionDesiredEast = positionActual.Longitude * 1e-7;
 			positionDesiredDown = positionActual.Altitude + positionActual.GeoidSeparation + 1;
 			positionHoldLast = 1;
+			firsRunSetCourse = TRUE;
 #if defined(SIMPLE_COURSE_CALCULATION)
 			degreeLonLenght = degreeLatLenght * cos(positionDesiredNorth * DEG2RAD);
 #endif
@@ -201,10 +207,23 @@ static void ccguidanceTask(UAVObjEvent * ev)
 			positionDesiredEast = ccguidanceSettings.HomeLocationLongitude * 1e-7;
 			positionDesiredDown = ccguidanceSettings.HomeLocationAltitude + ccguidanceSettings.ReturnTobaseAltitudeOffset ;
 			positionHoldLast = 2;
+			firsRunSetCourse = TRUE;
 #if defined(SIMPLE_COURSE_CALCULATION)
 			degreeLonLenght = degreeLatLenght * cos(positionDesiredNorth * DEG2RAD);
 #endif
-			}
+			} else 	if (positionHoldLast != 3 &&
+						((flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_FLIGHTTOTARGET) &&
+						( ccguidanceSettings.HomeLocationSet == TRUE))) {
+						/* Sets target position */
+						positionDesiredNorth = ccguidanceSettings.TargetLocationLatitude * 1e-7;
+						positionDesiredEast = ccguidanceSettings.TargetLocationLongitude * 1e-7;
+						positionDesiredDown = ccguidanceSettings.TargetLocationAltitude + ccguidanceSettings.ReturnTobaseAltitudeOffset ;
+						positionHoldLast = 3;
+						firsRunSetCourse = TRUE;
+#if defined(SIMPLE_COURSE_CALCULATION)
+						degreeLonLenght = degreeLatLenght * cos(positionDesiredNorth * DEG2RAD);
+#endif
+					}
 
 		StabilizationDesiredData stabDesired;
 		StabilizationDesiredGet(&stabDesired);
@@ -233,13 +252,14 @@ static void ccguidanceTask(UAVObjEvent * ev)
 						CCGuidanceSettingsSet(&ccguidanceSettings);
 						positionHoldLast = 0;
 					}
-				
+
 					StateSaveCurrentPositionToRTB = !ccguidanceSettings.HomeLocationEnableRequestSet;
 					if (stabDesired.Throttle < ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_MIN]) stabDesired.Throttle = ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_MIN];
 					stabDesired.Yaw = attitudeActual.Yaw;
 
 					// reset globals variable
 					fixedHeading = TRUE;
+					SpeedToRTB = 0;
 					TacksAngleRight = TRUE;
 					TacksNumsRemain = 0;
 					thisTimesPeriodCorrectBiasYaw = 0;
@@ -340,8 +360,8 @@ static void ccguidanceTask(UAVObjEvent * ev)
 			stabDesired.Pitch = bound(
 				((positionDesiredDown - positionActual.Altitude + positionActual.GeoidSeparation)
 					* ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_KP]) + ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_NEUTRAL],
-				ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_SINK] + ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_NEUTRAL],
-				ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_CLIMB] + ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_NEUTRAL]
+				ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_SINK],
+				ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_CLIMB]
 				);
 
 			/* 3. GroundSpeed */
@@ -350,7 +370,7 @@ static void ccguidanceTask(UAVObjEvent * ev)
 				if (ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_MIN] < 0) ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_MIN] = 0;
 				
 				TrottleStep = bound(
-					(ccguidanceSettings.GroundSpeedMax - (positionActual.Groundspeed + SpeedToRTB) / 2) * ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_KP],
+					(ccguidanceSettings.GroundSpeedMax - (positionActual.Groundspeed + SpeedToRTB)*0.5) * ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_KP],
 					-ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_STEPMAX],
 					ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_STEPMAX]
 					);
@@ -386,7 +406,6 @@ static void ccguidanceTask(UAVObjEvent * ev)
 	} else {
 		// reset globals...
 		positionHoldLast = 0;
-		firsRunSetCourse = TRUE;
 		AlarmsClear(SYSTEMALARMS_ALARM_GUIDANCE);
 	}
 }
