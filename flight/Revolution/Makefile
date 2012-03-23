@@ -307,6 +307,14 @@ CSTANDARD = -std=gnu99
 
 CFLAGS += -g$(DEBUGF)
 
+ifeq ($(DEBUG),YES)
+CFLAGS += -DDEBUG
+endif
+
+ifeq ($(DIAGNOSTICS),YES)
+CFLAGS += -DDIAGNOSTICS
+endif
+
 CFLAGS += -ffast-math
 
 CFLAGS += -mcpu=$(MCU)
