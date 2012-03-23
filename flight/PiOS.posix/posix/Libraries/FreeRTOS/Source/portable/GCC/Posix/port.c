@@ -113,7 +113,7 @@ This approach is tested and works both on Linux and BSD style Unix (MAC OS X)
 /*-----------------------------------------------------------*/
 
 #define PORT_PRINT(...) fprintf(stderr,__VA_ARGS__)
-#define PORT_ASSERT(assertion)    if ( !(assertion) ) { PORT_PRINT("Assertion failed in %s:%i  " #assertion "\n",__FILE__,__LINE__); int assfail=0; assfail=assfail/assfail; }
+#define PORT_ASSERT(assertion)    if ( !(assertion) ) { PORT_PRINT("Assertion failed in %s:%i  " #assertion "\n",__FILE__,__LINE__); int volatile assfail=0; assfail=assfail/assfail; }
 
 
 #define PORT_LOCK(mutex) PORT_ASSERT( 0 == pthread_mutex_lock(&(mutex)) )
@@ -718,7 +718,8 @@ portBASE_TYPE xResult;
 
 		PORT_UNLOCK( xRunningThreadMutex );
 
-		PORT_LEAVE();
+		//PORT_LEAVE();
+		PORT_UNLOCK( xGuardMutex );
 		/* Commit suicide */
 		pthread_exit( (void *)1 );
 	}
@@ -1027,7 +1028,8 @@ portLONG lIndex;
 			pxThreads[ lIndex ].hTask = (xTaskHandle)NULL;
 			if ( pxThreads[ lIndex ].uxCriticalNesting > 0 )
 			{
-				vPortEnableInterrupts();
+				//vPortEnableInterrupts();
+				xInterruptsEnabled = pdTRUE;
 			}
 			pxThreads[ lIndex ].uxCriticalNesting = 0;
 			break;
