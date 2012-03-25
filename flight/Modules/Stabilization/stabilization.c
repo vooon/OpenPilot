@@ -296,7 +296,7 @@ static void stabilizationTask(void* parameters)
 					break;
 
 				case STABILIZATIONDESIRED_STABILIZATIONMODE_AXISLOCK:
-					if(fabs(attitudeDesiredAxis[i]) > max_axislock_rate) {
+					if(fabsf(attitudeDesiredAxis[i]) > max_axislock_rate) {
 						// While getting strong commands act like rate mode
 						rateDesiredAxis[i] = attitudeDesiredAxis[i];
 						axis_lock_accum[i] = 0;
@@ -421,7 +421,7 @@ float ApplyPid(pid_type * pid, const float err)
 	// note that the scaling factor is always 1.0 if maxScale is set to 1 or
 	// lower (the default) regardless of scale.
 #else
-	#define scaleFactor 1.0
+	#define scaleFactor 1.0f
 #endif
 
 	float diff = (err - pid->lastErr);
@@ -438,8 +438,8 @@ float ApplyPid(pid_type * pid, const float err)
 #if defined(PIOS_SELFADJUSTING_STABILIZATION) || defined(DIAGNOSTICS)
 
 	float derivative = 0.0f;
-	if ( dT > 0.0001) {
-		derivative = fabs(diff) / dT;
+	if ( dT > 0.0001f) {
+		derivative = fabsf(diff) / dT;
 	}
 
 	// Calculate error indicators
@@ -456,11 +456,10 @@ float ApplyPid(pid_type * pid, const float err)
 	// decrease as the control loop tries to compensate).
 
 	if (derivative>1.0f) {
-		pid->e1 = pid->e1 * error_alpha + (fabs(err)/derivative) * ( 1.0f - error_alpha );
+		pid->e1 = pid->e1 * error_alpha + (fabsf(err)/derivative) * ( 1.0f - error_alpha );
 	} else {
-		pid->e1 = pid->e1 * error_alpha + ( fabs(err) ) * ( 1.0f - error_alpha );
+		pid->e1 = pid->e1 * error_alpha + ( fabsf(err) ) * ( 1.0f - error_alpha );
 	}
-
 	// High E2 indicates coefficients too high.
 	// E2 is the 'zero crossing speed', which is the derivative of error
 	// divided by the error.
@@ -468,11 +467,14 @@ float ApplyPid(pid_type * pid, const float err)
 	// E2 is low if the error is high.
 	// E2 is low if the error doesn't change much.
 	
-	if (fabs(err)>1.0f) {
-		pid->e2 = pid->e2 * error_alpha + ( derivative/fabs(err) ) * ( 1.0f - error_alpha );
+	if (fabsf(err)>1.0f) {
+		pid->e2 = pid->e2 * error_alpha + ( derivative/fabsf(err) ) * ( 1.0f - error_alpha );
 	} else {
 		pid->e2 = pid->e2 * error_alpha + ( derivative ) * ( 1.0f - error_alpha );
 	}
+	//pid->e1=dT;
+	//pid->e2=gyro_alpha;
+	//pid->e2 += 1.0f;
 
 	// Is the capping at "1" sensible? We need to prevent div by zero somehow, and
 	// a cap at 1 prevents undesired amplification, but renders calculation nonlinear.
@@ -481,9 +483,9 @@ float ApplyPid(pid_type * pid, const float err)
 #if defined(PIOS_SELFADJUSTING_STABILIZATION)
 
 	// Adjust scale coefficient according to E1 and E2
-	pid->scale = pid->scale + (1 - error_alpha) * ( pid->e1 * pid->attack - pid->e2 * pid->decay);
-	if (pid->scale > 1) pid->scale=1;
-	if (pid->scale < -1) pid->scale=-1;
+	pid->scale = pid->scale + (1.0f - error_alpha) * ( pid->e1 * pid->attack - pid->e2 * pid->decay);
+	if (pid->scale > 1.0f) pid->scale = 1.0f;
+	if (pid->scale < -1.0f) pid->scale = -1.0f;
 
 #endif // defined(PIOS_SELFADJUSTING_STABILIZATION)
 
@@ -592,13 +594,18 @@ static void SettingsUpdatedCb(UAVObjEvent * ev)
 	// based on a time (in ms) rather than a fixed multiplier.  The error between
 	// update rates on OP (~300 Hz) and CC (~475 Hz) is negligible for this
 	// calculation
+#if defined(REVOLUTION)
+	// grrr - negligible my ass!
+	const float fakeDt = 0.0013;
+#else
 	const float fakeDt = 0.0025;
-	if(settings.GyroTau < 0.0001)
-		gyro_alpha = 0;   // not trusting this to resolve to 0
+#endif
+	if(settings.GyroTau < 0.0001f)
+		gyro_alpha = 0.0f;   // not trusting this to resolve to 0
 	else
 		gyro_alpha = expf(-fakeDt  / settings.GyroTau);
-	if(settings.ErrorTau < 0.0001)
-		error_alpha = 0;   // not trusting this to resolve to 0
+	if(settings.ErrorTau < 0.0001f)
+		error_alpha = 0.0f;   // not trusting this to resolve to 0
 	else
 		error_alpha = expf(-fakeDt  / settings.ErrorTau);
 }
