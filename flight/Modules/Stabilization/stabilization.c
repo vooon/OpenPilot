@@ -69,7 +69,8 @@ typedef struct {
 	float iAccumulator;
 	float lastErr;
 #if defined(PIOS_SELFADJUSTING_STABILIZATION) || defined(DIAGNOSTICS)
-	float derivative;
+	float filteredErr;
+	float lastFiltered;
 	float lowpassAlpha;
 	float errorAlpha;
 	float e1;
@@ -437,11 +438,16 @@ float ApplyPid(pid_type * pid, const float err)
 
 #if defined(PIOS_SELFADJUSTING_STABILIZATION) || defined(DIAGNOSTICS)
 
+	// low pass filtered error
+	// the low pass makes sure we only catch oscillation, not vibration and/or sensor noise
+	pid->filteredErr = pid->filteredErr * pid->lowpassAlpha + ( 1.0f - pid->lowpassAlpha) * err;
+
+	float derivative = 0.0f;
 	if ( dT > 0.0001f) {
-		// low pass filtered delta error
-		// the low pass makes sure we only catch oscillation, not vibration and/or sensor noise
-		pid->derivative = pid->derivative * pid->lowpassAlpha + ( 1.0f - pid->lowpassAlpha) * fabsf(diff) / dT;
+		derivative = fabsf( pid->filteredErr - pid->lastFiltered ) / dT;
 	}
+
+	pid->lastFiltered = pid->filteredErr;
 
 	// Calculate error indicators
 	
@@ -456,10 +462,10 @@ float ApplyPid(pid_type * pid, const float err)
 	// E1 is low if the error changes fast (In the hope that this change is a
 	// decrease as the control loop tries to compensate).
 
-	if (pid->derivative>1.0f) {
-		pid->e1 = pid->e1 * pid->errorAlpha + (fabsf(err)/pid->derivative) * ( 1.0f - pid->errorAlpha );
+	if (derivative>1.0f) {
+		pid->e1 = pid->e1 * pid->errorAlpha + (fabsf(pid->filteredErr)/derivative) * ( 1.0f - pid->errorAlpha );
 	} else {
-		pid->e1 = pid->e1 * pid->errorAlpha + ( fabsf(err) ) * ( 1.0f - pid->errorAlpha );
+		pid->e1 = pid->e1 * pid->errorAlpha + ( fabsf(pid->filteredErr) ) * ( 1.0f - pid->errorAlpha );
 	}
 	// High E2 indicates coefficients too high.
 	// E2 is the 'zero crossing speed', which is the derivative of error
@@ -468,14 +474,11 @@ float ApplyPid(pid_type * pid, const float err)
 	// E2 is low if the error is high.
 	// E2 is low if the error doesn't change much.
 	
-	if (fabsf(err)>1.0f) {
-		pid->e2 = pid->e2 * pid->errorAlpha + ( pid->derivative/fabsf(err) ) * ( 1.0f - pid->errorAlpha );
+	if (fabsf(pid->filteredErr)>1.0f) {
+		pid->e2 = pid->e2 * pid->errorAlpha + ( derivative/fabsf(pid->filteredErr) ) * ( 1.0f - pid->errorAlpha );
 	} else {
-		pid->e2 = pid->e2 * pid->errorAlpha + ( pid->derivative ) * ( 1.0f - pid->errorAlpha );
+		pid->e2 = pid->e2 * pid->errorAlpha + ( derivative ) * ( 1.0f - pid->errorAlpha );
 	}
-	//pid->e1=dT;
-	//pid->e2=gyro_alpha;
-	//pid->e2 += 1.0f;
 
 	// Is the capping at "1" sensible? We need to prevent div by zero somehow, and
 	// a cap at 1 prevents undesired amplification, but renders calculation nonlinear.
@@ -500,7 +503,8 @@ static void ZeroPids(void)
 		pids[ct].iAccumulator = 0.0f;
 		pids[ct].lastErr = 0.0f;
 #if defined(PIOS_SELFADJUSTING_STABILIZATION) || defined(DIAGNOSTICS)
-		pids[ct].derivative = 0.0f;
+		pids[ct].filteredErr = 0.0f;
+		pids[ct].lastFiltered = 0.0f;
 		pids[ct].e1 = 0.0f;
 		pids[ct].e2 = 0.0f;
 #endif
