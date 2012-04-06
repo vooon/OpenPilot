@@ -72,6 +72,7 @@ static uint8_t positionHoldLast;
 // Private functions
 static void ccguidanceTask(UAVObjEvent * ev);
 static float bound(float val, float min, float max);
+static float meanDiffHeadingYaw(float diffHeadingYaw, bool firstMeanDiffHeadingYaw);
 #if !defined(SIMPLE_COURSE_CALCULATION)
 static float sphereDistance(float lat1,float long1,float lat2,float long2);
 static float sphereCourse(float lat1,float long1,float lat2,float long2, float zeta);
@@ -141,8 +142,8 @@ static void ccguidanceTask(UAVObjEvent * ev)
 	static portTickType lastUpdateTime = 0;
 	static float positionDesiredNorth, positionDesiredEast, positionDesiredDown, diffHeadingYaw, DistanceToBaseOld, SpeedToRTB;
 	float positionActualNorth = 0, positionActualEast = 0, course = 0, DistanceToBase = 0;
-	static uint32_t thisTimesPeriodCorrectBiasYaw;
-	static bool	firsRunSetCourse = TRUE, StateSaveCurrentPositionToRTB = FALSE, fixedHeading = TRUE, TacksAngleRight = TRUE;
+	static uint32_t thisTimesPeriodCorrectBiasYaw, DelayEnableFailSave;
+	static bool	firsRunSetCourse = TRUE, StateSaveCurrentPositionToRTB = FALSE, fixedHeading = TRUE, TacksAngleRight = TRUE, firstMeanDiffHeadingYaw = TRUE;
 	float TrottleStep = 0;
 	static uint8_t TacksNumsRemain;
 
@@ -163,7 +164,6 @@ static void ccguidanceTask(UAVObjEvent * ev)
 	if( (thisTime - lastUpdateTime) < (ccguidanceSettings.UpdatePeriod / portTICK_RATE_MS) ) return;
 
 	thisTimesPeriodCorrectBiasYaw += (thisTime - lastUpdateTime) / portTICK_RATE_MS;
-	lastUpdateTime = thisTime;
 
 	FlightStatusGet(&flightStatus);
 	SystemSettingsGet(&systemSettings);
@@ -171,9 +171,15 @@ static void ccguidanceTask(UAVObjEvent * ev)
 	//Activate failsave mode, activate return to base
 	if ((AlarmsGet(SYSTEMALARMS_ALARM_MANUALCONTROL) != SYSTEMALARMS_ALARM_OK) &&
 		(ccguidanceSettings.FaileSaveRTB == TRUE))	{
-		flightStatus.FlightMode = FLIGHTSTATUS_FLIGHTMODE_RETURNTOBASE;
-		FlightStatusSet(&flightStatus);
-	}
+		DelayEnableFailSave += (thisTime - lastUpdateTime) / portTICK_RATE_MS;
+		if (DelayEnableFailSave >= 4000) {
+			DelayEnableFailSave = 0;
+			flightStatus.FlightMode = FLIGHTSTATUS_FLIGHTMODE_RETURNTOBASE;
+			FlightStatusSet(&flightStatus);
+		}
+	} else DelayEnableFailSave = 0;
+
+	lastUpdateTime = thisTime;
 
 	//Checking mode is enabled Return to Base
 	if ((PARSE_FLIGHT_MODE(flightStatus.FlightMode) == FLIGHTMODE_GUIDANCE) &&
@@ -264,6 +270,7 @@ static void ccguidanceTask(UAVObjEvent * ev)
 					TacksNumsRemain = 0;
 					thisTimesPeriodCorrectBiasYaw = 0;
 					DistanceToBaseOld = 0;
+					firstMeanDiffHeadingYaw = TRUE;
 				}
 
 				// Calculation errors between the rate of the gyroscope and GPS at a speed not less than the minimum.
@@ -274,6 +281,9 @@ static void ccguidanceTask(UAVObjEvent * ev)
 					while (diffHeadingYaw>180.)  diffHeadingYaw-=360.;
 					// Ends hold the current direction of flight
 					fixedHeading = FALSE;
+
+					diffHeadingYaw = meanDiffHeadingYaw(diffHeadingYaw, firstMeanDiffHeadingYaw);
+					firstMeanDiffHeadingYaw = FALSE;
 				}
 
 			} else {
@@ -363,6 +373,10 @@ static void ccguidanceTask(UAVObjEvent * ev)
 				ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_SINK],
 				ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_CLIMB]
 				);
+			// If the velocity of the target is less than 2 m/c, and the elevator in position for the climb,
+			// install the elevator in the neutral position.
+			if ((SpeedToRTB < 2) && (stabDesired.Pitch > ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_NEUTRAL]))
+				stabDesired.Pitch = ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_NEUTRAL];
 
 			/* 3. GroundSpeed */
 			if (ccguidanceSettings.TrottleControl == TRUE) {
@@ -423,6 +437,31 @@ static float bound(float val, float min, float max)
 	}
 	return val;
 }
+
+/**
+ * Calculate the arithmetic mean of the DiffHeadingYaw
+ */
+
+static float meanDiffHeadingYaw(float diffHeadingYaw, bool firstMeanDiffHeadingYaw)
+{
+	static float diffHeadingYawOld;
+
+	if (firstMeanDiffHeadingYaw == FALSE) {
+		diffHeadingYaw = diffHeadingYawOld - diffHeadingYaw;
+
+		if (diffHeadingYaw > 180) diffHeadingYaw -=360;
+		else if (diffHeadingYaw < -180) diffHeadingYaw +=360;
+
+		diffHeadingYaw = diffHeadingYawOld - diffHeadingYaw * 0.5;
+
+		if (diffHeadingYaw > 180) diffHeadingYaw -=360;
+		else if (diffHeadingYaw < -180) diffHeadingYaw +=360;
+	}
+	diffHeadingYawOld = diffHeadingYaw;
+	return diffHeadingYaw;
+}
+
+
 
 #if !defined(SIMPLE_COURSE_CALCULATION)
 /**
