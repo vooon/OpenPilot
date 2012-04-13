@@ -43,8 +43,6 @@
 #include "openpilot.h"
 #include "ccguidancesettings.h"
 #include "gpsposition.h"
-//#include "positiondesired.h"	// object that will be updated by the module
-//#include "homelocation.h"
 #include "manualcontrol.h"
 #include "manualcontrolcommand.h"
 #include "flightstatus.h"
@@ -54,17 +52,17 @@
 #include "hwsettings.h"
 
 // Private constants
-//#define MAX_QUEUE_SIZE 1
-//#define STACK_SIZE_BYTES 500
-//#define TASK_PRIORITY (tskIDLE_PRIORITY+2)
 #define RAD2DEG (180.0/M_PI)
 #define DEG2RAD (M_PI/180.0)
-//#define GEE 9.81
-//#define SAMPLE_PERIOD_MS		100
-//#define DEGREELATLENGTHT 40000000/360;	// length of one degree of longitude, meters
-#define SIMPLE_COURSE_CALCULATION
-
-// Private types
+// Delay time returning to base after the disappearance of the signal transmitter.
+#define DELAY_ENABLE_FAILESAVE			4000	// 4 seconds.
+#define SIMPLE_COURSE_CALCULATION				// A simplified calculation of the rate.
+#define SPEEDTOBASE_TRACK_ENABLE		1		// at a rate less than this, the flight enabled tacks.
+// The coefficient for the calculation of the maximum deviation range of the elevator to climb,
+// depending on the speed of flight in the direction of the base.
+// At a speed equal to ccguidanceSettings.GroundSpeedMinForCorrectBiasYaw,
+// the elevator is set to ccguidanceSettings.Pitch [CCGUIDANCESETTINGS_PITCH_NEUTRAL]
+#define SPEEDTOBASE_PITH_TO_NEUTRAL_KP	12
 
 // Private variables
 static uint8_t positionHoldLast;
@@ -93,8 +91,6 @@ int32_t CCGuidanceStart()
  */
 int32_t CCGuidanceInitialize()
 {
-	//static UAVObjEvent ev;
-
 	bool CCGuidanceEnabled;
 	uint8_t optionalModules[HWSETTINGS_OPTIONALMODULES_NUMELEM];
 
@@ -110,12 +106,7 @@ int32_t CCGuidanceInitialize()
 
 		CCGuidanceSettingsInitialize();
 		GPSPositionInitialize();
-		//HomeLocationInitialize();
 
-		//memset(&ev,0,sizeof(UAVObjEvent));	
-		//EventPeriodicCallbackCreate(&ev, ccguidanceTask, SAMPLE_PERIOD_MS / portTICK_RATE_MS);
-
-		// connect to GPSPosition
 		GPSPositionConnectCallback(&ccguidanceTask);
 
 		// indicate error - can only run correctly if GPSPosition is ever set, which will change the alarm state.
@@ -142,8 +133,8 @@ static void ccguidanceTask(UAVObjEvent * ev)
 	static portTickType lastUpdateTime = 0;
 	static float positionDesiredNorth, positionDesiredEast, positionDesiredDown, diffHeadingYaw, DistanceToBaseOld, SpeedToRTB;
 	float positionActualNorth = 0, positionActualEast = 0, course = 0, DistanceToBase = 0;
-	static uint32_t thisTimesPeriodCorrectBiasYaw, DelayEnableFailSave;
-	static bool	firsRunSetCourse = TRUE, StateSaveCurrentPositionToRTB = FALSE, fixedHeading = TRUE, TacksAngleRight = TRUE, firstMeanDiffHeadingYaw = TRUE;
+	static uint32_t thisTimesPeriodCorrectBiasYaw, TimeEnableFailSave;
+	static bool	firsRunSetCourse = TRUE, StateSaveCurrentPositionToRTB = FALSE, fixedHeading = TRUE, TacksAngleRight = FALSE, firstMeanDiffHeadingYaw = TRUE;
 	float TrottleStep = 0;
 	static uint8_t TacksNumsRemain;
 
@@ -171,13 +162,13 @@ static void ccguidanceTask(UAVObjEvent * ev)
 	//Activate failsave mode, activate return to base
 	if ((AlarmsGet(SYSTEMALARMS_ALARM_MANUALCONTROL) != SYSTEMALARMS_ALARM_OK) &&
 		(ccguidanceSettings.FaileSaveRTB == TRUE))	{
-		DelayEnableFailSave += (thisTime - lastUpdateTime) / portTICK_RATE_MS;
-		if (DelayEnableFailSave >= 4000) {
-			DelayEnableFailSave = 0;
+		TimeEnableFailSave += (thisTime - lastUpdateTime) / portTICK_RATE_MS;
+		if (TimeEnableFailSave >= DELAY_ENABLE_FAILESAVE) {
+			TimeEnableFailSave = 0;
 			flightStatus.FlightMode = FLIGHTSTATUS_FLIGHTMODE_RETURNTOBASE;
 			FlightStatusSet(&flightStatus);
 		}
-	} else DelayEnableFailSave = 0;
+	} else TimeEnableFailSave = 0;
 
 	lastUpdateTime = thisTime;
 
@@ -266,7 +257,7 @@ static void ccguidanceTask(UAVObjEvent * ev)
 					// reset globals variable
 					fixedHeading = TRUE;
 					SpeedToRTB = 0;
-					TacksAngleRight = TRUE;
+					TacksAngleRight = FALSE;
 					TacksNumsRemain = 0;
 					thisTimesPeriodCorrectBiasYaw = 0;
 					DistanceToBaseOld = 0;
@@ -323,28 +314,28 @@ static void ccguidanceTask(UAVObjEvent * ev)
 				// Correct course for set stabDesired.Yaw
 				course += diffHeadingYaw;
 				if (DistanceToBase > ccguidanceSettings.RadiusBase) {
-					// Calculation ground speed to base
-					SpeedToRTB = ((DistanceToBaseOld - DistanceToBase) / thisTimesPeriodCorrectBiasYaw) * 1000;
-					
-					// algorithm flight tacks
-					if (ccguidanceSettings.TacksFlight == TRUE) {
-						// Is executed the number of tacks has not ended?
-						if (TacksNumsRemain > 0) {
-							TacksNumsRemain--;
-							if (TacksAngleRight == TRUE)  {
-								course += ccguidanceSettings.TacksAngle;	// Right track
-								TacksAngleRight = FALSE;
-							} else {
-								course -= ccguidanceSettings.TacksAngle;	// Left track
-								TacksAngleRight = TRUE;
-							}
-						} else {
-							// If speed is not sufficient to base, set the number of left and right tacks until the next inspection.
-							if ((SpeedToRTB < 1) && (DistanceToBaseOld != 0)) TacksNumsRemain = ccguidanceSettings.TacksNums;
-						}
+					if (DistanceToBaseOld != 0) {
+						// Calculation ground speed to base
+						SpeedToRTB = ((DistanceToBaseOld - DistanceToBase) / thisTimesPeriodCorrectBiasYaw) * 1000;
 					}
 					DistanceToBaseOld = DistanceToBase;
-					
+
+					// algorithm flight tacks
+					if (ccguidanceSettings.TacksNums != 0) {
+						// TacksNumsRemain -- number of periods  PeriodCorrectBiasYaw, during this time flown tack, left or right.
+						// If the number is 0 and the speed of the database is less than acceptable.
+						if ((TacksNumsRemain == 0) && (SpeedToRTB < SPEEDTOBASE_TRACK_ENABLE)) {
+							TacksNumsRemain = ccguidanceSettings.TacksNums;
+							TacksAngleRight = !TacksAngleRight;	// Changing tack.
+						}
+						if (TacksNumsRemain > 0) {
+							TacksNumsRemain--;
+							// Adjust the rate for set tack.
+							if (TacksAngleRight == TRUE)	course += ccguidanceSettings.TacksAngle;	// Right track
+							else	course -= ccguidanceSettings.TacksAngle;							// Left track
+						}
+					}
+
 					while (course<-180.) course+=360.;
 					while (course>180.)  course-=360.;
 					stabDesired.Yaw = course; 	// Set new course
@@ -359,7 +350,7 @@ static void ccguidanceTask(UAVObjEvent * ev)
 					}
 					// reset variable in radius base.
 					SpeedToRTB = positionActual.Groundspeed;
-					TacksAngleRight = TRUE;
+					TacksAngleRight = FALSE;
 					TacksNumsRemain = 0;
 					DistanceToBaseOld = 0;
 				}
@@ -371,12 +362,12 @@ static void ccguidanceTask(UAVObjEvent * ev)
 				((positionDesiredDown - positionActual.Altitude + positionActual.GeoidSeparation)
 					* ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_KP]) + ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_NEUTRAL],
 				ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_SINK],
-				ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_CLIMB]
+				// decrease in the maximum deflection of the elevator to climb,
+				// if the velocity of the target is less than ccguidanceSettings.GroundSpeedMinForCorrectBiasYaw
+				bound((SpeedToRTB - ccguidanceSettings.GroundSpeedMinForCorrectBiasYaw) * SPEEDTOBASE_PITH_TO_NEUTRAL_KP,
+						ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_NEUTRAL],
+						ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_CLIMB])
 				);
-			// If the velocity of the target is less than 2 m/c, and the elevator in position for the climb,
-			// install the elevator in the neutral position.
-			if ((SpeedToRTB < 2) && (stabDesired.Pitch > ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_NEUTRAL]))
-				stabDesired.Pitch = ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_NEUTRAL];
 
 			/* 3. GroundSpeed */
 			if (ccguidanceSettings.TrottleControl == TRUE) {

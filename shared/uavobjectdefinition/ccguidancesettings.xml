@@ -9,9 +9,8 @@
 		<field name="RadiusBase" units="meter" type="uint16" elementnames="1" defaultvalue="100"/>
 		<field name="CircleAroundBaseAngle" units="deg" type="int8" elements="1" defaultvalue="50"/>
 		<field name="CircleAroundBase" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
-		<field name="TacksFlight" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
-		<field name="TacksAngle" units="deg" type="int8" elementnames="1" defaultvalue="30"/>
-		<field name="TacksNums" units="" type="uint8" elementnames="1" defaultvalue="4"/>
+		<field name="TacksAngle" units="deg" type="int8" elementnames="1" defaultvalue="20"/>
+		<field name="TacksNums" units="" type="uint8" elementnames="1" defaultvalue="0"/>
 		<field name="PeriodCorrectBiasYaw" units="msec" type="uint16" elements="1" defaultvalue="5000"/>
 		<field name="GroundSpeedMinForCorrectBiasYaw" units="m/sec" type="uint8" elementnames="1" defaultvalue="2"/>
 		<field name="GroundSpeedMax" units="m/sec" type="uint8" elementnames="1" defaultvalue="15"/>
