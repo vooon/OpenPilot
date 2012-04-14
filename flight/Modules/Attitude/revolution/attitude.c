@@ -93,7 +93,6 @@ static void settingsUpdatedCb(UAVObjEvent * objEv);
 static float accelKi = 0;
 static float accelKp = 0;
 static float yawBiasRate = 0;
-static float gyroGain = 0.42;
 static int16_t accelbias[3];
 static float R[3][3];
 static int8_t rotate = 0;
@@ -590,7 +589,6 @@ static void settingsUpdatedCb(UAVObjEvent * objEv)
 	accelKp = attitudeSettings.AccelKp;
 	accelKi = attitudeSettings.AccelKi;
 	yawBiasRate = attitudeSettings.YawBiasRate;
-	gyroGain = attitudeSettings.GyroGain;
 
 	zero_during_arming = attitudeSettings.ZeroDuringArming == ATTITUDESETTINGS_ZERODURINGARMING_TRUE;
 
