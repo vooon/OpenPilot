@@ -465,11 +465,7 @@ float ApplyPid(pid_type * pid, const float err)
 	// E1 is low if the error changes fast (In the hope that this change is a
 	// decrease as the control loop tries to compensate).
 
-	if (derivative>1.0f) {
-		pid->e1 = pid->e1 * pid->errorAlpha + (fabsf(pid->filteredErr)/derivative) * ( 1.0f - pid->errorAlpha );
-	} else {
-		pid->e1 = pid->e1 * pid->errorAlpha + ( fabsf(pid->filteredErr) ) * ( 1.0f - pid->errorAlpha );
-	}
+	pid->e1 = pid->e1 * pid->errorAlpha + ( fabsf(pid->filteredErr) / (1.0f + derivative) ) * ( 1.0f - pid->errorAlpha );
 	// High E2 indicates coefficients too high.
 	// E2 is the 'zero crossing speed', which is the derivative of error
 	// divided by the error.
@@ -477,14 +473,7 @@ float ApplyPid(pid_type * pid, const float err)
 	// E2 is low if the error is high.
 	// E2 is low if the error doesn't change much.
 	
-	if (fabsf(pid->filteredErr)>1.0f) {
-		pid->e2 = pid->e2 * pid->errorAlpha + ( derivative/fabsf(pid->filteredErr) ) * ( 1.0f - pid->errorAlpha );
-	} else {
-		pid->e2 = pid->e2 * pid->errorAlpha + ( derivative ) * ( 1.0f - pid->errorAlpha );
-	}
-
-	// Is the capping at "1" sensible? We need to prevent div by zero somehow, and
-	// a cap at 1 prevents undesired amplification, but renders calculation nonlinear.
+	pid->e2 = pid->e2 * pid->errorAlpha + ( derivative / (1.0f + fabsf(pid->filteredErr)) ) * ( 1.0f - pid->errorAlpha );
 
 #endif // defined(PIOS_SELFADJUSTING_STABILIZATION) || defined(DIAGNOSTICS)
 #if defined(PIOS_SELFADJUSTING_STABILIZATION)
