@@ -71,16 +71,10 @@
 // Private functions
 static void onTimer(UAVObjEvent* ev);
 
-/**
- * Initialise the module, called on startup
- * \returns 0 on success or -1 if initialisation failed
- */
-MODULE_INITCALL(BatteryInitialize, 0)
-
 int32_t BatteryInitialize(void)
 {
-	BatteryStateInitialze();
-	BatterySettingsInitialize();
+	FlightBatteryStateInitialize();
+	FlightBatterySettingsInitialize();
 	
 	static UAVObjEvent ev;
 
@@ -89,6 +83,12 @@ int32_t BatteryInitialize(void)
 
 	return 0;
 }
+/**
+ * Initialise the module, called on startup
+ * \returns 0 on success or -1 if initialisation failed
+ */
+MODULE_INITCALL(BatteryInitialize, 0)
+
 
 static void onTimer(UAVObjEvent* ev)
 {
