@@ -603,9 +603,9 @@ static int32_t updateAttitudeINSGPS(bool first_run, bool outdoor_mode)
 		} else if (init_stage > 0) {
 			// Run prediction a bit before any corrections
 			GyrosBiasGet(&gyrosBias);
-			float gyros[3] = {(gyrosData.x + gyrosBias.x) * F_PI / 180.0f, 
-				(gyrosData.y + gyrosBias.y) * F_PI / 180.0f, 
-				(gyrosData.z + gyrosBias.z) * F_PI / 180.0f};
+			float gyros[3] = {(gyrosData.x - gyrosBias.x) * F_PI / 180.0f, 
+				(gyrosData.y - gyrosBias.y) * F_PI / 180.0f, 
+				(gyrosData.z - gyrosBias.z) * F_PI / 180.0f};
 			INSStatePrediction(gyros, &accelsData.x, 0.002f);
 		}
 
@@ -651,9 +651,9 @@ static int32_t updateAttitudeINSGPS(bool first_run, bool outdoor_mode)
 	AttitudeActualSet(&attitude);
 
 	// Copy the gyro bias into the UAVO
-	gyrosBias.x = -Nav.gyro_bias[0] * 180.0f / F_PI;
-	gyrosBias.y = -Nav.gyro_bias[1] * 180.0f / F_PI;
-	gyrosBias.z = -Nav.gyro_bias[2] * 180.0f / F_PI;
+	gyrosBias.x = - Nav.gyro_bias[0] * 180.0f / F_PI;
+	gyrosBias.y = - Nav.gyro_bias[1] * 180.0f / F_PI;
+	gyrosBias.z = - Nav.gyro_bias[2] * 180.0f / F_PI;
 	GyrosBiasSet(&gyrosBias);
 
 	// Advance the covariance estimate
@@ -727,7 +727,7 @@ static int32_t updateAttitudeINSGPS(bool first_run, bool outdoor_mode)
 	velocityActual.Down = Nav.Vel[2];
 	VelocityActualSet(&velocityActual);
 	
-	if(fabs(Nav.gyro_bias[0]) > 0.1f || fabs(Nav.gyro_bias[1]) > 0.1f || fabs(Nav.gyro_bias[2]) > 0.1f) {
+	if(fabs(Nav.gyro_bias[0]) > 0.5f || fabs(Nav.gyro_bias[1]) > 0.5f || fabs(Nav.gyro_bias[2]) > 0.5f) {
 		float zeros[3] = {0.0f,0.0f,0.0f};
 		INSSetGyroBias(zeros);
 	}
