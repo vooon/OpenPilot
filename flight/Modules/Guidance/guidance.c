@@ -44,9 +44,12 @@
  */
 
 #include "openpilot.h"
+#include "paths.h"
+
 #include "guidance.h"
 #include "accels.h"
 #include "attitudeactual.h"
+#include "pathdesired.h"	// object that will be updated by the module
 #include "positiondesired.h"	// object that will be updated by the module
 #include "positionactual.h"
 #include "manualcontrol.h"
@@ -80,10 +83,14 @@ static xQueueHandle queue;
 static void guidanceTask(void *parameters);
 static float bound(float val, float min, float max);
 
+static void updateNedAccel();
+static void updatePathVelocity();
 static void updateVtolDesiredVelocity();
 static void manualSetDesiredVelocity();
 static void updateFixedDesiredAttitude();
 static void updateVtolDesiredAttitude();
+
+static GuidanceSettingsData guidanceSettings;
 
 /**
  * Initialise the module, called on startup
@@ -105,8 +112,9 @@ int32_t GuidanceStart()
 int32_t GuidanceInitialize()
 {
 	GuidanceSettingsInitialize();
-	PositionDesiredInitialize();
 	NedAccelInitialize();
+	PathDesiredInitialize();
+	PositionDesiredInitialize();
 	VelocityDesiredInitialize();
 
 	// Create object queue
@@ -139,19 +147,11 @@ static uint8_t positionHoldLast = 0;
 static void guidanceTask(void *parameters)
 {
 	SystemSettingsData systemSettings;
-	GuidanceSettingsData guidanceSettings;
 	FlightStatusData flightStatus;
 
 	portTickType thisTime;
 	portTickType lastUpdateTime;
 	UAVObjEvent ev;
-	
-	float accel[3] = {0,0,0};
-	uint32_t accel_accum = 0;
-	
-	float q[4];
-	float Rbe[3][3];
-	float accel_ned[3];
 	
 	// Main task loop
 	lastUpdateTime = xTaskGetTickCount();
@@ -166,47 +166,13 @@ static void guidanceTask(void *parameters)
 			AlarmsClear(SYSTEMALARMS_ALARM_GUIDANCE);
 		}
 
-		// Collect downsampled attitude data
-		AccelsData accels;
-		AccelsGet(&accels);		
-		accel[0] += accels.x;
-		accel[1] += accels.y;
-		accel[2] += accels.z;
-		accel_accum++;
-
 		// Continue collecting data if not enough time
 		thisTime = xTaskGetTickCount();
 		if( (thisTime - lastUpdateTime) < (guidanceSettings.UpdatePeriod / portTICK_RATE_MS) )
 			continue;
-		
-		lastUpdateTime = xTaskGetTickCount();
-		accel[0] /= accel_accum;
-		accel[1] /= accel_accum;
-		accel[2] /= accel_accum;
-		accel[0] = accel[1] = accel[2] = 0;
-		accel_accum = 0;
-		
-		//rotate avg accels into earth frame and store it
-		AttitudeActualData attitudeActual;
-		AttitudeActualGet(&attitudeActual);
-		q[0]=attitudeActual.q1;
-		q[1]=attitudeActual.q2;
-		q[2]=attitudeActual.q3;
-		q[3]=attitudeActual.q4;
-		Quaternion2R(q, Rbe);
-		for (uint8_t i=0; i<3; i++){
-			accel_ned[i]=0;
-			for (uint8_t j=0; j<3; j++)
-				accel_ned[i] += Rbe[j][i]*accel[j];
-		}
-		accel_ned[2] += GEE;
-		
-		NedAccelData accelData;
-		NedAccelGet(&accelData);
-		accelData.North = accel_ned[0];
-		accelData.East = accel_ned[1];
-		accelData.Down = accel_ned[2];
-		NedAccelSet(&accelData);
+
+		// Convert the accels into the NED frame
+		updateNedAccel();
 		
 		FlightStatusGet(&flightStatus);
 		SystemSettingsGet(&systemSettings);
@@ -245,10 +211,16 @@ static void guidanceTask(void *parameters)
 				positionHoldLast = 0;
 			}
 			
-			if( flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_POSITIONHOLD || flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_RETURNTOBASE || flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_PATHPLANNER ) 
-				updateVtolDesiredVelocity();
-			else 
-				manualSetDesiredVelocity();			
+			if( flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_POSITIONHOLD || flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_RETURNTOBASE || flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_PATHPLANNER ) {
+				if (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_PATHPLANNER && guidanceSettings.PathMode != GUIDANCESETTINGS_PATHMODE_ENDPOINT) {
+					updatePathVelocity();
+				} else {
+					updateVtolDesiredVelocity();
+				}
+			} else { 
+				manualSetDesiredVelocity();
+			}
+
 			if ((systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_FIXEDWING) ||
 				(systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_FIXEDWINGELEVON) ||
 				(systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_FIXEDWINGVTAIL))
@@ -273,6 +245,71 @@ static void guidanceTask(void *parameters)
 			powerIntegral = 0;
 		}
 	}
+}
+
+/**
+ * Compute desired velocity from the current position and path
+ *
+ * Takes in @ref PositionActual and compares it to @ref PathDesired 
+ * and computes @ref VelocityDesired
+ */
+static void updatePathVelocity()
+{
+	static portTickType lastSysTime;
+	portTickType thisSysTime = xTaskGetTickCount();;
+	float dT = 0;
+	float downCommand;
+
+	// Check how long since last update
+	if(thisSysTime > lastSysTime) // reuse dt in case of wraparound
+		dT = (thisSysTime - lastSysTime) / portTICK_RATE_MS / 1000.0f;
+	lastSysTime = thisSysTime;
+
+	PathDesiredData pathDesired;
+	PathDesiredGet(&pathDesired);
+
+	PositionActualData positionActual;
+	PositionActualGet(&positionActual);
+	
+	float cur[3] = {positionActual.North, positionActual.East, positionActual.Down};
+	struct path_status progress;
+	
+	path_progress(pathDesired.Start, pathDesired.End, cur, &progress);
+	
+	float groundspeed = pathDesired.StartingVelocity + 
+	    (pathDesired.EndingVelocity - pathDesired.StartingVelocity) * progress.fractional_progress;
+	if(progress.fractional_progress > 1)
+		groundspeed = 0;
+	
+	VelocityDesiredData velocityDesired;
+	velocityDesired.North = progress.path_direction[0] * groundspeed;
+	velocityDesired.East = progress.path_direction[1] * groundspeed;
+	
+	float error_speed = progress.error * guidanceSettings.HorizontalPosPI[GUIDANCESETTINGS_HORIZONTALPOSPI_KP];
+	float correction_velocity[2] = {progress.correction_direction[0] * error_speed, 
+	    progress.correction_direction[1] * error_speed};
+	
+	float total_vel = sqrtf(powf(correction_velocity[0],2) + powf(correction_velocity[1],2));
+	float scale = 1;
+	if(total_vel > guidanceSettings.HorizontalVelMax)
+		scale = guidanceSettings.HorizontalVelMax / total_vel;
+
+	velocityDesired.North += progress.correction_direction[0] * error_speed * scale;
+	velocityDesired.East += progress.correction_direction[1] * error_speed * scale;
+	
+	float altitudeSetpoint = pathDesired.Start[2] + (pathDesired.End[2] - pathDesired.Start[2]) *
+	    bound(progress.fractional_progress,0,1);
+
+	float downError = altitudeSetpoint - positionActual.Down;
+	downPosIntegral = bound(downPosIntegral + downError * dT * guidanceSettings.VerticalPosPI[GUIDANCESETTINGS_VERTICALPOSPI_KI],
+							-guidanceSettings.VerticalPosPI[GUIDANCESETTINGS_VERTICALPOSPI_ILIMIT],
+							guidanceSettings.VerticalPosPI[GUIDANCESETTINGS_VERTICALPOSPI_ILIMIT]);
+	downCommand = (downError * guidanceSettings.VerticalPosPI[GUIDANCESETTINGS_VERTICALPOSPI_KP] + downPosIntegral);
+	velocityDesired.Down = bound(downCommand,
+								 -guidanceSettings.VerticalVelMax,
+								 guidanceSettings.VerticalVelMax);
+
+	VelocityDesiredSet(&velocityDesired);
 }
 
 /**
@@ -546,7 +583,7 @@ static void updateVtolDesiredAttitude()
 	StabilizationSettingsGet(&stabSettings);
 	NedAccelGet(&nedAccel);
 	
-	float northVel, eastVel, downVel;
+	float northVel = 0, eastVel = 0, downVel = 0;
 	switch (guidanceSettings.VelocitySource) {
 		case GUIDANCESETTINGS_VELOCITYSOURCE_EKF:
 			northVel = velocityActual.North;
@@ -570,6 +607,7 @@ static void updateVtolDesiredAttitude()
 			downVel = velocityActual.Down;
 		}
 		default:
+			PIOS_Assert(0);
 			break;
 	}
 	
@@ -639,6 +677,46 @@ static void updateVtolDesiredAttitude()
 	stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_YAW] = STABILIZATIONDESIRED_STABILIZATIONMODE_RATE;
 	
 	StabilizationDesiredSet(&stabDesired);
+}
+
+/**
+ * Keep a running filtered version of the acceleration in the NED frame
+ */
+static void updateNedAccel()
+{
+	float accel[3];
+	float q[4];
+	float Rbe[3][3];
+	float accel_ned[3];
+
+	// Collect downsampled attitude data
+	AccelsData accels;
+	AccelsGet(&accels);		
+	accel[0] = accels.x;
+	accel[1] = accels.y;
+	accel[2] = accels.z;
+	
+	//rotate avg accels into earth frame and store it
+	AttitudeActualData attitudeActual;
+	AttitudeActualGet(&attitudeActual);
+	q[0]=attitudeActual.q1;
+	q[1]=attitudeActual.q2;
+	q[2]=attitudeActual.q3;
+	q[3]=attitudeActual.q4;
+	Quaternion2R(q, Rbe);
+	for (uint8_t i=0; i<3; i++){
+		accel_ned[i]=0;
+		for (uint8_t j=0; j<3; j++)
+			accel_ned[i] += Rbe[j][i]*accel[j];
+	}
+	accel_ned[2] += 9.81f;
+	
+	NedAccelData accelData;
+	NedAccelGet(&accelData);
+	accelData.North = accel_ned[0];
+	accelData.East = accel_ned[1];
+	accelData.Down = accel_ned[2];
+	NedAccelSet(&accelData);
 }
 
 /**

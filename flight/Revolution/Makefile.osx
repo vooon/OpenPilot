@@ -56,7 +56,7 @@ USE_THUMB_MODE = YES
 MODULES +=  Actuator ManualControl Stabilization 
 MODULES += AltitudeHold Guidance PathPlanner
 MODULES += Attitude/revolution
-#MODULES += SimulatedAttitude
+MODULES += OveroSync/simulated
 
 # To run simulation instead of connect to SITL
 MODULES += Sensors/simulated
@@ -186,6 +186,7 @@ SRC += $(PIOSPOSIX)/pios_rcvr.c
 SRC += $(FLIGHTLIB)/fifo_buffer.c
 SRC += $(FLIGHTLIB)/WorldMagModel.c
 SRC += $(FLIGHTLIB)/CoordinateConversions.c
+SRC += $(FLIGHTLIB)/paths.c
 SRC += $(FLIGHTLIB)/insgps13state.c
 SRC += $(FLIGHTLIB)/taskmonitor.c
 

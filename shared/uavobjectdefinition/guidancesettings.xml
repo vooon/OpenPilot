@@ -2,6 +2,7 @@
     <object name="GuidanceSettings" singleinstance="true" settings="true">
         <description>Settings for the @ref GuidanceModule</description>
         <field name="GuidanceMode" units="" type="enum" elements="1" options="DUAL_LOOP,VELOCITY_CONTROL" defaultvalue="DUAL_LOOP"/>
+        <field name="PathMode" units="" type="enum" elements="1" options="ENDPOINT,PATH" defaultvalue="ENDPOINT"/>
 	<field name="ReturnTobaseAltitudeOffset" units="m" type="float" elements="1" defaultvalue="75.0"/>
         <field name="HorizontalVelMax" units="m/s" type="float" elements="1" defaultvalue="0.3"/>
         <field name="VerticalVelMax" units="m/s" type="float" elements="1" defaultvalue="0.15"/>

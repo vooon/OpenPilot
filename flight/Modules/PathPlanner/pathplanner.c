@@ -30,14 +30,18 @@
  */
 
 #include "openpilot.h"
+#include "paths.h"
+
 #include "flightstatus.h"
+#include "guidancesettings.h"
+#include "pathdesired.h"
 #include "positionactual.h"
 #include "positiondesired.h"
 #include "waypoint.h"
 #include "waypointactive.h"
 
 // Private constants
-#define STACK_SIZE_BYTES 596
+#define STACK_SIZE_BYTES 1024
 #define TASK_PRIORITY (tskIDLE_PRIORITY+1)
 #define MAX_QUEUE_SIZE 2
 
@@ -48,6 +52,7 @@ static xTaskHandle taskHandle;
 static xQueueHandle queue;
 static WaypointActiveData waypointActive;
 static WaypointData waypoint;
+static GuidanceSettingsData guidanceSettings;
 
 // Private functions
 static void pathPlannerTask(void *parameters);
@@ -96,6 +101,7 @@ static void pathPlannerTask(void *parameters)
 	WaypointActiveConnectCallback(waypointsUpdated);
 
 	FlightStatusData flightStatus;
+	PathDesiredData pathDesired;
 	PositionActualData positionActual;
 	PositionDesiredData positionDesired;
 	
@@ -126,31 +132,70 @@ static void pathPlannerTask(void *parameters)
 			continue;
 		}
 
-		PositionActualGet(&positionActual);
+		GuidanceSettingsGet(&guidanceSettings);
+		
+		switch(guidanceSettings.PathMode) {
+			case GUIDANCESETTINGS_PATHMODE_ENDPOINT:
+				PositionActualGet(&positionActual);
+				
+				float r2 = powf(positionActual.North - waypoint.Position[WAYPOINT_POSITION_NORTH], 2) +
+				powf(positionActual.East - waypoint.Position[WAYPOINT_POSITION_EAST], 2) +
+				powf(positionActual.Down - waypoint.Position[WAYPOINT_POSITION_DOWN], 2);
+				
+				// We hit this waypoint
+				if (r2 < (MIN_RADIUS * MIN_RADIUS)) {
+					switch(waypoint.Action) {
+						case WAYPOINT_ACTION_NEXT:
+							waypointActive.Index++;
+							WaypointActiveSet(&waypointActive);
 
-		float r2 = powf(positionActual.North - waypoint.Position[WAYPOINT_POSITION_NORTH], 2) +
-		     powf(positionActual.East - waypoint.Position[WAYPOINT_POSITION_EAST], 2) +
-			powf(positionActual.Down - waypoint.Position[WAYPOINT_POSITION_DOWN], 2);
+							break;
+						case WAYPOINT_ACTION_RTH:
+							// Fly back to the home location but 20 m above it
+							PositionDesiredGet(&positionDesired);
+							positionDesired.North = 0;
+							positionDesired.East = 0;
+							positionDesired.Down = -20;
+							PositionDesiredSet(&positionDesired);
+							break;
+						default:
+							PIOS_DEBUG_Assert(0);
+					}
+				}
 
-		// We hit this waypoint
-		if (r2 < (MIN_RADIUS * MIN_RADIUS)) {
-			switch(waypoint.Action) {
-				case WAYPOINT_ACTION_NEXT:
-					waypointActive.Index++;
-					WaypointActiveSet(&waypointActive);
-					
-					break;
-				case WAYPOINT_ACTION_RTH:
-					// Fly back to the home location but 20 m above it
-					PositionDesiredGet(&positionDesired);
-					positionDesired.North = 0;
-					positionDesired.East = 0;
-					positionDesired.Down = -20;
-					PositionDesiredSet(&positionDesired);
-					break;
-				default:
-					PIOS_DEBUG_Assert(0);
-			}
+				break;
+
+			case GUIDANCESETTINGS_PATHMODE_PATH:
+
+				PathDesiredGet(&pathDesired);
+				PositionActualGet(&positionActual);
+
+				float cur[3] = {positionActual.North, positionActual.East, positionActual.Down};
+				struct path_status progress;
+
+				path_progress(pathDesired.Start, pathDesired.End, cur, &progress);
+
+				if (progress.fractional_progress >= 1) {
+					switch(waypoint.Action) {
+						case WAYPOINT_ACTION_NEXT:
+							waypointActive.Index++;
+							WaypointActiveSet(&waypointActive);
+
+							break;
+						case WAYPOINT_ACTION_RTH:
+							// Fly back to the home location but 20 m above it
+							PositionDesiredGet(&positionDesired);
+							positionDesired.North = 0;
+							positionDesired.East = 0;
+							positionDesired.Down = -20;
+							PositionDesiredSet(&positionDesired);
+							break;
+						default:
+							PIOS_DEBUG_Assert(0);
+					}
+				}
+
+				break;
 		}
 	}
 }
@@ -168,19 +213,64 @@ static void waypointsUpdated(UAVObjEvent * ev)
 	
 	WaypointActiveGet(&waypointActive);
 	WaypointInstGet(waypointActive.Index, &waypoint);
+	
+	GuidanceSettingsGet(&guidanceSettings);
 
-	PositionDesiredData positionDesired;
-	PositionDesiredGet(&positionDesired);
-	positionDesired.North = waypoint.Position[WAYPOINT_POSITION_NORTH];
-	positionDesired.East = waypoint.Position[WAYPOINT_POSITION_EAST];
-	positionDesired.Down = waypoint.Position[WAYPOINT_POSITION_DOWN];
-	PositionDesiredSet(&positionDesired);
+	switch(guidanceSettings.PathMode) {
+		case GUIDANCESETTINGS_PATHMODE_ENDPOINT:
+		{
+			PositionDesiredData positionDesired;
+			PositionDesiredGet(&positionDesired);
+			positionDesired.North = waypoint.Position[WAYPOINT_POSITION_NORTH];
+			positionDesired.East = waypoint.Position[WAYPOINT_POSITION_EAST];
+			positionDesired.Down = waypoint.Position[WAYPOINT_POSITION_DOWN];
+			PositionDesiredSet(&positionDesired);
+		}
+			break;
+
+		case GUIDANCESETTINGS_PATHMODE_PATH:
+		{
+			PathDesiredData pathDesired;
+
+			pathDesired.End[PATHDESIRED_END_NORTH] = waypoint.Position[WAYPOINT_POSITION_NORTH];
+			pathDesired.End[PATHDESIRED_END_EAST] = waypoint.Position[WAYPOINT_POSITION_EAST];
+			pathDesired.End[PATHDESIRED_END_DOWN] = waypoint.Position[WAYPOINT_POSITION_DOWN];
+			pathDesired.EndingVelocity = sqrtf(powf(waypoint.Velocity[WAYPOINT_VELOCITY_NORTH],2) + 
+											   powf(waypoint.Velocity[WAYPOINT_VELOCITY_EAST],2));
+
+			if(waypointActive.Index == 0) {
+				// Get current position as start point
+				PositionActualData positionActual;
+				PositionActualGet(&positionActual);
+
+				pathDesired.Start[PATHDESIRED_START_NORTH] = positionActual.North;
+				pathDesired.Start[PATHDESIRED_START_EAST] = positionActual.East;
+				pathDesired.Start[PATHDESIRED_START_DOWN] = positionActual.Down - 1;
+				pathDesired.StartingVelocity = pathDesired.EndingVelocity;
+			} else {
+				// Get previous waypoint as start point
+				WaypointData waypointPrev;
+				WaypointInstGet(waypointActive.Index - 1, &waypointPrev);
+
+				pathDesired.Start[PATHDESIRED_END_NORTH] = waypointPrev.Position[WAYPOINT_POSITION_NORTH];
+				pathDesired.Start[PATHDESIRED_END_EAST] = waypointPrev.Position[WAYPOINT_POSITION_EAST];
+				pathDesired.Start[PATHDESIRED_END_DOWN] = waypointPrev.Position[WAYPOINT_POSITION_DOWN];
+				pathDesired.StartingVelocity = sqrtf(powf(waypointPrev.Velocity[WAYPOINT_VELOCITY_NORTH],2) +
+												   powf(waypointPrev.Velocity[WAYPOINT_VELOCITY_EAST],2));
+
+			}
+
+			PathDesiredSet(&pathDesired);
+		}
+			break;
+	}
 }
 
 static void createPath()
 {
 	// Draw O
 	WaypointData waypoint;
+	waypoint.Velocity[0] = 2; // Since for now this isn't directional just set a mag
 	for(uint32_t i = 0; i < 20; i++) {
 		waypoint.Position[1] = 30 * cos(i / 19.0 * 2 * M_PI);
 		waypoint.Position[0] = 50 * sin(i / 19.0 * 2 * M_PI);
