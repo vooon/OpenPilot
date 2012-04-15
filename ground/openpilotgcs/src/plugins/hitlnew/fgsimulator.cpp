@@ -308,13 +308,7 @@ void FGSimulator::processUpdate(const QByteArray& inp)
             double ECEF[3];
             double RNE[9];
             Utils::CoordinateConversions().RneFromLLA(LLA,(double (*)[3])RNE);
-            for (int t=0;t<9;t++) {
-                    homeData.RNE[t]=RNE[t];
-            }
             Utils::CoordinateConversions().LLA2ECEF(LLA,ECEF);
-            homeData.ECEF[0]=ECEF[0];
-            homeData.ECEF[1]=ECEF[1];
-            homeData.ECEF[2]=ECEF[2];
             homeData.Be[0]=0;
             homeData.Be[1]=0;
             homeData.Be[2]=0;
@@ -371,10 +365,14 @@ void FGSimulator::processUpdate(const QByteArray& inp)
         gpsPos->setData(gpsData);
 
         float NED[3];
-        double LLA[3] = {(double) gpsData.Latitude / 1e7, (double) gpsData.Longitude / 1e7, (double) (gpsData.GeoidSeparation + gpsData.Altitude)};
         // convert from cm back to meters
-        double ECEF[3] = {(double) (homeData.ECEF[0] ), (double) (homeData.ECEF[1] ), (double) (homeData.ECEF[2] )};
-                Utils::CoordinateConversions().LLA2Base(LLA, ECEF, (float (*)[3]) homeData.RNE, NED);
+
+        double hLLA[3] = {(double) homeData.Latitude / 1e7, (double) homeData.Longitude / 1e7, (double) (homeData.Altitude)};
+            double ECEF[3];
+            double RNE[9];
+            Utils::CoordinateConversions().RneFromLLA(hLLA,(double (*)[3])RNE);
+            Utils::CoordinateConversions().LLA2ECEF(hLLA,ECEF);
+                Utils::CoordinateConversions().LLA2Base(hLLA, ECEF, (float (*)[3]) RNE, NED);
 
         positionActualData.North = NED[0]; //Currently hardcoded as there is no way of setting up a reference point to calculate distance
         positionActualData.East = NED[1]; //Currently hardcoded as there is no way of setting up a reference point to calculate distance

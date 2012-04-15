@@ -306,13 +306,7 @@ void XplaneSimulator::processUpdate(const QByteArray& dataBuf)
                     double ECEF[3];
                     double RNE[9];
                     Utils::CoordinateConversions().RneFromLLA(LLA,(double (*)[3])RNE);
-                    for (int t=0;t<9;t++) {
-                            homeData.RNE[t]=RNE[t];
-                    }
                     Utils::CoordinateConversions().LLA2ECEF(LLA,ECEF);
-                    homeData.ECEF[0]=ECEF[0];
-                    homeData.ECEF[1]=ECEF[1];
-                    homeData.ECEF[2]=ECEF[2];
                     homeData.Be[0]=0;
                     homeData.Be[1]=0;
                     homeData.Be[2]=0;
