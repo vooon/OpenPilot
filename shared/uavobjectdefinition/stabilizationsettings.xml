@@ -7,9 +7,9 @@
 	<field name="ManualRate" units="degrees/sec" type="float" elementnames="Roll,Pitch,Yaw" defaultvalue="150,150,150" limits="%BE:0:500,%BE:0:500,%BE:0:500"/>
 	<field name="MaximumRate" units="degrees/sec" type="float" elementnames="Roll,Pitch,Yaw" defaultvalue="300,300,300" limits="%BE:0:500,%BE:0:500,%BE:0:500"/>
 
-	<field name="RollRatePID" units="" type="float" elementnames="Kp,Ki,Kd,ILimit" defaultvalue="0.002,0,0,0.3" limits="%BE:0:0.01,%BE:0:0.01,, "/>
-	<field name="PitchRatePID" units="" type="float" elementnames="Kp,Ki,Kd,ILimit" defaultvalue="0.002,0,0,0.3" limits="%BE:0:0.01,%BE:0:0.01,, "/>
-	<field name="YawRatePID" units="" type="float" elementnames="Kp,Ki,Kd,ILimit" defaultvalue="0.0035,0.0035,0,0.3" limits="%BE:0:0.01,%BE:0:0.01,, "/>
+	<field name="RollRatePID" units="" type="float" elementnames="Kp,Ki,Kd,ILimit,MaxScale,LowPassTau,ErrorTau,ScaleTau,Attack,Decay" defaultvalue="0.002,0,0,0.3,1.0,0.1,0.5,1.0,0.04,0.03" limits="%BE:0:0.01,%BE:0:0.01,,,,,,,, " />
+	<field name="PitchRatePID" units="" type="float" elementnames="Kp,Ki,Kd,ILimit,MaxScale,LowPassTau,ErrorTau,ScaleTau,Attack,Decay" defaultvalue="0.002,0,0,0.3,1.0,0.1,0.5,1.0,0.04,0.03" limits="%BE:0:0.01,%BE:0:0.01,,,,,,,, "/>
+	<field name="YawRatePID" units="" type="float" elementnames="Kp,Ki,Kd,ILimit,MaxScale,LowPassTau,ErrorTau,ScaleTau,Attack,Decay" defaultvalue="0.0035,0.0035,0,0.3,1.0,0.1,0.5,1.0,0.04,0.03" limits="%BE:0:0.01,%BE:0:0.01,,,,,,,, "/>
 	<field name="RollPI" units="" type="float" elementnames="Kp,Ki,ILimit" defaultvalue="2,0,50" limits="%BE:0:10,%BE:0:10,"/>
 	<field name="PitchPI" units="" type="float" elementnames="Kp,Ki,ILimit" defaultvalue="2,0,50" limits="%BE:0:10,%BE:0:10,"/>
 	<field name="YawPI" units="" type="float" elementnames="Kp,Ki,ILimit" defaultvalue="2,0,50" limits="%BE:0:10,%BE:0:10,"/>
