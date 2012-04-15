@@ -75,6 +75,9 @@ typedef struct {
 	float errorAlpha;
 	float e1;
 	float e2;
+	float cp;
+	float ci;
+	float cd;
 #endif
 #if defined(PIOS_SELFADJUSTING_STABILIZATION)
 	float maxScale;
@@ -285,6 +288,9 @@ static void stabilizationTask(void* parameters)
 					stabilizationStatus.IAccumulator[PID_ROLL + i] = pids[PID_ROLL + i].iAccumulator;
 					stabilizationStatus.E1[PID_ROLL + i] = pids[PID_ROLL + i].e1;
 					stabilizationStatus.E2[PID_ROLL + i] = pids[PID_ROLL + i].e2;
+					stabilizationStatus.P[PID_ROLL + i] = pids[PID_ROLL + i].cp;
+					stabilizationStatus.I[PID_ROLL + i] = pids[PID_ROLL + i].ci;
+					stabilizationStatus.D[PID_ROLL + i] = pids[PID_ROLL + i].cd;
 #if defined(PIOS_SELFADJUSTING_STABILIZATION)
 					stabilizationStatus.ScaleFactor[PID_ROLL + i] = fakePow(pids[PID_ROLL + i].maxScale, pids[PID_ROLL + i].scale);
 #endif
@@ -317,6 +323,9 @@ static void stabilizationTask(void* parameters)
 						stabilizationStatus.IAccumulator[PID_ROLL + i] = pids[PID_ROLL + i].iAccumulator;
 						stabilizationStatus.E1[PID_ROLL + i] = pids[PID_ROLL + i].e1;
 						stabilizationStatus.E2[PID_ROLL + i] = pids[PID_ROLL + i].e2;
+						stabilizationStatus.P[PID_ROLL + i] = pids[PID_ROLL + i].cp;
+						stabilizationStatus.I[PID_ROLL + i] = pids[PID_ROLL + i].ci;
+						stabilizationStatus.D[PID_ROLL + i] = pids[PID_ROLL + i].cd;
 #if defined(PIOS_SELFADJUSTING_STABILIZATION)
 						stabilizationStatus.ScaleFactor[PID_ROLL + i] = fakePow(pids[PID_ROLL + i].maxScale, pids[PID_ROLL + i].scale);
 #endif
@@ -352,6 +361,9 @@ static void stabilizationTask(void* parameters)
 					stabilizationStatus.IAccumulator[PID_RATE_ROLL + ct] = pids[PID_RATE_ROLL + ct].iAccumulator;
 					stabilizationStatus.E1[PID_RATE_ROLL + ct] = pids[PID_RATE_ROLL + ct].e1;
 					stabilizationStatus.E2[PID_RATE_ROLL + ct] = pids[PID_RATE_ROLL + ct].e2;
+					stabilizationStatus.P[PID_RATE_ROLL + ct] = pids[PID_RATE_ROLL + ct].cp;
+					stabilizationStatus.I[PID_RATE_ROLL + ct] = pids[PID_RATE_ROLL + ct].ci;
+					stabilizationStatus.D[PID_RATE_ROLL + ct] = pids[PID_RATE_ROLL + ct].cd;
 #if defined(PIOS_SELFADJUSTING_STABILIZATION)
 					stabilizationStatus.ScaleFactor[PID_RATE_ROLL + ct] = fakePow(pids[PID_RATE_ROLL + ct].maxScale, pids[PID_RATE_ROLL + ct].scale);
 #endif
@@ -474,6 +486,10 @@ float ApplyPid(pid_type * pid, const float err)
 	// E2 is low if the error doesn't change much.
 	
 	pid->e2 = pid->e2 * pid->errorAlpha + ( derivative / (1.0f + fabsf(pid->filteredErr)) ) * ( 1.0f - pid->errorAlpha );
+
+	pid->cp = scaleFactor * err * pid->p;
+	pid->ci = scaleFactor * err * pid->i * dT;
+	pid->cd = scaleFactor * diff * pid->d / dT;
 
 #endif // defined(PIOS_SELFADJUSTING_STABILIZATION) || defined(DIAGNOSTICS)
 #if defined(PIOS_SELFADJUSTING_STABILIZATION)

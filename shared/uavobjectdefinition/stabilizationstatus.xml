@@ -2,6 +2,9 @@
     <object name="StabilizationStatus" singleinstance="true" settings="false">
         <description>Object Storing Debugging Information on PID internals</description>
 	<field name="IAccumulator" units="" type="float" elementnames="X,Y,Z,Roll,Pitch,Yaw" />
+	<field name="P" units="" type="float" elementnames="X,Y,Z,Roll,Pitch,Yaw" />
+	<field name="I" units="" type="float" elementnames="X,Y,Z,Roll,Pitch,Yaw" />
+	<field name="D" units="" type="float" elementnames="X,Y,Z,Roll,Pitch,Yaw" />
 	<field name="ScaleFactor" units="" type="float" elementnames="X,Y,Z,Roll,Pitch,Yaw" />
 	<field name="E1" units="" type="float" elementnames="X,Y,Z,Roll,Pitch,Yaw" />
 	<field name="E2" units="" type="float" elementnames="X,Y,Z,Roll,Pitch,Yaw" />
