@@ -50,8 +50,9 @@ FLASH_TOOL = OPENOCD
 
 # List of modules to include
 MODULES = Sensors Attitude/revolution ManualControl Stabilization Altitude/revolution Actuator GPS FirmwareIAP
-MODULES += AltitudeHold Guidance PathPlanner
-MODULES += CameraStab
+#MODULES += AltitudeHold 
+MODULES += Guidance PathPlanner
+#MODULES += CameraStab
 MODULES += OveroSync
 MODULES += Telemetry
 PYMODULES = 
