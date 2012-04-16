@@ -41,6 +41,7 @@
 #include "waypointactive.h"
 
 // Private constants
+#define F_PI 3.1415926535897932f
 #define STACK_SIZE_BYTES 1024
 #define TASK_PRIORITY (tskIDLE_PRIORITY+1)
 #define MAX_QUEUE_SIZE 2
@@ -107,7 +108,7 @@ static void pathPlannerTask(void *parameters)
 	
 	createPath();
 	
-	const float MIN_RADIUS = 4.0f; // Radius to consider at waypoint (m)
+	const float MIN_RADIUS = 10.0f; // Radius to consider at waypoint (m)
 
 	// Main thread loop
 	bool pathplanner_active = false;
@@ -151,11 +152,11 @@ static void pathPlannerTask(void *parameters)
 
 							break;
 						case WAYPOINT_ACTION_RTH:
-							// Fly back to the home location but 20 m above it
+							// Fly back to the home location but 75 m above it
 							PositionDesiredGet(&positionDesired);
 							positionDesired.North = 0;
 							positionDesired.East = 0;
-							positionDesired.Down = -20;
+							positionDesired.Down = -75;
 							PositionDesiredSet(&positionDesired);
 							break;
 						default:
@@ -271,9 +272,11 @@ static void createPath()
 	// Draw O
 	WaypointData waypoint;
 	waypoint.Velocity[0] = 2; // Since for now this isn't directional just set a mag
+	waypoint.Velocity[1] = 2;
+	waypoint.Velocity[2] = 2;
 	for(uint32_t i = 0; i < 20; i++) {
-		waypoint.Position[1] = 300 * cos(i / 19.0 * 2 * M_PI);
-		waypoint.Position[0] = 500 * sin(i / 19.0 * 2 * M_PI);
+		waypoint.Position[1] = 300 * cosf(i / 19.0f * 2 * F_PI);
+		waypoint.Position[0] = 500 * sinf(i / 19.0f * 2 * F_PI);
 		waypoint.Position[2] = -75;
 		waypoint.Action = WAYPOINT_ACTION_NEXT;
 		WaypointCreateInstance();
@@ -282,8 +285,8 @@ static void createPath()
 	
 	// Draw P
 	for(uint32_t i = 20; i < 35; i++) {
-		waypoint.Position[1] = 550 + 200 * cos(i / 10.0 * M_PI - M_PI / 2);
-		waypoint.Position[0] = 250 + 250 * sin(i / 10.0 * M_PI - M_PI / 2);
+		waypoint.Position[1] = 550 + 200 * cosf(i / 10.0f * F_PI - F_PI / 2);
+		waypoint.Position[0] = 250 + 250 * sinf(i / 10.0f * F_PI - F_PI / 2);
 		waypoint.Position[2] = -75;
 		waypoint.Action = WAYPOINT_ACTION_NEXT;
 		WaypointCreateInstance();
