@@ -57,6 +57,7 @@
 #include "gpsvelocity.h"
 #include "gpsposition.h"
 #include "guidancesettings.h"
+#include "guidancestatus.h"
 #include "homelocation.h"
 #include "nedaccel.h"
 #include "stabilizationdesired.h"
@@ -112,6 +113,7 @@ int32_t GuidanceStart()
 int32_t GuidanceInitialize()
 {
 	GuidanceSettingsInitialize();
+	GuidanceStatusInitialize();
 	NedAccelInitialize();
 	PathDesiredInitialize();
 	PositionDesiredInitialize();
@@ -187,18 +189,23 @@ static void guidanceTask(void *parameters)
 			(systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_QUADX) ||
 			(systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_HEXA) ))
 		{
-			if(positionHoldLast == 0 && flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_POSITIONHOLD) {
-				/* When enter position hold mode save current position */
-				PositionDesiredData positionDesired;
-				PositionActualData positionActual;
-				PositionDesiredGet(&positionDesired);
-				PositionActualGet(&positionActual);
-				positionDesired.North = positionActual.North;
-				positionDesired.East = positionActual.East;
-				positionDesired.Down = positionActual.Down;
-				PositionDesiredSet(&positionDesired);
-				positionHoldLast = 1;
-			} else if (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_RETURNTOBASE) {
+			if(flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_POSITIONHOLD) {
+				if (positionHoldLast == 0) {
+					/* When enter position hold mode save current position */
+					PositionDesiredData positionDesired;
+					PositionActualData positionActual;
+					PositionDesiredGet(&positionDesired);
+					PositionActualGet(&positionActual);
+					positionDesired.North = positionActual.North;
+					positionDesired.East = positionActual.East;
+					positionDesired.Down = positionActual.Down;
+					PositionDesiredSet(&positionDesired);
+					positionHoldLast = 1;
+				}
+			} else {
+				positionHoldLast = 0;
+			}
+			if (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_RETURNTOBASE) {
 				/* Fly to home position - NED coordinates [0,0, -altitude offset] */
 				PositionDesiredData positionDesired;
 				PositionDesiredGet(&positionDesired);
@@ -206,10 +213,7 @@ static void guidanceTask(void *parameters)
 				positionDesired.East = 0;
 				positionDesired.Down = -guidanceSettings.ReturnTobaseAltitudeOffset;
 				PositionDesiredSet(&positionDesired);
-				positionHoldLast = 0;
-			} else if (flightStatus.FlightMode != FLIGHTSTATUS_FLIGHTMODE_POSITIONHOLD) {
-				positionHoldLast = 0;
-			}
+			} 
 			
 			if( flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_POSITIONHOLD || flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_RETURNTOBASE || flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_PATHPLANNER ) {
 				if (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_PATHPLANNER && guidanceSettings.PathMode != GUIDANCESETTINGS_PATHMODE_ENDPOINT) {
@@ -363,8 +367,8 @@ void updateVtolDesiredVelocity()
 		       eastPosIntegral);
 	
 	
-	float total_vel = sqrtf(powf(northCommand,2) + powf(eastCommand,2));
-	float scale = 1;
+	float total_vel = sqrtf(northCommand * northCommand + eastCommand * eastCommand);
+	float scale = 1.0f;
 	if(total_vel > guidanceSettings.HorizontalVelMax)
 		scale = guidanceSettings.HorizontalVelMax / total_vel;
 
@@ -405,6 +409,7 @@ static void updateFixedDesiredAttitude()
 	GuidanceSettingsData guidanceSettings;
 	StabilizationSettingsData stabSettings;
 	SystemSettingsData systemSettings;
+	GuidanceStatusData guidanceStatus;
 
 	float courseError;
 	float courseCommand;
@@ -428,6 +433,8 @@ static void updateFixedDesiredAttitude()
 	
 	SystemSettingsGet(&systemSettings);
 	GuidanceSettingsGet(&guidanceSettings);
+
+	GuidanceStatusGet(&guidanceStatus);
 	
 	VelocityActualGet(&velocityActual);
 	VelocityDesiredGet(&velocityDesired);
@@ -451,6 +458,10 @@ static void updateFixedDesiredAttitude()
 		guidanceSettings.CoursePI[GUIDANCESETTINGS_COURSEPI_ILIMIT]);
 	courseCommand = (courseError * guidanceSettings.CoursePI[GUIDANCESETTINGS_COURSEPI_KP] +
 		courseIntegral);
+
+	guidanceStatus.E[GUIDANCESTATUS_E_COURSE] = courseError;
+	guidanceStatus.A[GUIDANCESTATUS_A_COURSE] = courseIntegral;
+	guidanceStatus.C[GUIDANCESTATUS_C_COURSE] = courseCommand;
 	
 	stabDesired.Roll = bound( guidanceSettings.RollLimit[GUIDANCESETTINGS_ROLLLIMIT_NEUTRAL] +
 		courseCommand,
@@ -478,12 +489,20 @@ static void updateFixedDesiredAttitude()
 		-guidanceSettings.SpeedP[GUIDANCESETTINGS_SPEEDP_MAX],
 		guidanceSettings.SpeedP[GUIDANCESETTINGS_SPEEDP_MAX]);
 	
+	guidanceStatus.E[GUIDANCESTATUS_E_SPEED] = speedError;
+	guidanceStatus.A[GUIDANCESTATUS_A_SPEED] = 0.0f;
+	guidanceStatus.C[GUIDANCESTATUS_C_SPEED] = accelDesired;
+	
 	accelError = accelDesired - accels.x;
 	accelIntegral = bound(accelIntegral + accelError * dT * guidanceSettings.AccelPI[GUIDANCESETTINGS_ACCELPI_KI], 
 		-guidanceSettings.AccelPI[GUIDANCESETTINGS_ACCELPI_ILIMIT],
 		guidanceSettings.AccelPI[GUIDANCESETTINGS_ACCELPI_ILIMIT]);
 	accelCommand = (accelError * guidanceSettings.AccelPI[GUIDANCESETTINGS_ACCELPI_KP] + 
 		 accelIntegral);
+	
+	guidanceStatus.E[GUIDANCESTATUS_E_ACCEL] = accelError;
+	guidanceStatus.A[GUIDANCESTATUS_A_ACCEL] = accelIntegral;
+	guidanceStatus.C[GUIDANCESTATUS_C_ACCEL] = accelCommand;
 
 	stabDesired.Pitch = bound(guidanceSettings.PitchLimit[GUIDANCESETTINGS_PITCHLIMIT_NEUTRAL] +
 		-accelCommand,
@@ -518,6 +537,10 @@ static void updateFixedDesiredAttitude()
 		powerCommand = guidanceSettings.ThrottleLimit[GUIDANCESETTINGS_THROTTLELIMIT_MIN];
 	}
 
+	guidanceStatus.E[GUIDANCESTATUS_E_POWER] = powerError;
+	guidanceStatus.A[GUIDANCESTATUS_A_POWER] = powerIntegral;
+	guidanceStatus.C[GUIDANCESTATUS_C_POWER] = powerCommand;
+
 	// set throttle
 	stabDesired.Throttle = powerCommand;
 
@@ -534,6 +557,8 @@ static void updateFixedDesiredAttitude()
 	stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_YAW] = STABILIZATIONDESIRED_STABILIZATIONMODE_RATE;
 	
 	StabilizationDesiredSet(&stabDesired);
+
+	GuidanceStatusSet(&guidanceStatus);
 }
 
 /**
