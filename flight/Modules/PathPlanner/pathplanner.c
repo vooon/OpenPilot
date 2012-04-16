@@ -272,9 +272,9 @@ static void createPath()
 	WaypointData waypoint;
 	waypoint.Velocity[0] = 2; // Since for now this isn't directional just set a mag
 	for(uint32_t i = 0; i < 20; i++) {
-		waypoint.Position[1] = 30 * cos(i / 19.0 * 2 * M_PI);
-		waypoint.Position[0] = 50 * sin(i / 19.0 * 2 * M_PI);
-		waypoint.Position[2] = -50;
+		waypoint.Position[1] = 300 * cos(i / 19.0 * 2 * M_PI);
+		waypoint.Position[0] = 500 * sin(i / 19.0 * 2 * M_PI);
+		waypoint.Position[2] = -75;
 		waypoint.Action = WAYPOINT_ACTION_NEXT;
 		WaypointCreateInstance();
 		bad_inits += (WaypointInstSet(i, &waypoint) != 0);
@@ -282,60 +282,60 @@ static void createPath()
 	
 	// Draw P
 	for(uint32_t i = 20; i < 35; i++) {
-		waypoint.Position[1] = 55 + 20 * cos(i / 10.0 * M_PI - M_PI / 2);
-		waypoint.Position[0] = 25 + 25 * sin(i / 10.0 * M_PI - M_PI / 2);
-		waypoint.Position[2] = -50;
+		waypoint.Position[1] = 550 + 200 * cos(i / 10.0 * M_PI - M_PI / 2);
+		waypoint.Position[0] = 250 + 250 * sin(i / 10.0 * M_PI - M_PI / 2);
+		waypoint.Position[2] = -75;
 		waypoint.Action = WAYPOINT_ACTION_NEXT;
 		WaypointCreateInstance();
 		bad_inits += (WaypointInstSet(i, &waypoint) != 0);
 	}
 		
-	waypoint.Position[1] = 35;
-	waypoint.Position[0] = -50;
-	waypoint.Position[2] = -50;
+	waypoint.Position[1] = 350;
+	waypoint.Position[0] = -500;
+	waypoint.Position[2] = -75;
 	waypoint.Action = WAYPOINT_ACTION_NEXT;
 	WaypointCreateInstance();
 	WaypointInstSet(35, &waypoint);
 	
 	// Draw Box
-	waypoint.Position[1] = 35;
-	waypoint.Position[0] = -60;
-	waypoint.Position[2] = -30;
+	waypoint.Position[1] = 350;
+	waypoint.Position[0] = -600;
+	waypoint.Position[2] = -60;
 	waypoint.Action = WAYPOINT_ACTION_NEXT;
 	WaypointCreateInstance();
 	WaypointInstSet(36, &waypoint);
 
-	waypoint.Position[1] = 85;
-	waypoint.Position[0] = -60;
-	waypoint.Position[2] = -30;
+	waypoint.Position[1] = 850;
+	waypoint.Position[0] = -600;
+	waypoint.Position[2] = -60;
 	waypoint.Action = WAYPOINT_ACTION_NEXT;
 	WaypointCreateInstance();
 	WaypointInstSet(37, &waypoint);
 
-	waypoint.Position[1] = 85;
-	waypoint.Position[0] = 60;
-	waypoint.Position[2] = -30;
+	waypoint.Position[1] = 850;
+	waypoint.Position[0] = 600;
+	waypoint.Position[2] = -60;
 	waypoint.Action = WAYPOINT_ACTION_NEXT;
 	WaypointCreateInstance();
 	WaypointInstSet(38, &waypoint);
 	
-	waypoint.Position[1] = -40;
-	waypoint.Position[0] = 60;
-	waypoint.Position[2] = -30;
+	waypoint.Position[1] = -400;
+	waypoint.Position[0] = 600;
+	waypoint.Position[2] = -60;
 	waypoint.Action = WAYPOINT_ACTION_NEXT;
 	WaypointCreateInstance();
 	WaypointInstSet(39, &waypoint);
 
-	waypoint.Position[1] = -40;
-	waypoint.Position[0] = -60;
-	waypoint.Position[2] = -30;
+	waypoint.Position[1] = -400;
+	waypoint.Position[0] = -600;
+	waypoint.Position[2] = -60;
 	waypoint.Action = WAYPOINT_ACTION_NEXT;
 	WaypointCreateInstance();
 	WaypointInstSet(40, &waypoint);
 
-	waypoint.Position[1] = 35;
-	waypoint.Position[0] = -60;
-	waypoint.Position[2] = -30;
+	waypoint.Position[1] = 350;
+	waypoint.Position[0] = -600;
+	waypoint.Position[2] = -60;
 	waypoint.Action = WAYPOINT_ACTION_NEXT;
 	WaypointCreateInstance();
 	WaypointInstSet(41, &waypoint);
