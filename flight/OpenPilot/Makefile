@@ -39,6 +39,7 @@ DEBUG ?= YES
 
 # Include objects that are just nice information to show
 DIAGNOSTICS ?= YES
+DIAG_TASKS ?= YES
 
 # Set to YES to use the Servo output pins for debugging via scope or logic analyser
 ENABLE_DEBUG_PINS ?= NO
@@ -118,6 +119,7 @@ PYMITEINC += $(PYMITEPLAT)
 PYMITEINC += $(OUTDIR)
 FLIGHTPLANLIB = $(OPMODULEDIR)/FlightPlan/lib
 FLIGHTPLANS = $(OPMODULEDIR)/FlightPlan/flightplans
+HWDEFSINC = ../board_hw_defs/$(BOARD_NAME)
 
 UAVOBJSYNTHDIR = $(OUTDIR)/../uavobject-synthetics/flight
 
@@ -144,7 +146,6 @@ SRC += ${OPMODULEDIR}/System/systemmod.c
 SRC += $(OPSYSTEM)/openpilot.c
 SRC += $(OPSYSTEM)/pios_board.c
 SRC += $(OPSYSTEM)/alarms.c
-SRC += $(OPSYSTEM)/taskmonitor.c
 SRC += $(OPUAVTALK)/uavtalk.c
 SRC += $(OPUAVOBJ)/uavobjectmanager.c
 SRC += $(OPUAVOBJ)/eventdispatcher.c
@@ -186,12 +187,15 @@ SRC += $(PIOSSTM32F10X)/pios_wdg.c
 
 
 # PIOS USB related files (seperated to make code maintenance more easy)
+SRC += $(PIOSSTM32F10X)/pios_usb.c
+SRC += $(PIOSSTM32F10X)/pios_usbhook.c
 SRC += $(PIOSSTM32F10X)/pios_usb_hid.c
-SRC += $(PIOSSTM32F10X)/pios_usb_hid_desc.c
-#SRC += $(PIOSSTM32F10X)/pios_usb_hid_endp.c
+SRC += $(PIOSSTM32F10X)/pios_usb_cdc.c
 SRC += $(PIOSSTM32F10X)/pios_usb_hid_istr.c
-SRC += $(PIOSSTM32F10X)/pios_usb_hid_prop.c
 SRC += $(PIOSSTM32F10X)/pios_usb_hid_pwr.c
+SRC += $(OPSYSTEM)/pios_usb_board_data.c
+SRC += $(PIOSCOMMON)/pios_usb_desc_hid_cdc.c
+SRC += $(PIOSCOMMON)/pios_usb_desc_hid_only.c
 
 ## PIOS Hardware (Common)
 SRC += $(PIOSCOMMON)/pios_crc.c
@@ -210,6 +214,7 @@ SRC += $(FLIGHTLIB)/ahrs_comm_objects.c
 SRC += $(FLIGHTLIB)/fifo_buffer.c
 SRC += $(FLIGHTLIB)/WorldMagModel.c
 SRC += $(FLIGHTLIB)/CoordinateConversions.c
+SRC += $(FLIGHTLIB)/taskmonitor.c
 
 ## CMSIS for STM32
 SRC += $(CMSISDIR)/core_cm3.c
@@ -319,6 +324,7 @@ EXTRAINCDIRS  += $(APPLIBDIR)
 EXTRAINCDIRS  += $(RTOSSRCDIR)/portable/GCC/ARM_CM3
 EXTRAINCDIRS  += $(AHRSBOOTLOADERINC)
 EXTRAINCDIRS  += $(PYMITEINC)
+EXTRAINCDIRS  += $(HWDEFSINC)
 
 EXTRAINCDIRS += ${foreach MOD, ${OPTMODULES} ${MODULES} ${PYMODULES}, $(OPMODULEDIR)/${MOD}/inc} ${OPMODULEDIR}/System/inc
 
@@ -372,6 +378,9 @@ ifeq ($(ENABLE_AUX_UART), YES)
 CDEFS += -DPIOS_ENABLE_AUX_UART
 endif
 
+# Declare all non-optional modules as built-in to force inclusion
+CDEFS += ${foreach MOD, ${MODULES}, -DMODULE_$(MOD)_BUILTIN }
+
 # Place project-specific -D and/or -U options for
 # Assembler with preprocessor here.
 #ADEFS = -DUSE_IRQ_ASM_WRAPPER
@@ -398,11 +407,15 @@ CSTANDARD = -std=gnu99
 # Flags for C and C++ (arm-elf-gcc/arm-elf-g++)
 
 ifeq ($(DEBUG),YES)
-CFLAGS = -DDEBUG
+CFLAGS += -DDEBUG
 endif
 
 ifeq ($(DIAGNOSTICS),YES)
-CFLAGS = -DDIAGNOSTICS
+CFLAGS += -DDIAGNOSTICS
+endif
+
+ifeq ($(DIAG_TASKS),YES)
+CFLAGS += -DDIAG_TASKS
 endif
 
 CFLAGS += -g$(DEBUGF)

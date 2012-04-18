@@ -68,7 +68,7 @@ help:
 	@echo "   Here is a summary of the available targets:"
 	@echo
 	@echo "   [Tool Installers]"
-	@echo "     qt_sdk_install       - Install the QT v4.6.2 tools"
+	@echo "     qt_sdk_install       - Install the QT v4.7.3 tools"
 	@echo "     arm_sdk_install      - Install the Code Sourcery ARM gcc toolchain"
 	@echo "     openocd_install      - Install the OpenOCD JTAG daemon"
 	@echo "     stm32flash_install   - Install the stm32flash tool for unbricking boards"
@@ -160,20 +160,30 @@ $(BUILD_DIR):
 ###############################################################
 
 # Set up QT toolchain
-QT_SDK_DIR := $(TOOLS_DIR)/qtsdk-2010.02
+QT_SDK_DIR := $(TOOLS_DIR)/qtsdk-v1.2
 
 .PHONY: qt_sdk_install
-qt_sdk_install: QT_SDK_URL  := http://get.qt.nokia.com/qtsdk/qt-sdk-linux-x86-opensource-2010.02.bin
-qt_sdk_install: QT_SDK_FILE := $(notdir $(QT_SDK_URL))
+qt_sdk_install: QT_SDK_URL  := http://www.developer.nokia.com/dp?uri=http://sw.nokia.com/id/8ea74da4-fec1-4277-8b26-c58cc82e204b/Qt_SDK_Lin32_offline
+qt_sdk_install: QT_SDK_FILE := Qt_SDK_Lin32_offline_v1_2_en.run
+#qt_sdk_install: QT_SDK_URL  := http://www.developer.nokia.com/dp?uri=http://sw.nokia.com/id/c365bbf5-c2b9-4dda-9c1f-34b2c8d07785/Qt_SDK_Lin32_offline_v1_1_2
+#qt_sdk_install: QT_SDK_FILE := Qt_SDK_Lin32_offline_v1_1_2_en.run
 # order-only prereq on directory existance:
 qt_sdk_install : | $(DL_DIR) $(TOOLS_DIR)
 qt_sdk_install: qt_sdk_clean
         # download the source only if it's newer than what we already have
-	$(V1) wget -N -P "$(DL_DIR)" "$(QT_SDK_URL)"
+	$(V1) wget -N --content-disposition -P "$(DL_DIR)" "$(QT_SDK_URL)"
+
+        # tell the user exactly which path they should select in the GUI
+	$(V1) echo "*** NOTE NOTE NOTE ***"
+	$(V1) echo "*"
+	$(V1) echo "*  In the GUI, please use exactly this path as the installation path:"
+	$(V1) echo "*        $(QT_SDK_DIR)"
+	$(V1) echo "*"
+	$(V1) echo "*** NOTE NOTE NOTE ***"
 
         #installer is an executable, make it executable and run it
 	$(V1) chmod u+x "$(DL_DIR)/$(QT_SDK_FILE)"
-	"$(DL_DIR)/$(QT_SDK_FILE)" --installdir "$(QT_SDK_DIR)"
+	$(V1) "$(DL_DIR)/$(QT_SDK_FILE)" -style cleanlooks
 
 .PHONY: qt_sdk_clean
 qt_sdk_clean:
@@ -235,7 +245,7 @@ STM32FLASH_DIR := $(TOOLS_DIR)/stm32flash
 
 .PHONY: stm32flash_install
 stm32flash_install: STM32FLASH_URL := http://stm32flash.googlecode.com/svn/trunk
-stm32flash_install: STM32FLASH_REV := 52
+stm32flash_install: STM32FLASH_REV := 61
 stm32flash_install: stm32flash_clean
         # download the source
 	$(V0) @echo " DOWNLOAD     $(STM32FLASH_URL) @ r$(STM32FLASH_REV)"
@@ -257,7 +267,7 @@ stm32flash_clean:
 ##############################
 
 ifeq ($(shell [ -d "$(QT_SDK_DIR)" ] && echo "exists"), exists)
-  QMAKE=$(QT_SDK_DIR)/qt/bin/qmake
+  QMAKE=$(QT_SDK_DIR)/Desktop/Qt/4.8.0/gcc/bin/qmake
 else
   # not installed, hope it's in the path...
   QMAKE=qmake
@@ -448,8 +458,16 @@ BU_BOARDS  := $(ALL_BOARDS)
 
 # FIXME: The INS build doesn't have a bootloader or bootloader
 #        updater yet so we need to filter them out to prevent errors.
-BL_BOARDS  := $(filter-out ins, $(ALL_BOARDS))
-BU_BOARDS  := $(filter-out ins, $(ALL_BOARDS))
+BL_BOARDS  := $(filter-out ins, $(BL_BOARDS))
+BU_BOARDS  := $(filter-out ins, $(BU_BOARDS))
+
+# FIXME: The CC bootloader updaters don't work anymore due to
+#        differences between CC and CC3D
+BU_BOARDS  := $(filter-out coptercontrol, $(BU_BOARDS))
+
+# FIXME: PipXtreme bootloader updater doesn't work due to missing
+#        definitions for LEDs
+BU_BOARDS  := $(filter-out pipxtreme, $(BU_BOARDS))
 
 # Generate the targets for whatever boards are left in each list
 FW_TARGETS := $(addprefix fw_, $(FW_BOARDS))

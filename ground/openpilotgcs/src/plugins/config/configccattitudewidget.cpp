@@ -42,7 +42,7 @@ ConfigCCAttitudeWidget::ConfigCCAttitudeWidget(QWidget *parent) :
     connect(ui->zeroBias,SIGNAL(clicked()),this,SLOT(startAccelCalibration()));
 
 
-    setupButtons(ui->applyButton,ui->saveButton);
+    addApplySaveButtons(ui->applyButton,ui->saveButton);
     addUAVObject("AttitudeSettings");
 
     // Connect the help button
@@ -53,6 +53,7 @@ ConfigCCAttitudeWidget::ConfigCCAttitudeWidget(QWidget *parent) :
     addUAVObjectToWidgetRelation("AttitudeSettings","BoardRotation",ui->pitchBias,AttitudeSettings::BOARDROTATION_PITCH);
     addUAVObjectToWidgetRelation("AttitudeSettings","BoardRotation",ui->yawBias,AttitudeSettings::BOARDROTATION_YAW);
     addWidget(ui->zeroBias);
+    refreshWidgetsValues();
 }
 
 ConfigCCAttitudeWidget::~ConfigCCAttitudeWidget()

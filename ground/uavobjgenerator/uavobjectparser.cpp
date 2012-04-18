@@ -111,6 +111,11 @@ int UAVObjectParser::getNumBytes(int objIndex)
     }
 }
 
+bool fieldTypeLessThan(const FieldInfo* f1, const FieldInfo* f2)
+{
+    return f1->numBytes > f2->numBytes;
+}
+
 /**
  * Parse supplied XML file
  * @param xml The xml text
@@ -200,6 +205,9 @@ QString UAVObjectParser::parseXML(QString& xml, QString& filename)
             // Get next element
             childNode = childNode.nextSibling();
         }
+		
+		// Sort all fields according to size
+        qStableSort(info->fields.begin(), info->fields.end(), fieldTypeLessThan);
 
         // Make sure that required elements were found
         if ( !accessFound )
@@ -460,6 +468,13 @@ QString UAVObjectParser::processObjectFields(QDomNode& childNode, ObjectInfo* in
 				defaults.append(defaults[0]);
 		}
 		field->defaultValues = defaults;
+    }
+    elemAttr = elemAttributes.namedItem("limits");
+    if ( elemAttr.isNull() ) {
+        field->limitValues=QString();
+    }
+    else{
+        field->limitValues=elemAttr.nodeValue();
     }
     // Add field to object
     info->fields.append(field);

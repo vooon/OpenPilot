@@ -41,8 +41,8 @@
 #include <utils/stylehelper.h>
 #include <QMessageBox>
 
-#define ACCESS_MIN_MOVE -6
-#define ACCESS_MAX_MOVE 6
+#define ACCESS_MIN_MOVE -3
+#define ACCESS_MAX_MOVE 3
 #define STICK_MIN_MOVE -8
 #define STICK_MAX_MOVE 8
 
@@ -54,22 +54,25 @@ ConfigInputWidget::ConfigInputWidget(QWidget *parent) : ConfigTaskWidget(parent)
     m_config = new Ui_InputWidget();
     m_config->setupUi(this);
 
-    setupButtons(m_config->saveRCInputToRAM,m_config->saveRCInputToSD);
+    addApplySaveButtons(m_config->saveRCInputToRAM,m_config->saveRCInputToSD);
 
+	//Generate the rows of buttons in the input channel form GUI
     unsigned int index=0;
-    foreach(QString name,manualSettingsObj->getFields().at(0)->getElementNames())
+    foreach (QString name, manualSettingsObj->getField("ChannelNumber")->getElementNames())
     {
         Q_ASSERT(index < ManualControlSettings::CHANNELGROUPS_NUMELEM);
-        inputChannelForm * inp=new inputChannelForm(this,index==0);
-        m_config->channelSettings->layout()->addWidget(inp);
-        inp->ui->channelName->setText(name);
-        addUAVObjectToWidgetRelation("ManualControlSettings","ChannelGroups",inp->ui->channelGroup,index);
-        addUAVObjectToWidgetRelation("ManualControlSettings","ChannelNumber",inp->ui->channelNumber,index);
-        addUAVObjectToWidgetRelation("ManualControlSettings","ChannelMin",inp->ui->channelMin,index);
-        addUAVObjectToWidgetRelation("ManualControlSettings","ChannelNeutral",inp->ui->channelNeutral,index);
-        addUAVObjectToWidgetRelation("ManualControlSettings","ChannelMax",inp->ui->channelMax,index);
+        inputChannelForm * inpForm=new inputChannelForm(this,index==0);
+        m_config->channelSettings->layout()->addWidget(inpForm); //Add the row to the UI
+        inpForm->setName(name);
+        addUAVObjectToWidgetRelation("ManualControlSettings","ChannelGroups",inpForm->ui->channelGroup,index);
+        addUAVObjectToWidgetRelation("ManualControlSettings","ChannelNumber",inpForm->ui->channelNumber,index);
+        addUAVObjectToWidgetRelation("ManualControlSettings","ChannelMin",inpForm->ui->channelMin,index);
+        addUAVObjectToWidgetRelation("ManualControlSettings","ChannelNeutral",inpForm->ui->channelNeutral,index);
+        addUAVObjectToWidgetRelation("ManualControlSettings","ChannelMax",inpForm->ui->channelMax,index);
         ++index;
     }
+
+    addUAVObjectToWidgetRelation("ManualControlSettings", "Deadband", m_config->deadband, 0, 0.01f);
 
     connect(m_config->configurationWizard,SIGNAL(clicked()),this,SLOT(goToWizard()));
     connect(m_config->runCalibration,SIGNAL(toggled(bool)),this, SLOT(simpleCalibration(bool)));
@@ -108,7 +111,7 @@ ConfigInputWidget::ConfigInputWidget(QWidget *parent) : ConfigTaskWidget(parent)
     m_renderer = new QSvgRenderer();
     QGraphicsScene *l_scene = m_config->graphicsView->scene();
     m_config->graphicsView->setBackgroundBrush(QBrush(Utils::StyleHelper::baseColor()));
-    if (QFile::exists(":/configgadget/images/TX.svg") && m_renderer->load(QString(":/configgadget/images/TX.svg")) && m_renderer->isValid())
+    if (QFile::exists(":/configgadget/images/TX2.svg") && m_renderer->load(QString(":/configgadget/images/TX2.svg")) && m_renderer->isValid())
     {
         l_scene->clear(); // Deletes all items contained in the scene as well.
 
@@ -293,6 +296,7 @@ void ConfigInputWidget::wzCancel()
     if(wizardStep != wizardNone)
         wizardTearDownStep(wizardStep);
     wizardStep=wizardNone;
+    m_config->stackedWidget->setCurrentIndex(0);
 
     // Load settings back from beginning of wizard
     manualSettingsObj->setData(previousManualSettingsData);
@@ -334,23 +338,8 @@ void ConfigInputWidget::wzNext()
         wizardSetUpStep(wizardFinish);
         break;
     case wizardFinish:
-        setTxMovement(nothing);
-        manualCommandObj->setMetadata(manualCommandObj->getDefaultMetadata());
-        disconnect(manualCommandObj, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(moveSticks()));
-        manualSettingsData=manualSettingsObj->getData();
-        manualSettingsData.ChannelNeutral[ManualControlSettings::CHANNELNEUTRAL_THROTTLE]=
-                manualSettingsData.ChannelMin[ManualControlSettings::CHANNELMIN_THROTTLE]+
-                ((manualSettingsData.ChannelMax[ManualControlSettings::CHANNELMAX_THROTTLE]-
-                  manualSettingsData.ChannelMin[ManualControlSettings::CHANNELMIN_THROTTLE])*0.02);
-        if((abs(manualSettingsData.ChannelMax[ManualControlSettings::CHANNELMAX_FLIGHTMODE]-manualSettingsData.ChannelNeutral[ManualControlSettings::CHANNELNEUTRAL_FLIGHTMODE])<100) ||
-                (abs(manualSettingsData.ChannelMin[ManualControlSettings::CHANNELMIN_FLIGHTMODE]-manualSettingsData.ChannelNeutral[ManualControlSettings::CHANNELNEUTRAL_FLIGHTMODE])<100))
-        {
-            manualSettingsData.ChannelNeutral[ManualControlSettings::CHANNELNEUTRAL_FLIGHTMODE]=manualSettingsData.ChannelMin[ManualControlSettings::CHANNELMIN_FLIGHTMODE]+
-                    (manualSettingsData.ChannelMax[ManualControlSettings::CHANNELMAX_FLIGHTMODE]-manualSettingsData.ChannelMin[ManualControlSettings::CHANNELMIN_FLIGHTMODE])/2;
-        }
-        manualSettingsObj->setData(manualSettingsData);
-        m_config->stackedWidget->setCurrentIndex(0);
         wizardStep=wizardNone;
+        m_config->stackedWidget->setCurrentIndex(0);
         break;
     default:
         Q_ASSERT(0);
@@ -415,6 +404,7 @@ void ConfigInputWidget::wizardSetUpStep(enum wizardSteps step)
     case wizardChooseMode:
     {
         m_config->graphicsView->setVisible(true);
+        m_config->graphicsView->fitInView(m_txBackground, Qt::KeepAspectRatio );
         setTxMovement(nothing);
         m_config->wzText->setText(tr("Please choose your transmiter type.\n"
                                      "Mode 1 means your throttle stick is on the right\n"
@@ -463,15 +453,21 @@ void ConfigInputWidget::wizardSetUpStep(enum wizardSteps step)
         break;
     case wizardIdentifyLimits:
     {
-        dimOtherControls(false);
         setTxMovement(nothing);
         m_config->wzText->setText(QString(tr("Please move all controls to their maximum extents on both directions and press next when ready")));
         fastMdata();
         manualSettingsData=manualSettingsObj->getData();
         for(uint i=0;i<ManualControlSettings::CHANNELMAX_NUMELEM;++i)
         {
-            manualSettingsData.ChannelMin[i]=manualSettingsData.ChannelNeutral[i];
-            manualSettingsData.ChannelMax[i]=manualSettingsData.ChannelNeutral[i];
+            // Preserve the inverted status
+            if(manualSettingsData.ChannelMin[i] <= manualSettingsData.ChannelMax[i]) {
+                manualSettingsData.ChannelMin[i]=manualSettingsData.ChannelNeutral[i];
+                manualSettingsData.ChannelMax[i]=manualSettingsData.ChannelNeutral[i];
+            } else {
+                // Make this detect as still inverted
+                manualSettingsData.ChannelMin[i]=manualSettingsData.ChannelNeutral[i] + 1;
+                manualSettingsData.ChannelMax[i]=manualSettingsData.ChannelNeutral[i];
+            }
         }
         connect(manualCommandObj, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(identifyLimits()));
         connect(manualCommandObj, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(moveSticks()));
@@ -481,13 +477,19 @@ void ConfigInputWidget::wizardSetUpStep(enum wizardSteps step)
         dimOtherControls(true);
         setTxMovement(nothing);
         extraWidgets.clear();
-        foreach(QString name,manualSettingsObj->getFields().at(0)->getElementNames())
+
+        for (int index = 0; index < manualSettingsObj->getField("ChannelMax")->getElementNames().length(); index++)
         {
+            QString name = manualSettingsObj->getField("ChannelMax")->getElementNames().at(index);
             if(!name.contains("Access") &&  !name.contains("Flight"))
             {
                 QCheckBox * cb=new QCheckBox(name,this);
+                // Make sure checked status matches current one
+                cb->setChecked(manualSettingsData.ChannelMax[index] < manualSettingsData.ChannelMin[index]);
+
                 extraWidgets.append(cb);
                 m_config->checkBoxesLayout->layout()->addWidget(cb);
+
                 connect(cb,SIGNAL(toggled(bool)),this,SLOT(invertControls()));
             }
         }
@@ -496,16 +498,7 @@ void ConfigInputWidget::wizardSetUpStep(enum wizardSteps step)
         fastMdata();
         break;
     case wizardFinish:
-        foreach(QWidget * wd,extraWidgets)
-        {
-            QCheckBox * cb=qobject_cast<QCheckBox *>(wd);
-            if(cb)
-            {
-                disconnect(cb,SIGNAL(toggled(bool)),this,SLOT(invertControls()));
-                delete cb;
-            }
-        }
-        extraWidgets.clear();
+        dimOtherControls(true);
         connect(manualCommandObj, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(moveSticks()));
         m_config->wzText->setText(QString(tr("You have completed this wizard, please check below if the picture below mimics your sticks movement.\n"
                                              "This new settings aren't saved to the board yet, after pressing next you will go to the initial screen where you can do that.")));
@@ -559,6 +552,7 @@ void ConfigInputWidget::wizardTearDownStep(enum wizardSteps step)
     case wizardIdentifySticks:
         disconnect(receiverActivityObj, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(identifyControls()));
         m_config->wzNext->setEnabled(true);
+        setTxMovement(nothing);
         break;
     case wizardIdentifyCenter:
         manualCommandData=manualCommandObj->getData();
@@ -568,14 +562,17 @@ void ConfigInputWidget::wizardTearDownStep(enum wizardSteps step)
             manualSettingsData.ChannelNeutral[i]=manualCommandData.Channel[i];
         }
         manualSettingsObj->setData(manualSettingsData);
+        setTxMovement(nothing);
         break;
     case wizardIdentifyLimits:
         disconnect(manualCommandObj, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(identifyLimits()));
         disconnect(manualCommandObj, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(moveSticks()));
         manualSettingsObj->setData(manualSettingsData);
         restoreMdata();
+        setTxMovement(nothing);
         break;
     case wizardIdentifyInverted:
+        dimOtherControls(false);
         foreach(QWidget * wd,extraWidgets)
         {
             QCheckBox * cb=qobject_cast<QCheckBox *>(wd);
@@ -590,8 +587,8 @@ void ConfigInputWidget::wizardTearDownStep(enum wizardSteps step)
         restoreMdata();
         break;
     case wizardFinish:
+        dimOtherControls(false);
         setTxMovement(nothing);
-        m_config->stackedWidget->setCurrentIndex(0);
         disconnect(manualCommandObj, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(moveSticks()));
         restoreMdata();
         break;
@@ -629,6 +626,8 @@ void ConfigInputWidget::setChannel(int newChan)
         m_config->wzText->setText(QString(tr("Please enable throttle hold mode and move the collective pitch stick")));
     else if (newChan == ManualControlSettings::CHANNELGROUPS_FLIGHTMODE)
         m_config->wzText->setText(QString(tr("Please flick the flight mode switch.  For switches you may have to repeat this rapidly.")));
+    else if((transmitterType == heli) && (newChan == ManualControlSettings::CHANNELGROUPS_THROTTLE))
+        m_config->wzText->setText(QString(tr("Please disable throttle hold mode and move the throttle stick")));
     else
         m_config->wzText->setText(QString(tr("Please move each control once at a time according to the instructions and picture below.\n\n"
                                  "Move the %1 stick")).arg(manualSettingsObj->getField("ChannelGroups")->getElementNames().at(newChan)));
@@ -723,7 +722,7 @@ void ConfigInputWidget::identifyControls()
     m_config->wzText->clear();
     setTxMovement(nothing);
 
-    QTimer::singleShot(500, this, SLOT(wzNext()));
+    QTimer::singleShot(2500, this, SLOT(wzNext()));
 }
 
 void ConfigInputWidget::identifyLimits()
@@ -731,10 +730,19 @@ void ConfigInputWidget::identifyLimits()
     manualCommandData=manualCommandObj->getData();
     for(uint i=0;i<ManualControlSettings::CHANNELMAX_NUMELEM;++i)
     {
-        if(manualSettingsData.ChannelMin[i]>manualCommandData.Channel[i])
-            manualSettingsData.ChannelMin[i]=manualCommandData.Channel[i];
-        if(manualSettingsData.ChannelMax[i]<manualCommandData.Channel[i])
-            manualSettingsData.ChannelMax[i]=manualCommandData.Channel[i];
+        if(manualSettingsData.ChannelMin[i] <= manualSettingsData.ChannelMax[i]) {
+            // Non inverted channel
+            if(manualSettingsData.ChannelMin[i]>manualCommandData.Channel[i])
+                manualSettingsData.ChannelMin[i]=manualCommandData.Channel[i];
+            if(manualSettingsData.ChannelMax[i]<manualCommandData.Channel[i])
+                manualSettingsData.ChannelMax[i]=manualCommandData.Channel[i];
+        } else {
+            // Inverted channel
+            if(manualSettingsData.ChannelMax[i]>manualCommandData.Channel[i])
+                manualSettingsData.ChannelMax[i]=manualCommandData.Channel[i];
+            if(manualSettingsData.ChannelMin[i]<manualCommandData.Channel[i])
+                manualSettingsData.ChannelMin[i]=manualCommandData.Channel[i];
+        }
     }
     manualSettingsObj->setData(manualSettingsData);
 }
@@ -1092,7 +1100,7 @@ void ConfigInputWidget::invertControls()
         QCheckBox * cb=qobject_cast<QCheckBox *>(wd);
         if(cb)
         {
-            int index=manualSettingsObj->getFields().at(0)->getElementNames().indexOf(cb->text());
+            int index = manualSettingsObj->getField("ChannelNumber")->getElementNames().indexOf(cb->text());
             if((cb->isChecked() && (manualSettingsData.ChannelMax[index]>manualSettingsData.ChannelMin[index])) ||
                     (!cb->isChecked() && (manualSettingsData.ChannelMax[index]<manualSettingsData.ChannelMin[index])))
             {
