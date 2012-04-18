@@ -65,8 +65,9 @@ USE_CAMERASTAB ?= YES
 USE_COMUSBBRIDGE ?= YES
 USE_GPS ?= YES
 USE_TXPID ?= YES
-USE_I2C ?= NO
+USE_I2C ?= YES
 USE_ALTITUDE ?= NO
+USE_GENERICI2CSENSOR ?= YES
 TEST_FAULTS ?= NO
 
 # List of optional modules to include
@@ -90,12 +91,20 @@ else
 $(error "Altitude module (USE_ALTITUDE=YES) requires i2c (USE_I2C=YES)")
 endif
 endif
+ifeq ($(USE_GENERICI2CSENSOR), YES)
+ifeq ($(USE_I2C), YES)
+OPTMODULES += GenericI2CSensor
+else
+$(error "Generic I2C sensor module (USE_GENERICI2CSENSOR=YES) requires i2c (USE_I2C=YES)")
+endif
+endif
 ifeq ($(TEST_FAULTS), YES)
 OPTMODULES += Fault
 endif
 
 # List of mandatory modules to include
 MODULES = Attitude Stabilization Actuator ManualControl FirmwareIAP
+
 # Telemetry must be last to grab the optional modules (why?)
 MODULES += Telemetry
 
@@ -203,6 +212,7 @@ SRC += $(OPUAVSYNTHDIR)/receiveractivity.c
 SRC += $(OPUAVSYNTHDIR)/taskinfo.c
 SRC += $(OPUAVSYNTHDIR)/mixerstatus.c
 SRC += $(OPUAVSYNTHDIR)/ratedesired.c
+SRC += $(OPUAVSYNTHDIR)/generici2csensor.c
 SRC += $(OPUAVSYNTHDIR)/baroaltitude.c
 SRC += $(OPUAVSYNTHDIR)/txpidsettings.c
 
