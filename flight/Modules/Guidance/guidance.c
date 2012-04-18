@@ -54,6 +54,7 @@
 #include "positionactual.h"
 #include "manualcontrol.h"
 #include "flightstatus.h"
+#include "baroairspeed.h"
 #include "gpsvelocity.h"
 #include "gpsposition.h"
 #include "guidancesettings.h"
@@ -91,6 +92,7 @@ static void updateVtolDesiredVelocity();
 static void manualSetDesiredVelocity();
 static void updateFixedDesiredAttitude();
 static void updateVtolDesiredAttitude();
+static void baroAirspeedUpdatedCb(UAVObjEvent * ev);
 
 static GuidanceSettingsData guidanceSettings;
 
@@ -119,12 +121,14 @@ int32_t GuidanceInitialize()
 	PathDesiredInitialize();
 	PositionDesiredInitialize();
 	VelocityDesiredInitialize();
+	BaroAirspeedInitialize();
 
 	// Create object queue
 	queue = xQueueCreate(MAX_QUEUE_SIZE, sizeof(UAVObjEvent));
 	
 	// Listen for updates.
 	AccelsConnectQueue(queue);
+	BaroAirspeedConnectCallback(baroAirspeedUpdatedCb);
 	
 	return 0;
 }
@@ -143,6 +147,9 @@ static float speedIntegral = 0;
 static float accelIntegral = 0;
 static float powerIntegral = 0;
 static uint8_t positionHoldLast = 0;
+
+// correct speed by measured airspeed
+static float baroAirspeedBias = 0;
 
 /**
  * Module thread, should not return.
@@ -467,8 +474,8 @@ static void updateFixedDesiredAttitude()
 	StabilizationSettingsGet(&stabSettings);
 	NedAccelGet(&nedAccel);
 
-	// current speed - lacking forward airspeed we use groundspeed :( TODO get airspeed sensor!
-	speedActual = sqrtf(velocityActual.East*velocityActual.East + velocityActual.North*velocityActual.North + velocityActual.Down*velocityActual.Down );
+	// current speed - lacking forward airspeed we use groundspeed :(
+	speedActual = sqrtf(velocityActual.East*velocityActual.East + velocityActual.North*velocityActual.North + velocityActual.Down*velocityActual.Down ) + baroAirspeedBias;
 
 	// Compute desired roll command
 	courseError = RAD2DEG * (atan2f(velocityDesired.East,velocityDesired.North) - atan2f(velocityActual.East,velocityActual.North));
@@ -800,4 +807,23 @@ static float bound(float val, float min, float max)
 		val = max;
 	}
 	return val;
+}
+
+
+static void baroAirspeedUpdatedCb(UAVObjEvent * ev)
+{
+
+	BaroAirspeedData baroAirspeed;
+	VelocityActualData velocityActual;
+
+	BaroAirspeedGet(&baroAirspeed);
+	if (baroAirspeed.Connected != BAROAIRSPEED_CONNECTED_TRUE) {
+		baroAirspeedBias = 0;
+	} else {
+		VelocityActualGet(&velocityActual);
+		float speed = sqrtf(velocityActual.East*velocityActual.East + velocityActual.North*velocityActual.North + velocityActual.Down*velocityActual.Down );
+
+		baroAirspeedBias = baroAirspeed.Airspeed - speed;
+	}
+
 }
