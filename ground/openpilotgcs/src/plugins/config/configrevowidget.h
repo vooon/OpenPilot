@@ -45,6 +45,7 @@ class Ui_Widget;
 
 class ConfigRevoWidget: public ConfigTaskWidget
 {
+    enum calibType {mag_calib,accel_calib};
     Q_OBJECT
 
 public:
@@ -55,7 +56,7 @@ private:
     void drawVariancesGraph();
     void displayPlane(QString elementID);
     virtual void enableControls(bool enable);
-
+    calibType calibration;
     Ui_RevoSensorsWidget *m_ui;
     QGraphicsSvgItem *paperplane;
     QGraphicsSvgItem *ahrsbargraph;
@@ -105,7 +106,8 @@ private slots:
     void SettingsToFlash();
     void savePositionData();
     void computeScaleBias();
-    void sixPointCalibrationMode();
+    void sixPointAccelCalibrationMode();
+    void sixPointMagCalibrationMode();
     void sensorsUpdated(UAVObject * obj);
     void accelBiasattitudeRawUpdated(UAVObject*);
 

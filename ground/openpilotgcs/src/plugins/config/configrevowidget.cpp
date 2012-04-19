@@ -69,7 +69,8 @@ ConfigRevoWidget::ConfigRevoWidget(QWidget *parent) :
     ConfigTaskWidget(parent),
     collectingData(false),
     position(-1),
-    m_ui(new Ui_RevoSensorsWidget())
+    m_ui(new Ui_RevoSensorsWidget()),
+    calibration(accel_calib)
 {
     m_ui->setupUi(this);
 
@@ -213,7 +214,8 @@ ConfigRevoWidget::ConfigRevoWidget(QWidget *parent) :
 
     connect(m_ui->ahrsSettingsSaveRAM, SIGNAL(clicked()), this, SLOT(SettingsToRam()));
     connect(m_ui->ahrsSettingsSaveSD, SIGNAL(clicked()), this, SLOT(SettingsToFlash()));
-    connect(m_ui->sixPointsStart, SIGNAL(clicked()), this, SLOT(sixPointCalibrationMode()));
+    connect(m_ui->sixPointsAccelStart, SIGNAL(clicked()), this, SLOT(sixPointAccelCalibrationMode()));
+    connect(m_ui->sixPointsMagStart, SIGNAL(clicked()), this, SLOT(sixPointMagCalibrationMode()));
     connect(m_ui->sixPointsSave, SIGNAL(clicked()), this, SLOT(savePositionData()));
 
     // Leave this timer permanently connected.  The timer itself is started and stopped.
@@ -426,7 +428,8 @@ void ConfigRevoWidget::sensorsUpdated(UAVObject * obj)
         }
         if(position == 0) {
             computeScaleBias();
-            m_ui->sixPointsStart->setEnabled(true);
+            m_ui->sixPointsAccelStart->setEnabled(true);
+            m_ui->sixPointsMagStart->setEnabled(true);
             m_ui->sixPointsSave->setEnabled(false);
 
             /* Cleanup original settings */
@@ -444,25 +447,35 @@ void ConfigRevoWidget::savePositionData()
     QMutexLocker lock(&attitudeRawUpdateLock);
     m_ui->sixPointsSave->setEnabled(false);
 
-    accel_accum_x.clear();
-    accel_accum_y.clear();
-    accel_accum_z.clear();
-    mag_accum_x.clear();
-    mag_accum_y.clear();
-    mag_accum_z.clear();
-    gyro_accum_x.clear();
-    gyro_accum_y.clear();
-    gyro_accum_z.clear();
-
+    if(calibration==accel_calib)
+    {
+        accel_accum_x.clear();
+        accel_accum_y.clear();
+        accel_accum_z.clear();
+        gyro_accum_x.clear();
+        gyro_accum_y.clear();
+        gyro_accum_z.clear();
+    }
+    else
+    {
+        mag_accum_x.clear();
+        mag_accum_y.clear();
+        mag_accum_z.clear();
+    }
     collectingData = true;
+    if(calibration==accel_calib)
+    {
+        Accels * accels = Accels::GetInstance(getObjectManager());
+        Q_ASSERT(accels);
+        connect(accels, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(sensorsUpdated(UAVObject*)));
+    }
+    else
+    {
+        Magnetometer * mag = Magnetometer::GetInstance(getObjectManager());
+        Q_ASSERT(mag);
+        connect(mag, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(sensorsUpdated(UAVObject*)));
 
-    Accels * accels = Accels::GetInstance(getObjectManager());
-    Q_ASSERT(accels);
-    Magnetometer * mag = Magnetometer::GetInstance(getObjectManager());
-    Q_ASSERT(mag);
-
-    connect(accels, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(sensorsUpdated(UAVObject*)));
-    connect(mag, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(sensorsUpdated(UAVObject*)));
+    }
 
     m_ui->sixPointCalibInstructions->append("Hold...");
 }
@@ -605,7 +618,7 @@ void ConfigRevoWidget::computeScaleBias()
 /**
   Six point calibration mode
   */
-void ConfigRevoWidget::sixPointCalibrationMode()
+void ConfigRevoWidget::sixPointAccelCalibrationMode()
 {
     double S[3], b[3];
     RevoCalibration * revoCalibration = RevoCalibration::GetInstance(getObjectManager());
@@ -620,13 +633,6 @@ void ConfigRevoWidget::sixPointCalibrationMode()
     revoCalibrationData.accel_bias[RevoCalibration::ACCEL_BIAS_Y] = 0;
     revoCalibrationData.accel_bias[RevoCalibration::ACCEL_BIAS_Z] = 0;
 
-    // Calibration mag
-    revoCalibrationData.mag_scale[RevoCalibration::MAG_SCALE_X] = 1;
-    revoCalibrationData.mag_scale[RevoCalibration::MAG_SCALE_Y] = 1;
-    revoCalibrationData.mag_scale[RevoCalibration::MAG_SCALE_Z] = 1;
-    revoCalibrationData.mag_bias[RevoCalibration::MAG_BIAS_X] = 0;
-    revoCalibrationData.mag_bias[RevoCalibration::MAG_BIAS_Y] = 0;
-    revoCalibrationData.mag_bias[RevoCalibration::MAG_BIAS_Z] = 0;
 
     revoCalibration->setData(revoCalibrationData);
 
@@ -638,15 +644,10 @@ void ConfigRevoWidget::sixPointCalibrationMode()
    accel_accum_x.clear();
    accel_accum_y.clear();
    accel_accum_z.clear();
-   mag_accum_x.clear();
-   mag_accum_y.clear();
-   mag_accum_z.clear();
 
    /* Need to get as many accel and mag updates as possible */
    Accels * accels = Accels::GetInstance(getObjectManager());
    Q_ASSERT(accels);
-   Magnetometer * mag = Magnetometer::GetInstance(getObjectManager());
-   Q_ASSERT(mag);
 
    initialMdata = accels->getMetadata();
    UAVObject::Metadata mdata = initialMdata;
@@ -654,7 +655,50 @@ void ConfigRevoWidget::sixPointCalibrationMode()
    mdata.flightTelemetryUpdatePeriod = 100;
    accels->setMetadata(mdata);
 
-   mdata = mag->getMetadata();
+
+   /* Show instructions and enable controls */
+   m_ui->sixPointCalibInstructions->clear();
+   m_ui->sixPointCalibInstructions->append("Place horizontally and click save position...");
+   displayPlane("plane-horizontal");
+   m_ui->sixPointsAccelStart->setEnabled(false);
+   m_ui->sixPointsMagStart->setEnabled(false);
+   m_ui->sixPointsSave->setEnabled(true);
+   position = 0;
+   qDebug() << "Starting";
+   calibration=accel_calib;
+}
+
+/**
+  Six point calibration mode
+  */
+void ConfigRevoWidget::sixPointMagCalibrationMode()
+{
+    double S[3], b[3];
+    RevoCalibration * revoCalibration = RevoCalibration::GetInstance(getObjectManager());
+    Q_ASSERT(revoCalibration);
+    RevoCalibration::DataFields revoCalibrationData = revoCalibration->getData();
+
+     // Calibration mag
+    revoCalibrationData.mag_scale[RevoCalibration::MAG_SCALE_X] = 1;
+    revoCalibrationData.mag_scale[RevoCalibration::MAG_SCALE_Y] = 1;
+    revoCalibrationData.mag_scale[RevoCalibration::MAG_SCALE_Z] = 1;
+    revoCalibrationData.mag_bias[RevoCalibration::MAG_BIAS_X] = 0;
+    revoCalibrationData.mag_bias[RevoCalibration::MAG_BIAS_Y] = 0;
+    revoCalibrationData.mag_bias[RevoCalibration::MAG_BIAS_Z] = 0;
+
+    revoCalibration->setData(revoCalibrationData);
+
+   Thread::usleep(100000);
+
+    mag_accum_x.clear();
+   mag_accum_y.clear();
+   mag_accum_z.clear();
+
+   /* Need to get as many accel and mag updates as possible */
+   Magnetometer * mag = Magnetometer::GetInstance(getObjectManager());
+   Q_ASSERT(mag);
+
+   UAVObject::Metadata mdata = mag->getMetadata();
    mdata.flightTelemetryUpdateMode = UAVObject::UPDATEMODE_PERIODIC;
    mdata.flightTelemetryUpdatePeriod = 100;
    mag->setMetadata(mdata);
@@ -663,12 +707,13 @@ void ConfigRevoWidget::sixPointCalibrationMode()
    m_ui->sixPointCalibInstructions->clear();
    m_ui->sixPointCalibInstructions->append("Place horizontally and click save position...");
    displayPlane("plane-horizontal");
-   m_ui->sixPointsStart->setEnabled(false);
+   m_ui->sixPointsAccelStart->setEnabled(false);
+   m_ui->sixPointsMagStart->setEnabled(false);
    m_ui->sixPointsSave->setEnabled(true);
    position = 0;
    qDebug() << "Starting";
+   calibration=mag_calib;
 }
-
 
 
 /**
@@ -725,7 +770,8 @@ void ConfigRevoWidget::refreshValues()
     drawVariancesGraph();
 
     m_ui->ahrsCalibStart->setEnabled(true);
-    m_ui->sixPointsStart->setEnabled(true);
+    m_ui->sixPointsAccelStart->setEnabled(true);
+    m_ui->sixPointsMagStart->setEnabled(true);
     m_ui->accelBiasStart->setEnabled(true);
     m_ui->startDriftCalib->setEnabled(true);
 
