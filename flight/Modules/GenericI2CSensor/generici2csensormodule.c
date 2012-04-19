@@ -105,7 +105,6 @@ MODULE_INITCALL(GenericI2CSensorModuleInitialize, GenericI2CSensorModuleStart)
  */
 static bool ReadGenericRegisters(uint8_t i2c_address, uint8_t numRegisters, uint8_t* pBuffer)
 {
-	
 	const struct pios_i2c_txn txn_list_1[] = {
 		{
 			.addr = i2c_address,
@@ -177,13 +176,12 @@ static void GenericI2CSensorTask(void *parameters)
 	// Main task loop
 	lastSysTime = xTaskGetTickCount();
 
-	uint8_t I2C_JUMPTABLE[32]; //Initialize jump table. AT THIS MOMENT, A JUMP TABLE MUST BE SMALLER THAN 32 BYTES
 
 	
 	//MOST OF THESE VALUES NEED TO BE ABSTRACT AND READ IN FROM FLASH
 	enum I2CSTEP_NAMES i2cStep=WAIT_STATE_0;
 	enum I2CPASS_NAMES pass=FIRST_PASS;
-	uint32_t tmpLongBuffer = 0;  //buffer to store return data from sensor //THIS IS A FIXED SIZE, SINCE IT HAS TO FIT INTO THE UAVOBJECT
+	uint8_t tmpLongBuffer[32];  //buffer to store return data from sensor //THIS IS A FIXED SIZE, SINCE IT HAS TO FIT INTO THE UAVOBJECT
 	portTickType xDelay;
 	portTickType xLastWakeTime=xTaskGetTickCount();
 	
@@ -193,31 +191,37 @@ static void GenericI2CSensorTask(void *parameters)
 	int NUM_REGISTERS_READ_REG_0=0, NUM_REGISTERS_READ_REG_1=0;
 	int WAIT_DELAY_ms_0=0, WAIT_DELAY_ms_1=0, WAIT_DELAY_ms_2=0, WAIT_DELAY_ms_3=0;
 	uint32_t VALUE_WRITE_CONFIG_REG_0=0, VALUE_WRITE_CONFIG_REG_1=0, VALUE_WRITE_CONFIG_REG_2=0, VALUE_WRITE_CONFIG_REG_3=0;
-	uint32_t VALUE_WRITE_REG_0=0, VALUE_WRITE_REG_1=0;
+	uint8_t VALUE_WRITE_REG_0[4];
+	uint8_t VALUE_WRITE_REG_1[4];
 	
 	/*
 	 *Temporary values for SRF08 (BEGIN)
 	 * V V V V V V V V V V V V V V V V
 	 */
-	I2C_ADDRESS=0xE0;
+	I2C_ADDRESS=0x70;
 	WAIT_DELAY_ms_0=65;
-	VALUE_WRITE_REG_0=(0x00<<24) & (0x82<<16);
+	VALUE_WRITE_REG_0[0] = 0x00;
+	VALUE_WRITE_REG_0[1] = 0x52;
 	NUM_REGISTERS_WRITE_REG_0=2;
-	VALUE_WRITE_REG_1=0x02;
+	VALUE_WRITE_REG_1[0] = 0x02;
 	NUM_REGISTERS_WRITE_REG_1=1;
-	NUM_REGISTERS_READ_REG_0=6;
-	
-	I2C_JUMPTABLE[0]=0xFE;
-	I2C_JUMPTABLE[1]=LOOP_PASS;
-	I2C_JUMPTABLE[2]=WRITE_REG_0;
-	I2C_JUMPTABLE[3]=WAIT_STATE_0;
-	I2C_JUMPTABLE[4]=WRITE_REG_1;
-	I2C_JUMPTABLE[5]=READ_REG_0;
-	I2C_JUMPTABLE[6]=0xFE;
-	I2C_JUMPTABLE[7]=UAVOBJECT_UPDATE_PASS;
-	I2C_JUMPTABLE[8]=UAVOBJECT_DATA_0;
-	I2C_JUMPTABLE[9]=UAVOBJECT_UPDATE;
-	I2C_JUMPTABLE[10]=0xFF;
+	NUM_REGISTERS_READ_REG_0=2;
+
+	uint8_t I2C_JUMPTABLE[] = {
+	  0xFE,
+	  LOOP_PASS,
+	  WRITE_REG_0,
+	  WAIT_STATE_0,
+	  WRITE_REG_1,
+	  READ_REG_0,
+	  0xFE,
+	  UAVOBJECT_UPDATE_PASS,
+	  UAVOBJECT_DATA_0,
+	  UAVOBJECT_DATA_1,
+	  UAVOBJECT_UPDATE,
+	  0xFF,
+	};
+
 	/* ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ 
 	 *Temporary values for SRF08 (END)
 	 */
@@ -225,7 +229,7 @@ static void GenericI2CSensorTask(void *parameters)
 	while(1) {
 
 		//Generic I2C addressing
-		if(	== WAIT_STATE_0){
+		if (i2cStep == WAIT_STATE_0) {
 				// Block for WAIT_DELAY_ms_0 [ms].
 				xDelay = WAIT_DELAY_ms_0 / portTICK_RATE_MS;
 				vTaskDelayUntil(&xLastWakeTime, xDelay);
@@ -264,17 +268,17 @@ static void GenericI2CSensorTask(void *parameters)
 		}
 		else if (pass==LOOP_PASS){
 			if ( i2cStep == WRITE_REG_0 ){
-				WriteGenericRegisters(I2C_ADDRESS, NUM_REGISTERS_WRITE_REG_0, (uint8_t *) &VALUE_WRITE_REG_0);
+				WriteGenericRegisters(I2C_ADDRESS, NUM_REGISTERS_WRITE_REG_0, VALUE_WRITE_REG_0);
 			}
 			else if ( i2cStep == WRITE_REG_1 ){
-				WriteGenericRegisters(I2C_ADDRESS, NUM_REGISTERS_WRITE_REG_1, (uint8_t *) &VALUE_WRITE_REG_1);
+				WriteGenericRegisters(I2C_ADDRESS, NUM_REGISTERS_WRITE_REG_1, VALUE_WRITE_REG_1);
 			}
 			else if ( i2cStep == READ_REG_0 ){
-				ReadGenericRegisters(I2C_ADDRESS, NUM_REGISTERS_READ_REG_0, (uint8_t *) tmpLongBuffer);
+				ReadGenericRegisters(I2C_ADDRESS, NUM_REGISTERS_READ_REG_0, tmpLongBuffer);
 //				decipherGenericI2CSensorresponse((uint8_t *) tmpLongBuffer, 0, 0, 0, 0);
 			}
 			else if ( i2cStep == READ_REG_1 ){
-				ReadGenericRegisters(I2C_ADDRESS, NUM_REGISTERS_READ_REG_1, (uint8_t *) tmpLongBuffer);
+				ReadGenericRegisters(I2C_ADDRESS, NUM_REGISTERS_READ_REG_1, tmpLongBuffer);
 //				decipherGenericI2CSensorresponse((uint8_t *) tmpLongBuffer, 0, 0, 0, 0);
 			}
 			
@@ -283,20 +287,18 @@ static void GenericI2CSensorTask(void *parameters)
 		}
 		else if (pass==UAVOBJECT_UPDATE_PASS){
 			if (i2cStep == UAVOBJECT_DATA_0){
-				d1.SensorOutput1= tmpLongBuffer;
-//				memcpy(&(d1.SensorOutput1), tmpLongBuffer, 4);
+				d1.SensorOutput1 = *tmpLongBuffer;
+				//memcpy(&(d1.SensorOutput1), tmpLongBuffer, 1);
 			}
 			else if (i2cStep == UAVOBJECT_DATA_1){
-				d1.SensorOutput2= tmpLongBuffer;
-//				memcpy(&(d1.SensorOutput2), tmpLongBuffer, 4);
+				d1.SensorOutput2 = *(tmpLongBuffer+1);
+				//memcpy(&(d1.SensorOutput2), tmpLongBuffer+1, 1);
 			}
 			else if (i2cStep == UAVOBJECT_DATA_2){
-				d1.SensorOutput3= tmpLongBuffer;
-//				memcpy(&(d1.SensorOutput3), tmpLongBuffer, 4);
+				memcpy(&(d1.SensorOutput3), tmpLongBuffer, 4);
 			}
 			else if (i2cStep == UAVOBJECT_DATA_3){
-				d1.SensorOutput4= tmpLongBuffer;
-//				memcpy(&(d1.SensorOutput4), tmpLongBuffer, 4);
+				memcpy(&(d1.SensorOutput4), tmpLongBuffer, 4);
 			}
 			else if (i2cStep == UAVOBJECT_UPDATE){
 				/*
