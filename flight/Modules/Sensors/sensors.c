@@ -67,6 +67,7 @@
 #define TASK_PRIORITY (tskIDLE_PRIORITY+3)
 #define SENSOR_PERIOD 2
 
+#define UNINITIALIZED -1
 #define F_PI 3.14159265358979323846f
 #define PI_MOD(x) (fmodf(x + F_PI, F_PI * 2) - F_PI)
 // Private types
@@ -80,6 +81,7 @@ static bool baro_updated = false;
 static void SensorsTask(void *parameters);
 static void settingsUpdatedCb(UAVObjEvent * objEv);
 static void sensorsUpdatedCb(UAVObjEvent * objEv);
+bool implausible(int16_t measure[3],int16_t reference[3]);
 
 // These values are initialized by settings but can be updated by the attitude algorithm
 static bool bias_correct_gyro = true;
@@ -91,6 +93,11 @@ static float accel_scale[3] = {0,0,0};
 
 static float R[3][3] = {{0}};
 static int8_t rotate = 0;
+
+
+static int16_t mag_prev[3] = {UNINITIALIZED,UNINITIALIZED,UNINITIALIZED};
+static int16_t accel_prev[3] = {UNINITIALIZED,UNINITIALIZED,UNINITIALIZED};
+static int16_t gyro_prev[3] = {UNINITIALIZED,UNINITIALIZED,UNINITIALIZED};
 
 /**
  * API for sensor fusion algorithms:
@@ -214,6 +221,14 @@ static void SensorsTask(void *parameters)
 	lastSysTime = xTaskGetTickCount();
 	bool error = false;
 	uint32_t mag_update_time = PIOS_DELAY_GetRaw();
+
+	AccelsData accelsData;
+	GyrosData gyrosData;
+	MagnetometerData mag;
+
+	accelsData.errors = 0;
+	gyrosData.errors = 0;
+	mag.errors = 0;
 	while (1) {
 		// TODO: add timeouts to the sensor reads and set an error if the fail
 		sensor_dt_us = PIOS_DELAY_DiffuS(timeval);
@@ -239,9 +254,6 @@ static void SensorsTask(void *parameters)
 		accel_samples = 0;
 		gyro_samples = 0;
 
-		AccelsData accelsData;
-		GyrosData gyrosData;
-
 		switch(bdinfo->board_rev) {
 			case 0x01:  // L3GD20 + BMA180 board
 #if defined(PIOS_INCLUDE_BMA180)
@@ -255,21 +267,35 @@ static void SensorsTask(void *parameters)
 					// Unfortunately if the BMA180 ever misses getting read, then it will not
 					// trigger more interrupts.  In this case we must force a read to kickstarts
 					// it.
+					accelsData.errors++;
 					struct pios_bma180_data data;
 					PIOS_BMA180_ReadAccels(&data);
 					continue;
 				}
 				while(read_good == 0) {	
-					count++;
-					
-					accel_accum[0] += accel.x;
-					accel_accum[1] += accel.y;
-					accel_accum[2] += accel.z;
+					int16_t values[3] = {accel.x,accel.y,accel.z};
+					if (!implausible(values,accel_prev)) {
+						count++;
+						
+						accel_accum[0] += accel.x;
+						accel_accum[1] += accel.y;
+						accel_accum[2] += accel.z;
+					} else {
+						accelsData.errors++;
+					}
 					
 					read_good = PIOS_BMA180_ReadFifo(&accel);
 				}
 				accel_samples = count;
 				accel_scaling = PIOS_BMA180_GetScale();
+
+				if (!count) {
+					error = true;
+					continue;
+				}
+				accel_prev[0] = accel_accum[0] / count;
+				accel_prev[1] = accel_accum[1] / count;
+				accel_prev[2] = accel_accum[2] / count;
 				
 				// Get temp from last reading
 				accelsData.temperature = 25.0f + ((float) accel.temperature - 2.0f) / 2.0f;
@@ -282,17 +308,30 @@ static void SensorsTask(void *parameters)
 				xQueueHandle gyro_queue = PIOS_L3GD20_GetQueue();
 				
 				if(xQueueReceive(gyro_queue, (void *) &gyro, 4) == errQUEUE_EMPTY) {
+					gyrosData.errors++;
 					error = true;
 					continue;
 				}
 				
 				gyro_samples = 1;
+				
+				gyro_scaling = PIOS_L3GD20_GetScale();
+
+				int16_t values[3] = {gyro.gyro_x,gyro.gyro_y,gyro.gyro_z};
+				if (implausible(values,gyro_prev)) {
+					gyrosData.errors++;
+					error = true;
+					continue;
+				}
+
+				gyro_prev[0] = values[0];
+				gyro_prev[1] = values[1];
+				gyro_prev[2] = values[2];
+
 				gyro_accum[0] += gyro.gyro_x;
 				gyro_accum[1] += gyro.gyro_y;
 				gyro_accum[2] += gyro.gyro_z;
 				
-				gyro_scaling = PIOS_L3GD20_GetScale();
-
 				// Get temp from last reading
 				gyrosData.temperature = gyro.temperature;
 			}
@@ -306,16 +345,23 @@ static void SensorsTask(void *parameters)
 				
 				while(xQueueReceive(queue, (void *) &mpu6000_data, gyro_samples == 0 ? 10 : 0) != errQUEUE_EMPTY)
 				{
-					gyro_accum[0] += mpu6000_data.gyro_x;
-					gyro_accum[1] += mpu6000_data.gyro_y;
-					gyro_accum[2] += mpu6000_data.gyro_z;
+					int16_t gyrval[3] = {mpu6000_data.gyro_x,mpu6000_data.gyro_y,mpu6000_data.gyro_z};
+					int16_t accval[3] = {mpu6000_data.accel_x,mpu6000_data.accel_y,mpu6000_data.accel_z};
+					if (! implausible(gyrval,gyro_prev) && ! implausible(accval,accel_prev)) {
+						gyro_accum[0] += mpu6000_data.gyro_x;
+						gyro_accum[1] += mpu6000_data.gyro_y;
+						gyro_accum[2] += mpu6000_data.gyro_z;
 
-					accel_accum[0] += mpu6000_data.accel_x;
-					accel_accum[1] += mpu6000_data.accel_y;
-					accel_accum[2] += mpu6000_data.accel_z;
+						accel_accum[0] += mpu6000_data.accel_x;
+						accel_accum[1] += mpu6000_data.accel_y;
+						accel_accum[2] += mpu6000_data.accel_z;
 
-					gyro_samples ++;
-					accel_samples ++;
+						gyro_samples ++;
+						accel_samples ++;
+					} else {
+						if (implausible(gyrval,gyro_prev)) gyrosData.errors++;
+						if (implausible(accval,accel_prev)) accelsData.errors++;
+					}
 				}
 				
 				if (gyro_samples == 0) {
@@ -323,6 +369,14 @@ static void SensorsTask(void *parameters)
 					error = true;
 					continue;
 				}
+
+				gyro_prev[0]=gyro_accum[0]/gyro_samples;
+				gyro_prev[1]=gyro_accum[1]/gyro_samples;
+				gyro_prev[2]=gyro_accum[2]/gyro_samples;
+
+				accel_prev[0]=accel_accum[0]/accel_samples;
+				accel_prev[1]=accel_accum[1]/accel_samples;
+				accel_prev[2]=accel_accum[2]/accel_samples;
 
 				gyro_scaling = PIOS_MPU6000_GetScale();
 				accel_scaling = PIOS_MPU6000_GetAccelScale();
@@ -387,10 +441,17 @@ static void SensorsTask(void *parameters)
 		// and make it average zero (weakly)
 
 #if defined(PIOS_INCLUDE_HMC5883)
-		MagnetometerData mag;
 		if (PIOS_HMC5883_NewDataAvailable() || PIOS_DELAY_DiffuS(mag_update_time) > 150000) {
 			int16_t values[3];
 			PIOS_HMC5883_ReadMag(values);
+			if (implausible(values,mag_prev)) {
+				mag.errors++;
+				error = true;
+				continue;
+			}
+			mag_prev[0]=values[0];
+			mag_prev[1]=values[1];
+			mag_prev[2]=values[2];
 			float mags[3] = {(float) values[1] * mag_scale[0] - mag_bias[0],
 			                (float) values[0] * mag_scale[1] - mag_bias[1],
 			                -(float) values[2] * mag_scale[2] - mag_bias[2]};
@@ -474,6 +535,25 @@ static void settingsUpdatedCb(UAVObjEvent * objEv) {
 	}
 
 }
+
+/**
+ * Simple check for sensor reading plausibility:
+ * All sensors read continuous world data, 
+ * jumps of more than 75% the measurement range are not physically possible
+ */
+bool implausible(int16_t measure[3],int16_t reference[3])
+{
+
+	uint8_t t;
+	for (t=0;t<3;t++) {
+		if (reference[t]==UNINITIALIZED) return false;
+		if ((int32_t)measure[t]>(int32_t)reference[t]+((1<<16)-(1<<14))) return true;
+		if ((int32_t)measure[t]<(int32_t)reference[t]-((1<<16)-(1<<14))) return true;
+	}
+
+	return false;
+}
+
 /**
   * @}
   * @}
