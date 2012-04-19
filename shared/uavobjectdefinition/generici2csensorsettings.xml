@@ -1,0 +1,12 @@
+<xml>
+	<object name="GenericI2CSensorSettings" singleinstance="true" settings="true">
+		<description>Allows GCS to provide a program to the generic I2C VM</description>
+
+		<field name="Program" units="-" type="uint32" elements="15" defaultvalue="0"/>
+
+		<access gcs="readwrite" flight="readwrite"/>
+		<telemetrygcs acked="true" updatemode="onchange" period="0"/>
+		<telemetryflight acked="true" updatemode="onchange" period="0"/>
+		<logging updatemode="never" period="0"/>
+	</object>
+</xml>
