@@ -291,7 +291,7 @@ static void updatePathVelocity()
 	float groundspeed = pathDesired.StartingVelocity + 
 	    (pathDesired.EndingVelocity - pathDesired.StartingVelocity) * progress.fractional_progress;
 	if(progress.fractional_progress > 1)
-		groundspeed = 0;
+		groundspeed = -0.001;
 	
 	VelocityDesiredData velocityDesired;
 	velocityDesired.North = progress.path_direction[0] * groundspeed;
