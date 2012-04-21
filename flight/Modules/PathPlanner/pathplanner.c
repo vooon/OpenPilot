@@ -271,9 +271,9 @@ static void createPath()
 {
 
 	// logo is 500m in size 250m south of home pos
-	#define logoAlt 50.0f
-	#define logoScale 500.0f
-	#define logoCenterNorth -250.0f
+	#define logoAlt 80.0f
+	#define logoScale 200.0f
+	#define logoCenterNorth -200.0f
 	#define logoCenterEast 0.0f
 
 
@@ -347,7 +347,7 @@ static void createPath()
 	waypoint.Position[1] = logoCenterEast + .35f * logoScale;
 	waypoint.Position[0] = logoCenterNorth + -.60f * logoScale;
 	waypoint.Position[2] = -logoAlt;
-	waypoint.Action = WAYPOINT_ACTION_NEXT;
+	waypoint.Action = WAYPOINT_ACTION_RTH;
 	WaypointCreateInstance();
 	WaypointInstSet(41, &waypoint);
 
