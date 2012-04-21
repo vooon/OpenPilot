@@ -152,11 +152,11 @@ static void pathPlannerTask(void *parameters)
 
 							break;
 						case WAYPOINT_ACTION_RTH:
-							// Fly back to the home location but 75 m above it
+							// Fly back to the home location but above it as defined in guidancesettings as if in RTB mode
 							PositionDesiredGet(&positionDesired);
 							positionDesired.North = 0;
 							positionDesired.East = 0;
-							positionDesired.Down = -75;
+							positionDesired.Down = -guidanceSettings.ReturnTobaseAltitudeOffset;
 							PositionDesiredSet(&positionDesired);
 							break;
 						default:
@@ -184,12 +184,12 @@ static void pathPlannerTask(void *parameters)
 
 							break;
 						case WAYPOINT_ACTION_RTH:
-							// Fly back to the home location but 20 m above it
-							PositionDesiredGet(&positionDesired);
-							positionDesired.North = 0;
-							positionDesired.East = 0;
-							positionDesired.Down = -20;
-							PositionDesiredSet(&positionDesired);
+							// Fly back to the home location but above it as defined in guidancesettings as if in RTB mode
+							pathDesired.End[PATHDESIRED_END_NORTH] = 0;
+							pathDesired.End[PATHDESIRED_END_EAST] = 0;
+							pathDesired.End[PATHDESIRED_END_DOWN] = -guidanceSettings.ReturnTobaseAltitudeOffset;
+							pathDesired.EndingVelocity = 0.001;
+							PathDesiredSet(&pathDesired);
 							break;
 						default:
 							PIOS_DEBUG_Assert(0);
