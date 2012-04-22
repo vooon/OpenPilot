@@ -454,11 +454,13 @@ static void updateFixedDesiredAttitude()
 	float powerError;
 	float powerCommand;
 
+	static float filteredRoll = 0;
 
 	// Check how long since last update
 	if(thisSysTime > lastSysTime) // reuse dt in case of wraparound
 		dT = (thisSysTime - lastSysTime) / portTICK_RATE_MS / 1000.0f;		
 	lastSysTime = thisSysTime;
+	if (dT<0.000001f) return;
 	
 	SystemSettingsGet(&systemSettings);
 	GuidanceSettingsGet(&guidanceSettings);
@@ -473,6 +475,14 @@ static void updateFixedDesiredAttitude()
 	AccelsGet(&accels);
 	StabilizationSettingsGet(&stabSettings);
 	NedAccelGet(&nedAccel);
+
+	// i do not like this approach, I'd base this on the setpoint instead.
+	float feedForwardAlpha = expf(-dT  / guidanceSettings.FeedForwardTau);
+	filteredRoll = filteredRoll * feedForwardAlpha + fabsf(attitudeActual.Roll) * ( 1.0f - feedForwardAlpha);
+
+	filteredRoll = bound(filteredRoll, 0, fabsf(attitudeActual.Roll));
+	filteredRoll = bound(filteredRoll, 0, fabsf(guidanceSettings.RollLimit[GUIDANCESETTINGS_ROLLLIMIT_MIN]));
+	filteredRoll = bound(filteredRoll, 0, fabsf(guidanceSettings.RollLimit[GUIDANCESETTINGS_ROLLLIMIT_MAX]));
 
 	// current speed - lacking forward airspeed we use groundspeed :(
 	speedActual = sqrtf(velocityActual.East*velocityActual.East + velocityActual.North*velocityActual.North + velocityActual.Down*velocityActual.Down ) + baroAirspeedBias;
@@ -534,7 +544,9 @@ static void updateFixedDesiredAttitude()
 	guidanceStatus.C[GUIDANCESTATUS_C_ACCEL] = accelCommand;
 
 	stabDesired.Pitch = bound(guidanceSettings.PitchLimit[GUIDANCESETTINGS_PITCHLIMIT_NEUTRAL] +
-		-accelCommand,
+		-accelCommand +
+		guidanceSettings.RollPichFeedForward * filteredRoll
+		,
 		guidanceSettings.PitchLimit[GUIDANCESETTINGS_PITCHLIMIT_MIN],
 		guidanceSettings.PitchLimit[GUIDANCESETTINGS_PITCHLIMIT_MAX]);
 
@@ -544,7 +556,8 @@ static void updateFixedDesiredAttitude()
 		-guidanceSettings.PowerPI[GUIDANCESETTINGS_POWERPI_ILIMIT],
 		guidanceSettings.PowerPI[GUIDANCESETTINGS_POWERPI_ILIMIT]);
 	powerCommand = (powerError * guidanceSettings.PowerPI[GUIDANCESETTINGS_POWERPI_KP] +
-		powerIntegral) + guidanceSettings.ThrottleLimit[GUIDANCESETTINGS_THROTTLELIMIT_NEUTRAL];
+		powerIntegral) + guidanceSettings.ThrottleLimit[GUIDANCESETTINGS_THROTTLELIMIT_NEUTRAL] +
+		guidanceSettings.RollThrottleFeedForward * filteredRoll;
 
 	// prevent integral running out of bounds 
 	if ( powerCommand > guidanceSettings.ThrottleLimit[GUIDANCESETTINGS_THROTTLELIMIT_MAX]) {
