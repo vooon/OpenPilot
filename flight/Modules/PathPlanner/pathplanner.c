@@ -273,83 +273,72 @@ static void createPath()
 	// logo is 500m in size 250m south of home pos
 	#define logoAlt 80.0f
 	#define logoScale 200.0f
-	#define logoCenterNorth -200.0f
+	#define logoCenterNorth -50.0f
 	#define logoCenterEast 0.0f
 
+	#define waypoint1North -1245.0f
+	#define waypoint1East -2328.0f
 
-	// Draw O
+	// milestone flight
 	WaypointData waypoint;
 	waypoint.Velocity[0] = 2; // Since for now this isn't directional just set a mag
 	waypoint.Velocity[1] = 2;
 	waypoint.Velocity[2] = 2;
-	for(uint32_t i = 0; i < 20; i++) {
-		waypoint.Position[1] = logoCenterEast + .30f * logoScale * cosf(i / 19.0f * 2 * F_PI);
-		waypoint.Position[0] = logoCenterNorth + .50f * logoScale * sinf(i / 19.0f * 2 * F_PI);
-		waypoint.Position[2] = -logoAlt - 10.0f;
-		waypoint.Action = WAYPOINT_ACTION_NEXT;
-		WaypointCreateInstance();
-		bad_inits += (WaypointInstSet(i, &waypoint) != 0);
-	}
+
+	// start position over takeoff aerea
+	waypoint.Position[1] = logoCenterEast;
+	waypoint.Position[0] = logoCenterNorth;
+	waypoint.Position[2] = -logoAlt;
+	waypoint.Action = WAYPOINT_ACTION_NEXT;
+	WaypointCreateInstance();
+	WaypointInstSet(0, &waypoint);
+
+
+	// waypoint north of roundabout
 	
-	// Draw P
-	for(uint32_t i = 20; i < 35; i++) {
-		waypoint.Position[1] = logoCenterEast + .55f * logoScale + .20f * logoScale * cosf(i / 10.0f * F_PI - F_PI / 2);
-		waypoint.Position[0] = logoCenterNorth + .24f * logoScale + .25f * logoScale * sinf(i / 10.0f * F_PI - F_PI / 2);
-		waypoint.Position[2] = - logoAlt - 10.0f;
-		waypoint.Action = WAYPOINT_ACTION_NEXT;
-		WaypointCreateInstance();
-		bad_inits += (WaypointInstSet(i, &waypoint) != 0);
-	}
-		
-	waypoint.Position[1] = logoCenterEast + .35f *logoScale;
-	waypoint.Position[0] = logoCenterNorth + -.50f * logoScale;
-	waypoint.Position[2] = -logoAlt - 10.0f;
+	waypoint.Position[1] = waypoint1East;
+	waypoint.Position[0] = waypoint1North + 100.0f;
+	waypoint.Position[2] = -logoAlt;
 	waypoint.Action = WAYPOINT_ACTION_NEXT;
 	WaypointCreateInstance();
-	WaypointInstSet(35, &waypoint);
+	WaypointInstSet(1, &waypoint);
 	
-	// Draw Box
-	waypoint.Position[1] = logoCenterEast + .35f * logoScale;
-	waypoint.Position[0] = logoCenterNorth + -.60f * logoScale;
+	// waypoint at roundabout
+	waypoint.Position[1] = waypoint1East;
+	waypoint.Position[0] = waypoint1North;
 	waypoint.Position[2] = -logoAlt;
 	waypoint.Action = WAYPOINT_ACTION_NEXT;
 	WaypointCreateInstance();
-	WaypointInstSet(36, &waypoint);
+	WaypointInstSet(2, &waypoint);
 
-	waypoint.Position[1] = logoCenterEast + .85f * logoScale;
-	waypoint.Position[0] = logoCenterNorth + -.60f * logoScale;
-	waypoint.Position[2] = -logoAlt;
-	waypoint.Action = WAYPOINT_ACTION_NEXT;
-	WaypointCreateInstance();
-	WaypointInstSet(37, &waypoint);
+	// waypoint east of roundabout
 
-	waypoint.Position[1] = logoCenterEast + .85f * logoScale;
-	waypoint.Position[0] = logoCenterNorth + .60f * logoScale;
+	waypoint.Position[1] = waypoint1East + 100.0f;
+	waypoint.Position[0] = waypoint1North;
 	waypoint.Position[2] = -logoAlt;
 	waypoint.Action = WAYPOINT_ACTION_NEXT;
 	WaypointCreateInstance();
-	WaypointInstSet(38, &waypoint);
-	
-	waypoint.Position[1] = logoCenterEast + -.40f * logoScale;
-	waypoint.Position[0] = logoCenterNorth + .60f * logoScale;
-	waypoint.Position[2] = -logoAlt;
-	waypoint.Action = WAYPOINT_ACTION_NEXT;
-	WaypointCreateInstance();
-	WaypointInstSet(39, &waypoint);
+	WaypointInstSet(3, &waypoint);
 
-	waypoint.Position[1] = logoCenterEast + -.40f * logoScale;
-	waypoint.Position[0] = logoCenterNorth + -.60f * logoScale;
+	// back in front of villa
+
+	waypoint.Position[1] = logoCenterEast;
+	waypoint.Position[0] = logoCenterNorth;
 	waypoint.Position[2] = -logoAlt;
 	waypoint.Action = WAYPOINT_ACTION_NEXT;
 	WaypointCreateInstance();
-	WaypointInstSet(40, &waypoint);
+	WaypointInstSet(4, &waypoint);
 
-	waypoint.Position[1] = logoCenterEast + .35f * logoScale;
-	waypoint.Position[0] = logoCenterNorth + -.60f * logoScale;
+	// rth
+
+	waypoint.Position[1] = logoCenterEast;
+	waypoint.Position[0] = logoCenterNorth + 20.0f;
 	waypoint.Position[2] = -logoAlt;
 	waypoint.Action = WAYPOINT_ACTION_RTH;
 	WaypointCreateInstance();
-	WaypointInstSet(41, &waypoint);
+	WaypointInstSet(5, &waypoint);
+
+
 
 }
 
