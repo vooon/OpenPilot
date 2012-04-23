@@ -46,7 +46,7 @@
 // Private constants
 #define STACK_SIZE_BYTES 500
 #define TASK_PRIORITY (tskIDLE_PRIORITY+1)
-
+#define SONAR_TIMEOUT 5
 // Private types
 
 // Private variables
@@ -62,7 +62,7 @@ static void altitudeTask(void *parameters);
 int32_t AltitudeStart()
 {	
 #if defined(PIOS_INCLUDE_HCSR04)
-	SonarAltitudeInitialze();
+	SonarAltitudeInitialize();
 #endif
 	
 	// Start main task
@@ -92,7 +92,7 @@ static void altitudeTask(void *parameters)
 	
 #if defined(PIOS_INCLUDE_HCSR04)
 	SonarAltitudeData sonardata;
-	int32_t value=0,timeout=5;
+	int32_t value=0,timeout=SONAR_TIMEOUT;
 	float coeff=0.25,height_out=0,height_in=0;
 	PIOS_HCSR04_Init();
 	PIOS_HCSR04_Trigger();
@@ -117,18 +117,18 @@ static void altitudeTask(void *parameters)
 			
 			// Update the AltitudeActual UAVObject
 			SonarAltitudeSet(&sonardata);
-			timeout=5;
+			timeout=SONAR_TIMEOUT;
 			PIOS_HCSR04_Trigger();
 		}
 		if(timeout--)
 		{
 			//retrigger
-			timeout=5;
+			timeout=SONAR_TIMEOUT;
 			PIOS_HCSR04_Trigger();
 		}
 #endif
 		float temp, press;
-		
+
 		// Update the temperature data
 		PIOS_MS5611_StartADC(TemperatureConv);
 		vTaskDelay(PIOS_MS5611_GetDelay());

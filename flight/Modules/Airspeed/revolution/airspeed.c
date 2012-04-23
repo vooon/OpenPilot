@@ -40,7 +40,7 @@
 #include "hwsettings.h"
 #include "airspeed.h"
 #include "baroairspeed.h"	// object that will be updated by the module
-#if defined(PIOS_INCLUDE_HCSR04)
+#if defined(PIOS_INCLUDE_HCSR04_AIRSPEED)
 #include "sonarairspeed.h"	// object that will be updated by the module
 #endif
 
