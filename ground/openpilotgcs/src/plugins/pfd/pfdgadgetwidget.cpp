@@ -128,11 +128,11 @@ void PFDGadgetWidget::connectNeedles() {
     ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
     UAVObjectManager *objManager = pm->getObject<UAVObjectManager>();
 
-    airspeedObj = dynamic_cast<UAVDataObject*>(objManager->getObject("VelocityActual"));
+    airspeedObj = dynamic_cast<UAVDataObject*>(objManager->getObject("BaroAirspeed"));
     if (airspeedObj != NULL ) {
         connect(airspeedObj, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(updateAirspeed(UAVObject*)));
     } else {
-         qDebug() << "Error: Object is unknown (VelocityActual).";
+         qDebug() << "Error: Object is unknown (BaroAirspeed).";
     }
 
     altitudeObj = dynamic_cast<UAVDataObject*>(objManager->getObject("PositionActual"));
@@ -300,10 +300,9 @@ void PFDGadgetWidget::updateHeading(UAVObject *object) {
   \brief Called by updates to @PositionActual to compute airspeed from velocity
   */
 void PFDGadgetWidget::updateAirspeed(UAVObject *object) {
-    UAVObjectField* northField = object->getField("North");
-    UAVObjectField* eastField = object->getField("East");
-    if (northField && eastField) {
-        double val = floor(sqrt(pow(northField->getDouble(),2) + pow(eastField->getDouble(),2))*10)/10;
+    UAVObjectField* airspeedField = object->getField("Airspeed");
+    if (airspeedField) {
+        double val = floor(airspeedField->getDouble()*100*10)/10;
         groundspeedTarget = 3.6*val*speedScaleHeight/3000;
 
         if (!dialTimer.isActive())
@@ -321,7 +320,7 @@ void PFDGadgetWidget::updateAltitude(UAVObject *object) {
     UAVObjectField* downField = object->getField("Down");
     if (downField) {
         // The altitude scale represents 30 meters
-        altitudeTarget = -floor(downField->getDouble()*10)/10*altitudeScaleHeight/3000;
+        altitudeTarget = -floor(100*downField->getDouble()*10)/10*altitudeScaleHeight/3000;
         if (!dialTimer.isActive())
             dialTimer.start(); // Rearm the dial Timer which might be stopped.
 
