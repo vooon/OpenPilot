@@ -256,7 +256,7 @@ static void ccguidanceTask(UAVObjEvent * ev)
 
 					// reset globals variable
 					fixedHeading = TRUE;
-					SpeedToRTB = 0;
+					SpeedToRTB = positionActual.Groundspeed;
 					TacksAngleRight = FALSE;
 					TacksNumsRemain = 0;
 					thisTimesPeriodCorrectBiasYaw = 0;
