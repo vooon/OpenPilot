@@ -55,6 +55,12 @@ public:
 	int getHomeLocation(bool &set, double LLA[3]);
 	int getHomeLocation(bool &set, double LLA[3], double ECEF[3], double RNE[9], double Be[3]);
 
+    bool getHwSettingsCCGuidance();
+    int setCCGuidanceHomeLocation(double LLA[3], bool save_to_sdcard);
+    int setCCGuidanceTargetLocation(double LLA[3], bool save_to_sdcard);
+    int getCCGuidanceHomeLocation(bool &set, double LLA[3]);
+    int getCCGuidanceTargetLocation(bool &set, double LLA[3]);
+
 	int getGPSPosition(double LLA[3]);
 
 	int setTelemetrySerialPortSpeed(QString speed, bool save_to_sdcard);

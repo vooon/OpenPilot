@@ -30,6 +30,8 @@
 
 #include "utils/homelocationutil.h"
 
+#include "hwsettings.h"
+
 #include <QMutexLocker>
 #include <QDebug>
 #include <QEventLoop>
@@ -521,6 +523,256 @@ int UAVObjectUtilManager::getHomeLocation(bool &set, double LLA[3], double ECEF[
 		Be[i] = field->getDouble(i);
 
 	return 0;	// OK
+}
+
+// ******************************
+// CC_GuidanceSettings
+
+int UAVObjectUtilManager::setCCGuidanceHomeLocation(double LLA[3], bool save_to_sdcard)
+{
+    UAVObjectField *field;
+
+    QMutexLocker locker(mutex);
+
+    // ******************
+    // save the new settings
+
+    ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
+    if (!pm) return -2;
+
+    UAVObjectManager *om = pm->getObject<UAVObjectManager>();
+    if (!om) return -3;
+
+    UAVDataObject *obj = dynamic_cast<UAVDataObject *>(om->getObject(QString("CCGuidanceSettings")));
+    if (!obj) return -4;
+
+    field = obj->getField("HomeLocationLatitude");
+    if (!field) return -5;
+    field->setDouble(LLA[0] * 10e6);
+
+    field = obj->getField("HomeLocationLongitude");
+    if (!field) return -6;
+    field->setDouble(LLA[1] * 10e6);
+
+    field = obj->getField("HomeLocationAltitude");
+    if (!field) return -7;
+    //field->setDouble(LLA[2]);
+
+    field = obj->getField("HomeLocationSet");
+    if (!field) return -8;
+    field->setValue("TRUE");
+
+    obj->updated();
+
+    // ******************
+    // save the new setting to SD card
+
+    if (save_to_sdcard)
+        saveObjectToSD(obj);
+
+    // ******************
+    // debug
+/*
+    qDebug() << "setting CCGuidanceSettings HomeLocation UAV Object .. " << endl;
+    QString s;
+    s = "        LAT:" + QString::number(LLA[0], 'f', 7) + " LON:" + QString::number(LLA[1], 'f', 7) + " ALT:" + QString::number(LLA[2], 'f', 1);
+    qDebug() << s << endl;
+*/
+    // ******************
+
+    return 0;	// OK
+}
+
+int UAVObjectUtilManager::setCCGuidanceTargetLocation(double LLA[3], bool save_to_sdcard)
+{
+    UAVObjectField *field;
+
+    QMutexLocker locker(mutex);
+
+    // ******************
+    // save the new settings
+
+    ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
+    if (!pm) return -2;
+
+    UAVObjectManager *om = pm->getObject<UAVObjectManager>();
+    if (!om) return -3;
+
+    UAVDataObject *obj = dynamic_cast<UAVDataObject *>(om->getObject(QString("CCGuidanceSettings")));
+    if (!obj) return -4;
+
+    field = obj->getField("TargetLocationLatitude");
+    if (!field) return -5;
+    field->setDouble(LLA[0] * 10e6);
+
+    field = obj->getField("TargetLocationLongitude");
+    if (!field) return -6;
+    field->setDouble(LLA[1] * 10e6);
+
+    field = obj->getField("TargetLocationAltitude");
+    if (!field) return -7;
+    //field->setDouble(LLA[2]);
+
+    field = obj->getField("TargetLocationSet");
+    if (!field) return -8;
+    field->setValue("TRUE");
+
+    obj->updated();
+
+    // ******************
+    // save the new setting to SD card
+
+    if (save_to_sdcard)
+        saveObjectToSD(obj);
+
+    // ******************
+    // debug
+/*
+    qDebug() << "setting CCGuidanceSettings HomeLocation UAV Object .. " << endl;
+    QString s;
+    s = "        LAT:" + QString::number(LLA[0], 'f', 7) + " LON:" + QString::number(LLA[1], 'f', 7) + " ALT:" + QString::number(LLA[2], 'f', 1);
+    qDebug() << s << endl;
+*/
+    // ******************
+
+    return 0;	// OK
+}
+
+int UAVObjectUtilManager::getCCGuidanceHomeLocation(bool &set, double LLA[3])
+{
+    UAVObjectField *field;
+
+    QMutexLocker locker(mutex);
+
+    ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
+    if (!pm) return -1;
+
+    UAVObjectManager *om = pm->getObject<UAVObjectManager>();
+    if (!om) return -2;
+
+    UAVDataObject *obj = dynamic_cast<UAVDataObject *>(om->getObject(QString("CCGuidanceSettings")));
+    if (!obj) return -3;
+
+//	obj->requestUpdate();
+
+    field = obj->getField("HomeLocationSet");
+    if (!field) return -4;
+    set = field->getValue().toBool();
+
+    field = obj->getField("HomeLocationLatitude");
+    if (!field) return -5;
+    LLA[0] = field->getDouble() * 1e-7;
+
+    field = obj->getField("HomeLocationLongitude");
+    if (!field) return -6;
+    LLA[1] = field->getDouble() * 1e-7;
+
+    field = obj->getField("HomeLocationAltitude");
+    if (!field) return -7;
+    LLA[2] = field->getDouble();
+
+    if (LLA[0] != LLA[0]) LLA[0] = 0; // nan detection
+    else
+    if (LLA[0] >  90) LLA[0] =  90;
+    else
+    if (LLA[0] < -90) LLA[0] = -90;
+
+    if (LLA[1] != LLA[1]) LLA[1] = 0; // nan detection
+    else
+    if (LLA[1] >  180) LLA[1] =  180;
+    else
+    if (LLA[1] < -180) LLA[1] = -180;
+
+    if (LLA[2] != LLA[2]) LLA[2] = 0; // nan detection
+
+    return 0;	// OK
+}
+
+int UAVObjectUtilManager::getCCGuidanceTargetLocation(bool &set, double LLA[3])
+{
+    UAVObjectField *field;
+
+    QMutexLocker locker(mutex);
+
+    ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
+    if (!pm) return -1;
+
+    UAVObjectManager *om = pm->getObject<UAVObjectManager>();
+    if (!om) return -2;
+
+    UAVDataObject *obj = dynamic_cast<UAVDataObject *>(om->getObject(QString("CCGuidanceSettings")));
+    if (!obj) return -3;
+
+//	obj->requestUpdate();
+
+    field = obj->getField("TargetLocationSet");
+    if (!field) return -4;
+    set = field->getValue().toBool();
+
+    field = obj->getField("TargetLocationLatitude");
+    if (!field) return -5;
+    LLA[0] = field->getDouble() * 1e-7;
+
+    field = obj->getField("TargetLocationLongitude");
+    if (!field) return -6;
+    LLA[1] = field->getDouble() * 1e-7;
+
+    field = obj->getField("TargetLocationAltitude");
+    if (!field) return -7;
+    LLA[2] = field->getDouble();
+
+    if (LLA[0] != LLA[0]) LLA[0] = 0; // nan detection
+    else
+    if (LLA[0] >  90) LLA[0] =  90;
+    else
+    if (LLA[0] < -90) LLA[0] = -90;
+
+    if (LLA[1] != LLA[1]) LLA[1] = 0; // nan detection
+    else
+    if (LLA[1] >  180) LLA[1] =  180;
+    else
+    if (LLA[1] < -180) LLA[1] = -180;
+
+    if (LLA[2] != LLA[2]) LLA[2] = 0; // nan detection
+
+    return 0;	// OK
+}
+
+bool UAVObjectUtilManager::getHwSettingsCCGuidance()
+{
+/*    UAVObjectField *field;
+
+    QMutexLocker locker(mutex);
+
+    ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
+    if (!pm) return -1;
+
+    UAVObjectManager *om = pm->getObject<UAVObjectManager>();
+    if (!om) return -2;
+
+    UAVDataObject *obj = dynamic_cast<UAVDataObject *>(om->getObject(QString("HwSettings")));
+    if (!obj) return -3;
+
+//	obj->requestUpdate();
+
+    field = obj->getField("OptionalModules");
+    if (!field) return -4;
+
+    qDebug() << "all setting UAV Object OptionalModules " << endl;
+    QString s;
+    s = " OptionalModules ";
+    for (int i = 0; i < 7; i++) s += " " + QString::number(field->getValue(i).toInt(), 'b', 2);
+    qDebug() << s << endl;
+    for (int i = 0; i < 7; i++) s += " " + field->getValue(i), 'b';
+    qDebug() << s << endl;
+    s += " " + field->getValue(i), 'b';
+    qDebug() << s << endl;
+*/
+    // Return enable or disable the settings
+    HwSettings *hwSettings = HwSettings::GetInstance(getObjectManager());
+    HwSettings::DataFields hwSettingsData = hwSettings->getData();
+
+    return (hwSettingsData.OptionalModules[HwSettings::OPTIONALMODULES_CCGUIDANCE] == HwSettings::OPTIONALMODULES_ENABLED);	// OK
 }
 
 // ******************************

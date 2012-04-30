@@ -120,6 +120,7 @@ public:
 
 public slots:
     void homePositionUpdated(UAVObject *);
+    void CCGuidanceHomePositionUpdated(UAVObject *);
     void onTelemetryConnect();
     void onTelemetryDisconnect();
 
@@ -202,6 +203,7 @@ private slots:
     void onGoMouseClickAct_triggered();
     void onSetHomeAct_triggered();
     void onGoHomeAct_triggered();
+    void onSetTargetAct_triggered();
     void onGoUAVAct_triggered();
     void onFollowUAVpositionAct_toggled(bool checked);
     void onFollowUAVheadingAct_toggled(bool checked);
@@ -295,6 +297,7 @@ private:
     QAction *goMouseClickAct;
     QAction *setHomeAct;
     QAction *goHomeAct;
+    QAction *setTargetAct;
     QAction *goUAVAct;
     QAction *followUAVpositionAct;
     QAction *followUAVheadingAct;
@@ -351,11 +354,13 @@ private:
 
 	bool getUAVPosition(double &latitude, double &longitude, double &altitude);
 	bool getGPSPosition(double &latitude, double &longitude, double &altitude);
+    double getGPS_Heading();
     double getUAV_Yaw();
 
     void setMapFollowingMode();
 
 	bool setHomeLocationObject();
+    bool setTargetLocationObject();
 };
 
 #endif /* OPMAP_GADGETWIDGET_H_ */

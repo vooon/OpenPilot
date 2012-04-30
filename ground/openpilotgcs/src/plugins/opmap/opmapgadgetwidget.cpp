@@ -101,7 +101,7 @@ OPMapGadgetWidget::OPMapGadgetWidget(QWidget *parent) : QWidget(parent)
 
 	m_telemetry_connected = false;
 
-	m_context_menu_lat_lon = m_mouse_lat_lon = internals::PointLatLng(0, 0);
+    m_context_menu_lat_lon = m_mouse_lat_lon = internals::PointLatLng(0, 0);
 
     setMouseTracking(true);
 
@@ -284,10 +284,16 @@ OPMapGadgetWidget::OPMapGadgetWidget(QWidget *parent) : QWidget(parent)
         // Register for Home Location state changes
         if (obm)
         {
-			UAVDataObject *obj = dynamic_cast<UAVDataObject *>(obm->getObject(QString("HomeLocation")));
+            UAVDataObject *obj = dynamic_cast<UAVDataObject *>(obm->getObject(QString("HomeLocation")));
             if (obj)
             {
 				connect(obj, SIGNAL(objectUpdated(UAVObject *)), this , SLOT(homePositionUpdated(UAVObject *)));
+            }
+
+            UAVDataObject *obj2 = dynamic_cast<UAVDataObject *>(obm->getObject(QString("CCGuidanceSettings")));
+            if (obj2)
+            {
+                connect(obj2, SIGNAL(objectUpdated(UAVObject *)), this , SLOT(CCGuidanceHomePositionUpdated(UAVObject *)));
             }
         }
 
@@ -503,6 +509,10 @@ void OPMapGadgetWidget::contextMenuEvent(QContextMenuEvent *event)
     menu.addAction(showHomeAct);
     menu.addAction(goHomeAct);
 
+    menu.addSeparator()->setText(tr("TRAGET"));
+
+    menu.addAction(setTargetAct);
+
     // ****
     // uav trails
 
@@ -669,8 +679,8 @@ void OPMapGadgetWidget::updatePosition()
 		return;
 
 	// get current GPS heading
-//	gps_heading = getGPS_Heading();
-	gps_heading = 0;
+    gps_heading = getGPS_Heading();
+    //gps_heading = 0;
 
 	gps_pos = internals::PointLatLng(gps_latitude, gps_longitude);
 
@@ -1027,8 +1037,15 @@ void OPMapGadgetWidget::onTelemetryConnect()
 	// ***********************
 	// fetch the home location
 
-	if (obum->getHomeLocation(set, LLA) < 0)
-		return;	// error
+    //if (obum->getHomeLocation(set, LLA) < 0)
+    //	return;	// error
+    if (obum->getHwSettingsCCGuidance() == 0) {
+        if (obum->getHomeLocation(set, LLA) < 0)           return;	// error
+        obum->setCCGuidanceHomeLocation(LLA, true);
+    }  else {
+        if (obum->getCCGuidanceHomeLocation(set, LLA) < 0) return;	// error
+        obum->setHomeLocation(LLA, true);
+    }
 
 	setHome(internals::PointLatLng(LLA[0], LLA[1]));
 
@@ -1051,6 +1068,19 @@ void OPMapGadgetWidget::homePositionUpdated(UAVObject *hp)
 
     double lat = hp->getField("Latitude")->getDouble() * 1e-7;
     double lon = hp->getField("Longitude")->getDouble() * 1e-7;
+
+    setHome(internals::PointLatLng(lat, lon));
+}
+
+// Updates the Home position for CCGuidance module icon whenever the HomePosition object is updated
+void OPMapGadgetWidget::CCGuidanceHomePositionUpdated(UAVObject *hp)
+{
+    if (!hp)
+        return;
+
+    double lat = hp->getField("HomeLocationLatitude")->getDouble() * 1e-7;
+    double lon = hp->getField("HomeLocationLongitude")->getDouble() * 1e-7;
+
     setHome(internals::PointLatLng(lat, lon));
 }
 
@@ -1479,6 +1509,10 @@ void OPMapGadgetWidget::createActions()
     goHomeAct->setStatusTip(tr("Center the map onto the home location"));
     connect(goHomeAct, SIGNAL(triggered()), this, SLOT(onGoHomeAct_triggered()));
 
+    setTargetAct = new QAction(tr("Set the target location"), this);
+    setTargetAct->setStatusTip(tr("Set the target location to where you clicked"));
+    connect(setTargetAct, SIGNAL(triggered()), this, SLOT(onSetTargetAct_triggered()));
+
     goUAVAct = new QAction(tr("Go to &UAV location"), this);
     goUAVAct->setShortcut(tr("Ctrl+U"));
     goUAVAct->setStatusTip(tr("Center the map onto the UAV location"));
@@ -1812,6 +1846,14 @@ void OPMapGadgetWidget::onGoHomeAct_triggered()
 		return;
 
     goHome();
+}
+
+void OPMapGadgetWidget::onSetTargetAct_triggered()
+{
+    if (!m_widget || !m_map)
+        return;
+
+    setTargetLocationObject();  // update the CC_GuidanceTargetLocation UAVObject
 }
 
 void OPMapGadgetWidget::onGoUAVAct_triggered()
@@ -2404,6 +2446,22 @@ bool OPMapGadgetWidget::getGPSPosition(double &latitude, double &longitude, doub
     return true;
 }
 
+double OPMapGadgetWidget::getGPS_Heading()
+{
+    if (!obm)
+        return 0;
+
+    UAVObject *obj = dynamic_cast<UAVDataObject*>(obm->getObject(QString("GPSPosition")));
+    double heading = obj->getField(QString("Heading"))->getDouble();
+
+    if (heading != heading) heading = 0; // nan detection
+
+    while (heading < 0) heading += 360;
+    while (heading >= 360) heading -= 360;
+
+    return heading;
+}
+
 // *************************************************************************************
 
 void OPMapGadgetWidget::setMapFollowingMode()
@@ -2440,7 +2498,21 @@ bool OPMapGadgetWidget::setHomeLocationObject()
 		return false;
 
 	double LLA[3] = {m_home_position.coord.Lat(), m_home_position.coord.Lng(), m_home_position.altitude};
-	return (obum->setHomeLocation(LLA, true) >= 0);
+
+    return ((obum->setHomeLocation(LLA, true) >= 0) && (obum->setCCGuidanceHomeLocation(LLA, true) >= 0));
+}
+
+// *************************************************************************************
+// update the TargetLocation UAV Object CC_Guidance
+
+bool OPMapGadgetWidget::setTargetLocationObject()
+{
+    if (!obum)
+        return false;
+
+    double LLA[3] = {m_context_menu_lat_lon.Lat(), m_context_menu_lat_lon.Lng(), m_home_position.altitude};
+
+    return (obum->setCCGuidanceTargetLocation(LLA, true) >= 0);
 }
 
 // *************************************************************************************
