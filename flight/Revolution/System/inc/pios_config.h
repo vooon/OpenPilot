@@ -65,7 +65,6 @@
 #define PIOS_INCLUDE_MS5611
 #define PIOS_INCLUDE_ETASV3
 #define PIOS_INCLUDE_HCSR04
-//#define PIOS_INCLUDE_HCSR04_AIRSPEED
 #define PIOS_FLASH_ON_ACCEL /* true for second revo */
 #define FLASH_FREERTOS
 /* Com systems to include */
