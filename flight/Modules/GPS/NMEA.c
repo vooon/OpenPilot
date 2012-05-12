@@ -234,6 +234,10 @@ static bool NMEA_latlon_to_fixed_point(int32_t * latlon, char *nmea_latlon, bool
 	PIOS_DEBUG_Assert(nmea_latlon);
 	PIOS_DEBUG_Assert(latlon);
 
+	if (*nmea_latlon == '\0') { /* empty lat/lon field */
+		return false;
+	}
+
 	if (!NMEA_parse_real(&num_DDDMM, &num_m, &units, nmea_latlon)) {
 		return false;
 	}
@@ -339,7 +343,7 @@ bool NMEA_update_position(char *nmea_sentence, GPSPositionData *GpsData)
 	#ifdef DEBUG_MGSID_IN
 		DEBUG_MSG("%s %d ", params[0], parser->cnt);
 	#endif
-	// Send the message to then parser and get it update the GpsData
+	// Send the message to the parser and get it update the GpsData
 	bool gpsDataUpdated = false;
 
 	if (!parser->handler(GpsData, &gpsDataUpdated, params, nbParams)) {
@@ -398,6 +402,11 @@ static bool nmeaProcessGPGGA(GPSPositionData * GpsData, bool* gpsDataUpdated, ch
 		return false;
 	}
 
+
+	// check for invalid GPS fix
+	if (param[6][0] == '0') {
+		return false;
+	}
 	// get number of satellites used in GPS solution
 	GpsData->Satellites = atoi(param[7]);
 
@@ -441,6 +450,11 @@ static bool nmeaProcessGPRMC(GPSPositionData * GpsData, bool* gpsDataUpdated, ch
 	gpst.Minute = (((int)hms - gpst.Second) / 100) % 100;
 	gpst.Hour = (int)hms / 10000;
 #endif //PIOS_GPS_MINIMAL
+
+	// don't process void sentences
+	if (param[2][0] == 'V') {
+		return false;
+	}
 
 	// get latitude [DDMM.mmmmm] [N|S]
 	if (!NMEA_latlon_to_fixed_point(&GpsData->Latitude, param[3], param[4][0] == 'S')) {
