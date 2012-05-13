@@ -117,6 +117,7 @@ int32_t GuidanceInitialize()
 {
 	GuidanceSettingsInitialize();
 	GuidanceStatusInitialize();
+	AttitudeActualInitialize();
 	NedAccelInitialize();
 	PathDesiredInitialize();
 	PositionDesiredInitialize();

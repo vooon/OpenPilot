@@ -52,7 +52,7 @@ endif
 FLASH_TOOL = OPENOCD
 
 # List of modules to include
-MODULES = Attitude/revolution ManualControl Stabilization Actuator GPS AltitudeHold Guidance
+MODULES = ManualControl Stabilization Actuator GPS AltitudeHold Guidance
 MODULES += CameraStab
 MODULES += Telemetry
 #MODULES += OveroSync
@@ -126,6 +126,7 @@ SRC += $(OPUAVOBJ)/uavobjectmanager.c
 SRC += $(OPUAVOBJ)/eventdispatcher.c
 
 SRC += $(FLIGHTLIB)/CoordinateConversions.c
+SRC += $(FLIGHTLIB)/paths.c
 SRC += $(FLIGHTLIB)/fifo_buffer.c
 SRC += $(FLIGHTLIB)/WorldMagModel.c
 SRC += $(FLIGHTLIB)/insgps13state.c
