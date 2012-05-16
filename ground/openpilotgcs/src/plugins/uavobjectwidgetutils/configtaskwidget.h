@@ -46,6 +46,7 @@
 #include "uavobjectwidgetutils_global.h"
 #include <QDesktopServices>
 #include <QUrl>
+#include <QEvent>
 
 class UAVOBJECTWIDGETUTILS_EXPORT ConfigTaskWidget: public QWidget
 {
@@ -84,6 +85,9 @@ public:
 
     ConfigTaskWidget(QWidget *parent = 0);
     ~ConfigTaskWidget();
+
+    void disbleMouseWheelEvents();
+    bool eventFilter( QObject * obj, QEvent * evt );
 
     void saveObjectToSD(UAVObject *obj);
     UAVObjectManager* getObjectManager();
@@ -160,6 +164,7 @@ private:
     void disconnectWidgetUpdatesToSlot(QWidget *widget, const char *function);
     void loadWidgetLimits(QWidget *widget, UAVObjectField *field, int index, bool hasLimits, double sclale);
     QString outOfLimitsStyle;
+    QTimer * timeOut;
 protected slots:
     virtual void disableObjUpdates();
     virtual void enableObjUpdates();

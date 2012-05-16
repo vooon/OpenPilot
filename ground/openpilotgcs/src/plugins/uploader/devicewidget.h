@@ -40,6 +40,8 @@
 #include <QCryptographicHash>
 #include "uavobjectutilmanager.h"
 #include "devicedescriptorstruct.h"
+#include <QDir>
+#include <QCoreApplication>
 using namespace OP_DFU;
 class deviceWidget : public QWidget
 {
@@ -70,7 +72,8 @@ private:
     bool populateLoadedStructuredDescription(QByteArray arr);
 
 signals:
-
+    void uploadStarted();
+    void uploadEnded(bool success);
 public slots:
     void uploadFirmware();
     void loadFirmware();

@@ -55,7 +55,7 @@
 #define RAD2DEG (180.0/M_PI)
 #define DEG2RAD (M_PI/180.0)
 // Delay time returning to base after the disappearance of the signal transmitter.
-#define DELAY_ENABLE_FAILESAVE			4000	// 4 seconds.
+#define DELAY_ENABLE_FAILSAFE			4000	// 4 seconds.
 #define SIMPLE_COURSE_CALCULATION				// A simplified calculation of the rate.
 #define SPEEDTOBASE_TRACK_ENABLE		1		// at a rate less than this, the flight enabled tacks.
 // The coefficient for the calculation of the maximum deviation range of the elevator to climb,
@@ -133,7 +133,7 @@ static void ccguidanceTask(UAVObjEvent * ev)
 	static portTickType lastUpdateTime = 0;
 	static float positionDesiredNorth, positionDesiredEast, positionDesiredDown, diffHeadingYaw, DistanceToBaseOld, SpeedToRTB;
 	float positionActualNorth = 0, positionActualEast = 0, course = 0, DistanceToBase = 0;
-	static uint32_t thisTimesPeriodCorrectBiasYaw, TimeEnableFailSave;
+	static uint32_t thisTimesPeriodCorrectBiasYaw, TimeEnableFailSafe;
 	static bool	firsRunSetCourse = TRUE, StateSaveCurrentPositionToRTB = FALSE, fixedHeading = TRUE, TacksAngleRight = FALSE, firstMeanDiffHeadingYaw = TRUE;
 	float TrottleStep = 0;
 	static uint8_t TacksNumsRemain;
@@ -161,14 +161,14 @@ static void ccguidanceTask(UAVObjEvent * ev)
 
 	//Activate failsave mode, activate return to base
 	if ((AlarmsGet(SYSTEMALARMS_ALARM_MANUALCONTROL) != SYSTEMALARMS_ALARM_OK) &&
-		(ccguidanceSettings.FaileSaveRTB == TRUE))	{
-		TimeEnableFailSave += (thisTime - lastUpdateTime) / portTICK_RATE_MS;
-		if (TimeEnableFailSave >= DELAY_ENABLE_FAILESAVE) {
-			TimeEnableFailSave = 0;
+		(ccguidanceSettings.FailSafeRTB == TRUE))	{
+		TimeEnableFailSafe += (thisTime - lastUpdateTime) / portTICK_RATE_MS;
+		if (TimeEnableFailSafe >= DELAY_ENABLE_FAILSAFE) {
+			TimeEnableFailSafe = 0;
 			flightStatus.FlightMode = FLIGHTSTATUS_FLIGHTMODE_RETURNTOBASE;
 			FlightStatusSet(&flightStatus);
 		}
-	} else TimeEnableFailSave = 0;
+	} else TimeEnableFailSafe = 0;
 
 	lastUpdateTime = thisTime;
 

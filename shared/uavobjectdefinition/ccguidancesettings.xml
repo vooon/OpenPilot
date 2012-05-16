@@ -14,7 +14,7 @@
 		<field name="PeriodCorrectBiasYaw" units="msec" type="uint16" elements="1" defaultvalue="5000"/>
 		<field name="GroundSpeedMinForCorrectBiasYaw" units="m/sec" type="uint8" elementnames="1" defaultvalue="2"/>
 		<field name="GroundSpeedMax" units="m/sec" type="uint8" elementnames="1" defaultvalue="15"/>
-		<field name="FaileSaveRTB" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
+		<field name="FailSafeRTB" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
 		<field name="TrottleControl" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
 		<field name="HomeLocationEnableRequestSet" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
 		<field name="HomeLocationSet" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
@@ -29,6 +29,6 @@
 		<access gcs="readwrite" flight="readwrite"/>
 		<telemetrygcs acked="true" updatemode="onchange" period="0"/>
 		<telemetryflight acked="true" updatemode="onchange" period="0"/>
-		<logging updatemode="never" period="0"/>
+		<logging updatemode="manual" period="0"/>
 	</object>
 </xml>

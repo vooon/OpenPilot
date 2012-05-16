@@ -31,7 +31,7 @@
 /**
  * Constructor
  */
-ConfigTaskWidget::ConfigTaskWidget(QWidget *parent) : QWidget(parent),isConnected(false),smartsave(NULL),dirty(false),outOfLimitsStyle("background-color: rgb(255, 0, 0);")
+ConfigTaskWidget::ConfigTaskWidget(QWidget *parent) : QWidget(parent),isConnected(false),smartsave(NULL),dirty(false),outOfLimitsStyle("background-color: rgb(255, 0, 0);"),timeOut(NULL)
 {
     pm = ExtensionSystem::PluginManager::instance();
     objManager = pm->getObject<UAVObjectManager>();
@@ -174,6 +174,10 @@ ConfigTaskWidget::~ConfigTaskWidget()
     {
         if(oTw)
             delete oTw;
+    }
+    if(timeOut)
+    {
+        delete timeOut;
     }
 }
 
@@ -367,7 +371,7 @@ void ConfigTaskWidget::forceShadowUpdates()
     setDirty(true);
 }
 /**
- * SLOT function called when on of the widgets contents added to the framework changes
+ * SLOT function called when one of the widgets contents added to the framework changes
  */
 void ConfigTaskWidget::widgetsContentsChanged()
 {
@@ -412,7 +416,8 @@ void ConfigTaskWidget::widgetsContentsChanged()
             }
         }
     }
-    smartsave->resetIcons();
+    if(smartsave)
+        smartsave->resetIcons();
     setDirty(true);
 }
 /**
@@ -779,7 +784,7 @@ void ConfigTaskWidget::reloadButtonClicked()
     if(!list)
         return;
     ObjectPersistence* objper = dynamic_cast<ObjectPersistence*>( getObjectManager()->getObject(ObjectPersistence::NAME) );
-    QTimer * timeOut=new QTimer(this);
+    timeOut=new QTimer(this);
     QEventLoop * eventLoop=new QEventLoop(this);
     connect(timeOut, SIGNAL(timeout()),eventLoop,SLOT(quit()));
     connect(objper, SIGNAL(objectUpdated(UAVObject*)), eventLoop, SLOT(quit()));
@@ -798,13 +803,22 @@ void ConfigTaskWidget::reloadButtonClicked()
             eventLoop->exec();
             if(timeOut->isActive())
             {
+                oTw->object->requestUpdate();
                 setWidgetFromField(oTw->widget,oTw->field,oTw->index,oTw->scale,oTw->isLimited);
             }
             timeOut->stop();
         }
     }
-    delete eventLoop;
-    delete timeOut;
+    if(eventLoop)
+    {
+        delete eventLoop;
+        eventLoop=NULL;
+    }
+    if(timeOut)
+    {
+        delete timeOut;
+        timeOut=NULL;
+    }
 }
 
 /**
@@ -1144,6 +1158,30 @@ void ConfigTaskWidget::loadWidgetLimits(QWidget * widget,UAVObjectField * field,
     }
 }
 
+void ConfigTaskWidget::disbleMouseWheelEvents()
+{
+    //Disable mouse wheel events
+    foreach( QSpinBox * sp, findChildren<QSpinBox*>() ) {
+        sp->installEventFilter( this );
+    }
+    foreach( QDoubleSpinBox * sp, findChildren<QDoubleSpinBox*>() ) {
+        sp->installEventFilter( this );
+    }
+    foreach( QSlider * sp, findChildren<QSlider*>() ) {
+        sp->installEventFilter( this );
+    }
+}
+
+bool ConfigTaskWidget::eventFilter( QObject * obj, QEvent * evt ) {
+    //Filter all wheel events, and ignore them
+    if ( evt->type() == QEvent::Wheel &&
+         (qobject_cast<QAbstractSpinBox*>( obj ) || qobject_cast<QAbstractSlider*>( obj ) ))
+    {
+        evt->ignore();
+        return true;
+    }
+    return QWidget::eventFilter( obj, evt );
+}
 /**
   @}
   @}
