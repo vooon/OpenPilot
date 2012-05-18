@@ -575,14 +575,14 @@ void PIOS_Board_Init(void) {
 		PIOS_Assert(0);
 	}
 	
-	const uint32_t softusart_bufsize = 64;
-	uint8_t * rx_buffer = (uint8_t *) pvPortMalloc(softusart_bufsize);
-	uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(softusart_bufsize);
+	const uint32_t SOFTUSART_BUFSIZE = 64;
+	uint8_t * rx_buffer = (uint8_t *) pvPortMalloc(SOFTUSART_BUFSIZE);
+	uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(SOFTUSART_BUFSIZE);
 	PIOS_Assert(rx_buffer);
 	PIOS_Assert(tx_buffer);
 	if (PIOS_COM_Init(&pios_com_softusart_id, &pios_softusart_com_driver, pios_softusart_id,
-					  rx_buffer, softusart_bufsize,
-					  tx_buffer, softusart_bufsize)) {
+					  rx_buffer, SOFTUSART_BUFSIZE,
+					  tx_buffer, SOFTUSART_BUFSIZE)) {
 		PIOS_Assert(0);
 	};
 

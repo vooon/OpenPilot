@@ -7,8 +7,8 @@
  * @{
  *
  * @file       esc.c
- * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2010.
- * @brief      Module to handle all comms to the AHRS on a periodic basis.
+ * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2012.
+ * @brief      Module to handle all comms to the ESC.
  *
  * @see        The GNU Public License (GPL) Version 3
  *
@@ -52,6 +52,7 @@
 #include "esc.h"
 #include "escsettings.h"
 #include "escstatus.h"
+#include "hwsettings.h"
 
 // Private constants
 #define STACK_SIZE_BYTES 540
@@ -81,10 +82,11 @@ enum esc_serial_command {
 
 // Private variables
 static xTaskHandle taskHandle;
-
+static bool esc_module_enabled = false;
 // Private functions
 static void EscTask(void *parameters);
 
+#if 0
 // Functions for communicating
 static int32_t escSendSettings(uint8_t id);
 static int32_t escGetStatus(uint8_t id);
@@ -92,21 +94,36 @@ static int32_t escGetStatus(uint8_t id);
 // Communication method specific sending/get functions
 static int32_t escSendMessageSerial(uint8_t id, enum esc_serial_command, uint8_t * optional);
 static int32_t escSendQuerySerial(uint8_t id, enum esc_serial_command command, uint8_t * optional);
+#endif
 
 static void settingsUpdatedCb(UAVObjEvent * objEv);
 
 // External global variables
-extern uint32_t pios_com_esc_id;
+uint32_t pios_com_esc_id;
+extern uint32_t pios_com_softusart_id;
 
 /**
  * Initialise the module, called on startup
  * \returns 0 on success or -1 if initialisation failed
  */
-int32_t EscStart(void)
+int32_t EscInitialize(void)
 {
 
-	// Start main task
-	xTaskCreate(EscTask, (signed char *)"ESC", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &taskHandle);
+	uint8_t optionalModules[HWSETTINGS_OPTIONALMODULES_NUMELEM];
+	
+	HwSettingsOptionalModulesGet(optionalModules);
+	
+	if (optionalModules[HWSETTINGS_OPTIONALMODULES_ESC] == HWSETTINGS_OPTIONALMODULES_ENABLED) {
+		esc_module_enabled = true;
+
+		EscSettingsInitialize();
+		EscStatusInitialize();
+
+		EscSettingsConnectCallback(&settingsUpdatedCb);
+		
+		pios_com_esc_id = pios_com_softusart_id;
+	} else
+		esc_module_enabled = false;
 
 	return 0;
 }
@@ -115,13 +132,12 @@ int32_t EscStart(void)
  * Initialise the module, called on startup
  * \returns 0 on success or -1 if initialisation failed
  */
-int32_t EscInitialize(void)
+int32_t EscStart(void)
 {
-	EscSettingsInitialize();
-	EscStatusInitialize();
-
-	EscSettingsConnectCallback(&settingsUpdatedCb);
-
+	// Start main task
+	if (esc_module_enabled)
+		xTaskCreate(EscTask, (signed char *)"ESC", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &taskHandle);
+	
 	return 0;
 }
 
@@ -137,7 +153,9 @@ static void EscTask(void *parameters)
 
 	// Main task loop
 	while (1) {
-		escGetStatus(0);
+		//escGetStatus(0);
+		uint8_t message[3] = {(uint8_t) 'a', (uint8_t) 'b', (uint8_t) 'f'};
+		PIOS_COM_SendBuffer(pios_com_esc_id, message, sizeof(message));
 		vTaskDelay(100);
 	}
 }
@@ -146,9 +164,10 @@ static void EscTask(void *parameters)
  * When the settings are updated, send them to each of the ESCs
  */
 static void settingsUpdatedCb(UAVObjEvent * objEv) {
-	escSendSettings(0);
+//	escSendSettings(0);
 }
 
+#if 0
 /**
  * Send settings to a particular ESC id
  */
@@ -245,6 +264,7 @@ static int32_t escSendQuerySerial(uint8_t id, enum esc_serial_command command, u
 	
 	return 0;
 }
+#endif
 
 /**
   * @}

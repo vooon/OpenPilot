@@ -67,7 +67,7 @@ USE_GPS ?= YES
 USE_TXPID ?= YES
 USE_I2C ?= NO
 USE_ALTITUDE ?= NO
-USE_ESC ?= NO
+USE_ESC ?= YES
 TEST_FAULTS ?= NO
 
 # List of optional modules to include
