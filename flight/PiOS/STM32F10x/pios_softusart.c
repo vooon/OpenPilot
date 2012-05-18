@@ -38,7 +38,7 @@
 #include "pios_softusart_priv.h"
 #include <pios_usart_priv.h>
 
-#define PIOS_SOFTUSART_MAX_DEVS 6
+#define PIOS_SOFTUSART_MAX_DEVS 1
 
 /* Provide a COM driver */
 static void PIOS_SOFTUSART_ChangeBaud(uint32_t usart_id, uint32_t baud);

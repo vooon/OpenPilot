@@ -33,16 +33,6 @@ const struct pios_led_cfg pios_led_cfg = {
 
 #endif	/* PIOS_INCLUDE_LED */
 
-
-#if !defined(PIOS_INCLUDE_PWM)
-extern void PIOS_DELAY_timeout();
-void TIM4_IRQHandler() __attribute__ ((alias("PIOS_TIM4_irq_handler")));
-void PIOS_TIM4_irq_handler() {
-	if(TIM_GetITStatus(TIM4,TIM_IT_CC1))
-		PIOS_DELAY_timeout();
-}
-#endif
-
 #include "pios_rcvr_priv.h"
 uint32_t pios_rcvr_group_map[1];
 
@@ -152,7 +142,7 @@ static const struct pios_tim_channel pios_tim_rcvrport_all_channels[] = {
 			.gpio = GPIOB,
 			.init = {
 				.GPIO_Pin   = GPIO_Pin_8,
-				.GPIO_Mode  = GPIO_Mode_IPD,
+				.GPIO_Mode  = GPIO_Mode_Out_PP,
 				.GPIO_Speed = GPIO_Speed_2MHz,
 			},
 		},
@@ -288,7 +278,7 @@ static const struct pios_softusart_cfg pios_softusart_cfg = {
 			.gpio = GPIOB,
 			.init = {
 				.GPIO_Pin   = GPIO_Pin_8,
-				.GPIO_Mode  = GPIO_Mode_IPD,
+				.GPIO_Mode  = GPIO_Mode_Out_PP,
 				.GPIO_Speed = GPIO_Speed_2MHz,
 			},
 		},
@@ -300,7 +290,7 @@ static const struct pios_softusart_cfg pios_softusart_cfg = {
 			.gpio = GPIOB,
 			.init = {
 				.GPIO_Pin   = GPIO_Pin_8,
-				.GPIO_Mode  = GPIO_Mode_IPD,
+				.GPIO_Mode  = GPIO_Mode_Out_PP,
 				.GPIO_Speed = GPIO_Speed_2MHz,
 			},
 		},

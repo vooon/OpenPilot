@@ -210,9 +210,10 @@ int main()
 			else if (config.Mode == ESCSETTINGS_MODE_OPEN)
 				esc_data->duty_cycle_setpoint = PIOS_ESC_MAX_DUTYCYCLE * esc_control.serial_input / 10000;
 		}
-		
+
 		uint8_t a = 'a';
-		PIOS_COM_SendBuffer(pios_com_softusart_id, &a, 1);
+		if ((ms_count & 0x00000fff) == 0x400)
+			PIOS_COM_SendBuffer(pios_com_softusart_id, &a, 1);
 	}
 	return 0;
 }
