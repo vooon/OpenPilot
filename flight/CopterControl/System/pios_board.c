@@ -581,8 +581,8 @@ void PIOS_Board_Init(void) {
 	PIOS_Assert(rx_buffer);
 	PIOS_Assert(tx_buffer);
 	if (PIOS_COM_Init(&pios_com_softusart_id, &pios_softusart_com_driver, pios_softusart_id,
-					  rx_buffer, SOFTUSART_BUFSIZE,
-					  tx_buffer, SOFTUSART_BUFSIZE)) {
+					  uart_softusart_rx_buffer, SOFTUSART_BUFSIZE,
+					  uart_softusart_tx_buffer, SOFTUSART_BUFSIZE)) {
 		PIOS_Assert(0);
 	};
 

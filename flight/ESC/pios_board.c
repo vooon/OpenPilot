@@ -120,7 +120,20 @@ void PIOS_Board_Init(void) {
 					  uart_debug_tx_buffer,UART_DEBUG_TX_LEN)) {
 		PIOS_DEBUG_Assert(0);
 	}
+
+#if defined(PIOS_INCLUDE_SOFTUSART)
+	uint32_t pios_softusart_id;
+	if (PIOS_SOFTUSART_Init(&pios_softusart_id, &pios_softusart_cfg)) {
+		PIOS_Assert(0);
+	}
 	
+	if (PIOS_COM_Init(&pios_com_softusart_id, &pios_softusart_com_driver, pios_softusart_id,
+					  uart_softusart_rx_buffer, sizeof(uart_softusart_rx_buffer),
+					  uart_softusart_tx_buffer, sizeof(uart_softusart_tx_buffer))) {
+		PIOS_Assert(0);
+	}
+#endif
+
 	PIOS_WDG_Init();
 }
 

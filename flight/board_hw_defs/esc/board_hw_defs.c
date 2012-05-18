@@ -269,6 +269,51 @@ static uint32_t pios_usart_debug_id;
 
 #endif /* PIOS_INCLUDE_USART */
 
+#if defined(PIOS_INCLUDE_SOFTUSART)
+
+#include "pios_softusart_priv.h"
+
+static const struct pios_softusart_cfg pios_softusart_cfg = {
+	.half_duplex = true,
+	.tim_ic_init = {
+		.TIM_ICPolarity = TIM_ICPolarity_Rising,
+		.TIM_ICSelection = TIM_ICSelection_DirectTI,
+		.TIM_ICPrescaler = 0,
+		.TIM_ICFilter = 0x0,
+	},
+	.rx = {
+		.timer = TIM4,
+		.timer_chan = TIM_Channel_3,
+		.pin = {
+			.gpio = GPIOB,
+			.init = {
+				.GPIO_Pin   = GPIO_Pin_8,
+				.GPIO_Mode  = GPIO_Mode_IPD,
+				.GPIO_Speed = GPIO_Speed_2MHz,
+			},
+		},
+	},
+	.tx = {
+		.timer = TIM4,
+		.timer_chan = TIM_Channel_3,
+		.pin = {
+			.gpio = GPIOB,
+			.init = {
+				.GPIO_Pin   = GPIO_Pin_8,
+				.GPIO_Mode  = GPIO_Mode_IPD,
+				.GPIO_Speed = GPIO_Speed_2MHz,
+			},
+		},
+	},
+};
+
+#define UART_SOFTUSART_TX_LEN 64
+uint8_t uart_softusart_tx_buffer[UART_SOFTUSART_TX_LEN];
+#define UART_SOFTUSART_RX_LEN 64
+uint8_t uart_softusart_rx_buffer[UART_SOFTUSART_RX_LEN];
+
+#endif /* PIOS_INCLUDE_SOFTUSART */
+
 #if defined(PIOS_INCLUDE_COM)
 
 #include <pios_com_priv.h>
@@ -356,4 +401,5 @@ void PIOS_I2C_main_adapter_er_irq_handler(void)
 extern const struct pios_com_driver pios_usart_com_driver;
 
 uint32_t pios_com_debug_id;
+uint32_t pios_com_softusart_id;
 uint8_t adc_fifo_buf[sizeof(float) * 6 * 4] __attribute__ ((aligned(4)));    // align to 32-bit to try and provide speed improvement

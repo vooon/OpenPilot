@@ -75,6 +75,8 @@ int16_t low_voltages[3];
 int32_t avg_low_voltage;
 struct esc_fsm_data * esc_data = 0;
 
+extern uint32_t pios_com_softusart_id;
+
 /**
  * @brief ESC Main function
  */
@@ -208,6 +210,9 @@ int main()
 			else if (config.Mode == ESCSETTINGS_MODE_OPEN)
 				esc_data->duty_cycle_setpoint = PIOS_ESC_MAX_DUTYCYCLE * esc_control.serial_input / 10000;
 		}
+		
+		uint8_t a = 'a';
+		PIOS_COM_SendBuffer(pios_com_softusart_id, &a, 1);
 	}
 	return 0;
 }
