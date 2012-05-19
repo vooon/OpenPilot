@@ -66,8 +66,9 @@ USE_CAMERASTAB ?= YES
 USE_COMUSBBRIDGE ?= YES
 USE_GPS ?= YES
 USE_TXPID ?= YES
-USE_I2C ?= NO
+USE_I2C ?= YES
 USE_ALTITUDE ?= NO
+USE_ETAIRSPEED ?= YES
 TEST_FAULTS ?= NO
 
 # List of optional modules to include
@@ -89,6 +90,13 @@ ifeq ($(USE_I2C), YES)
 OPTMODULES += Altitude
 else
 $(error "Altitude module (USE_ALTITUDE=YES) requires i2c (USE_I2C=YES)")
+endif
+endif
+ifeq ($(USE_ETAIRSPEED), YES)
+ifeq ($(USE_I2C), YES)
+OPTMODULES += Airspeed
+else
+$(error "ET Airspeed module (USE_ETAIRSPEED=YES) requires i2c (USE_I2C=YES)")
 endif
 endif
 ifeq ($(TEST_FAULTS), YES)
@@ -206,6 +214,8 @@ SRC += $(OPUAVSYNTHDIR)/taskinfo.c
 SRC += $(OPUAVSYNTHDIR)/mixerstatus.c
 SRC += $(OPUAVSYNTHDIR)/ratedesired.c
 SRC += $(OPUAVSYNTHDIR)/baroaltitude.c
+SRC += $(OPUAVSYNTHDIR)/baroairspeed.c
+SRC += $(OPUAVSYNTHDIR)/baroairspeedsettings.c
 SRC += $(OPUAVSYNTHDIR)/txpidsettings.c
 
 endif
@@ -251,6 +261,7 @@ SRC += $(PIOSCOMMON)/pios_flash_jedec.c
 SRC += $(PIOSCOMMON)/pios_adxl345.c
 SRC += $(PIOSCOMMON)/pios_mpu6000.c
 SRC += $(PIOSCOMMON)/pios_com.c
+SRC += $(PIOSCOMMON)/pios_etasv3.c
 #SRC += $(PIOSCOMMON)/pios_i2c_esc.c
 #SRC += $(PIOSCOMMON)/pios_bmp085.c
 SRC += $(PIOSCOMMON)/pios_rcvr.c

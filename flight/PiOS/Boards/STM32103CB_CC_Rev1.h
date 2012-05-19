@@ -108,6 +108,7 @@ extern uint32_t pios_i2c_flexi_adapter_id;
 #define PIOS_I2C_MAIN_ADAPTER			(pios_i2c_flexi_adapter_id)
 #define PIOS_I2C_ESC_ADAPTER			(pios_i2c_flexi_adapter_id)
 #define PIOS_I2C_BMP085_ADAPTER			(pios_i2c_flexi_adapter_id)
+#define PIOS_I2C_ETASV3_ADAPTER			(PIOS_I2C_MAIN_ADAPTER)
 
 //------------------------
 // PIOS_BMP085
