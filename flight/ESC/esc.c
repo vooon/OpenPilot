@@ -127,7 +127,7 @@ int main()
 
 	esc_serial_init();
 	
-	test_esc();
+	if (0) test_esc();
 	
 	// Blink LED briefly once passed	
 	PIOS_LED_Off(0);
