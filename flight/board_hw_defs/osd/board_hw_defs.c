@@ -406,11 +406,11 @@ const struct pios_usb_cdc_cfg pios_usb_cdc_cfg = {
 #include <pios_video.h>
 static const struct pios_exti_cfg pios_exti_hsync_cfg __exti_config = {
 	.vector = PIOS_Hsync_ISR,
-	.line = EXTI_Line7,
+	.line = EXTI_Line9,
 	.pin = {
-		.gpio = GPIOB,
+		.gpio = GPIOA,
 		.init = {
-			.GPIO_Pin = GPIO_Pin_7,
+			.GPIO_Pin = GPIO_Pin_9,
 			.GPIO_Speed = GPIO_Speed_100MHz,
 			.GPIO_Mode = GPIO_Mode_IN,
 			.GPIO_OType = GPIO_OType_OD,
@@ -427,7 +427,7 @@ static const struct pios_exti_cfg pios_exti_hsync_cfg __exti_config = {
 	},
 	.exti = {
 		.init = {
-			.EXTI_Line = EXTI_Line7, // matches above GPIO pin
+			.EXTI_Line = EXTI_Line9, // matches above GPIO pin
 			.EXTI_Mode = EXTI_Mode_Interrupt,
 			//.EXTI_Trigger = EXTI_Trigger_Rising_Falling,
 			.EXTI_Trigger = EXTI_Trigger_Falling,
