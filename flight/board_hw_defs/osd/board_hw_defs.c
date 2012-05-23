@@ -613,36 +613,36 @@ static const struct pios_video_cfg pios_video_cfg = {
 	.vsync = &pios_exti_vsync_cfg,
 	
 	.pixel_timer = {
-		.timer = TIM4,
+		.timer = TIM1,
 		.timer_chan = TIM_Channel_1,
 		.pin = {
-			.gpio = GPIOB,
+			.gpio = GPIOA,
 			.init = {
-				.GPIO_Pin = GPIO_Pin_6,
+				.GPIO_Pin = GPIO_Pin_8,
 				.GPIO_Speed = GPIO_Speed_100MHz,
 				.GPIO_Mode  = GPIO_Mode_AF,
 				.GPIO_OType = GPIO_OType_PP,
 				.GPIO_PuPd  = GPIO_PuPd_UP
 			},
-			.pin_source = GPIO_PinSource6,
+			.pin_source = GPIO_PinSource8,
 		},
-		.remap = GPIO_AF_TIM4,
+		.remap = GPIO_AF_TIM1,
 	},
 	.hsync_capture = {
-		.timer = TIM4,
+		.timer = TIM1,
 		.timer_chan = TIM_Channel_2,
 		.pin = {
-			.gpio = GPIOB,
+			.gpio = GPIOA,
 			.init = {
-				.GPIO_Pin = GPIO_Pin_7,
+				.GPIO_Pin = GPIO_Pin_9,
 				.GPIO_Speed = GPIO_Speed_100MHz,
 				.GPIO_Mode  = GPIO_Mode_AF,
 				.GPIO_OType = GPIO_OType_PP,
 				.GPIO_PuPd  = GPIO_PuPd_UP
 			},
-			.pin_source = GPIO_PinSource7,
+			.pin_source = GPIO_PinSource9,
 		},
-		.remap = GPIO_AF_TIM4,
+		.remap = GPIO_AF_TIM1,
 	},
 	.tim_oc_init = {
 		.TIM_OCMode = TIM_OCMode_PWM1,
