@@ -1,0 +1,15 @@
+<xml>
+    <object name="BaroAirspeedSettings" singleinstance="true" settings="true">
+        <description>Settings for the @ref BaroAirspeed module used on CopterControl or Revolution</description>
+        <field name="Sample_Period_ms" units="ms" type="uint8" elements="1" defaultvalue="50"/>
+        <field name="Zero" units="raw" type="int16" elements="1" defaultvalue="0"/>
+        <field name="Scale" units="raw" type="float" elements="1" defaultvalue="1.0"/>
+        <field name="CalibrationSamples" units="integer" type="uint8" elements="1" defaultvalue="40"/>
+        <field name="CalibrationIdle" units="integer" type="uint8" elements="1" defaultvalue="40"/>
+        <field name="CalibrationMode" units="" type="enum" options="Auto,Manual" defaultvalue="Auto" elements="1" />
+        <access gcs="readwrite" flight="readwrite"/>
+        <telemetrygcs acked="true" updatemode="onchange" period="0"/>
+        <telemetryflight acked="true" updatemode="onchange" period="0"/>
+        <logging updatemode="manual" period="0"/>
+    </object>
+</xml>
