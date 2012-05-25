@@ -1,13 +1,13 @@
 /**
  ******************************************************************************
  *
- * @file       emptyplugin.h
- * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2010.
+ * @file       generici2cfactory.h
+ * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2012.
  * @addtogroup GCSPlugins GCS Plugins
  * @{
- * @addtogroup EmptyGadgetPlugin Empty Gadget Plugin
+ * @addtogroup GenericI2CPlugin
  * @{
- * @brief A place holder gadget plugin 
+ * @brief A place holder gadget plugin
  *****************************************************************************/
 /*
  * This program is free software; you can redistribute it and/or modify
@@ -25,23 +25,26 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef EMPTYPLUGIN_H_
-#define EMPTYPLUGIN_H_
+#ifndef GENERICI2CFACTORY_H_
+#define GENERICI2CFACTORY_H_
 
-#include <extensionsystem/iplugin.h>
+#include <coreplugin/iuavgadgetfactory.h>
 
-class EmptyGadgetFactory;
+namespace Core {
+class IUAVGadget;
+class IUAVGadgetFactory;
+}
 
-class EmptyPlugin : public ExtensionSystem::IPlugin
+using namespace Core;
+
+class GenericI2CFactory : public IUAVGadgetFactory
 {
+    Q_OBJECT
 public:
-    EmptyPlugin();
-   ~EmptyPlugin();
+    GenericI2CFactory(QObject *parent = 0);
+    ~GenericI2CFactory();
 
-   void extensionsInitialized();
-   bool initialize(const QStringList & arguments, QString * errorString);
-   void shutdown();
-private:
-   EmptyGadgetFactory *mf;
+    IUAVGadget *createGadget(QWidget *parent);
 };
-#endif /* EMPTYPLUGIN_H_ */
+
+#endif // GENERICI2CFACTORY_H_

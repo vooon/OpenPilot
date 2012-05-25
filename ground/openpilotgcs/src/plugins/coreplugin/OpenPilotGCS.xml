@@ -905,6 +905,10 @@
         </data>
       </MS__PCT__20Sidewinder>
     </GCSControlGadget>
+    <GenericI2C>
+      <default>
+      </default>
+    </GenericI2C>
     <GpsDisplayGadget>
       <Flight__PCT__20GPS>
         <configInfo>

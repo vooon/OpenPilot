@@ -215,3 +215,9 @@ SUBDIRS += plugin_uavobjectwidgetutils
 #plugin_powerlog.depends = plugin_coreplugin
 #plugin_powerlog.depends += plugin_rawhid
 #SUBDIRS += plugin_powerlog
+
+# Generic I2C compiler plugin
+plugin_generici2c.subdir = generici2c
+plugin_generici2c.depends = plugin_coreplugin
+plugin_generici2c.depends += plugin_uavobjects
+SUBDIRS += plugin_generici2c

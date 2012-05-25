@@ -31,8 +31,11 @@
 
 #include <pios.h>
 #include "generici2csensor.h"
+#include "../../../shared/lib/gen_i2c_vm.h" //<------ICK, UGLY
+
 
 #define I2C_VM_RAM_SIZE 8
+uint32_t program[MAX_PRGM_SIZE] //This is the program vector
 
 struct i2c_vm_regs {
 	bool     halted;
@@ -55,18 +58,21 @@ struct i2c_vm_regs {
 	float    f3;
 };
 
+/* Halt the virtual machine */
 static bool i2c_vm_halt (struct i2c_vm_regs * vm_state, uint8_t op1, uint8_t op2, uint8_t op3)
 {
 	vm_state->halted = true;
 	return (true);
 }
 
+/* Virtual machine no operation instruction */
 static bool i2c_vm_nop (struct i2c_vm_regs * vm_state, uint8_t op1, uint8_t op2, uint8_t op3)
 {
 	vm_state->pc++;
 	return (true);
 }
 
+/* Set virtual machine counter */
 static bool i2c_vm_set_ctr (struct i2c_vm_regs * vm_state, uint8_t op1, uint8_t op2, uint8_t op3)
 {
 	vm_state->ctr = op1;
@@ -74,6 +80,7 @@ static bool i2c_vm_set_ctr (struct i2c_vm_regs * vm_state, uint8_t op1, uint8_t 
 	return (true);
 }
 
+/* Store virtual machine data in RAM  */
 static bool i2c_vm_store (struct i2c_vm_regs * vm_state, uint8_t op1, uint8_t op2, uint8_t op3)
 {
 	if (op2 >= sizeof(vm_state->ram)) {
@@ -85,12 +92,8 @@ static bool i2c_vm_store (struct i2c_vm_regs * vm_state, uint8_t op1, uint8_t op
 	return (true);
 }
 
-enum i2c_exported_regs {
-	VM_R0,
-	VM_R1,
-	VM_F0,
-};
 
+/* Load data into virtual machine registers */
 static bool i2c_vm_load (struct i2c_vm_regs * vm_state, uint32_t val, uint8_t op3)
 {
 	switch (op3) {
@@ -111,13 +114,14 @@ static bool i2c_vm_load (struct i2c_vm_regs * vm_state, uint32_t val, uint8_t op
 	return (true);
 }
 
+/* Load register information in Big Endian format */
 static bool i2c_vm_load_be (struct i2c_vm_regs * vm_state, uint8_t op1, uint8_t op2, uint8_t op3)
 {
 	if ((op2 < 1) || (op2 > 4)) {
 		return (false);
 	}
 
-	uint32_t val;
+	uint32_t val=0; //Important that this be =0
 	memcpy (&val, &(vm_state->ram[op1]), op2);
 
 	/* Handle byte swapping */
@@ -129,13 +133,14 @@ static bool i2c_vm_load_be (struct i2c_vm_regs * vm_state, uint8_t op1, uint8_t 
 	return (i2c_vm_load (vm_state, val, op3));
 }
 
+/* Load register information in Little Endian format */
 static bool i2c_vm_load_le (struct i2c_vm_regs * vm_state, uint8_t op1, uint8_t op2, uint8_t op3)
 {
 	if ((op2 < 1) || (op2 > 4)) {
 		return (false);
 	}
 
-	uint32_t val;
+	uint32_t val=0; //Important that this be =0
 	memcpy (&val, &(vm_state->ram[op1]), op2);
 
 	return (i2c_vm_load (vm_state, val, op3));
@@ -151,12 +156,14 @@ static bool i2c_vm_dec_ctr (struct i2c_vm_regs * vm_state, uint8_t op1, uint8_t 
 	return (true);
 }
 
+/* Virtual machine jump operation */
 static bool i2c_vm_jump (struct i2c_vm_regs * vm_state, uint8_t op1, uint8_t op2, uint8_t op3)
 {
 	vm_state->pc += op1;
 	return (true);
 }
 
+/* Virtual machine Branch If Not Zero operation */
 static bool i2c_vm_bnz (struct i2c_vm_regs * vm_state, uint8_t op1, uint8_t op2, uint8_t op3)
 {
 	if (vm_state->ctr) {
@@ -167,6 +174,7 @@ static bool i2c_vm_bnz (struct i2c_vm_regs * vm_state, uint8_t op1, uint8_t op2,
 	return (true);
 }
 
+/* Set I2C device address in virtual machine */
 static bool i2c_vm_set_dev_addr (struct i2c_vm_regs * vm_state, uint8_t op1, uint8_t op2, uint8_t op3)
 {
 	vm_state->i2c_dev_addr = op1;
@@ -174,6 +182,7 @@ static bool i2c_vm_set_dev_addr (struct i2c_vm_regs * vm_state, uint8_t op1, uin
 	return (true);
 }
 
+/* Read I2C data into virtual machine RAM */
 static bool i2c_vm_read (struct i2c_vm_regs * vm_state, uint8_t op1, uint8_t op2, uint8_t op3)
 {
 	/* Make sure our read fits in our buffer */
@@ -195,6 +204,7 @@ static bool i2c_vm_read (struct i2c_vm_regs * vm_state, uint8_t op1, uint8_t op2
 	return (PIOS_I2C_Transfer(PIOS_I2C_MAIN_ADAPTER, txn_list, NELEMENTS(txn_list)));
 }
 
+/* Write I2C data from virtual machine RAM */
 static bool i2c_vm_write (struct i2c_vm_regs * vm_state, uint8_t op1, uint8_t op2, uint8_t op3)
 {
 	if (op1 > sizeof(vm_state->ram)) {
@@ -215,6 +225,7 @@ static bool i2c_vm_write (struct i2c_vm_regs * vm_state, uint8_t op1, uint8_t op
 	return (PIOS_I2C_Transfer(PIOS_I2C_MAIN_ADAPTER, txn_list, NELEMENTS(txn_list)));
 }
 
+/* Send UAVObject from virtual machine registers */
 static bool i2c_vm_send_uavo (struct i2c_vm_regs * vm_state, uint8_t op1, uint8_t op2, uint8_t op3)
 {
 	/* Copy our exportable state into the uavo */
@@ -228,6 +239,7 @@ static bool i2c_vm_send_uavo (struct i2c_vm_regs * vm_state, uint8_t op1, uint8_
 	return (true);
 }
 
+/* Make virtual machine wait op1 [ms] */
 static bool i2c_vm_delay (struct i2c_vm_regs * vm_state, uint8_t op1, uint8_t op2, uint8_t op3)
 {
 	vTaskDelay(op1);
@@ -235,6 +247,7 @@ static bool i2c_vm_delay (struct i2c_vm_regs * vm_state, uint8_t op1, uint8_t op
 	return (true);
 }
 
+/* Reboot virtual machine */
 static bool i2c_vm_reboot (struct i2c_vm_regs * vm_state)
 {
 	vm_state->halted = false;
@@ -257,42 +270,27 @@ static bool i2c_vm_reboot (struct i2c_vm_regs * vm_state)
 	return true;
 }
 
-enum i2c_vm_opcodes {
-	I2C_VM_OP_HALT,
-	I2C_VM_OP_NOP,
-	I2C_VM_OP_STORE,
-	I2C_VM_OP_LOAD_BE,
-	I2C_VM_OP_LOAD_LE,
-	I2C_VM_OP_SET_CTR,
-	I2C_VM_OP_DEC_CTR,
-	I2C_VM_OP_BNZ,
-	I2C_VM_OP_JUMP,
-	I2C_VM_OP_SET_DEV_ADDR,
-	I2C_VM_OP_READ,
-	I2C_VM_OP_WRITE,
-	I2C_VM_OP_SEND_UAVO,
-	I2C_VM_OP_DELAY,
-};
 
 typedef bool (*i2c_vm_inst_handler) (struct i2c_vm_regs * vm_state, uint8_t op1, uint8_t op2, uint8_t op3);
 
 const i2c_vm_inst_handler i2c_vm_handlers[] = {
-	[I2C_VM_OP_HALT]         = i2c_vm_halt,
-	[I2C_VM_OP_NOP]          = i2c_vm_nop,
-	[I2C_VM_OP_STORE]        = i2c_vm_store,
-	[I2C_VM_OP_LOAD_BE]      = i2c_vm_load_be,
-	[I2C_VM_OP_LOAD_LE]      = i2c_vm_load_le,
-	[I2C_VM_OP_SET_CTR]      = i2c_vm_set_ctr,
-	[I2C_VM_OP_DEC_CTR]      = i2c_vm_dec_ctr,
-	[I2C_VM_OP_BNZ]          = i2c_vm_bnz,
-	[I2C_VM_OP_JUMP]         = i2c_vm_jump,
-	[I2C_VM_OP_SET_DEV_ADDR] = i2c_vm_set_dev_addr,
-	[I2C_VM_OP_READ]         = i2c_vm_read,
-	[I2C_VM_OP_WRITE]        = i2c_vm_write,
-	[I2C_VM_OP_SEND_UAVO]    = i2c_vm_send_uavo,
-	[I2C_VM_OP_DELAY]        = i2c_vm_delay,
+	[I2C_VM_OP_HALT]         = i2c_vm_halt,         //Halt
+	[I2C_VM_OP_NOP]          = i2c_vm_nop,          //No operation
+	[I2C_VM_OP_STORE]        = i2c_vm_store,        //Store value
+	[I2C_VM_OP_LOAD_BE]      = i2c_vm_load_be,      //Load big endian
+	[I2C_VM_OP_LOAD_LE]      = i2c_vm_load_le,      //Load little endian
+	[I2C_VM_OP_SET_CTR]      = i2c_vm_set_ctr,      //Set counter
+	[I2C_VM_OP_DEC_CTR]      = i2c_vm_dec_ctr,      //Decrement counter
+	[I2C_VM_OP_BNZ]          = i2c_vm_bnz,          //Branch if not zero
+	[I2C_VM_OP_JUMP]         = i2c_vm_jump,         //Jump
+	[I2C_VM_OP_SET_DEV_ADDR] = i2c_vm_set_dev_addr, //Set I2C device address
+	[I2C_VM_OP_READ]         = i2c_vm_read,         //Read from I2C bus
+	[I2C_VM_OP_WRITE]        = i2c_vm_write,        //Write to I2C bus
+	[I2C_VM_OP_SEND_UAVO]    = i2c_vm_send_uavo,    //Send UAVObject
+	[I2C_VM_OP_DELAY]        = i2c_vm_delay,        //Wait (ms)
 };
 
+/* Run virtual machine. This is the code that loops through and interprets all the instructions */
 static bool i2c_vm_run (uint32_t * code, uint8_t code_len)
 {
 	static struct i2c_vm_regs vm;
@@ -332,54 +330,61 @@ static bool i2c_vm_run (uint32_t * code, uint8_t code_len)
 	return (!vm.fault);
 }
 
-#define I2C_VM_ASM(operator, op1, op2, op3) (((operator & 0xFF) << 24) | \
-						((op1 & 0xFF) << 16) | \
-						((op2 & 0xFF) << 8) | \
-						((op3 & 0xFF)))
-
-#define I2C_VM_ASM_NOP() (I2C_VM_ASM(I2C_VM_OP_NOP, 0, 0, 0))
-#define I2C_VM_ASM_HALT() (I2C_VM_ASM(I2C_VM_OP_HALT, 0, 0, 0))
-#define I2C_VM_ASM_SET_DEV_ADDR(addr) (I2C_VM_ASM(I2C_VM_OP_SET_DEV_ADDR, (addr), 0, 0))
-#define I2C_VM_ASM_WRITE(length) (I2C_VM_ASM(I2C_VM_OP_WRITE, (length), 0, 0))
-#define I2C_VM_ASM_READ(length) (I2C_VM_ASM(I2C_VM_OP_READ, (length), 0, 0))
-#define I2C_VM_ASM_DELAY(ms) (I2C_VM_ASM(I2C_VM_OP_DELAY, (ms), 0, 0))
-#define I2C_VM_ASM_JUMP(rel_addr) (I2C_VM_ASM(I2C_VM_OP_JUMP, (rel_addr), 0, 0))
-#define I2C_VM_ASM_STORE(value, addr) (I2C_VM_ASM(I2C_VM_OP_STORE, (value), (addr), 0))
-#define I2C_VM_ASM_BNZ(rel_addr) (I2C_VM_ASM(I2C_VM_OP_BNZ, (rel_addr), 0, 0))
-#define I2C_VM_ASM_SET_CTR(ctr_val) (I2C_VM_ASM(I2C_VM_OP_SET_CTR, (ctr_val), 0, 0))
-#define I2C_VM_ASM_DEC_CTR() (I2C_VM_ASM(I2C_VM_OP_DEC_CTR, 0, 0, 0))
-
-#define I2C_VM_ASM_LOAD_BE(addr, length, dest_reg) (I2C_VM_ASM(I2C_VM_OP_LOAD_BE, (addr), (length), (dest_reg)))
-#define I2C_VM_ASM_LOAD_LE(addr, length, dest_reg) (I2C_VM_ASM(I2C_VM_OP_LOAD_LE, (addr), (length), (dest_reg)))
+//#define I2C_VM_ASM(operator, op1, op2, op3) (((operator & 0xFF) << 24) | \
+//						((op1 & 0xFF) << 16) | \
+//						((op2 & 0xFF) << 8) | \
+//						((op3 & 0xFF)))
+//
+//#define I2C_VM_ASM_NOP() (I2C_VM_ASM(I2C_VM_OP_NOP, 0, 0, 0))
+//#define I2C_VM_ASM_HALT() (I2C_VM_ASM(I2C_VM_OP_HALT, 0, 0, 0))
+//#define I2C_VM_ASM_SET_DEV_ADDR(addr) (I2C_VM_ASM(I2C_VM_OP_SET_DEV_ADDR, (addr), 0, 0))
+//#define I2C_VM_ASM_WRITE_I2C(length) (I2C_VM_ASM(I2C_VM_OP_WRITE, (length), 0, 0))
+//#define I2C_VM_ASM_READ_I2C(length) (I2C_VM_ASM(I2C_VM_OP_READ, (length), 0, 0))
+//#define I2C_VM_ASM_DELAY(ms) (I2C_VM_ASM(I2C_VM_OP_DELAY, (ms), 0, 0))
+//#define I2C_VM_ASM_JUMP(rel_addr) (I2C_VM_ASM(I2C_VM_OP_JUMP, (rel_addr), 0, 0))
+//#define I2C_VM_ASM_STORE(value, addr) (I2C_VM_ASM(I2C_VM_OP_STORE, (value), (addr), 0))
+//#define I2C_VM_ASM_BNZ(rel_addr) (I2C_VM_ASM(I2C_VM_OP_BNZ, (rel_addr), 0, 0))
+//#define I2C_VM_ASM_SET_CTR(ctr_val) (I2C_VM_ASM(I2C_VM_OP_SET_CTR, (ctr_val), 0, 0))
+//#define I2C_VM_ASM_DEC_CTR() (I2C_VM_ASM(I2C_VM_OP_DEC_CTR, 0, 0, 0))
+//#define I2C_VM_ASM_LOAD_BE(addr, length, dest_reg) (I2C_VM_ASM(I2C_VM_OP_LOAD_BE, (addr), (length), (dest_reg)))
+//#define I2C_VM_ASM_LOAD_LE(addr, length, dest_reg) (I2C_VM_ASM(I2C_VM_OP_LOAD_LE, (addr), (length), (dest_reg)))
 
 #define I2C_VM_ASM_SEND_UAVO() (I2C_VM_ASM(I2C_VM_OP_SEND_UAVO, 0, 0, 0))
 
+/* Simple test program to demonstrate that the generic I2C VM works. However, 
+ * there is currently no logic to configure the VM from the GCS.
+ */
 void gen_i2c_vm_test (void)
 {
-	uint32_t program[] = {
-		I2C_VM_ASM_NOP(),
-
-		I2C_VM_ASM_SET_CTR(10),
-		I2C_VM_ASM_SET_DEV_ADDR(0x53),
-		I2C_VM_ASM_STORE(0x2D, 0),
-		I2C_VM_ASM_STORE(0x08, 1),
-		I2C_VM_ASM_WRITE(2),
-		I2C_VM_ASM_DEC_CTR(),
-		I2C_VM_ASM_BNZ(-4),
-
-		I2C_VM_ASM_SET_DEV_ADDR(0x53),
-		I2C_VM_ASM_STORE(0x32, 0),
-		I2C_VM_ASM_WRITE(1),
-		I2C_VM_ASM_DELAY(50),
-		I2C_VM_ASM_READ(6),
-		I2C_VM_ASM_LOAD_LE(0, 2, VM_R0),
-		I2C_VM_ASM_LOAD_LE(2, 2, VM_R1),
-
-		I2C_VM_ASM_SET_DEV_ADDR(0x27),
-		
-		I2C_VM_ASM_SEND_UAVO(),
-		I2C_VM_ASM_JUMP(-9),
+	/* Generate test program as an array of integers. This would normally be done by the GCS */
+	uint32_t test_program = {
+	I2C_VM_ASM_NOP(), //Do nothing
+	
+	I2C_VM_ASM_SET_CTR(10), //Set counter to 10
+	I2C_VM_ASM_SET_DEV_ADDR(0x53), //Set I2C device address (in 7-bit)
+	I2C_VM_ASM_STORE(0x2D, 0), //Store register address
+	I2C_VM_ASM_STORE(0x08, 1), //Store register value
+	I2C_VM_ASM_WRITE_I2C(2), //Write two bytes
+	I2C_VM_ASM_DEC_CTR(), //Decrement counter
+	I2C_VM_ASM_BNZ(-4), //If the counter is not zero, go back four steps
+	
+	I2C_VM_ASM_SET_DEV_ADDR(0x53), //Set I2C device address (in 7-bit)
+	I2C_VM_ASM_STORE(0x32, 0), //Store register address
+	I2C_VM_ASM_WRITE_I2C(1),  //Write one bytes
+	I2C_VM_ASM_DELAY(50), //Delay 50ms
+	I2C_VM_ASM_READ_I2C(6),   //Read six bytes
+	I2C_VM_ASM_LOAD_LE(0, 2, VM_R0), //Load formatted bytes into first output register
+	I2C_VM_ASM_LOAD_LE(2, 2, VM_R1), //Load formatted bytes into second output register
+	
+	I2C_VM_ASM_SET_DEV_ADDR(0x27), //Set I2C device address (in 7-bit)
+	
+	I2C_VM_ASM_SEND_UAVO(), //Set the UAVObjects
+	I2C_VM_ASM_JUMP(-9),    //Jump back 9 steps
 	};
+	
+	for (int i=0; i<18; i++){
+		program[i]=test_program[i];
+	}
 
 	if (i2c_vm_run(program, NELEMENTS(program))) {
 		/* Program ran to completion */

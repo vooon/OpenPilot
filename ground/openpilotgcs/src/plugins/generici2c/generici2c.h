@@ -1,13 +1,13 @@
 /**
  ******************************************************************************
  *
- * @file       emptyplugin.h
- * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2010.
+ * @file       generici2c.h
+ * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2012.
  * @addtogroup GCSPlugins GCS Plugins
  * @{
- * @addtogroup EmptyGadgetPlugin Empty Gadget Plugin
+ * @addtogroup GenericI2CPlugin
  * @{
- * @brief A place holder gadget plugin 
+ * @brief A place holder gadget plugin
  *****************************************************************************/
 /*
  * This program is free software; you can redistribute it and/or modify
@@ -24,24 +24,35 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
+#ifndef GENERICI2C_H_
+#define GENERICI2C_H_
 
-#ifndef EMPTYPLUGIN_H_
-#define EMPTYPLUGIN_H_
+#include <coreplugin/iuavgadget.h>
 
-#include <extensionsystem/iplugin.h>
+namespace Core {
+class IUAVGadget;
+}
 
-class EmptyGadgetFactory;
+class GenericI2CWidget;
 
-class EmptyPlugin : public ExtensionSystem::IPlugin
+using namespace Core;
+
+class GenericI2C : public Core::IUAVGadget
 {
+    Q_OBJECT
 public:
-    EmptyPlugin();
-   ~EmptyPlugin();
+    GenericI2C(QString classId, GenericI2CWidget *widget, QWidget *parent = 0);
+    ~GenericI2C();
 
-   void extensionsInitialized();
-   bool initialize(const QStringList & arguments, QString * errorString);
-   void shutdown();
+    QList<int> context() const { return m_context; }
+    QWidget *widget() { return m_widget; }
+    QString contextHelpId() const { return QString(); }
+
 private:
-   EmptyGadgetFactory *mf;
+    QWidget *m_widget;
+    QList<int> m_context;
+    void GenerateVmCode();
 };
-#endif /* EMPTYPLUGIN_H_ */
+
+
+#endif // GENERICI2C_H_
