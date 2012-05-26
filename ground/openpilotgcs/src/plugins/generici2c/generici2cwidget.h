@@ -31,6 +31,7 @@
 #include "ui_generici2c.h"
 
 #include <QtGui/QLabel>
+#include <QStringList>
 
 class GenericI2CWidget : public QLabel
 {
@@ -42,6 +43,13 @@ public:
 
 private:
     Ui_GenericI2CWidget	*m_widget;
+
+    int instrctIdx;
+
+private slots:
+//    void switchCompilerInst(QString instruction);
+    void addAdditionalCompilerLine();
+
 };
 
 #endif /* GENERICI2CWIDGET_H */

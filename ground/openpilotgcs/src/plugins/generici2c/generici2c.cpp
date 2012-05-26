@@ -31,6 +31,7 @@
 
 using namespace std;
 
+
 GenericI2C::GenericI2C(QString classId, GenericI2CWidget *widget, QWidget *parent) :
     IUAVGadget(classId, parent),
     m_widget(widget)
@@ -42,17 +43,20 @@ GenericI2C::~GenericI2C()
     delete m_widget;
 }
 
-void GenericI2C::GenerateVmCode()
+void GenericI2C::generateVmCode()
 {
+    Ui_GenericI2CWidget *p_widget;
+
     //Determine program length
     int programLength;
 
 
     vector<uint32_t> program;
     program.clear();
-/*
-    program.at(1)=I2C_VM_ASM_SET_DEV_ADDR(m_widget->I2CAddressLineEdit);
 
+
+    program.at(1)=I2C_VM_ASM_SET_DEV_ADDR(p_widget->I2CAddressLineEdit->text().toInt());
+/*
 
 //    foreach(QComboBox *combobox, this->findChildren<QComboBox*>(QRegExp("\\S+ChannelBo\\S+")))//FOR WHATEVER REASON, THIS DOES NOT WORK WITH ChannelBox. ChannelBo is sufficiently accurate
 //	{

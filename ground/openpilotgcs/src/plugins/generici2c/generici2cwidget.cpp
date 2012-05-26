@@ -26,28 +26,48 @@
  */
 #include "generici2cwidget.h"
 #include "generici2cfactory.h"
+#include "vminstructionform.h"
 
 #include <QDebug>
-#include <QStringList>
 #include <QtGui/QWidget>
 #include <QtGui/QTextEdit>
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QPushButton>
+#include <QScrollArea>
+//#include "uavobjectwidgetutils/configtaskwidget.h"
+
 
 GenericI2CWidget::GenericI2CWidget(QWidget *parent) : QLabel(parent)
 {
+
+
     m_widget = new Ui_GenericI2CWidget();
     m_widget->setupUi(this);
+
+//    addUAVObject("GenericI2CSensor");
+
+//    addApplySaveButtons(m_widget->ApplyPushButton,m_widget->SavePushButton);
 
     m_widget->hexDexComboBox->addItem("Hexadecimal");
     m_widget->hexDexComboBox->addItem("Decimal");
 
-//    setMinimumSize(64,64);
-//    setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-//    this->
-//    setText(tr("Choose a gadget to display in this view.\n") +
-//            tr("You can also split this view in two.\n\n") +
-//            tr("Maybe you first have to choose Edit Gadgets Mode in the Window menu."));
+//    instructionTypes << "None" << "Write" << "Read" << "Delay [ms]" << "Send UAVO";
+//    m_widget->InstructionComboBox_0->addItems(instructionTypes);
+//    m_widget->InstructionComboBox_0->setCurrentIndex(0);
+
+    //Connect elements to callback functions
+//    connect(m_widget->InstructionComboBox_0, SIGNAL(currentIndexChanged(QString)), this, SLOT(switchCompilerInst(QString)));
+    connect(m_widget->AdditionalLinesPushButton, SIGNAL(clicked()), this, SLOT(addAdditionalCompilerLine()));
+
+    //Add first programming line
+    instrctIdx=0; // <--- *must* come beofre addAdditionalCompilerLine()
+    addAdditionalCompilerLine();
+
+    //Add scroll bar when necessary
+//    QScrollArea *scroll = new QScrollArea;
+//    scroll->setWidget(m_widget->frame);
+//    m_widget->gridLayout->addWidget(scroll);
+
 }
 
 GenericI2CWidget::~GenericI2CWidget()
@@ -55,3 +75,18 @@ GenericI2CWidget::~GenericI2CWidget()
     // Do nothing
 }
 
+void GenericI2CWidget::addAdditionalCompilerLine(){
+    qDebug()<<"Add compiler line";
+    VMInstructionForm *form = new VMInstructionForm(instrctIdx, this);
+//    connect(m_config->channelOutTest, SIGNAL(toggled(bool)),
+//            form, SLOT(enableChannelTest(bool)));
+//    connect(form, SIGNAL(channelChanged(int,int)),
+//            this, SLOT(sendChannelTest(int,int)));
+    m_widget->vmInstructionLayout->addWidget(form);
+
+    instrctIdx++;
+}
+
+//void GenericI2CWidget::switchCompilerInst(QString instruction){
+//    qDebug()<<"Switching compiler instruction.";
+//}

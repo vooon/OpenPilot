@@ -34,7 +34,7 @@
 #include <QPushButton>
 #include <QList>
 #include <QEventLoop>
-#include "uavobjectutilmanager.h"
+#include "../uavobjectutil/uavobjectutilmanager.h"
 #include <QObject>
 #include <QDebug>
 class smartSaveButton:public QObject

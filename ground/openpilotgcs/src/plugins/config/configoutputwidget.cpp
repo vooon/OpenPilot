@@ -57,7 +57,7 @@ ConfigOutputWidget::ConfigOutputWidget(QWidget *parent) : ConfigTaskWidget(paren
     connect(importexportplugin,SIGNAL(importAboutToBegin()),this,SLOT(stopTests()));
 
     addApplySaveButtons(m_config->saveRCOutputToRAM,m_config->saveRCOutputToSD);
-        addUAVObject("ActuatorSettings");
+        addUAVObject("ActuatorSettings"); //WHY IS THIS HERE TWICE?
 
     // NOTE: we have channel indices from 0 to 9, but the convention for OP is Channel 1 to Channel 10.
     // Register for ActuatorSettings changes:
