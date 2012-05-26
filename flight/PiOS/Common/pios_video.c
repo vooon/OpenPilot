@@ -148,8 +148,8 @@ const struct pios_tim_callbacks px_callback = {
 	.edge = NULL,
 };
 
-const uint32_t period = 11;
-const uint32_t dc = (11 / 2);
+const uint32_t period = 24;
+const uint32_t dc = (24 / 2);
 
 /**
  * Reset the timer and configure for next call.  Keeps them synced.  Ideally this won't even be needed

@@ -361,11 +361,11 @@ uint32_t pios_com_cotelem_id;
 #include "pios_tim_priv.h"
 #define NTSC_PX_CLOCK  6797088
 #define PAL_PX_CLOCK   6750130
-#define PX_PERIOD      ((PIOS_PERIPHERAL_APB1_CLOCK / NTSC_PX_CLOCK) + 1)
+#define PX_PERIOD      ((PIOS_PERIPHERAL_APB2_CLOCK / PAL_PX_CLOCK) + 1)
 #define LINE_PERIOD    PX_PERIOD * GRAPHICS_WIDTH
 
 static const TIM_TimeBaseInitTypeDef tim_4_time_base = {
-	.TIM_Prescaler = 0, //PIOS_PERIPHERAL_APB1_CLOCK,
+	.TIM_Prescaler = 0, //PIOS_PERIPHERAL_APB2_CLOCK,
 	.TIM_ClockDivision = TIM_CKD_DIV1,
 	.TIM_CounterMode = TIM_CounterMode_Up,
 	.TIM_Period = LINE_PERIOD - 1,
@@ -373,11 +373,11 @@ static const TIM_TimeBaseInitTypeDef tim_4_time_base = {
 };
 
 const static struct pios_tim_clock_cfg pios_tim4_cfg = {
-	.timer = TIM4,
+	.timer = TIM1,
 	.time_base_init = &tim_4_time_base,
 	.irq = {
 		.init = {
-			.NVIC_IRQChannel                   = TIM4_IRQn,
+			.NVIC_IRQChannel                   = TIM1_CC_IRQn,
 			.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_LOW,
 			.NVIC_IRQChannelSubPriority        = 0,
 			.NVIC_IRQChannelCmd                = ENABLE,
