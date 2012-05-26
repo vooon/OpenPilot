@@ -187,8 +187,10 @@ void PIOS_Board_Init(void) {
 			PIOS_FLASHFS_Init(&flashfs_w25x_cfg);
 			break;
 		case BOARD_REVISION_CC3D:
-			PIOS_Flash_Jedec_Init(pios_spi_flash_accel_id, 0, &flash_m25p_cfg);	
-			PIOS_FLASHFS_Init(&flashfs_m25p_cfg);
+			if (PIOS_Flash_Jedec_Init(pios_spi_flash_accel_id, 0, &flash_m25p_cfg) < 0)
+				PIOS_DEBUG_Assert(0);
+			if (PIOS_FLASHFS_Init(&flashfs_m25p_cfg) < 0)
+				PIOS_DEBUG_Assert(0);
 			break;
 		default:
 			PIOS_DEBUG_Assert(0);

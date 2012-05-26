@@ -215,7 +215,7 @@ static void objectUpdatedCb(UAVObjEvent * ev)
 		// Get object data
 		ObjectPersistenceGet(&objper);
 
-		int retval = -1;
+		int retval = 1;
 		// Execute action
 		if (objper.Operation == OBJECTPERSISTENCE_OPERATION_LOAD) {
 			if (objper.Selection == OBJECTPERSISTENCE_SELECTION_SINGLEOBJECT) {
@@ -273,6 +273,9 @@ static void objectUpdatedCb(UAVObjEvent * ev)
 		}
 		if(retval == 0) { 
 			objper.Operation = OBJECTPERSISTENCE_OPERATION_COMPLETED;
+			ObjectPersistenceSet(&objper);
+		} else if (retval < 0) {
+			objper.Operation = OBJECTPERSISTENCE_OPERATION_ERROR;
 			ObjectPersistenceSet(&objper);
 		}
 	}
