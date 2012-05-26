@@ -27,7 +27,10 @@
 #ifndef GENERICI2C_H_
 #define GENERICI2C_H_
 
+#include "vminstructionform.h"
+
 #include <coreplugin/iuavgadget.h>
+#include <vector>
 
 namespace Core {
 class IUAVGadget;
@@ -36,6 +39,8 @@ class IUAVGadget;
 class GenericI2CWidget;
 
 using namespace Core;
+
+void generateVmCode(int, std::vector<VMInstructionForm*>);
 
 class GenericI2C : public Core::IUAVGadget
 {
@@ -51,7 +56,6 @@ public:
 private:
     QWidget *m_widget;
     QList<int> m_context;
-    void generateVmCode();
 };
 
 

@@ -29,9 +29,11 @@
 #define GENERICI2CWIDGET_H
 
 #include "ui_generici2c.h"
+#include "vminstructionform.h"
 
 #include <QtGui/QLabel>
 #include <QStringList>
+#include <vector>
 
 class GenericI2CWidget : public QLabel
 {
@@ -43,13 +45,13 @@ public:
 
 private:
     Ui_GenericI2CWidget	*m_widget;
-
+    std::vector<VMInstructionForm*> formList;
     int instrctIdx;
 
 private slots:
-//    void switchCompilerInst(QString instruction);
     void addAdditionalCompilerLine();
-
+    void applyCompiler();
+    void setHexDecRepresentation(QString);
 };
 
 #endif /* GENERICI2CWIDGET_H */

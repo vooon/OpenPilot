@@ -28,6 +28,11 @@
 #define VMINSTRUCTIONFORM_H_
 
 #include <QWidget>
+#include <QSpinBox>
+#include <vector>
+
+using namespace std;
+
 #include "ui_vminstructionform.h"
 
 class ConfigOnputWidget2;
@@ -41,8 +46,13 @@ public:
     ~VMInstructionForm();
     friend class ConfigOnputWidget2;
 
-    void setAssignment(const QString &assignment);
-    int index() const;
+    void setNumInstructions(int val);
+    QString getInstructionType();
+    int getJumpInstruction();
+    void getReadInstruction(int*numReadBytes);
+    void getWriteInstruction(vector<int> *val);
+    int getDelayInstruction();
+    void setHexRepresentation(bool val);
 
 public slots:
 //    void max(int maximum);
@@ -62,6 +72,14 @@ private:
     QStringList instructionTypes;
     int m_index; //Instruction index
     int unhideIdx; //Index of unhidden text fields
+    int numInstructions;
+
+    QSpinBox  *numReadBytesSpinBox;
+    QSpinBox  *delayMsSpinBox;
+    QComboBox *jumpToLineComboBox;
+
+    bool isHex;
+
 
 private slots:
     void switchCompilerInst(QString instruction);

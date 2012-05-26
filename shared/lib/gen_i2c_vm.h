@@ -32,10 +32,10 @@
 #ifndef GEN_I2C_VM_H_
 #define GEN_I2C_VM_H_
 
-#define MAX_PRGM_SIZE 20 //This is the maximum number of instructions that the program can have
-
 /* Can support up to 256 op codes */
+#ifdef ENUM_OPCODE //enum might not be the best way to do things since different compilers might give different enum values, whereas we need the enum values to be the same between GCS and firmware
 enum i2c_vm_opcodes {
+	adsf
 	I2C_VM_OP_HALT,         //Halt
 	I2C_VM_OP_NOP,          //No operation
 	I2C_VM_OP_STORE,        //Store value
@@ -51,12 +51,33 @@ enum i2c_vm_opcodes {
 	I2C_VM_OP_SEND_UAVO,    //Send UAV Object
 	I2C_VM_OP_DELAY,        //Wait (ms)
 };
-
 enum i2c_exported_regs {
 	VM_R0,
 	VM_R1,
 	VM_F0,
 };
+#else
+#define I2C_VM_OP_HALT          0x00 //Halt
+#define I2C_VM_OP_NOP           0x01 //No operation
+#define I2C_VM_OP_STORE         0x02 //Store value
+#define I2C_VM_OP_LOAD_BE       0x03 //Load big endian
+#define I2C_VM_OP_LOAD_LE       0x04 //Load little endian
+#define I2C_VM_OP_SET_CTR       0x05 //Set counter
+#define I2C_VM_OP_DEC_CTR       0x06 //Decrement counter
+#define I2C_VM_OP_BNZ           0x07 //Branch if counter not equal to zero
+#define I2C_VM_OP_JUMP          0x08 //Jump to 
+#define I2C_VM_OP_SET_DEV_ADDR  0x09 //Set I2C device address
+#define I2C_VM_OP_READ          0x0A //Read from I2C bus
+#define I2C_VM_OP_WRITE         0x0B //Write to I2C bus
+#define I2C_VM_OP_SEND_UAVO     0x0C //Send UAV Object
+#define I2C_VM_OP_DELAY         0x0D //Wait (ms)
+
+#define VM_R0 0x00
+#define VM_R1 0x01
+#define VM_F0 0x02
+
+#endif
+
 
 #define I2C_VM_ASM(operator, op1, op2, op3) (((operator & 0xFF) << 24) | \
 						((op1 & 0xFF) << 16) | \

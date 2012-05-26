@@ -27,7 +27,15 @@
 #include "generici2c.h"
 #include "generici2cwidget.h"
 #include "../../../../../shared/lib/gen_i2c_vm.h" //<------ICK, UGLY
-#include <vector>
+
+#include "extensionsystem/pluginmanager.h"
+//#include "uavobjectmanager.h"
+//#include "uavobject.h"
+//#include "uavobjectfield.h"
+//#include "uavobjectutilmanager.h"
+
+#include "generici2csensorsettings.h"
+#include <QDebug>
 
 using namespace std;
 
@@ -43,49 +51,79 @@ GenericI2C::~GenericI2C()
     delete m_widget;
 }
 
-void GenericI2C::generateVmCode()
+void generateVmCode(int i2c_addr, vector<VMInstructionForm*> formList)
 {
-    Ui_GenericI2CWidget *p_widget;
+
+    qDebug() << "Loading UAVO for I2C compiler";
+
+    //Get UAVO
+    ExtensionSystem::PluginManager* pm = ExtensionSystem::PluginManager::instance();
+    UAVObjectManager* objManager = pm->getObject<UAVObjectManager>();
+
+    GenericI2CSensorSettings *genericI2CSensorSettings = GenericI2CSensorSettings::GetInstance(objManager);
+    Q_ASSERT(genericI2CSensorSettings);
+    GenericI2CSensorSettings::DataFields genericI2CSensorSettingsData = genericI2CSensorSettings->getData();
+
+    UAVObjectField *programField=genericI2CSensorSettings->getField("Program");
+
+    //Compile virtual machine program
+    qDebug() << "Processing " << formList.size() << " instructions.";
 
     //Determine program length
-    int programLength;
-
+    int programLength=formList.size();
 
     vector<uint32_t> program;
-    program.clear();
 
+    //Add setting I2C address as first operation
+    program.push_back(I2C_VM_ASM_SET_DEV_ADDR(i2c_addr));
 
-    program.at(1)=I2C_VM_ASM_SET_DEV_ADDR(p_widget->I2CAddressLineEdit->text().toInt());
-/*
-
-//    foreach(QComboBox *combobox, this->findChildren<QComboBox*>(QRegExp("\\S+ChannelBo\\S+")))//FOR WHATEVER REASON, THIS DOES NOT WORK WITH ChannelBox. ChannelBo is sufficiently accurate
-//	{
-//		combobox->addItems(channels);
-//	}
-    for (int i=1; i<programLength; i++){
-        if(Line[i]=="Wait"){
-            program.push_back(I2C_VM_ASM_DELAY(50));
+    for (int i=0; i<programLength; i++){
+        qDebug() << "Instruction to generic I2C compiler: " << formList[i]->getInstructionType();
+        if(formList[i]->getInstructionType()=="Delay [ms]"){
+            qDebug() << "Wait " << formList[i]->getDelayInstruction() << " ms.";
+            program.push_back(I2C_VM_ASM_DELAY(formList[i]->getDelayInstruction()));
         }
-        if(Line[i]=="Read"){
-            program.push_back(I2C_VM_ASM_READ_I2C(6));   //Read six bytes
+        if(formList[i]->getInstructionType()=="Read"){
+            int numReadBytes;
+            formList[i]->getReadInstruction(&numReadBytes);
+
+            qDebug() << "Reading " << numReadBytes << " bytes.";
+
+            program.push_back(I2C_VM_ASM_READ_I2C(numReadBytes));   //Read bytes
+
             program.push_back(I2C_VM_ASM_LOAD_LE(0, 2, VM_R0)); //Load formatted bytes into first output register
             program.push_back(I2C_VM_ASM_LOAD_LE(2, 2, VM_R1)); //Load formatted bytes into second output register
         }
-        if(Line[i]=="Write"){
-            program.push_back(I2C_VM_ASM_STORE(0x2D, 0)); //Store register address
-            program.push_back(I2C_VM_ASM_STORE(0x08, 1)); //Store register value
-            program.push_back(I2C_VM_ASM_WRITE_I2C(1));
+        if(formList[i]->getInstructionType()=="Write"){
+            vector<int> val;
+            formList[i]->getWriteInstruction(&val);
+
+            qDebug() << "Writing " << val.size() << " bytes.";
+
+
+            for (int j=0; j< val.size(); j++){
+                qDebug()<< val[j];
+                program.push_back(I2C_VM_ASM_STORE(val[j], j)); //Store register address
+            }
+            program.push_back(I2C_VM_ASM_WRITE_I2C(val.size())); //Write bytes
         }
-        if(Line[i]=="Loop"){
-            program.push_back(I2C_VM_ASM_JUMP(-9));
+        if(formList[i]->getInstructionType()=="Jump to line"){
+            qDebug() << "Relative jump of " << formList[i]->getJumpInstruction() << " instructions.";
+            program.push_back(I2C_VM_ASM_JUMP(formList[i]->getJumpInstruction()));
         }
     }
 
-    if (program.size() > MAX_PRGM_SIZE){
+    if (program.size() > programField->getNumElements()){
         //THROW ERROR OF SOME KIND
+        qDebug() << "Program too long!";
         return;
     }
-*/
+
+    qDebug() << "Saving I2C compiler to UAVO";
+    for (unsigned int i=0; i<program.size(); i++){
+        genericI2CSensorSettingsData.Program[i]=program[i];
+    }
+    genericI2CSensorSettings->setData(genericI2CSensorSettingsData);
 }
 
 /*

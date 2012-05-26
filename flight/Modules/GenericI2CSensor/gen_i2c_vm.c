@@ -31,11 +31,12 @@
 
 #include <pios.h>
 #include "generici2csensor.h"
+#include "generici2csensorsettings.h"
 #include "../../../shared/lib/gen_i2c_vm.h" //<------ICK, UGLY
 
 
 #define I2C_VM_RAM_SIZE 8
-uint32_t program[MAX_PRGM_SIZE] //This is the program vector
+uint32_t program[GENERICI2CSENSORSETTINGS_PROGRAM_NUMELEM] //This is the program vector
 
 struct i2c_vm_regs {
 	bool     halted;
@@ -373,8 +374,8 @@ void gen_i2c_vm_test (void)
 	I2C_VM_ASM_WRITE_I2C(1),  //Write one bytes
 	I2C_VM_ASM_DELAY(50), //Delay 50ms
 	I2C_VM_ASM_READ_I2C(6),   //Read six bytes
-	I2C_VM_ASM_LOAD_LE(0, 2, VM_R0), //Load formatted bytes into first output register
-	I2C_VM_ASM_LOAD_LE(2, 2, VM_R1), //Load formatted bytes into second output register
+	I2C_VM_ASM_LOAD_LE(0, 2, VM_R0), //Load 16-bit formatted bytes into first output register
+	I2C_VM_ASM_LOAD_LE(2, 2, VM_R1), //Load 16-bit formatted bytes into second output register
 	
 	I2C_VM_ASM_SET_DEV_ADDR(0x27), //Set I2C device address (in 7-bit)
 	

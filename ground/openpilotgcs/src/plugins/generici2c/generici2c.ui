@@ -17,6 +17,12 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <property name="sizeConstraint">
+    <enum>QLayout::SetDefaultConstraint</enum>
+   </property>
+   <property name="verticalSpacing">
+    <number>-1</number>
+   </property>
    <item row="0" column="0" colspan="2">
     <widget class="QLabel" name="I2CAddressLabel">
      <property name="text">
@@ -25,10 +31,24 @@
     </widget>
    </item>
    <item row="0" column="2">
-    <widget class="QLineEdit" name="I2CAddressLineEdit"/>
+    <widget class="QLineEdit" name="I2CAddressLineEdit">
+     <property name="maximumSize">
+      <size>
+       <width>40</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>0x</string>
+     </property>
+    </widget>
    </item>
    <item row="0" column="5" colspan="2">
-    <widget class="QComboBox" name="hexDexComboBox"/>
+    <widget class="QComboBox" name="hexDecComboBox">
+     <property name="toolTip">
+      <string>Select whether all field values are in hexadecimal or decimal.</string>
+     </property>
+    </widget>
    </item>
    <item row="1" column="0" colspan="7">
     <layout class="QVBoxLayout" name="vmInstructionLayout"/>

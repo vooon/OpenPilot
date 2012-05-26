@@ -1,6 +1,6 @@
 <xml>
 	<object name="GenericI2CSensor" singleinstance="true" settings="false">
-		<description>The raw data from the GenericI2C sensor with up to four  values</description>
+		<description>The raw data from the GenericI2C sensor with up to four values</description>
 		<field name="r0" units="-" type="int32" elements="1"/>
 		<field name="r1" units="-" type="int32" elements="1"/>
 		<field name="r2" units="-" type="int32" elements="1"/>
