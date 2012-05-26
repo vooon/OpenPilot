@@ -34,9 +34,9 @@
 static const struct pios_led pios_leds[] = {
 	[PIOS_LED_HEARTBEAT] = {
 		.pin = {
-			.gpio = GPIOC,
+			.gpio = GPIOD,
 			.init = {
-				.GPIO_Pin   = GPIO_Pin_5,
+				.GPIO_Pin   = GPIO_Pin_13,
 				.GPIO_Speed = GPIO_Speed_50MHz,
 				.GPIO_Mode  = GPIO_Mode_OUT,
 				.GPIO_OType = GPIO_OType_PP,
@@ -46,9 +46,9 @@ static const struct pios_led pios_leds[] = {
 	},
 	[PIOS_LED_ALARM] = {
 		.pin = {
-			.gpio = GPIOC,
+			.gpio = GPIOD,
 			.init = {
-				.GPIO_Pin   = GPIO_Pin_4,
+				.GPIO_Pin   = GPIO_Pin_12,
 				.GPIO_Speed = GPIO_Speed_50MHz,
 				.GPIO_Mode  = GPIO_Mode_OUT,
 				.GPIO_OType = GPIO_OType_PP,
@@ -68,6 +68,49 @@ static const struct pios_led_cfg pios_led_cfg = {
 #include <pios_usart_priv.h>
 
 #if defined(PIOS_INCLUDE_GPS)
+
+static const struct pios_usart_cfg pios_usart_gps_cfg = {
+	.regs = USART2,
+	.remap = GPIO_AF_USART2,
+	.init = {
+		.USART_BaudRate = 38400,
+		.USART_WordLength = USART_WordLength_8b,
+		.USART_Parity = USART_Parity_No,
+		.USART_StopBits = USART_StopBits_1,
+		.USART_HardwareFlowControl =
+		USART_HardwareFlowControl_None,
+		.USART_Mode = USART_Mode_Rx | USART_Mode_Tx,
+	},
+	.irq = {
+		.init = {
+			.NVIC_IRQChannel = USART2_IRQn,
+			.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_LOW,
+			.NVIC_IRQChannelSubPriority = 0,
+			.NVIC_IRQChannelCmd = ENABLE,
+		},
+	},
+	.rx = {
+		.gpio = GPIOA,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_3,
+			.GPIO_Speed = GPIO_Speed_2MHz,
+			.GPIO_Mode  = GPIO_Mode_AF,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_UP
+		},
+	},
+	.tx = {
+		.gpio = GPIOA,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_2,
+			.GPIO_Speed = GPIO_Speed_2MHz,
+			.GPIO_Mode  = GPIO_Mode_AF,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_UP
+		},
+	},
+};
+#if 0
 /*
  * GPS USART
  */
@@ -112,7 +155,7 @@ static const struct pios_usart_cfg pios_usart_gps_cfg = {
 		},
 	},
 };
-
+#endif
 #endif /* PIOS_INCLUDE_GPS */
 
 #ifdef PIOS_INCLUDE_COM_AUX
@@ -312,9 +355,9 @@ static const struct pios_usb_cfg pios_usb_main_cfg = {
 		},
 	},
 	.vsense = {
-		.gpio = GPIOA,
+		.gpio = GPIOD,
 		.init = {
-			.GPIO_Pin   = GPIO_Pin_15,
+			.GPIO_Pin   = GPIO_Pin_11,
 			.GPIO_Speed = GPIO_Speed_25MHz,
 			.GPIO_Mode  = GPIO_Mode_IN,
 			.GPIO_OType = GPIO_OType_OD,
