@@ -607,10 +607,10 @@ static void createPathBox()
 // demo path - logo
 static void createPathLogo()
 {
-	#define SIZE 10.0f
+	#define SIZE 0.5f
 	PathActionData action;
 	PathActionInstGet(0,&action);
-	action.Mode = PATHACTION_MODE_FLYVECTOR;
+	action.Mode = PATHACTION_MODE_DRIVEVECTOR;
 	action.ModeParameters[0]=0;
 	action.ModeParameters[1]=0;
 	action.ModeParameters[2]=0;

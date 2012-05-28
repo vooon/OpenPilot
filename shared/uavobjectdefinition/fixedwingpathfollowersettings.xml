@@ -38,6 +38,11 @@
                 <!-- proportional coefficient for desired throttle
                      in relation to vertical speed error (absolute but including crossfeed) -->
 
+	<!-- coefficients for movement on the ground -->
+	<field name="TaxiYawP" units="(deg/s)/(deg/(m/s))" type="float" elements="1" defaultvalue="0.5" />
+	<field name="TaxiYawRatePI" units="1/(deg/s)" type="float" elementnames="Kp,Ki,ILimit" defaultvalue="0.5,0.5,0.5" />
+
+
         <!-- output limits -->
         <field name="RollLimit" units="deg" type="float" elements="3" elementnames="Min,Neutral,Max" defaultvalue="-35,0,35" />
                 <!-- maximum allowed bank angles in navigates flight -->
