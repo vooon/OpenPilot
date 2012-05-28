@@ -72,51 +72,192 @@ void generateVmCode(int i2c_addr, vector<VMInstructionForm*> formList)
     //Determine program length
     int programLength=formList.size();
 
-    vector<uint32_t> program;
+    vector<uint32_t> i2cAddrProgram;
+    vector<uint32_t> i2cReadProgram;
+    vector<uint32_t> i2cWriteProgram;
+    vector<uint32_t> i2cJumpProgram;
+    vector<uint32_t> i2cSendUAVOProgram;
+    vector<uint32_t> i2cDelayProgram;
+    vector<uint32_t> i2cNoneProgram;
+
+    vector< vector < uint32_t > > programComponents;
+    vector<uint8_t> programComponentsIdx;
 
     //Add setting I2C address as first operation
-    program.push_back(I2C_VM_ASM_SET_DEV_ADDR(i2c_addr));
+    i2cAddrProgram.push_back(I2C_VM_ASM_SET_DEV_ADDR(i2c_addr));
+    programComponents.push_back(i2cAddrProgram);
+    programComponentsIdx.push_back(I2C_VM_OP_SET_DEV_ADDR);
 
     for (int i=0; i<programLength; i++){
-        qDebug() << "Instruction to generic I2C compiler: " << formList[i]->getInstructionType();
-        if(formList[i]->getInstructionType()=="Delay [ms]"){
-            qDebug() << "Wait " << formList[i]->getDelayInstruction() << " ms.";
-            program.push_back(I2C_VM_ASM_DELAY(formList[i]->getDelayInstruction()));
+//        qDebug() << "Instruction to generic I2C compiler: " << formList[i]->getInstructionType();
+        if(formList[i]->getInstructionType()=="None"){
+            qDebug() << "'None' instruction";
+            programComponentsIdx.push_back(I2C_VM_OP_NOP);
+            i2cNoneProgram.clear();
+            i2cNoneProgram.push_back(I2C_VM_ASM_NOP());
+            programComponents.push_back(i2cNoneProgram);
         }
-        if(formList[i]->getInstructionType()=="Read"){
+        if(formList[i]->getInstructionType()=="Delay [ms]"){
+            i2cDelayProgram.clear();
+            programComponentsIdx.push_back(I2C_VM_OP_DELAY);
+
+            qDebug() << "Wait " << formList[i]->getDelayInstruction() << " ms.";
+            i2cDelayProgram.push_back(I2C_VM_ASM_DELAY(formList[i]->getDelayInstruction()));
+            programComponents.push_back(i2cDelayProgram);
+        }
+        else if(formList[i]->getInstructionType()=="Read"){
+            i2cReadProgram.clear();
+            programComponentsIdx.push_back(I2C_VM_OP_READ);
+
             int numReadBytes;
+            vector<int> outputFormatInt;
+            vector<QString> outputFormatStr;
             formList[i]->getReadInstruction(&numReadBytes);
+            formList[i]->getOutputInstruction(&outputFormatInt, &outputFormatStr);
 
             qDebug() << "Reading " << numReadBytes << " bytes.";
 
-            program.push_back(I2C_VM_ASM_READ_I2C(numReadBytes));   //Read bytes
+            i2cReadProgram.push_back(I2C_VM_ASM_READ_I2C(numReadBytes));   //Read bytes
 
-            program.push_back(I2C_VM_ASM_LOAD_LE(0, 2, VM_R0)); //Load formatted bytes into first output register
-            program.push_back(I2C_VM_ASM_LOAD_LE(2, 2, VM_R1)); //Load formatted bytes into second output register
+            for (int j=0; j< outputFormatInt.size()/2; j++){
+                uint8_t reg;
+                if(outputFormatStr[2*j]=="r0")
+                    reg=VM_R0;
+                else if (outputFormatStr[2*j]=="r1")
+                    reg=VM_R1;
+                else if (outputFormatStr[2*j]=="r2")
+                    reg=VM_R2;
+                else if (outputFormatStr[2*j]=="r3")
+                    reg=VM_R3;
+                if(outputFormatStr[2*j]=="f0")
+                    reg=VM_F0;
+                else if (outputFormatStr[2*j]=="f1")
+                    reg=VM_F1;
+                else if (outputFormatStr[2*j]=="f2")
+                    reg=VM_F2;
+                else if (outputFormatStr[2*j]=="f3")
+                    reg=VM_F3;
+
+                if(outputFormatStr[2*j+1]=="Little endian"){
+//                    qDebug()<< "LE, Reg" << reg << ", " << outputFormatInt[2*j] <<":"<< outputFormatInt[2*j+1]-outputFormatInt[2*j];
+                    i2cReadProgram.push_back(I2C_VM_ASM_LOAD_LE(outputFormatInt[2*j], outputFormatInt[2*j+1]-outputFormatInt[2*j], reg)); //Load formatted bytes into first output register
+                }
+                else{
+//                    qDebug()<< "BE, Reg" << reg << ", " << outputFormatInt[2*j] <<":"<< outputFormatInt[2*j+1]-outputFormatInt[2*j];
+                    i2cReadProgram.push_back(I2C_VM_ASM_LOAD_BE(outputFormatInt[2*j], outputFormatInt[2*j+1]-outputFormatInt[2*j], reg)); //Load formatted bytes into first output register
+                }
+            }
+            programComponents.push_back(i2cReadProgram);
         }
-        if(formList[i]->getInstructionType()=="Write"){
+        else if(formList[i]->getInstructionType()=="Write"){
+            i2cWriteProgram.clear();
+            programComponentsIdx.push_back(I2C_VM_OP_WRITE);
+
             vector<int> val;
             formList[i]->getWriteInstruction(&val);
 
             qDebug() << "Writing " << val.size() << " bytes.";
 
-
             for (int j=0; j< val.size(); j++){
                 qDebug()<< val[j];
-                program.push_back(I2C_VM_ASM_STORE(val[j], j)); //Store register address
+                i2cWriteProgram.push_back(I2C_VM_ASM_STORE(val[j], j)); //Store register address
             }
-            program.push_back(I2C_VM_ASM_WRITE_I2C(val.size())); //Write bytes
+            i2cWriteProgram.push_back(I2C_VM_ASM_WRITE_I2C(val.size())); //Write bytes
+            programComponents.push_back(i2cWriteProgram);
         }
-        if(formList[i]->getInstructionType()=="Jump to line"){
-            qDebug() << "Relative jump of " << formList[i]->getJumpInstruction() << " instructions.";
-            program.push_back(I2C_VM_ASM_JUMP(formList[i]->getJumpInstruction()));
+        else if(formList[i]->getInstructionType()=="Jump to line"){
+            i2cJumpProgram.clear();
+            programComponentsIdx.push_back(I2C_VM_OP_JUMP);
+
+            int relativeJump;
+            int numJumps;
+            formList[i]->getJumpInstruction(&relativeJump, &numJumps);
+
+            qDebug() << "Relative jump of " << relativeJump << " instructions, " << numJumps << " times.";
+
+            i2cJumpProgram.push_back(numJumps); //This code must remain pseudo-code until the entire program is done, otherwise the jumps will point to the wrong space
+            i2cJumpProgram.push_back(relativeJump);
+            programComponents.push_back(i2cJumpProgram);
+        }
+        else if(formList[i]->getInstructionType()=="Send UAVO"){
+            i2cSendUAVOProgram.clear();
+            programComponentsIdx.push_back(I2C_VM_OP_SEND_UAVO);
+
+            i2cSendUAVOProgram.push_back(I2C_VM_ASM_SEND_UAVO());
+            programComponents.push_back(i2cSendUAVOProgram);
         }
     }
+
+
+//    vector<uint8_t>::iterator it1;
+
+//    for (it1=programComponentsIdx.begin(); it1<programComponentsIdx.end(); it1++)
+//      qDebug() << " " << *it1;
+
+//    qDebug() << " size " << programComponentsIdx.size();
+
+    vector<uint32_t> program;
+    vector<uint8_t> programIdx;
+
+    for (int i=0; i<programComponentsIdx.size(); i++){
+        programIdx.push_back(program.size()); //Save the location of each element
+        int relJump, numJumps;
+
+        switch(programComponentsIdx[i]){
+        case I2C_VM_OP_NOP:
+            program.insert(program.end(), programComponents[i].begin(), programComponents[i].end());
+            break;
+        case I2C_VM_OP_SET_DEV_ADDR:
+            program.insert(program.end(), programComponents[i].begin(), programComponents[i].end());
+            break;
+        case I2C_VM_OP_DELAY:
+            program.insert(program.end(), programComponents[i].begin(), programComponents[i].end());
+            break;
+        case I2C_VM_OP_READ:
+            program.insert(program.end(), programComponents[i].begin(), programComponents[i].end());
+            break;
+        case I2C_VM_OP_WRITE:
+            program.insert(program.end(), programComponents[i].begin(), programComponents[i].end());
+            break;
+        case I2C_VM_OP_JUMP:
+            relJump=programIdx[i+programComponents[i].at(1)]-programIdx[i];
+            numJumps=programComponents[i].at(0);
+            if (numJumps==-1){
+                program.insert(program.end(), I2C_VM_ASM_JUMP(relJump));
+            }
+            else{
+                program.insert(program.end()+relJump, I2C_VM_ASM_SET_CTR(numJumps));
+                program.insert(program.end(), I2C_VM_ASM_DEC_CTR());
+                program.insert(program.end(), I2C_VM_ASM_BNZ(relJump-1));
+            }
+            break;
+        case I2C_VM_OP_SEND_UAVO:
+            program.insert(program.end(), programComponents[i].begin(), programComponents[i].end());
+            break;
+        default:
+            //HUH??? HOW DID WE GET HERE? WHAT DO WE DO NOW? CRASH THE PROGRAM?
+            qDebug()<< "Default?!! How did we get here?";
+            break;
+        }
+    }
+
+//    vector<uint32_t>::iterator it;
+
+//    for (it=program.begin(); it<program.end(); it++)
+//      qDebug() << " " << *it;
+//    qDebug() << " size " << program.size();
+
 
     if (program.size() > programField->getNumElements()){
         //THROW ERROR OF SOME KIND
         qDebug() << "Program too long!";
         return;
+    }
+    else{
+        //Reset all usused bytes in program to HALT
+        for (int i=program.size(); i<programField->getNumElements(); i++){
+            program.push_back(I2C_VM_ASM_HALT());
+        }
     }
 
     qDebug() << "Saving I2C compiler to UAVO";

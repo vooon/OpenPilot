@@ -1,11 +1,11 @@
 /**
  ******************************************************************************
  *
- * @file       vminstructionform.h
+ * @file       vmreadinstructionform.h
  * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2012.
  * @addtogroup GCSPlugins GCS Plugins
  * @{
- * @addtogroup VMInstructionForm
+ * @addtogroup VMReadInstructionForm
  * @{
  * @brief GenericI2C virtual machine configuration form
  *****************************************************************************/
@@ -24,28 +24,28 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-#ifndef VMINSTRUCTIONFORM_H_
-#define VMINSTRUCTIONFORM_H_
+#ifndef VMREADINSTRUCTIONFORM_H_
+#define VMREADINSTRUCTIONFORM_H_
 
 #include <QWidget>
-#include <QLabel>
-#include <QSpinBox>
+//#include <QLabel>
+//#include <QComboBox>
+//#include <QSpinBox>
 #include <vector>
 
 using namespace std;
 
-#include "ui_vminstructionform.h"
-#include "vmreadinstructionform.h"
+#include "ui_vmreadinstructionform.h"
 
 class ConfigOnputWidget2;
 
-class VMInstructionForm : public QWidget
+class VMReadInstructionForm : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit VMInstructionForm(const int index, QWidget *parent = NULL);
-    ~VMInstructionForm();
+    explicit VMReadInstructionForm(const int index, QWidget *parent = NULL);
+    ~VMReadInstructionForm();
     friend class ConfigOnputWidget2;
 
     void setNumInstructions(int val);
@@ -54,8 +54,9 @@ public:
     void getReadInstruction(int*numReadBytes);
     void getWriteInstruction(vector<int> *val);
     int getDelayInstruction();
-    void getOutputInstruction(vector<int> *valIntOut, vector<QString> *valStrOut);
     void setHexRepresentation(bool val);
+    void setNumReadBytes(int numBytes);
+    void getReadOutputInstructions(vector<int> *valInt, vector<QString> *valStr);
 
 public slots:
 //    void max(int maximum);
@@ -71,41 +72,34 @@ signals:
     void channelChanged(int index, int value);
 
 private:
-    Ui::VMInstructionForm ui;
-
+    Ui::VMReadInstructionForm ui;
     int m_index; //Instruction index
-    int unhideIdx; //Index of unhidden text fields
     int numInstructions;
-    int readInstrctIdx;
-    vector<VMReadInstructionForm*> readFormList;
-
-    QSpinBox  *numReadBytesSpinBox;
-    QSpinBox  *delayMsSpinBox;
-    QComboBox *jumpToLineComboBox;
-    QSpinBox *jumpXTimesSpinBox;
-    QComboBox *jumpXTimesComboBox;
-//    QPushButton *addReadOutputPushButton;
-//    QPushButton *removeReadOutputPushButton;
-//    QComboBox *outputRegisterEndianessComboBox;
-//    QComboBox *outputRegisterComboBox;
-//    QComboBox *outputRangeLowComboBox;
-//    QComboBox *outputRangeHighComboBox;
-//    QLabel *readText1Label;
-//    QLabel *readText2Label;
-//    QLabel *readText3Label;
-//    QLabel *readText4Label;
-
-    bool isHex;
-
 
 private slots:
-    void switchCompilerInst(QString instruction);
-    void switchNumJumpTimes(QString jumpTimes);
-    void addRegisterField();
-    void removeRegisterField();
-    void switchNumReadBytes(int);
-    void addAdditionalReadInstructionLine();
-    void removeAdditionalReadInstructionLine();
 };
 
-#endif // VMINSTRUCTIONFORM_H_
+//inline int VMInstructionForm::index() const
+//{
+//    return m_index;
+//}
+
+//inline int VMInstructionForm::max() const
+//{
+//    return 0;
+////    return ui.actuatorMax->value();
+//}
+
+//inline int VMInstructionForm::min() const
+//{
+//    return 0;
+////    return ui.actuatorMin->value();
+//}
+
+//inline int VMInstructionForm::neutral() const
+//{
+//    return 0;
+////    return ui.actuatorNeutral->value();
+//}
+
+#endif // VMREADINSTRUCTIONFORM_H_

@@ -74,7 +74,12 @@ enum i2c_exported_regs {
 
 #define VM_R0 0x00
 #define VM_R1 0x01
-#define VM_F0 0x02
+#define VM_R2 0x02
+#define VM_R3 0x03
+#define VM_F0 0x04
+#define VM_F1 0x05
+#define VM_F2 0x06
+#define VM_F3 0x07
 
 #endif
 
@@ -84,8 +89,8 @@ enum i2c_exported_regs {
 						((op2 & 0xFF) << 8) | \
 						((op3 & 0xFF)))
 
-#define I2C_VM_ASM_NOP() (I2C_VM_ASM(I2C_VM_OP_NOP, 0, 0, 0))
 #define I2C_VM_ASM_HALT() (I2C_VM_ASM(I2C_VM_OP_HALT, 0, 0, 0))
+#define I2C_VM_ASM_NOP() (I2C_VM_ASM(I2C_VM_OP_NOP, 0, 0, 0))
 #define I2C_VM_ASM_SET_DEV_ADDR(addr) (I2C_VM_ASM(I2C_VM_OP_SET_DEV_ADDR, (addr), 0, 0))
 #define I2C_VM_ASM_WRITE_I2C(length) (I2C_VM_ASM(I2C_VM_OP_WRITE, (length), 0, 0))
 #define I2C_VM_ASM_READ_I2C(length) (I2C_VM_ASM(I2C_VM_OP_READ, (length), 0, 0))
@@ -97,6 +102,7 @@ enum i2c_exported_regs {
 #define I2C_VM_ASM_DEC_CTR() (I2C_VM_ASM(I2C_VM_OP_DEC_CTR, 0, 0, 0))
 #define I2C_VM_ASM_LOAD_BE(addr, length, dest_reg) (I2C_VM_ASM(I2C_VM_OP_LOAD_BE, (addr), (length), (dest_reg)))
 #define I2C_VM_ASM_LOAD_LE(addr, length, dest_reg) (I2C_VM_ASM(I2C_VM_OP_LOAD_LE, (addr), (length), (dest_reg)))
+#define I2C_VM_ASM_SEND_UAVO() (I2C_VM_ASM(I2C_VM_OP_SEND_UAVO, 0, 0, 0))
 
 
 #endif //GEN_I2C_VM_H_

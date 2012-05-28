@@ -38,8 +38,9 @@
 
 #include "openpilot.h"
 #include "hwsettings.h"
-#include "generici2csensor.h"
-#include "generici2csensorsettings.h"
+#include "generici2csensormodule.h"
+#include "generici2csensor.h" //UAV Object
+#include "generici2csensorsettings.h" //UAV Object
 #include "pios_i2c.h"
 
 // Private constants
@@ -92,11 +93,13 @@ int32_t GenericI2CSensorModuleInitialize()
 
 MODULE_INITCALL(GenericI2CSensorModuleInitialize, GenericI2CSensorModuleStart)
 
-extern void gen_i2c_vm_test(void);
 
 static void GenericI2CSensorTask(void *parameters)
 {
-	gen_i2c_vm_test();
+	// Main task loop
+	while (1) {
+		gen_i2c_vm_run();
+	}
 }
 
 /**

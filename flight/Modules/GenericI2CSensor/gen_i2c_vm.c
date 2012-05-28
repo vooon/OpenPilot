@@ -34,9 +34,8 @@
 #include "generici2csensorsettings.h"
 #include "../../../shared/lib/gen_i2c_vm.h" //<------ICK, UGLY
 
-
 #define I2C_VM_RAM_SIZE 8
-uint32_t program[GENERICI2CSENSORSETTINGS_PROGRAM_NUMELEM] //This is the program vector
+uint32_t program[GENERICI2CSENSORSETTINGS_PROGRAM_NUMELEM]; //This is the program vector
 
 struct i2c_vm_regs {
 	bool     halted;
@@ -331,57 +330,59 @@ static bool i2c_vm_run (uint32_t * code, uint8_t code_len)
 	return (!vm.fault);
 }
 
-//#define I2C_VM_ASM(operator, op1, op2, op3) (((operator & 0xFF) << 24) | \
-//						((op1 & 0xFF) << 16) | \
-//						((op2 & 0xFF) << 8) | \
-//						((op3 & 0xFF)))
-//
-//#define I2C_VM_ASM_NOP() (I2C_VM_ASM(I2C_VM_OP_NOP, 0, 0, 0))
-//#define I2C_VM_ASM_HALT() (I2C_VM_ASM(I2C_VM_OP_HALT, 0, 0, 0))
-//#define I2C_VM_ASM_SET_DEV_ADDR(addr) (I2C_VM_ASM(I2C_VM_OP_SET_DEV_ADDR, (addr), 0, 0))
-//#define I2C_VM_ASM_WRITE_I2C(length) (I2C_VM_ASM(I2C_VM_OP_WRITE, (length), 0, 0))
-//#define I2C_VM_ASM_READ_I2C(length) (I2C_VM_ASM(I2C_VM_OP_READ, (length), 0, 0))
-//#define I2C_VM_ASM_DELAY(ms) (I2C_VM_ASM(I2C_VM_OP_DELAY, (ms), 0, 0))
-//#define I2C_VM_ASM_JUMP(rel_addr) (I2C_VM_ASM(I2C_VM_OP_JUMP, (rel_addr), 0, 0))
-//#define I2C_VM_ASM_STORE(value, addr) (I2C_VM_ASM(I2C_VM_OP_STORE, (value), (addr), 0))
-//#define I2C_VM_ASM_BNZ(rel_addr) (I2C_VM_ASM(I2C_VM_OP_BNZ, (rel_addr), 0, 0))
-//#define I2C_VM_ASM_SET_CTR(ctr_val) (I2C_VM_ASM(I2C_VM_OP_SET_CTR, (ctr_val), 0, 0))
-//#define I2C_VM_ASM_DEC_CTR() (I2C_VM_ASM(I2C_VM_OP_DEC_CTR, 0, 0, 0))
-//#define I2C_VM_ASM_LOAD_BE(addr, length, dest_reg) (I2C_VM_ASM(I2C_VM_OP_LOAD_BE, (addr), (length), (dest_reg)))
-//#define I2C_VM_ASM_LOAD_LE(addr, length, dest_reg) (I2C_VM_ASM(I2C_VM_OP_LOAD_LE, (addr), (length), (dest_reg)))
-
-#define I2C_VM_ASM_SEND_UAVO() (I2C_VM_ASM(I2C_VM_OP_SEND_UAVO, 0, 0, 0))
 
 /* Simple test program to demonstrate that the generic I2C VM works. However, 
  * there is currently no logic to configure the VM from the GCS.
  */
-void gen_i2c_vm_test (void)
+void gen_i2c_vm_run (void)
 {
-	/* Generate test program as an array of integers. This would normally be done by the GCS */
-	uint32_t test_program = {
-	I2C_VM_ASM_NOP(), //Do nothing
+	uint32_t test_program[18];
+	test_program[0]=I2C_VM_ASM_NOP();
+	test_program[1]=I2C_VM_ASM_SET_CTR(10); //Set counter to 10
+	test_program[2]=I2C_VM_ASM_SET_DEV_ADDR(0x53); //Set I2C device address (in 7-bit)
+	test_program[3]=I2C_VM_ASM_STORE(0x2D, 0); //Store register address
+	test_program[4]=I2C_VM_ASM_STORE(0x08, 1); //Store register value
+	test_program[5]=I2C_VM_ASM_WRITE_I2C(2); //Write two bytes
+	test_program[6]=I2C_VM_ASM_DEC_CTR(); //Decrement counter
+	test_program[7]=I2C_VM_ASM_BNZ(-4); //If the counter is not zero, go back four steps
 	
-	I2C_VM_ASM_SET_CTR(10), //Set counter to 10
-	I2C_VM_ASM_SET_DEV_ADDR(0x53), //Set I2C device address (in 7-bit)
-	I2C_VM_ASM_STORE(0x2D, 0), //Store register address
-	I2C_VM_ASM_STORE(0x08, 1), //Store register value
-	I2C_VM_ASM_WRITE_I2C(2), //Write two bytes
-	I2C_VM_ASM_DEC_CTR(), //Decrement counter
-	I2C_VM_ASM_BNZ(-4), //If the counter is not zero, go back four steps
+	test_program[8]=I2C_VM_ASM_SET_DEV_ADDR(0x53); //Set I2C device address (in 7-bit)
+	test_program[9]=I2C_VM_ASM_STORE(0x32, 0); //Store register address
+	test_program[10]=I2C_VM_ASM_WRITE_I2C(1);  //Write one bytes
+	test_program[11]=I2C_VM_ASM_DELAY(50); //Delay 50ms
+	test_program[12]=I2C_VM_ASM_READ_I2C(6);   //Read six bytes
+	test_program[13]=I2C_VM_ASM_LOAD_LE(0, 2, VM_R0); //Load 16-bit formatted bytes into first output register
+	test_program[14]=I2C_VM_ASM_LOAD_LE(2, 2, VM_R1); //Load 16-bit formatted bytes into second output register
 	
-	I2C_VM_ASM_SET_DEV_ADDR(0x53), //Set I2C device address (in 7-bit)
-	I2C_VM_ASM_STORE(0x32, 0), //Store register address
-	I2C_VM_ASM_WRITE_I2C(1),  //Write one bytes
-	I2C_VM_ASM_DELAY(50), //Delay 50ms
-	I2C_VM_ASM_READ_I2C(6),   //Read six bytes
-	I2C_VM_ASM_LOAD_LE(0, 2, VM_R0), //Load 16-bit formatted bytes into first output register
-	I2C_VM_ASM_LOAD_LE(2, 2, VM_R1), //Load 16-bit formatted bytes into second output register
+	test_program[15]=I2C_VM_ASM_SET_DEV_ADDR(0x27); //Set I2C device address (in 7-bit)
 	
-	I2C_VM_ASM_SET_DEV_ADDR(0x27), //Set I2C device address (in 7-bit)
-	
-	I2C_VM_ASM_SEND_UAVO(), //Set the UAVObjects
-	I2C_VM_ASM_JUMP(-9),    //Jump back 9 steps
-	};
+	test_program[16]=I2C_VM_ASM_SEND_UAVO(); //Set the UAVObjects
+	test_program[17]=I2C_VM_ASM_JUMP(-9);    //Jump back 9 steps
+//	/* Generate test program as an array of integers. This would normally be done by the GCS */
+//	uint32_t test_program = {
+//	I2C_VM_ASM_NOP(), //Do nothing
+//	
+//	I2C_VM_ASM_SET_CTR(10), //Set counter to 10
+//	I2C_VM_ASM_SET_DEV_ADDR(0x53), //Set I2C device address (in 7-bit)
+//	I2C_VM_ASM_STORE(0x2D, 0), //Store register address
+//	I2C_VM_ASM_STORE(0x08, 1), //Store register value
+//	I2C_VM_ASM_WRITE_I2C(2), //Write two bytes
+//	I2C_VM_ASM_DEC_CTR(), //Decrement counter
+//	I2C_VM_ASM_BNZ(-4), //If the counter is not zero, go back four steps
+//	
+//	I2C_VM_ASM_SET_DEV_ADDR(0x53), //Set I2C device address (in 7-bit)
+//	I2C_VM_ASM_STORE(0x32, 0), //Store register address
+//	I2C_VM_ASM_WRITE_I2C(1),  //Write one bytes
+//	I2C_VM_ASM_DELAY(50), //Delay 50ms
+//	I2C_VM_ASM_READ_I2C(6),   //Read six bytes
+//	I2C_VM_ASM_LOAD_LE(0, 2, VM_R0), //Load 16-bit formatted bytes into first output register
+//	I2C_VM_ASM_LOAD_LE(2, 2, VM_R1), //Load 16-bit formatted bytes into second output register
+//	
+//	I2C_VM_ASM_SET_DEV_ADDR(0x27), //Set I2C device address (in 7-bit)
+//	
+//	I2C_VM_ASM_SEND_UAVO(), //Set the UAVObjects
+//	I2C_VM_ASM_JUMP(-9),    //Jump back 9 steps
+//	};
 	
 	for (int i=0; i<18; i++){
 		program[i]=test_program[i];

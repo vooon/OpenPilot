@@ -1,11 +1,11 @@
 /**
  ******************************************************************************
  *
- * @file       vminstructionform.h
+ * @file       vmreadinstructionform.h
  * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2012.
  * @addtogroup GCSPlugins GCS Plugins
  * @{
- * @addtogroup VMInstructionForm
+ * @addtogroup VMReadInstructionForm
  * @{
  * @brief GenericI2C virtual machine configuration form
  *****************************************************************************/
@@ -25,8 +25,9 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "vminstructionform.h"
-#include "generici2cwidget.h"
+//#include "vminstructionform.h"
+#include "vmreadinstructionform.h"
+//#include "generici2cwidget.h"
 #include "generici2csensor.h"
 #include "extensionsystem/pluginmanager.h"
 
@@ -34,12 +35,10 @@
 #include <QHBoxLayout>
 #include <QSpacerItem>
 
-VMInstructionForm::VMInstructionForm(const int index, QWidget *parent) :
+VMReadInstructionForm::VMReadInstructionForm(const int index, QWidget *parent) :
     QWidget(parent),
     ui(),
-    m_index(index),
-    unhideIdx(1),
-    readInstrctIdx(0)
+    m_index(index)
 {
     //--------------------------//
     // Setup widget environment //
@@ -54,6 +53,16 @@ VMInstructionForm::VMInstructionForm(const int index, QWidget *parent) :
     GenericI2CSensor *genericI2CSensor = GenericI2CSensor::GetInstance(objManager);
     Q_ASSERT(genericI2CSensor);
 
+    QStringList outputRegisterList;
+    QList<UAVObjectField*> genericI2CSensorFields=genericI2CSensor->getFields();
+    foreach(UAVObjectField* sensorField, genericI2CSensorFields){
+        outputRegisterList << sensorField->getName();
+    }
+    ui.outputRegisterComboBox->addItems(outputRegisterList);
+    ui.outputRegisterComboBox->setCurrentIndex(0);
+
+
+/*
 
     //-----------------------//
     // Setup widget elements //
@@ -72,6 +81,16 @@ VMInstructionForm::VMInstructionForm(const int index, QWidget *parent) :
 
 //    addReadOutputPushButton = new QPushButton;
 //    removeReadOutputPushButton = new QPushButton;
+
+    outputRegisterEndianessComboBox = new QComboBox;
+    outputRegisterComboBox = new QComboBox;
+    outputRangeLowComboBox = new QComboBox;
+    outputRangeHighComboBox = new QComboBox;
+
+    readText1Label = new QLabel;
+    readText2Label = new QLabel;
+    readText3Label = new QLabel;
+    readText4Label = new QLabel;
 
     //Add elements to layout.
     ui.gridLayout->addWidget(numReadBytesSpinBox,0,2);
@@ -103,13 +122,14 @@ VMInstructionForm::VMInstructionForm(const int index, QWidget *parent) :
     QSpacerItem *bob = new QSpacerItem(1,1);
 //    bob->expandingDirections(Qt::Horizontal);
     ui.gridLayout->addItem(bob, 1, 10);
+    ui.gridLayout->addWidget(addReadOutputPushButton, 1, 11);
+    ui.gridLayout->addWidget(removeReadOutputPushButton, 1, 12);
 #endif
-//    ui.gridLayout->addWidget(addReadOutputPushButton, 0, 5);
-//    ui.gridLayout->addWidget(removeReadOutputPushButton, 0, 6);
 
     //------------------------//
     // Set element parameters //
     //------------------------//
+    /*
     QStringList instructionTypes;
     instructionTypes << "None" << "Delay [ms]" << "Write" << "Read" << "Jump to line" << "Send UAVO" << "Delete line";
     ui.InstructionComboBox->addItems(instructionTypes);
@@ -120,8 +140,26 @@ VMInstructionForm::VMInstructionForm(const int index, QWidget *parent) :
     jumpXTimesComboBox->addItems(jumpXTimesList);
     jumpXTimesComboBox->setCurrentIndex(0);
 
-//    ui.addReadOutputPushButton->setText("+");
-//    ui.removeReadOutputPushButton->setText("-");
+    QStringList outputRegisterEndianessList;
+    outputRegisterEndianessList << "Little endian" << "Big endian";
+    outputRegisterEndianessComboBox->addItems(outputRegisterEndianessList);
+    outputRegisterEndianessComboBox->setCurrentIndex(0);
+
+    QStringList outputRegisterList;
+    QList<UAVObjectField*> genericI2CSensorFields=genericI2CSensor->getFields();
+    foreach(UAVObjectField* sensorField, genericI2CSensorFields){
+        outputRegisterList << sensorField->getName();
+    }
+    outputRegisterComboBox->addItems(outputRegisterList);
+    outputRegisterComboBox->setCurrentIndex(0);
+
+    addReadOutputPushButton->setText("+");
+    removeReadOutputPushButton->setText("-");
+
+//    readText1Label->setText(QString("Put bytes range"));
+//    readText2Label->setText(QString("to"));
+//    readText3Label->setText(QString("into output"));
+//    readText4Label->setText(QString("formatted"));
 
     numReadBytesSpinBox->setSuffix(" bytes");
     numReadBytesSpinBox->setMaximum(255); //8-bit container
@@ -132,7 +170,7 @@ VMInstructionForm::VMInstructionForm(const int index, QWidget *parent) :
     //---------------//
     // Hide elements //
     //---------------//
-
+/*
     //Hide all elements, except the first register box
     ui.register2LineEdit->hide();
     ui.register3LineEdit->hide();
@@ -146,25 +184,31 @@ VMInstructionForm::VMInstructionForm(const int index, QWidget *parent) :
     jumpXTimesSpinBox->hide();
     jumpXTimesComboBox->hide();
     numReadBytesSpinBox->hide();
-    ui.addReadOutputPushButton->hide();
-    ui.removeReadOutputPushButton->hide();
+    outputRegisterEndianessComboBox->hide();
+    outputRegisterComboBox->hide();
+    outputRangeLowComboBox->hide();
+    outputRangeHighComboBox->hide();
+    readText1Label->hide();
+    readText2Label->hide();
+    readText3Label->hide();
+    readText4Label->hide();
+    addReadOutputPushButton->hide();
+    removeReadOutputPushButton->hide();
 
     //Connect widget signals to handler functions
     connect(ui.InstructionComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(switchCompilerInst(QString)));
     connect(ui.AddFieldPushButton, SIGNAL(clicked()), this, SLOT(addRegisterField()));
     connect(ui.RemoveFieldPushButton, SIGNAL(clicked()), this, SLOT(removeRegisterField()));
-    connect(ui.addReadOutputPushButton, SIGNAL(clicked()), this, SLOT(addAdditionalReadInstructionLine()));
-    connect(ui.removeReadOutputPushButton, SIGNAL(clicked()), this, SLOT(removeAdditionalReadInstructionLine()));
     connect(jumpXTimesComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(switchNumJumpTimes(QString)));
     connect(numReadBytesSpinBox, SIGNAL(valueChanged(int)), this, SLOT(switchNumReadBytes(int)));
 
     //This is supposed to prevent collisions on Macs. DOESN'T SEEM TO WORK!
     numReadBytesSpinBox->setAttribute(Qt::WA_LayoutUsesWidgetRect);
     ui.InstructionComboBox->setAttribute(Qt::WA_LayoutUsesWidgetRect);
-
+*/
 }
 
-VMInstructionForm::~VMInstructionForm()
+VMReadInstructionForm::~VMReadInstructionForm()
 {
     // Do nothing
 }
@@ -172,7 +216,8 @@ VMInstructionForm::~VMInstructionForm()
 /**
  * Configure following fields based on the type of VM instruction.
  */
-void VMInstructionForm::switchCompilerInst(QString instruction)
+/*
+void VMReadInstructionForm::switchCompilerInst(QString instruction)
 {
     qDebug()<<"Switching compiler instruction to " << instruction << ".";
 
@@ -184,11 +229,16 @@ void VMInstructionForm::switchCompilerInst(QString instruction)
     delayMsSpinBox->hide();
     ui.AddFieldPushButton->hide();
     ui.RemoveFieldPushButton->hide();
-    ui.addReadOutputPushButton->hide();
-    ui.removeReadOutputPushButton->hide();
-    for (int i=0; i< readFormList.size(); i++){
-        readFormList[i]->hide();
-    }
+    outputRegisterEndianessComboBox->hide();
+    outputRegisterComboBox->hide();
+    outputRangeLowComboBox->hide();
+    outputRangeHighComboBox->hide();
+    readText1Label->hide();
+    readText2Label->hide();
+    readText3Label->hide();
+    readText4Label->hide();
+    addReadOutputPushButton->hide();
+    removeReadOutputPushButton->hide();
 
     //NOT the best way to hide the register fields. Should do something with regexp instead
     for (int i=0; i<100; i++){ //Why 100? Why not?
@@ -203,18 +253,18 @@ void VMInstructionForm::switchCompilerInst(QString instruction)
         ui.RemoveFieldPushButton->show();
     }
     else if(instruction=="Read"){
-        numReadBytesSpinBox->show();
-        ui.addReadOutputPushButton->show();
-        ui.removeReadOutputPushButton->show();
-        if (readFormList.size()==0){
-            addAdditionalReadInstructionLine();
-        }
-        else{
-            for (int i=0; i< readFormList.size(); i++){
-                readFormList[i]->show();
-            }
-        }
+        readText1Label->show();
+        readText2Label->show();
+        readText3Label->show();
+        readText4Label->show();
 
+        numReadBytesSpinBox->show();
+        outputRegisterEndianessComboBox->show();
+        outputRegisterComboBox->show();
+        outputRangeLowComboBox->show();
+        outputRangeHighComboBox->show();
+        addReadOutputPushButton->show();
+        removeReadOutputPushButton->show();
     }
     else if(instruction=="Delay [ms]"){
         delayMsSpinBox->show();
@@ -227,20 +277,18 @@ void VMInstructionForm::switchCompilerInst(QString instruction)
     else if(instruction=="Send UAVO"){
     }
     else if (instruction=="Delete line"){
-
         //First, ask to ensure this is what the user wants to do
         //IMPLEMENT DIALOG BOX
 
         //Then, remove GUI line
-//        if(m_index!=0)
-//            delete this;
+        //IMPLEMENT THIS
 
         //Lastly shift all other indices up one
         //THIS TOO
     }
 }
 
-void VMInstructionForm::addRegisterField()
+void VMReadInstructionForm::addRegisterField()
 {
     switch(unhideIdx){
     case 1:
@@ -273,7 +321,7 @@ void VMInstructionForm::addRegisterField()
         unhideIdx=7;
 }
 
-void VMInstructionForm::removeRegisterField(){
+void VMReadInstructionForm::removeRegisterField(){
     switch(unhideIdx){
     case 1:
         ui.register2LineEdit->hide();
@@ -305,82 +353,56 @@ void VMInstructionForm::removeRegisterField(){
 }
 
 
-void VMInstructionForm::switchNumJumpTimes(QString jumpTimes){
+void VMReadInstructionForm::switchNumJumpTimes(QString jumpTimes){
     if (jumpXTimesComboBox->currentText() == "Exactly"){
         jumpXTimesSpinBox->show();
 //        jumpXTimesSpinBox->setEnabled(true);
     }
     else{
         jumpXTimesSpinBox->hide();
-//        jumpXTimesSpinBox->setEnabled(false);
+        jumpXTimesSpinBox->setEnabled(false);
     }
     return;
 
 }
 
-/*
- * Sets the byte number comboboxes in the Read Instruction Form
- */
 
-void VMInstructionForm::switchNumReadBytes(int){
-    for (int i=0; i< readFormList.size(); i++){
-        readFormList[i]->setNumReadBytes(numReadBytesSpinBox->value());
-    }
+void VMReadInstructionForm::switchNumReadBytes(int){
+    QStringList bytesList;
+    for (int i=0; i<numReadBytesSpinBox->value(); i++)
+        bytesList.append(QString("%1").arg(i));
 
-}
+    QString tmpValLow=outputRangeLowComboBox->currentText();
+    QString tmpValHigh=outputRangeHighComboBox->currentText();
+    outputRangeLowComboBox->clear();
+    outputRangeHighComboBox->clear();
+    outputRangeLowComboBox->addItems(bytesList);
+    outputRangeHighComboBox->addItems(bytesList);
+    outputRangeLowComboBox->setCurrentIndex(outputRangeLowComboBox->findText(tmpValLow));
+    outputRangeHighComboBox->setCurrentIndex(outputRangeHighComboBox->findText(tmpValHigh));
 
-
-void VMInstructionForm::addAdditionalReadInstructionLine(){
-    qDebug()<<"Add read instruction line";
-    VMReadInstructionForm *readForm = new VMReadInstructionForm(readInstrctIdx, this);
-
-    //Add readForm to widget
-//    ui.gridLayout->addWidget(readForm, readInstrctIdx+1, 1, 20, 1);
-    ui.gridLayout->addWidget(readForm);
-    readForm->setNumReadBytes(numReadBytesSpinBox->value());
-
-
-    //Add readForm to array for future use
-    readFormList.push_back(readForm);
-//    for (int i=0; i< readFormList.size(); i++){
-////        readFormList[i]->setNumReadBytes(numReadBytesSpinBox->value());
-//    }
-
-    readInstrctIdx++;
-}
-
-void VMInstructionForm::removeAdditionalReadInstructionLine(){
-    qDebug()<<"Remove read instruction line";
-    if (readFormList.size() >1){
-        ui.gridLayout->removeWidget(readFormList.back());
-        delete readFormList.back();
-
-        //Add readForm to array for future use
-        readFormList.pop_back();
-
-        readInstrctIdx--;
-    }
 }
 
 
 /*
  * Make this form instance aware of how many other instruction form instances exist.
  */
-void VMInstructionForm::setNumInstructions(int val){
+/*
+void VMReadInstructionForm::setNumInstructions(int val){
     numInstructions=val;
 
     //Set the jump table combo box to reflect the new number of items
-    QStringList jumpInstructionList;
+    QStringList instructionList;
     for (int i=0; i<numInstructions; i++)
-        jumpInstructionList.append(QString("%1").arg(i));
+        instructionList.append(QString("%1").arg(i));
 
     int tmpVal=jumpToLineComboBox->currentIndex();
     jumpToLineComboBox->clear();
-    jumpToLineComboBox->addItems(jumpInstructionList);
+    jumpToLineComboBox->addItems(instructionList);
     jumpToLineComboBox->setCurrentIndex(tmpVal);
 }
 
-QString VMInstructionForm::getInstructionType()
+QString VMReadInstructionForm::getInstructionType()
 {
     return ui.InstructionComboBox->currentText();
 }
@@ -388,7 +410,8 @@ QString VMInstructionForm::getInstructionType()
 /*
  * Compute the relative jump. A negative jump implies backwards movement, vice-versa for a positive jump
  */
-void VMInstructionForm::getJumpInstruction(int *relativeJump, int *numJumps)
+/*
+void VMReadInstructionForm::getJumpInstruction(int *relativeJump, int *numJumps)
 {
     *relativeJump = jumpToLineComboBox->currentText().toInt() - m_index;
 
@@ -399,26 +422,14 @@ void VMInstructionForm::getJumpInstruction(int *relativeJump, int *numJumps)
     return;
 }
 
-void VMInstructionForm::getReadInstruction(int*numReadBytes)
+void VMReadInstructionForm::getReadInstruction(int*numReadBytes)
 {
     *numReadBytes=numReadBytesSpinBox->value();
 
     return;
 }
 
-void VMInstructionForm::getOutputInstruction(vector<int> *valIntOut, vector<QString> *valStrOut)
-{
-    vector<int> valInt;
-    vector<QString> valStr;
-    for (int i=0; i< readFormList.size(); i++){
-        readFormList[i]->getReadOutputInstructions(&valInt, &valStr);
-        valIntOut->insert(valIntOut->end(), valInt.begin(), valInt.end() );
-        valStrOut->insert(valStrOut->end(), valStr.begin(), valStr.end() );
-    }
-}
-
-
-void VMInstructionForm::getWriteInstruction(vector<int> *val)
+void VMReadInstructionForm::getWriteInstruction(vector<int> *val)
 {
     val->clear();
     for (int i=0; i< unhideIdx; i++)
@@ -432,13 +443,41 @@ void VMInstructionForm::getWriteInstruction(vector<int> *val)
     return;
 }
 
-int VMInstructionForm::getDelayInstruction()
+int VMReadInstructionForm::getDelayInstruction()
 {
     return delayMsSpinBox->value();
 }
 
-void VMInstructionForm::setHexRepresentation(bool val)
+void VMReadInstructionForm::setHexRepresentation(bool val)
 {
     isHex=val;
 }
 
+*/
+
+void VMReadInstructionForm::setNumReadBytes(int numBytes){
+    QStringList bytesList;
+    for (int i=0; i<numBytes; i++)
+        bytesList.append(QString("%1").arg(i));
+
+    QString tmpValLow=ui.outputRangeLowComboBox->currentText();
+    QString tmpValHigh=ui.outputRangeHighComboBox->currentText();
+    ui.outputRangeLowComboBox->clear();
+    ui.outputRangeHighComboBox->clear();
+    ui.outputRangeLowComboBox->addItems(bytesList);
+    ui.outputRangeHighComboBox->addItems(bytesList);
+    ui.outputRangeLowComboBox->setCurrentIndex(ui.outputRangeLowComboBox->findText(tmpValLow));
+    ui.outputRangeHighComboBox->setCurrentIndex(ui.outputRangeHighComboBox->findText(tmpValHigh));
+
+}
+
+void VMReadInstructionForm::getReadOutputInstructions(vector<int> *valInt, vector<QString> *valStr){
+    valInt->clear();
+    valStr->clear();
+
+    valInt->push_back(ui.outputRangeLowComboBox->currentText().toInt());
+    valInt->push_back(ui.outputRangeHighComboBox->currentText().toInt());
+    valStr->push_back(ui.outputRegisterComboBox->currentText());
+    valStr->push_back(ui.outputRegisterEndianessComboBox->currentText());
+
+}

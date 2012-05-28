@@ -32,6 +32,7 @@
 #define GENERICI2CSENSOR_H
 
 int32_t GenericI2CSensorInitialize();
+extern void gen_i2c_vm_run(void);
 
 #endif // GENERICI2CSENSOR_H
 
