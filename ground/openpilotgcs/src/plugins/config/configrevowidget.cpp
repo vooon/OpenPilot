@@ -34,6 +34,7 @@
 #include <QtGui/QTextEdit>
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QPushButton>
+#include <QMessageBox>
 #include <QThread>
 #include <QErrorMessage>
 #include <iostream>
@@ -615,8 +616,23 @@ void ConfigRevoWidget::sixPointCalibrationMode()
 {
     double S[3], b[3];
     RevoCalibration * revoCalibration = RevoCalibration::GetInstance(getObjectManager());
+    HomeLocation * homeLocation = HomeLocation::GetInstance(getObjectManager());
     Q_ASSERT(revoCalibration);
+    Q_ASSERT(homeLocation);
     RevoCalibration::DataFields revoCalibrationData = revoCalibration->getData();
+    HomeLocation::DataFields homeLocationData = homeLocation->getData();
+
+    //check if Homelocation is set
+    if(!homeLocationData.Set)
+    {
+        QMessageBox msgBox;
+        msgBox.setInformativeText(tr("<p>HomeLocation not SET.</p><p>Please set your HomeLocation and try again. Aborting calibration!</p>"));
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Information);
+        msgBox.exec();
+        return;
+    }
 
     // Calibration accel
     revoCalibrationData.accel_scale[RevoCalibration::ACCEL_SCALE_X] = 1;
