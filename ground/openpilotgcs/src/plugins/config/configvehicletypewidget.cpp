@@ -110,7 +110,7 @@ ConfigVehicleTypeWidget::ConfigVehicleTypeWidget(QWidget *parent) : ConfigTaskWi
 	//Generate list of channels
     QStringList channels;
     channels << "None";
-    for (int i = 0; i < ActuatorSettings::CHANNELADDR_NUMELEM; i++) {
+    for (unsigned int i = 0; i < ActuatorSettings::CHANNELADDR_NUMELEM; i++) {
         mixerTypes << QString("Mixer%1Type").arg(i+1);
         mixerVectors << QString("Mixer%1Vector").arg(i+1);
         channels << QString("Channel%1").arg(i+1);
@@ -119,7 +119,7 @@ ConfigVehicleTypeWidget::ConfigVehicleTypeWidget(QWidget *parent) : ConfigTaskWi
     QStringList airframeTypes;
     airframeTypes << "Fixed Wing" << "Multirotor" << "Helicopter" << "Ground" << "Custom";
     m_aircraft->aircraftType->addItems(airframeTypes);
-    m_aircraft->aircraftType->setCurrentIndex(1);
+    m_aircraft->aircraftType->setCurrentIndex(0); //Set default vehicle to Fixed Wing
 
     QStringList fixedWingTypes;
     fixedWingTypes << "Elevator aileron rudder" << "Elevon" << "Vtail";
@@ -233,6 +233,7 @@ ConfigVehicleTypeWidget::ConfigVehicleTypeWidget(QWidget *parent) : ConfigTaskWi
     setupGroundVehicleUI( m_aircraft->groundVehicleType->currentText() );
     setupFixedWingUI( m_aircraft->fixedWingType->currentText() );
 	
+    disableMouseWheelEvents();
 }
 
 
@@ -243,7 +244,6 @@ ConfigVehicleTypeWidget::~ConfigVehicleTypeWidget()
 {
    // Do nothing
 }
-
 
 /**
   Slot for switching the airframe type. We do it explicitely
@@ -353,7 +353,7 @@ void ConfigVehicleTypeWidget::enableFFTest()
             UAVDataObject* obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("ManualControlCommand")));
             UAVObject::Metadata mdata = obj->getMetadata();
             accInitialData = mdata;
-            mdata.flightAccess = UAVObject::ACCESS_READONLY;
+            UAVObject::SetFlightAccess(mdata, UAVObject::ACCESS_READONLY);
             obj->setMetadata(mdata);
         }
         // Depending on phase, either move actuator or send FF settings:
@@ -525,7 +525,7 @@ void ConfigVehicleTypeWidget::updateCustomThrottle2CurveValue(QList<double> list
 /**
   Refreshes the current value of the SystemSettings which holds the aircraft type
   */
-void ConfigVehicleTypeWidget::refreshWidgetsValues()
+void ConfigVehicleTypeWidget::refreshWidgetsValues(UAVObject *)
 {
     if(!allObjectsUpdated())
         return;
@@ -655,7 +655,8 @@ void ConfigVehicleTypeWidget::setupAirframeUI(QString frameType)
 				frameType == "HexaCoax" || frameType == "Hexacopter Y6" ||
 				frameType == "Octo" || frameType == "Octocopter" ||
 				frameType == "OctoV" || frameType == "Octocopter V" ||
-				frameType == "OctoCoaxP" || frameType == "Octo Coax +" ) {
+				frameType == "OctoCoaxP" || frameType == "Octo Coax +" || 
+				frameType == "OctoCoaxX" || frameType == "Octo Coax X" ) {
 		 
 		 //Call multi-rotor setup UI
 		 setupMultiRotorUI(frameType);

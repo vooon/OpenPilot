@@ -33,6 +33,7 @@
 #include <QDebug>
 #include <QHBoxLayout>
 #include <QSpacerItem>
+#include <QMessageBox>
 
 VMInstructionForm::VMInstructionForm(const int index, QWidget *parent) :
     QWidget(parent),
@@ -229,7 +230,17 @@ void VMInstructionForm::switchCompilerInst(QString instruction)
     else if (instruction=="Delete line"){
 
         //First, ask to ensure this is what the user wants to do
-        //IMPLEMENT DIALOG BOX
+        QMessageBox msgBox;
+//        msgBox.setInformativeText(tr("<p>Are you sure you want to delete this line?</p><p>All associated data will be lost.</p>"));
+        msgBox.setText(tr("Are you sure you want to delete this line?"));
+        msgBox.setInformativeText(tr("All associated data will be lost."));
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        int ret = msgBox.exec();
+
+        if (ret == QMessageBox::No)
+        {
+            return;
+        }
 
         //Then, remove GUI line
 //        if(m_index!=0)
