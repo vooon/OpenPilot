@@ -86,6 +86,7 @@ RTOSDIR = $(APPLIBDIR)/FreeRTOS
 RTOSSRCDIR = $(RTOSDIR)/Source
 RTOSINCDIR = $(RTOSSRCDIR)/include
 DOXYGENDIR = ../Doc/Doxygen
+HWDEFSINC = ../../board_hw_defs/$(BOARD_NAME)
 
 # List C source files here. (C dependencies are automatically generated.)
 # use file-extension c for "c-only"-files
@@ -114,6 +115,7 @@ SRC += $(PIOSSTM32F10X)/pios_usb_hid_istr.c
 SRC += $(PIOSSTM32F10X)/pios_usb_hid_pwr.c
 SRC += $(OPSYSTEM)/pios_usb_board_data.c
 SRC += $(PIOSCOMMON)/pios_usb_desc_hid_only.c
+SRC += $(PIOSCOMMON)/pios_usb_util.c
 
 ## PIOS Hardware (Common)
 SRC += $(PIOSCOMMON)/pios_board_info.c
@@ -198,8 +200,7 @@ EXTRAINCDIRS  += $(MSDDIR)
 EXTRAINCDIRS  += $(RTOSINCDIR)
 EXTRAINCDIRS  += $(APPLIBDIR)
 EXTRAINCDIRS  += $(RTOSSRCDIR)/portable/GCC/ARM_CM3
-
-
+EXTRAINCDIRS  += $(HWDEFSINC)
 
 # List any extra directories to look for library files here.
 # Also add directories where the linker should search for
