@@ -581,11 +581,12 @@ void PIOS_Board_Init(void) {
 	PIOS_Assert(rx_buffer);
 	PIOS_Assert(tx_buffer);
 	if (PIOS_COM_Init(&pios_com_softusart_id, &pios_softusart_com_driver, pios_softusart_id,
-					  uart_softusart_rx_buffer, SOFTUSART_BUFSIZE,
-					  uart_softusart_tx_buffer, SOFTUSART_BUFSIZE)) {
+					  rx_buffer, SOFTUSART_BUFSIZE,
+					  tx_buffer, SOFTUSART_BUFSIZE)) {
 		PIOS_Assert(0);
 	};
 
+	pios_com_bridge_id = pios_com_softusart_id;
 #endif
 
 #if defined(PIOS_INCLUDE_GCSRCVR)
