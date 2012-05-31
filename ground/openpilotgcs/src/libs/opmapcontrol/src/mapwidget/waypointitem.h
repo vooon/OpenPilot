@@ -33,8 +33,16 @@
 #include "../internals/pointlatlng.h"
 #include "mapgraphicitem.h"
 #include <QObject>
+#include <QPoint>
+
 namespace mapcontrol
 {
+struct distBearing
+{
+    double distance;
+    double bearing;
+};
+class HomeItem;
 /**
 * @brief A QGraphicsItem representing a WayPoint
 *
@@ -46,15 +54,16 @@ class WayPointItem:public QObject,public QGraphicsItem
     Q_INTERFACES(QGraphicsItem)
 public:
     enum { Type = UserType + 1 };
+    enum wptype {absolute,relative};
     /**
     * @brief Constructer
     *
     * @param coord coordinates in LatLng of the Waypoint
     * @param altitude altitude of the WayPoint
     * @param map pointer to map to use
-    * @return 
+    * @return
     */
-    WayPointItem(internals::PointLatLng const& coord,int const& altitude,MapGraphicItem* map);
+    WayPointItem(internals::PointLatLng const& coord,int const& altitude,MapGraphicItem* map,wptype type=absolute);
     /**
     * @brief Constructer
     *
@@ -64,7 +73,9 @@ public:
     * @param map pointer to map to use
     * @return
     */
-    WayPointItem(internals::PointLatLng const& coord,int const& altitude,QString const& description,MapGraphicItem* map);
+    WayPointItem(internals::PointLatLng const& coord,int const& altitude,QString const& description,MapGraphicItem* map,wptype type=absolute);
+    WayPointItem(distBearing const& relativeCoord,int const& altitude,QString const& description,MapGraphicItem* map);
+
     /**
     * @brief Returns the WayPoint description
     *
@@ -134,6 +145,8 @@ public:
     * @param value
     */
     void SetAltitude(int const& value);
+    void setRelativeCoord(distBearing value);
+    distBearing getRelativeCoord(){return relativeCoord;}
     int type() const;
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
@@ -144,14 +157,16 @@ public:
 ~WayPointItem();
 
     static int snumber;
+    void setWPType(wptype type);
+    wptype WPType(){return myType;}
 protected:
     void mouseMoveEvent ( QGraphicsSceneMouseEvent * event );
     void mousePressEvent ( QGraphicsSceneMouseEvent * event );
     void mouseReleaseEvent ( QGraphicsSceneMouseEvent * event );
-
-
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
 private:
     internals::PointLatLng coord;//coordinates of this WayPoint
+    distBearing relativeCoord;
     bool reached;
     QString description;
     bool shownumber;
@@ -166,6 +181,8 @@ private:
     QGraphicsSimpleTextItem* numberI;
     QGraphicsRectItem* numberIBG;
     QTransform transf;
+    HomeItem * myHome;
+    wptype myType;
 
 public slots:
     /**
@@ -189,6 +206,8 @@ public slots:
     * @param waypoint  a pointer to the WayPoint inserted
     */
     void WPInserted(int const& number,WayPointItem* waypoint);
+
+    void onHomePositionChanged(internals::PointLatLng);
 signals:
     /**
     * @brief fires when this WayPoint number changes (not fired if due to a auto-renumbering)
@@ -204,7 +223,7 @@ signals:
     * @param waypoint a pointer to this WayPoint
     */
     void WPValuesChanged(WayPointItem* waypoint);
-
+    void waypointdoubleclick(WayPointItem* waypoint);
 };
 }
 #endif // WAYPOINTITEM_H

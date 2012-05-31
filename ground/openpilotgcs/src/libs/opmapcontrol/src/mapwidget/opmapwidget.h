@@ -279,6 +279,15 @@ namespace mapcontrol
         */
         WayPointItem* WPCreate(internals::PointLatLng const& coord,int const& altitude, QString const& description);
         /**
+        * @brief Creates a new WayPoint
+        *
+        * @param coord the offset in meters to the home position
+        * @param altitude the Altitude of the WayPoint
+        * @param description the description of the WayPoint
+        * @return WayPointItem a pointer to the WayPoint created
+        */
+        WayPointItem *WPCreate(const distBearing &relativeCoord, const int &altitude, const QString &description);
+        /**
         * @brief Inserts a new WayPoint on the specified position
         *
         * @param position index of the WayPoint
@@ -469,6 +478,7 @@ namespace mapcontrol
         * @param number the number of tiles still in the queue
         */
         void OnTilesStillToLoad(int number);
+        void OnWayPointDoubleClicked(WayPointItem * waypoint);
     public slots:
         /**
         * @brief Ripps the current selection to the DB
