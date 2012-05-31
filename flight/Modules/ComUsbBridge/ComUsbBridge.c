@@ -165,6 +165,7 @@ static void usb2ComBridgeTask(void * parameters)
 
 static void updateSettings()
 {
+/*
 	if (usart_port) {
 
 		// Retrieve settings
@@ -196,4 +197,5 @@ static void updateSettings()
 			break;
 		}
 	}
+	*/
 }
