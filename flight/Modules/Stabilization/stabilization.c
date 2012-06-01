@@ -418,7 +418,7 @@ float ApplyPid(pid_type * pid, const float err)
 	// note that the scaling factor is always 1.0 if maxScale is set to 1 or
 	// lower (the default) regardless of scale.
 #else
-	#define scaleFactor 1.0
+	#define scaleFactor 1.0f
 #endif
 
 	float diff = (err - pid->lastErr);
@@ -435,7 +435,7 @@ float ApplyPid(pid_type * pid, const float err)
 #if defined(PIOS_SELFADJUSTING_STABILIZATION) || defined(DIAGNOSTICS)
 
 	float derivative = 0;
-	if ( dT > 0.0001) {
+	if ( dT > 0.0001f) {
 		derivative = fabs(diff) / dT;
 	}
 
@@ -452,10 +452,10 @@ float ApplyPid(pid_type * pid, const float err)
 	// E1 is low if the error changes fast (In the hope that this change is a
 	// decrease as the control loop tries to compensate).
 
-	if (derivative>1) {
-		pid->e1 = pid->e1 * error_alpha + (fabs(err)/derivative) * ( 1 - error_alpha );
+	if (derivative>1.0f) {
+		pid->e1 = pid->e1 * error_alpha + (fabs(err)/derivative) * ( 1.0f - error_alpha );
 	} else {
-		pid->e1 = pid->e1 * error_alpha + ( fabs(err) ) * ( 1 - error_alpha );
+		pid->e1 = pid->e1 * error_alpha + ( fabs(err) ) * ( 1.0f - error_alpha );
 	}
 
 	// High E2 indicates coefficients too high.
