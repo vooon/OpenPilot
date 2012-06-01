@@ -64,6 +64,7 @@ UAVOBJSRCFILENAMES += revocalibration
 UAVOBJSRCFILENAMES += sonaraltitude
 UAVOBJSRCFILENAMES += stabilizationdesired
 UAVOBJSRCFILENAMES += stabilizationsettings
+UAVOBJSRCFILENAMES += stabilizationstatus
 UAVOBJSRCFILENAMES += systemalarms
 UAVOBJSRCFILENAMES += systemsettings
 UAVOBJSRCFILENAMES += systemstats
