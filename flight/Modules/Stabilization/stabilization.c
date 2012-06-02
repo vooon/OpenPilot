@@ -40,8 +40,6 @@
 #include "attitudeactual.h"
 #include "attituderaw.h"
 #include "flightstatus.h"
-#include "systemsettings.h"
-#include "ahrssettings.h"
 #include "manualcontrol.h" // Just to get a macro
 #include "CoordinateConversions.h"
 
@@ -84,6 +82,7 @@ uint8_t max_axis_lock = 0;
 uint8_t max_axislock_rate = 0;
 float weak_leveling_kp = 0;
 uint8_t weak_leveling_max = 0;
+bool lowThrottleZeroIntegral;
 
 pid_type pids[PID_MAX];
 
@@ -114,6 +113,11 @@ int32_t StabilizationStart()
 int32_t StabilizationInitialize()
 {
 	// Initialize variables
+	StabilizationSettingsInitialize();
+	ActuatorDesiredInitialize();
+#if defined(DIAGNOSTICS)
+	RateDesiredInitialize();
+#endif
 
 	// Create object queue
 	queue = xQueueCreate(MAX_QUEUE_SIZE, sizeof(UAVObjEvent));
@@ -146,7 +150,6 @@ static void stabilizationTask(void* parameters)
 	RateDesiredData rateDesired;
 	AttitudeActualData attitudeActual;
 	AttitudeRawData attitudeRaw;
-	SystemSettingsData systemSettings;
 	FlightStatusData flightStatus;
 
 	SettingsUpdatedCb((UAVObjEvent *) NULL);
@@ -174,8 +177,10 @@ static void stabilizationTask(void* parameters)
 		StabilizationDesiredGet(&stabDesired);
 		AttitudeActualGet(&attitudeActual);
 		AttitudeRawGet(&attitudeRaw);
+
+#if defined(DIAGNOSTICS)
 		RateDesiredGet(&rateDesired);
-		SystemSettingsGet(&systemSettings);
+#endif
 
 #if defined(PIOS_QUATERNION_STABILIZATION)
 		// Quaternion calculation of error in each axis.  Uses more memory.
@@ -230,6 +235,9 @@ static void stabilizationTask(void* parameters)
 			{
 				case STABILIZATIONDESIRED_STABILIZATIONMODE_RATE:
 					rateDesiredAxis[i] = attitudeDesiredAxis[i];
+
+					// Zero attitude and axis lock accumulators
+					pids[PID_ROLL + i].iAccumulator = 0;
 					axis_lock_accum[i] = 0;
 					break;
 
@@ -244,11 +252,20 @@ static void stabilizationTask(void* parameters)
 
 					rateDesiredAxis[i] = attitudeDesiredAxis[i] + weak_leveling;
 
+					// Zero attitude and axis lock accumulators
+					pids[PID_ROLL + i].iAccumulator = 0;
 					axis_lock_accum[i] = 0;
 					break;
 				}
 				case STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE:
 					rateDesiredAxis[i] = ApplyPid(&pids[PID_ROLL + i], local_error[i]);
+					
+					if(rateDesiredAxis[i] > settings.MaximumRate[i])
+						rateDesiredAxis[i] = settings.MaximumRate[i];
+					else if(rateDesiredAxis[i] < -settings.MaximumRate[i])
+						rateDesiredAxis[i] = -settings.MaximumRate[i];
+					
+					
 					axis_lock_accum[i] = 0;
 					break;
 
@@ -267,21 +284,24 @@ static void stabilizationTask(void* parameters)
 
 						rateDesiredAxis[i] = ApplyPid(&pids[PID_ROLL + i], axis_lock_accum[i]);
 					}
+					
+					if(rateDesiredAxis[i] > settings.MaximumRate[i])
+						rateDesiredAxis[i] = settings.MaximumRate[i];
+					else if(rateDesiredAxis[i] < -settings.MaximumRate[i])
+						rateDesiredAxis[i] = -settings.MaximumRate[i];
+
 					break;
 			}
 		}
 
 		uint8_t shouldUpdate = 1;
+#if defined(DIAGNOSTICS)
 		RateDesiredSet(&rateDesired);
+#endif
 		ActuatorDesiredGet(&actuatorDesired);
 		//Calculate desired command
 		for(int8_t ct=0; ct< MAX_AXES; ct++)
 		{
-			if(rateDesiredAxis[ct] > settings.MaximumRate[ct])
-				rateDesiredAxis[ct] = settings.MaximumRate[ct];
-			else if(rateDesiredAxis[ct] < -settings.MaximumRate[ct])
-				rateDesiredAxis[ct] = -settings.MaximumRate[ct];
-
 			switch(stabDesired.StabilizationMode[ct])
 			{
 				case STABILIZATIONDESIRED_STABILIZATIONMODE_RATE:
@@ -299,14 +319,20 @@ static void stabilizationTask(void* parameters)
 					case ROLL:
 						actuatorDesiredAxis[ct] = bound(attitudeDesiredAxis[ct]);
 						shouldUpdate = 1;
+						pids[PID_RATE_ROLL].iAccumulator = 0;
+						pids[PID_ROLL].iAccumulator = 0;
 						break;
 					case PITCH:
 						actuatorDesiredAxis[ct] = bound(attitudeDesiredAxis[ct]);
 						shouldUpdate = 1;
+						pids[PID_RATE_PITCH].iAccumulator = 0;
+						pids[PID_PITCH].iAccumulator = 0;
 						break;
 					case YAW:
 						actuatorDesiredAxis[ct] = bound(attitudeDesiredAxis[ct]);
 						shouldUpdate = 1;
+						pids[PID_RATE_YAW].iAccumulator = 0;
+						pids[PID_YAW].iAccumulator = 0;
 						break;
 				}
 					break;
@@ -329,6 +355,7 @@ static void stabilizationTask(void* parameters)
 		}
 
 		if(flightStatus.Armed != FLIGHTSTATUS_ARMED_ARMED ||
+		   (lowThrottleZeroIntegral && stabDesired.Throttle < 0) ||
 		   !shouldUpdate)
 		{
 			ZeroPids();
@@ -426,6 +453,9 @@ static void SettingsUpdatedCb(UAVObjEvent * ev)
 	// Settings for weak leveling
 	weak_leveling_kp = settings.WeakLevelingKp;
 	weak_leveling_max = settings.MaxWeakLevelingRate;
+
+	// Whether to zero the PID integrals while throttle is low
+	lowThrottleZeroIntegral = settings.LowThrottleZeroIntegral == STABILIZATIONSETTINGS_LOWTHROTTLEZEROINTEGRAL_TRUE;
 
 	// The dT has some jitter iteration to iteration that we don't want to
 	// make thie result unpredictable.  Still, it's nicer to specify the constant
