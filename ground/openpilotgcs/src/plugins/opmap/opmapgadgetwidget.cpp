@@ -240,9 +240,9 @@ OPMapGadgetWidget::OPMapGadgetWidget(QWidget *parent) : QWidget(parent)
 
     #if defined(Q_OS_MAC)
     #elif defined(Q_OS_WIN)
-	m_widget->comboBoxFindPlace->clear();
-	loadComboBoxLines(m_widget->comboBoxFindPlace, QCoreApplication::applicationDirPath() + "/opmap_find_place_history.txt");
-	m_widget->comboBoxFindPlace->setCurrentIndex(-1);
+//	m_widget->comboBoxFindPlace->clear();
+//	loadComboBoxLines(m_widget->comboBoxFindPlace, QCoreApplication::applicationDirPath() + "/opmap_find_place_history.txt");
+//	m_widget->comboBoxFindPlace->setCurrentIndex(-1);
     #else
     #endif
 
@@ -273,7 +273,7 @@ OPMapGadgetWidget::OPMapGadgetWidget(QWidget *parent) : QWidget(parent)
     distBearing db;
     db.distance=100;
     db.bearing=0;
-    m_map->WPCreate(db,10,"aaa");
+    // TODO: m_map->WPCreate(db,10,"aaa");
     // **************
     // create various context menu (mouse right click menu) actions
 
@@ -896,6 +896,7 @@ void OPMapGadgetWidget::OnEmptyTileError(int zoom, core::Point pos)
 
 void OPMapGadgetWidget::WPNumberChanged(int const &oldnumber, int const &newnumber, WayPointItem *waypoint)
 {
+    emit waypointChanged(waypoint);
     Q_UNUSED(oldnumber);
     Q_UNUSED(newnumber);
     Q_UNUSED(waypoint);
@@ -918,6 +919,7 @@ void OPMapGadgetWidget::WPValuesChanged(WayPointItem *waypoint)
                 wp->coord = waypoint->Coord();
                 wp->altitude = waypoint->Altitude();
                 wp->description = waypoint->Description();
+                emit waypointChanged(waypoint);
                 break;
             }
             m_waypoint_list_mutex.unlock();
@@ -1514,11 +1516,6 @@ void OPMapGadgetWidget::createActions()
     followUAVheadingAct->setChecked(false);
     connect(followUAVheadingAct, SIGNAL(toggled(bool)), this, SLOT(onFollowUAVheadingAct_toggled(bool)));
 
-    /*
-      TODO: Waypoint support is disabled for v1.0
-      */
-
-
     wayPointEditorAct = new QAction(tr("&Waypoint editor"), this);
     wayPointEditorAct->setShortcut(tr("Ctrl+W"));
     wayPointEditorAct->setStatusTip(tr("Open the waypoint editor"));
@@ -1916,14 +1913,6 @@ void OPMapGadgetWidget::onUAVTrailDistanceActGroup_triggered(QAction *action)
     m_map->UAV->SetTrailDistance(trail_distance);
 }
 
-/**
-  * TODO: unused for v1.0
-  **/
-void OPMapGadgetWidget::onOpenWayPointEditorAct_triggered()
-{
-    waypoint_editor_dialog.show();
-}
-
 void OPMapGadgetWidget::onAddWayPointAct_triggered()
 {
 	if (!m_widget || !m_map)
@@ -1962,6 +1951,7 @@ void OPMapGadgetWidget::onAddWayPointAct_triggered()
     m_waypoint_list.append(wp);
 
     m_waypoint_list_mutex.unlock();
+    emit waypointAdded(wp->map_wp_item);
 }
 
 
@@ -1988,11 +1978,6 @@ void OPMapGadgetWidget::onEditWayPointAct_triggered()
     m_mouse_waypoint = NULL;
 }
 
-
-/**
-  * TODO: unused for v1.0
-  */
-
 void OPMapGadgetWidget::onLockWayPointAct_triggered()
 {
     if (!m_widget || !m_map || !m_mouse_waypoint)
@@ -2012,11 +1997,6 @@ void OPMapGadgetWidget::onLockWayPointAct_triggered()
 
     m_mouse_waypoint = NULL;
 }
-
-
-/**
-  * TODO: unused for v1.0
-  */
 
 void OPMapGadgetWidget::onDeleteWayPointAct_triggered()
 {
@@ -2041,6 +2021,7 @@ void OPMapGadgetWidget::onDeleteWayPointAct_triggered()
         if (!wp) continue;
         if (!wp->map_wp_item || wp->map_wp_item != m_mouse_waypoint) continue;
 
+        emit waypointDeleted(wp->map_wp_item);
         // delete the waypoint from the map
         m_map->WPDelete(wp->map_wp_item);
 
@@ -2071,9 +2052,6 @@ void OPMapGadgetWidget::onDeleteWayPointAct_triggered()
     m_mouse_waypoint = NULL;
 }
 
-/**
-  * TODO: No Waypoint support in v1.0
-  */
 void OPMapGadgetWidget::onClearWayPointsAct_triggered()
 {
     if (!m_widget || !m_map)

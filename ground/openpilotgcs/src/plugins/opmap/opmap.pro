@@ -19,7 +19,8 @@ HEADERS += opmapplugin.h \
     opmap_edit_waypoint_dialog.h \
     opmap_zoom_slider_widget.h \
     opmap_statusbar_widget.h \
-    opmap_overlay_widget.h
+    opmap_overlay_widget.h \
+    pathplannercontroller.h
 
 SOURCES += opmapplugin.cpp \
     opmapgadgetwidget.cpp \
@@ -31,7 +32,8 @@ SOURCES += opmapplugin.cpp \
     opmap_edit_waypoint_dialog.cpp \
     opmap_zoom_slider_widget.cpp \
     opmap_statusbar_widget.cpp \
-    opmap_overlay_widget.cpp
+    opmap_overlay_widget.cpp \
+    pathplannercontroller.cpp
 
 OTHER_FILES += OPMapGadget.pluginspec
 

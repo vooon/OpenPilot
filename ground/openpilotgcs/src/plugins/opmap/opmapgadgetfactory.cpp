@@ -30,6 +30,7 @@
 #include "opmapgadgetconfiguration.h"
 #include "opmapgadgetoptionspage.h"
 #include <coreplugin/iuavgadget.h>
+#include "pathplannercontroller.h"
 
 OPMapGadgetFactory::OPMapGadgetFactory(QObject *parent) :
                 IUAVGadgetFactory(QString("OPMapGadget"), tr("OPMap"), parent)
@@ -43,6 +44,11 @@ OPMapGadgetFactory::~OPMapGadgetFactory()
 Core::IUAVGadget * OPMapGadgetFactory::createGadget(QWidget *parent)
 {
     OPMapGadgetWidget *gadgetWidget = new OPMapGadgetWidget(parent);
+    PathPlannerController* pathController = new PathPlannerController(gadgetWidget);
+    connect(gadgetWidget, SIGNAL(waypointAdded(mapcontrol::WayPointItem*)), pathController, SLOT(waypointAdded(mapcontrol::WayPointItem*)));
+    connect(gadgetWidget, SIGNAL(waypointChanged(mapcontrol::WayPointItem*)), pathController, SLOT(waypointChanged(mapcontrol::WayPointItem*)));
+    connect(gadgetWidget, SIGNAL(waypointDeleted(mapcontrol::WayPointItem*)), pathController, SLOT(waypointDeleted(mapcontrol::WayPointItem*)));
+
     return new OPMapGadget(QString("OPMapGadget"), gadgetWidget, parent);
 }
 
