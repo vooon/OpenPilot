@@ -1,3 +1,5 @@
+# Exclude temporary and system files
+.DS_Store
 
 # /flight/
 /flight/*.pnproj
@@ -64,3 +66,5 @@ GPATH
 GRTAGS
 GSYMS
 GTAGS
+/.cproject
+/.project

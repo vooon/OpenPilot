@@ -28,7 +28,7 @@
 #define CCATTITUDEWIDGET_H
 
 #include "ui_ccattitude.h"
-#include "configtaskwidget.h"
+#include "../uavobjectwidgetutils/configtaskwidget.h"
 #include "extensionsystem/pluginmanager.h"
 #include "uavobjectmanager.h"
 #include "uavobject.h"
@@ -47,7 +47,7 @@ public:
     ~ConfigCCAttitudeWidget();
 
 private slots:
-    void attitudeRawUpdated(UAVObject * obj);
+    void accelsUpdated(UAVObject * obj);
     void timeout();
     void startAccelCalibration();
     void openHelp();
@@ -57,7 +57,6 @@ private:
     Ui_ccattitude *ui;
     QTimer timer;
     UAVObject::Metadata initialMdata;
-    quint8 initialBiasCorrected;
 
     int updates;
 

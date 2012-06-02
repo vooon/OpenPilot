@@ -74,12 +74,21 @@ PFDGadgetWidget::PFDGadgetWidget(QWidget *parent) : QGraphicsView(parent)
     connect(&skyDialTimer, SIGNAL(timeout()), this, SLOT(moveSky()));
     skyDialTimer.start(30);
 
+
 }
 
 PFDGadgetWidget::~PFDGadgetWidget()
 {
     skyDialTimer.stop();
     dialTimer.stop();
+}
+
+void PFDGadgetWidget::setToolTipPrivate()
+{
+    static qint32 updateRate=0;
+    UAVObject::Metadata mdata=attitudeObj->getMetadata();
+    if(mdata.flightTelemetryUpdatePeriod!=updateRate)
+        this->setToolTip("Current refresh rate:"+QString::number(mdata.flightTelemetryUpdatePeriod)+" miliseconds"+"\nIf you want to change it please edit the AttitudeActual metadata on the object browser.");
 }
 
 /*!
@@ -174,7 +183,6 @@ void PFDGadgetWidget::connectNeedles() {
             qDebug() << "Error: Object is unknown (FlightBatteryState).";
        }
    }
-
 }
 
 
@@ -229,6 +237,7 @@ void PFDGadgetWidget::updateLinkStatus(UAVObject *object1) {
   Resolution is 1 degree roll & 1/7.5 degree pitch.
   */
 void PFDGadgetWidget::updateAttitude(UAVObject *object1) {
+    setToolTipPrivate();
     UAVObjectField * rollField = object1->getField(QString("Roll"));
     UAVObjectField * yawField = object1->getField(QString("Yaw"));
     UAVObjectField * pitchField = object1->getField(QString("Pitch"));
@@ -295,7 +304,7 @@ void PFDGadgetWidget::updateAirspeed(UAVObject *object) {
     UAVObjectField* eastField = object->getField("East");
     if (northField && eastField) {
         double val = floor(sqrt(pow(northField->getDouble(),2) + pow(eastField->getDouble(),2))*10)/10;
-        groundspeedTarget = 3.6*val*speedScaleHeight/3000;
+        groundspeedTarget = 3.6*val*speedScaleHeight/30;
 
         if (!dialTimer.isActive())
             dialTimer.start(); // Rearm the dial Timer which might be stopped.
@@ -312,7 +321,7 @@ void PFDGadgetWidget::updateAltitude(UAVObject *object) {
     UAVObjectField* downField = object->getField("Down");
     if (downField) {
         // The altitude scale represents 30 meters
-        altitudeTarget = -floor(downField->getDouble()*10)/10*altitudeScaleHeight/3000;
+        altitudeTarget = -floor(downField->getDouble()*10)/10*altitudeScaleHeight/30;
         if (!dialTimer.isActive())
             dialTimer.start(); // Rearm the dial Timer which might be stopped.
 

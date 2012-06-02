@@ -28,7 +28,7 @@
 #define CONFIGINPUTWIDGET_H
 
 #include "ui_input.h"
-#include "configtaskwidget.h"
+#include "../uavobjectwidgetutils/configtaskwidget.h"
 #include "extensionsystem/pluginmanager.h"
 #include "uavobjectmanager.h"
 #include "uavobject.h"
@@ -81,6 +81,7 @@ private:
         }lastChannel;
         channelsStruct currentChannel;
         QList<channelsStruct> usedChannels;
+        bool channelDetected;
         QEventLoop * loop;
         bool skipflag;
 

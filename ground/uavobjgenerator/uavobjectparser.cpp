@@ -34,7 +34,7 @@ UAVObjectParser::UAVObjectParser()
     fieldTypeStrXML << "int8" << "int16" << "int32" << "uint8"
         << "uint16" << "uint32" <<"float" << "enum";
 
-    updateModeStrXML << "periodic" << "onchange" << "manual" << "never";
+    updateModeStrXML << "periodic" << "onchange" << "throttled" << "manual";
 
     accessModeStr << "ACCESS_READWRITE" << "ACCESS_READONLY";
 
@@ -109,6 +109,11 @@ int UAVObjectParser::getNumBytes(int objIndex)
         }
         return numBytes;
     }
+}
+
+bool fieldTypeLessThan(const FieldInfo* f1, const FieldInfo* f2)
+{
+    return f1->numBytes > f2->numBytes;
 }
 
 /**
@@ -200,6 +205,12 @@ QString UAVObjectParser::parseXML(QString& xml, QString& filename)
             // Get next element
             childNode = childNode.nextSibling();
         }
+		
+		// Sort all fields according to size
+        qStableSort(info->fields.begin(), info->fields.end(), fieldTypeLessThan);
+
+        // Sort all fields according to size
+        qStableSort(info->fields.begin(), info->fields.end(), fieldTypeLessThan);
 
         // Make sure that required elements were found
         if ( !accessFound )
@@ -460,6 +471,13 @@ QString UAVObjectParser::processObjectFields(QDomNode& childNode, ObjectInfo* in
 				defaults.append(defaults[0]);
 		}
 		field->defaultValues = defaults;
+    }
+    elemAttr = elemAttributes.namedItem("limits");
+    if ( elemAttr.isNull() ) {
+        field->limitValues=QString();
+    }
+    else{
+        field->limitValues=elemAttr.nodeValue();
     }
     // Add field to object
     info->fields.append(field);

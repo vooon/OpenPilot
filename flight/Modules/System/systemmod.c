@@ -48,8 +48,6 @@
 #include "taskinfo.h"
 #include "watchdogstatus.h"
 #include "taskmonitor.h"
-#include "pios_config.h"
-
 
 // Private constants
 #define SYSTEM_UPDATE_PERIOD_MS 1000
@@ -114,9 +112,12 @@ int32_t SystemModInitialize(void)
 	// Must registers objects here for system thread because ObjectManager started in OpenPilotInit
 	SystemSettingsInitialize();
 	SystemStatsInitialize();
+	FlightStatusInitialize();
 	ObjectPersistenceInitialize();
-#if defined(DIAGNOSTICS)
+#if defined(DIAG_TASKS)
 	TaskInfoInitialize();
+#endif
+#if defined(DIAGNOSTICS)
 	I2CStatsInitialize();
 	WatchdogStatusInitialize();
 #endif
@@ -135,7 +136,20 @@ static void systemTask(void *parameters)
 	portTickType lastSysTime;
 
 	/* create all modules thread */
-	MODULE_TASKCREATE_ALL
+	MODULE_TASKCREATE_ALL;
+
+	if (mallocFailed) {
+		/* We failed to malloc during task creation,
+		 * system behaviour is undefined.  Reset and let
+		 * the BootFault code recover for us.
+		 */
+		PIOS_SYS_Reset();
+	}
+
+#if defined(PIOS_INCLUDE_IAP)
+	/* Record a successful boot */
+	PIOS_IAP_WriteBootCount(0);
+#endif
 
 	// Initialize vars
 	idleCounter = 0;
@@ -156,20 +170,25 @@ static void systemTask(void *parameters)
 		updateI2Cstats();
 		updateWDGstats();
 #endif
+
+#if defined(DIAG_TASKS)
 		// Update the task status object
 		TaskMonitorUpdateAll();
+#endif
 
 		// Flash the heartbeat LED
-		PIOS_LED_Toggle(LED1);
+#if defined(PIOS_LED_HEARTBEAT)
+		PIOS_LED_Toggle(PIOS_LED_HEARTBEAT);
+#endif	/* PIOS_LED_HEARTBEAT */
 
 		// Turn on the error LED if an alarm is set
-#if (PIOS_LED_NUM > 1)
+#if defined (PIOS_LED_ALARM)
 		if (AlarmsHasWarnings()) {
-			PIOS_LED_On(LED2);
+			PIOS_LED_On(PIOS_LED_ALARM);
 		} else {
-			PIOS_LED_Off(LED2);
+			PIOS_LED_Off(PIOS_LED_ALARM);
 		}
-#endif
+#endif	/* PIOS_LED_ALARM */
 
 		FlightStatusData flightStatus;
 		FlightStatusGet(&flightStatus);
@@ -365,7 +384,7 @@ static void updateStats()
 	if (now > lastTickCount) {
 		uint32_t dT = (xTaskGetTickCount() - lastTickCount) * portTICK_RATE_MS;	// in ms
 		stats.CPULoad =
-			100 - (uint8_t) round(100.0 * ((float)idleCounter / ((float)dT / 1000.0)) / (float)IDLE_COUNTS_PER_SEC_AT_NO_LOAD);
+			100 - (uint8_t) roundf(100.0f * ((float)idleCounter / ((float)dT / 1000.0f)) / (float)IDLE_COUNTS_PER_SEC_AT_NO_LOAD);
 	} //else: TickCount has wrapped, do not calc now
 	lastTickCount = now;
 	idleCounterClear = 1;
@@ -389,25 +408,24 @@ static void updateSystemAlarms()
 	EventStats evStats;
 	SystemStatsGet(&stats);
 
-	// Check heap
-	if (stats.HeapRemaining < HEAP_LIMIT_CRITICAL) {
-		AlarmsSet(SYSTEMALARMS_ALARM_OUTOFMEMORY, SYSTEMALARMS_ALARM_CRITICAL);
-	} else if (stats.HeapRemaining < HEAP_LIMIT_WARNING) {
-		AlarmsSet(SYSTEMALARMS_ALARM_OUTOFMEMORY, SYSTEMALARMS_ALARM_WARNING);
-	} else {
-		AlarmsClear(SYSTEMALARMS_ALARM_OUTOFMEMORY);
-	}
-
+	// Check heap, IRQ stack and malloc failures
+	if ( mallocFailed
+	     || (stats.HeapRemaining < HEAP_LIMIT_CRITICAL)
 #if !defined(ARCH_POSIX) && !defined(ARCH_WIN32) && defined(CHECK_IRQ_STACK)
-	// Check IRQ stack
-	if (stats.IRQStackRemaining < IRQSTACK_LIMIT_CRITICAL) {
+	     || (stats.IRQStackRemaining < IRQSTACK_LIMIT_CRITICAL)
+#endif
+	    ) {
 		AlarmsSet(SYSTEMALARMS_ALARM_OUTOFMEMORY, SYSTEMALARMS_ALARM_CRITICAL);
-	} else if (stats.IRQStackRemaining < IRQSTACK_LIMIT_WARNING) {
+	} else if (
+		(stats.HeapRemaining < HEAP_LIMIT_WARNING)
+#if !defined(ARCH_POSIX) && !defined(ARCH_WIN32) && defined(CHECK_IRQ_STACK)
+	     || (stats.IRQStackRemaining < IRQSTACK_LIMIT_WARNING)
+#endif
+	    ) {
 		AlarmsSet(SYSTEMALARMS_ALARM_OUTOFMEMORY, SYSTEMALARMS_ALARM_WARNING);
 	} else {
 		AlarmsClear(SYSTEMALARMS_ALARM_OUTOFMEMORY);
 	}
-#endif
 
 	// Check CPU load
 	if (stats.CPULoad > CPULOAD_LIMIT_CRITICAL) {
@@ -425,13 +443,6 @@ static void updateSystemAlarms()
 		AlarmsClear(SYSTEMALARMS_ALARM_STACKOVERFLOW);
 	}
 
-	// Check for malloc failures
-	if (mallocFailed) {
-		AlarmsSet(SYSTEMALARMS_ALARM_OUTOFMEMORY, SYSTEMALARMS_ALARM_CRITICAL);
-	} else {
-		AlarmsClear(SYSTEMALARMS_ALARM_OUTOFMEMORY);
-	}
-
 #if defined(PIOS_INCLUDE_SDCARD)
 	// Check for SD card
 	if (PIOS_SDCARD_IsMounted() == 0) {
@@ -446,11 +457,21 @@ static void updateSystemAlarms()
 	EventGetStats(&evStats);
 	UAVObjClearStats();
 	EventClearStats();
-	if (objStats.eventErrors > 0 || evStats.eventErrors > 0) {
+	if (objStats.eventCallbackErrors > 0 || objStats.eventQueueErrors > 0  || evStats.eventErrors > 0) {
 		AlarmsSet(SYSTEMALARMS_ALARM_EVENTSYSTEM, SYSTEMALARMS_ALARM_WARNING);
 	} else {
 		AlarmsClear(SYSTEMALARMS_ALARM_EVENTSYSTEM);
 	}
+	
+	if (objStats.lastCallbackErrorID || objStats.lastQueueErrorID || evStats.lastErrorID) {
+		SystemStatsData sysStats;
+		SystemStatsGet(&sysStats);
+		sysStats.EventSystemWarningID = evStats.lastErrorID;
+		sysStats.ObjectManagerCallbackID = objStats.lastCallbackErrorID;
+		sysStats.ObjectManagerQueueID = objStats.lastQueueErrorID;
+		SystemStatsSet(&sysStats);
+	}
+		
 }
 
 /**

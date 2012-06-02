@@ -44,20 +44,23 @@
 #include "flightstatus.h"
 #include "accessorydesired.h"
 #include "receiveractivity.h"
+#include "altitudeholddesired.h"
+#include "positionactual.h"
+#include "baroaltitude.h"
 
 // Private constants
 #if defined(PIOS_MANUAL_STACK_SIZE)
 #define STACK_SIZE_BYTES PIOS_MANUAL_STACK_SIZE
 #else
-#define STACK_SIZE_BYTES 824
+#define STACK_SIZE_BYTES 1024
 #endif
 
 #define TASK_PRIORITY (tskIDLE_PRIORITY+4)
 #define UPDATE_PERIOD_MS 20
-#define THROTTLE_FAILSAFE -0.1
-#define FLIGHT_MODE_LIMIT 1.0/3.0
+#define THROTTLE_FAILSAFE -0.1f
+#define FLIGHT_MODE_LIMIT 1.0f/3.0f
 #define ARMED_TIME_MS      1000
-#define ARMED_THRESHOLD    0.50
+#define ARMED_THRESHOLD    0.50f
 //safe band to allow a bit of calibration error or trim offset (in microseconds)
 #define CONNECTION_OFFSET 150
 
@@ -79,6 +82,7 @@ static portTickType lastSysTime;
 // Private functions
 static void updateActuatorDesired(ManualControlCommandData * cmd);
 static void updateStabilizationDesired(ManualControlCommandData * cmd, ManualControlSettingsData * settings);
+static void altitudeHoldDesired(ManualControlCommandData * cmd);
 static void processFlightMode(ManualControlSettingsData * settings, float flightMode);
 static void processArm(ManualControlCommandData * cmd, ManualControlSettingsData * settings);
 static void setArmedIfChanged(uint8_t val);
@@ -88,6 +92,7 @@ static float scaleChannel(int16_t value, int16_t max, int16_t min, int16_t neutr
 static uint32_t timeDifferenceMs(portTickType start_time, portTickType end_time);
 static bool okToArm(void);
 static bool validInputRange(int16_t min, int16_t max, uint16_t value);
+static void applyDeadband(float *value, float deadband);
 
 #define RCVR_ACTIVITY_MONITOR_CHANNELS_PER_GROUP 12
 #define RCVR_ACTIVITY_MONITOR_MIN_RANGE 10
@@ -189,19 +194,19 @@ static void manualControlTask(void *parameters)
 			lastActivityTime = lastSysTime;
 		}
 
-		if (ManualControlCommandReadOnly(&cmd)) {
+		if (ManualControlCommandReadOnly()) {
 			FlightTelemetryStatsData flightTelemStats;
 			FlightTelemetryStatsGet(&flightTelemStats);
 			if(flightTelemStats.Status != FLIGHTTELEMETRYSTATS_STATUS_CONNECTED) {
 				/* trying to fly via GCS and lost connection.  fall back to transmitter */
 				UAVObjMetadata metadata;
-				UAVObjGetMetadata(&cmd, &metadata);
-				metadata.access = ACCESS_READWRITE;
-				UAVObjSetMetadata(&cmd, &metadata);
+				ManualControlCommandGetMetadata(&metadata);
+				UAVObjSetAccess(&metadata, ACCESS_READWRITE);
+				ManualControlCommandSetMetadata(&metadata);
 			}
 		}
 
-		if (!ManualControlCommandReadOnly(&cmd)) {
+		if (!ManualControlCommandReadOnly()) {
 
 			bool valid_input_detected = true;
 			
@@ -317,6 +322,13 @@ static void manualControlTask(void *parameters)
 				cmd.Throttle       = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_THROTTLE];
 				flightMode         = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_FLIGHTMODE];
 
+				// Apply deadband for Roll/Pitch/Yaw stick inputs
+				if (settings.Deadband) {
+					applyDeadband(&cmd.Roll, settings.Deadband);
+					applyDeadband(&cmd.Pitch, settings.Deadband);
+					applyDeadband(&cmd.Yaw, settings.Deadband);
+				}
+
 				if(cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_COLLECTIVE] != PIOS_RCVR_INVALID &&
 				   cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_COLLECTIVE] != PIOS_RCVR_NODRIVER &&
 				   cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_COLLECTIVE] != PIOS_RCVR_TIMEOUT)
@@ -375,7 +387,13 @@ static void manualControlTask(void *parameters)
 				updateStabilizationDesired(&cmd, &settings);
 				break;
 			case FLIGHTMODE_GUIDANCE:
-				// TODO: Implement
+				switch(flightStatus.FlightMode) {
+					case FLIGHTSTATUS_FLIGHTMODE_ALTITUDEHOLD:
+						altitudeHoldDesired(&cmd);
+						break;
+					default:
+						AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_CRITICAL);
+				}
 				break;
 		}
 	}
@@ -439,11 +457,11 @@ static bool updateRcvrActivityCompare(uint32_t rcvr_id, struct rcvr_activity_fsm
 			case MANUALCONTROLSETTINGS_CHANNELGROUPS_PPM:
 				group = RECEIVERACTIVITY_ACTIVEGROUP_PPM;
 				break;
-			case MANUALCONTROLSETTINGS_CHANNELGROUPS_SPEKTRUM1:
-				group = RECEIVERACTIVITY_ACTIVEGROUP_SPEKTRUM1;
+			case MANUALCONTROLSETTINGS_CHANNELGROUPS_DSMMAINPORT:
+				group = RECEIVERACTIVITY_ACTIVEGROUP_DSMMAINPORT;
 				break;
-			case MANUALCONTROLSETTINGS_CHANNELGROUPS_SPEKTRUM2:
-				group = RECEIVERACTIVITY_ACTIVEGROUP_SPEKTRUM2;
+			case MANUALCONTROLSETTINGS_CHANNELGROUPS_DSMFLEXIPORT:
+				group = RECEIVERACTIVITY_ACTIVEGROUP_DSMFLEXIPORT;
 				break;
 			case MANUALCONTROLSETTINGS_CHANNELGROUPS_SBUS:
 				group = RECEIVERACTIVITY_ACTIVEGROUP_SBUS;
@@ -456,7 +474,7 @@ static bool updateRcvrActivityCompare(uint32_t rcvr_id, struct rcvr_activity_fsm
 				break;
 			}
 
-			ReceiverActivityActiveGroupSet(&group);
+			ReceiverActivityActiveGroupSet((uint8_t*)&group);
 			ReceiverActivityActiveChannelSet(&channel);
 			activity_updated = true;
 		}
@@ -588,6 +606,52 @@ static void updateStabilizationDesired(ManualControlCommandData * cmd, ManualCon
 	StabilizationDesiredSet(&stabilization);
 }
 
+#if defined(REVOLUTION)
+// TODO: Need compile flag to exclude this from copter control
+static void altitudeHoldDesired(ManualControlCommandData * cmd)
+{
+	const float DEADBAND_HIGH = 0.55;
+	const float DEADBAND_LOW = 0.45;
+	
+	static portTickType lastSysTime;
+	static bool zeroed = false;
+	portTickType thisSysTime;
+	float dT;
+	AltitudeHoldDesiredData altitudeHoldDesired;
+	AltitudeHoldDesiredGet(&altitudeHoldDesired);
+
+	StabilizationSettingsData stabSettings;
+	StabilizationSettingsGet(&stabSettings);
+
+	thisSysTime = xTaskGetTickCount();
+	dT = (thisSysTime - lastSysTime) / portTICK_RATE_MS / 1000.0f;
+	lastSysTime = thisSysTime;
+
+	altitudeHoldDesired.Roll = cmd->Roll * stabSettings.RollMax;
+	altitudeHoldDesired.Pitch = cmd->Pitch * stabSettings.PitchMax;
+	altitudeHoldDesired.Yaw = cmd->Yaw * stabSettings.ManualRate[STABILIZATIONSETTINGS_MANUALRATE_YAW];
+	
+	float currentDown;
+	PositionActualDownGet(&currentDown);
+	if(dT > 1) {
+		// After not being in this mode for a while init at current height
+		altitudeHoldDesired.Altitude = 0;
+		zeroed = false;
+	} else if (cmd->Throttle > DEADBAND_HIGH && zeroed)
+		altitudeHoldDesired.Altitude += (cmd->Throttle - DEADBAND_HIGH) * dT;
+	else if (cmd->Throttle < DEADBAND_LOW && zeroed)
+		altitudeHoldDesired.Altitude += (cmd->Throttle - DEADBAND_LOW) * dT;
+	else if (cmd->Throttle >= DEADBAND_LOW && cmd->Throttle <= DEADBAND_HIGH)  // Require the stick to enter the dead band before they can move height
+		zeroed = true;
+	
+	AltitudeHoldDesiredSet(&altitudeHoldDesired);
+}
+#else
+static void altitudeHoldDesired(ManualControlCommandData * cmd)
+{
+	AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_ERROR);
+}
+#endif
 /**
  * Convert channel from servo pulse duration (microseconds) to scaled -1/+1 range.
  */
@@ -819,6 +883,20 @@ bool validInputRange(int16_t min, int16_t max, uint16_t value)
 		max = tmp;
 	}
 	return (value >= min - CONNECTION_OFFSET && value <= max + CONNECTION_OFFSET);
+}
+
+/**
+ * @brief Apply deadband to Roll/Pitch/Yaw channels
+ */
+static void applyDeadband(float *value, float deadband)
+{
+	if (fabs(*value) < deadband)
+		*value = 0.0f;
+	else
+		if (*value > 0.0f)
+			*value -= deadband;
+		else
+			*value += deadband;
 }
 
 /**

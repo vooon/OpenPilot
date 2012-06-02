@@ -4,10 +4,12 @@
 #include "manualcontrolsettings.h"
 
 inputChannelForm::inputChannelForm(QWidget *parent,bool showlegend) :
-    QWidget(parent),
+    ConfigTaskWidget(parent),
     ui(new Ui::inputChannelForm)
 {
     ui->setupUi(this);
+    
+    //The first time through the loop, keep the legend. All other times, delete it.
     if(!showlegend)
     {
         layout()->removeWidget(ui->legend0);
@@ -34,11 +36,31 @@ inputChannelForm::inputChannelForm(QWidget *parent,bool showlegend) :
     // a spin box fixes this
     connect(ui->channelNumberDropdown,SIGNAL(currentIndexChanged(int)),this,SLOT(channelDropdownUpdated(int)));
     connect(ui->channelNumber,SIGNAL(valueChanged(int)),this,SLOT(channelNumberUpdated(int)));
+
+    disableMouseWheelEvents();
 }
+
 
 inputChannelForm::~inputChannelForm()
 {
     delete ui;
+}
+
+void inputChannelForm::setName(QString &name)
+{
+    ui->channelName->setText(name);
+    QFontMetrics metrics(ui->channelName->font());
+    int width=metrics.width(name)+5;
+    foreach(inputChannelForm * form,parent()->findChildren<inputChannelForm*>())
+    {
+        if(form==this)
+            continue;
+        if(form->ui->channelName->minimumSize().width()<width)
+            form->ui->channelName->setMinimumSize(width,0);
+        else
+            width=form->ui->channelName->minimumSize().width();
+    }
+    ui->channelName->setMinimumSize(width,0);
 }
 
 /**
@@ -85,8 +107,8 @@ void inputChannelForm::groupUpdated()
         count = 8; // Need to make this 6 for CC
         break;
     case ManualControlSettings::CHANNELGROUPS_PPM:
-    case ManualControlSettings::CHANNELGROUPS_SPEKTRUM1:
-    case ManualControlSettings::CHANNELGROUPS_SPEKTRUM2:
+    case ManualControlSettings::CHANNELGROUPS_DSMMAINPORT:
+    case ManualControlSettings::CHANNELGROUPS_DSMFLEXIPORT:
         count = 12;
         break;
     case ManualControlSettings::CHANNELGROUPS_SBUS:
@@ -94,6 +116,7 @@ void inputChannelForm::groupUpdated()
         break;
     case ManualControlSettings::CHANNELGROUPS_GCS:
         count = 5;
+        break;
     case ManualControlSettings::CHANNELGROUPS_NONE:
         count = 0;
         break;

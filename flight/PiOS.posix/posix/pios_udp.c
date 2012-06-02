@@ -78,11 +78,6 @@ static pios_udp_dev * find_udp_dev_by_id (uint8_t udp)
 void * PIOS_UDP_RxThread(void * udp_dev_n)
 {
 
-	/* needed because of FreeRTOS.posix scheduling */
-	sigset_t set;
-	sigfillset(&set);
-	sigprocmask(SIG_BLOCK, &set, NULL);
-
 	pios_udp_dev * udp_dev = (pios_udp_dev*) udp_dev_n;
 
    /**
@@ -151,7 +146,13 @@ int32_t PIOS_UDP_Init(uint32_t * udp_id, const struct pios_udp_cfg * cfg)
   int res= bind(udp_dev->socket, (struct sockaddr *)&udp_dev->server,sizeof(udp_dev->server));
 
   /* Create transmit thread for this connection */
+#if defined(PIOS_INCLUDE_FREERTOS)
+//( pdTASK_CODE pvTaskCode, const portCHAR * const pcName, unsigned portSHORT usStackDepth, void *pvParameters, unsigned portBASE_TYPE uxPriority, xTaskHandle *pvCreatedTask );
+  xTaskCreate((pdTASK_CODE)PIOS_UDP_RxThread, (const signed char *)"UDP_Rx_Thread",1024,(void*)udp_dev,(tskIDLE_PRIORITY + 1),&udp_dev->rxThread);
+#else
   pthread_create(&udp_dev->rxThread, NULL, PIOS_UDP_RxThread, (void*)udp_dev);
+#endif
+
 
   printf("udp dev %i - socket %i opened - result %i\n",pios_udp_num_devices-1,udp_dev->socket,res);
 
@@ -194,7 +195,7 @@ static void PIOS_UDP_TxStart(uint32_t udp_id, uint16_t tx_bytes_avail)
 			length = (udp_dev->tx_out_cb)(udp_dev->tx_out_context, udp_dev->tx_buffer, PIOS_UDP_RX_BUFFER_SIZE, NULL, &tx_need_yield);
 			rem = length;
 			while (rem>0) {
-				len = sendto(udp_dev->socket, udp_dev->tx_buffer, length, 0,
+				len = sendto(udp_dev->socket, udp_dev->tx_buffer+length-rem, rem, 0,
 						 (struct sockaddr *) &udp_dev->client,
 						 sizeof(udp_dev->client));
 				if (len<=0) {

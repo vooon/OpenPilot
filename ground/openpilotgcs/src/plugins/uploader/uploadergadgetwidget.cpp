@@ -25,6 +25,9 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 #include "uploadergadgetwidget.h"
+#include "../../../../../build/ground/openpilotgcs/gcsversioninfo.h"
+#include <coreplugin/coreconstants.h>
+#include <QDebug>
 
 #define DFU_DEBUG true
 
@@ -37,18 +40,22 @@ UploaderGadgetWidget::UploaderGadgetWidget(QWidget *parent) : QWidget(parent)
     dfu = NULL;
     m_timer = 0;
     m_progress = 0;
-
+    msg=new QErrorMessage(this);
     // Listen to autopilot connection events
     ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
     TelemetryManager* telMngr = pm->getObject<TelemetryManager>();
     connect(telMngr, SIGNAL(connected()), this, SLOT(onAutopilotConnect()));
+    connect(telMngr, SIGNAL(connected()), this, SLOT(versionMatchCheck()));
+
     connect(telMngr, SIGNAL(disconnected()), this, SLOT(onAutopilotDisconnect()));
 
     connect(m_config->haltButton, SIGNAL(clicked()), this, SLOT(goToBootloader()));
     connect(m_config->resetButton, SIGNAL(clicked()), this, SLOT(systemReset()));
     connect(m_config->bootButton, SIGNAL(clicked()), this, SLOT(systemBoot()));
+    connect(m_config->safeBootButton, SIGNAL(clicked()), this, SLOT(systemSafeBoot()));
     connect(m_config->rescueButton, SIGNAL(clicked()), this, SLOT(systemRescue()));
-
+    Core::ConnectionManager *cm = Core::ICore::instance()->connectionManager();
+    connect(cm,SIGNAL(deviceConnected(QIODevice*)),this,SLOT(onPhisicalHWConnect()));
     getSerialPorts();
 
     QIcon rbi;
@@ -57,9 +64,13 @@ UploaderGadgetWidget::UploaderGadgetWidget(QWidget *parent) : QWidget(parent)
 
     connect(m_config->refreshPorts, SIGNAL(clicked()), this, SLOT(getSerialPorts()));
 
+    connect(m_config->pbHelp,SIGNAL(clicked()),this,SLOT(openHelp()));
     // And check whether by any chance we are not already connected
     if (telMngr->isConnected())
+    {
         onAutopilotConnect();
+        versionMatchCheck();
+    }
 
 
 }
@@ -106,13 +117,31 @@ QString UploaderGadgetWidget::getPortDevice(const QString &friendName)
     return "";
 }
 
+void UploaderGadgetWidget::connectSignalSlot(QWidget *widget)
+{
+    connect(qobject_cast<deviceWidget *>(widget),SIGNAL(uploadStarted()),this,SLOT(uploadStarted()));
+    connect(qobject_cast<deviceWidget *>(widget),SIGNAL(uploadEnded(bool)),this,SLOT(uploadEnded(bool)));
+}
+void UploaderGadgetWidget::onPhisicalHWConnect()
+{
+    m_config->bootButton->setEnabled(false);
+    m_config->safeBootButton->setEnabled(false);
+    m_config->rescueButton->setEnabled(false);
+    m_config->telemetryLink->setEnabled(false);
+}
 
 /**
   Enables widget buttons if autopilot connected
   */
 void UploaderGadgetWidget::onAutopilotConnect(){
+    QTimer::singleShot(1000,this,SLOT(populate()));
+}
+
+void UploaderGadgetWidget::populate()
+{
     m_config->haltButton->setEnabled(true);
     m_config->resetButton->setEnabled(true);
+    m_config->safeBootButton->setEnabled(false);
     m_config->bootButton->setEnabled(false);
     m_config->rescueButton->setEnabled(false);
     m_config->telemetryLink->setEnabled(false);
@@ -127,7 +156,6 @@ void UploaderGadgetWidget::onAutopilotConnect(){
     runningDeviceWidget* dw = new runningDeviceWidget(this);
     dw->populate();
     m_config->systemElements->addTab(dw, QString("Connected Device"));
-
 }
 
 /**
@@ -137,6 +165,7 @@ void UploaderGadgetWidget::onAutopilotDisconnect(){
     m_config->haltButton->setEnabled(false);
     m_config->resetButton->setEnabled(false);
     m_config->bootButton->setEnabled(true);
+    m_config->safeBootButton->setEnabled(true);
     if (currentStep == IAP_STATE_BOOTLOADER) {
         m_config->rescueButton->setEnabled(false);
         m_config->telemetryLink->setEnabled(false);
@@ -235,9 +264,7 @@ void UploaderGadgetWidget::goToBootloader(UAVObject* callerObj, bool success)
         currentStep = IAP_STATE_BOOTLOADER;
 
         // Tell the mainboard to get into bootloader state:
-        log("Detecting devices, please wait 5 seconds...");
-        this->repaint();
-        delay::msleep(5100); // Required to let the board(s) settle
+        log("Detecting devices, please wait a few seconds...");
         if (!dfu) {
             if (dlj.startsWith("USB"))
                 dfu = new DFUObject(DFU_DEBUG, false, QString());
@@ -284,6 +311,7 @@ void UploaderGadgetWidget::goToBootloader(UAVObject* callerObj, bool success)
         }
         for(int i=0;i<dfu->numberOfDevices;i++) {
             deviceWidget* dw = new deviceWidget(this);
+            connectSignalSlot(dw);
             dw->setDeviceID(i);
             dw->setDfu(dfu);
             dw->populate();
@@ -295,6 +323,7 @@ void UploaderGadgetWidget::goToBootloader(UAVObject* callerObj, bool success)
         */
         // Need to re-enable in case we were not connected
         m_config->bootButton->setEnabled(true);
+        m_config->safeBootButton->setEnabled(true);
         /*
         m_config->telemetryLink->setEnabled(false);
         m_config->rescueButton->setEnabled(false);
@@ -332,14 +361,25 @@ void UploaderGadgetWidget::systemReset()
     goToBootloader();
 }
 
+void UploaderGadgetWidget::systemBoot()
+{
+  commonSystemBoot(false);
+}
+
+void UploaderGadgetWidget::systemSafeBoot()
+{
+  commonSystemBoot(true);
+}
+
 /**
   Tells the system to boot (from Bootloader state)
   */
-void UploaderGadgetWidget::systemBoot()
+void UploaderGadgetWidget::commonSystemBoot(bool safeboot)
 {
 
     clearLog();
     m_config->bootButton->setEnabled(false);
+    m_config->safeBootButton->setEnabled(false);
 
     // Suspend telemety & polling in case it is not done yet
     Core::ConnectionManager *cm = Core::ICore::instance()->connectionManager();
@@ -363,11 +403,12 @@ void UploaderGadgetWidget::systemBoot()
         delete dfu;
         dfu = NULL;
         m_config->bootButton->setEnabled(true);
+        m_config->safeBootButton->setEnabled(true);
         m_config->rescueButton->setEnabled(true); // Boot not possible, maybe Rescue OK?
         return;
     }
     log("Booting system...");
-    dfu->JumpToApp();
+    dfu->JumpToApp(safeboot);
     // Restart the polling thread
     cm->resumePolling();
     m_config->rescueButton->setEnabled(true);
@@ -476,7 +517,7 @@ void UploaderGadgetWidget::systemRescue()
         m_config->rescueButton->setEnabled(true);
         return;
     }
-    if(QMessageBox::question(this,tr("OpenPilot Uploader"),tr("If you want to search for other boards connect power now and press Yes"),QMessageBox::Yes,QMessageBox::No)==QMessageBox::Yes)
+    if ((eBoardCC != dfu->GetBoardType(0)) && (QMessageBox::question(this,tr("OpenPilot Uploader"),tr("If you want to search for other boards connect power now and press Yes"),QMessageBox::Yes,QMessageBox::No)==QMessageBox::Yes))
     {
         log("\nWaiting...");
         QTimer::singleShot(3000, &m_eventloop, SLOT(quit()));
@@ -506,6 +547,7 @@ void UploaderGadgetWidget::systemRescue()
     }
     for(int i=0;i<dfu->numberOfDevices;i++) {
         deviceWidget* dw = new deviceWidget(this);
+        connectSignalSlot(dw);
         dw->setDeviceID(i);
         dw->setDfu(dfu);
         dw->populate();
@@ -514,6 +556,7 @@ void UploaderGadgetWidget::systemRescue()
     m_config->haltButton->setEnabled(false);
     m_config->resetButton->setEnabled(false);
     m_config->bootButton->setEnabled(true);
+    m_config->safeBootButton->setEnabled(true);
     m_config->rescueButton->setEnabled(false);
     currentStep = IAP_STATE_BOOTLOADER; // So that we can boot from the GUI afterwards.
 }
@@ -530,6 +573,19 @@ void UploaderGadgetWidget::cancel()
 {
     m_timer->stop();
     m_eventloop.exit();
+}
+
+void UploaderGadgetWidget::uploadStarted()
+{
+    m_config->bootButton->setEnabled(false);
+    m_config->safeBootButton->setEnabled(false);
+}
+
+void UploaderGadgetWidget::uploadEnded(bool succeed)
+{
+    Q_UNUSED(succeed);
+    m_config->bootButton->setEnabled(true);
+    m_config->safeBootButton->setEnabled(true);
 }
 
 /**
@@ -598,4 +654,30 @@ void UploaderGadgetWidget::info(QString infoString, int infoNumber)
 {
     Q_UNUSED(infoNumber);
     m_config->boardStatus->setText(infoString);
+}
+
+void UploaderGadgetWidget::versionMatchCheck()
+{
+    ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
+    UAVObjectUtilManager *utilMngr = pm->getObject<UAVObjectUtilManager>();
+    deviceDescriptorStruct boardDescription = utilMngr->getBoardDescriptionStruct();
+
+    QString gcsDescription = QString::fromLatin1(Core::Constants::GCS_REVISION_STR);
+    QString gcsGitHash = gcsDescription.mid(gcsDescription.indexOf(":")+1, 8);
+    gcsGitHash.remove( QRegExp("^[0]*") );
+    QString gcsGitDate = gcsDescription.mid(gcsDescription.indexOf(" ")+1, 14);
+    QString gcsVersion = gcsGitDate + " (" + gcsGitHash + ")";
+    QString fwVersion = boardDescription.gitDate + " (" + boardDescription.gitHash + ")";
+
+    if (boardDescription.gitHash != gcsGitHash) {
+        QString warning = QString(tr(
+            "GCS and firmware versions do not match which can cause configuration problems. "
+            "GCS version: %1. Firmware version: %2.")).arg(gcsVersion).arg(fwVersion);
+        msg->showMessage(warning);
+    }
+  }
+void UploaderGadgetWidget::openHelp()
+{
+
+    QDesktopServices::openUrl( QUrl("http://wiki.openpilot.org/display/Doc/Uploader+Plugin", QUrl::StrictMode) );
 }

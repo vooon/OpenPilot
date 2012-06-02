@@ -50,6 +50,9 @@ $(FIELDSINIT)
     setDefaultFieldValues();
     // Set the object description
     setDescription(DESCRIPTION);
+
+    connect(this, SIGNAL(objectUpdated(UAVObject*)),
+            SLOT(emitNotifications()));
 }
 
 /**
@@ -58,15 +61,15 @@ $(FIELDSINIT)
 UAVObject::Metadata $(NAME)::getDefaultMetadata()
 {
     UAVObject::Metadata metadata;
-    metadata.flightAccess = $(FLIGHTACCESS);
-    metadata.gcsAccess = $(GCSACCESS);
-    metadata.gcsTelemetryAcked = $(GCSTELEM_ACKED);
-    metadata.gcsTelemetryUpdateMode = UAVObject::$(GCSTELEM_UPDATEMODE);
-    metadata.gcsTelemetryUpdatePeriod = $(GCSTELEM_UPDATEPERIOD);
-    metadata.flightTelemetryAcked = $(FLIGHTTELEM_ACKED);
-    metadata.flightTelemetryUpdateMode = UAVObject::$(FLIGHTTELEM_UPDATEMODE);
+    metadata.flags =
+      $(FLIGHTACCESS) << UAVOBJ_ACCESS_SHIFT |
+      $(GCSACCESS) << UAVOBJ_GCS_ACCESS_SHIFT |
+      $(FLIGHTTELEM_ACKED) << UAVOBJ_TELEMETRY_ACKED_SHIFT |
+      $(GCSTELEM_ACKED) << UAVOBJ_GCS_TELEMETRY_ACKED_SHIFT |
+      $(FLIGHTTELEM_UPDATEMODE) << UAVOBJ_TELEMETRY_UPDATE_MODE_SHIFT |
+      $(GCSTELEM_UPDATEMODE) << UAVOBJ_GCS_TELEMETRY_UPDATE_MODE_SHIFT;
     metadata.flightTelemetryUpdatePeriod = $(FLIGHTTELEM_UPDATEPERIOD);
-    metadata.loggingUpdateMode = UAVObject::$(LOGGING_UPDATEMODE);
+    metadata.gcsTelemetryUpdatePeriod = $(GCSTELEM_UPDATEPERIOD);
     metadata.loggingUpdatePeriod = $(LOGGING_UPDATEPERIOD);
     return metadata;
 }
@@ -99,12 +102,17 @@ void $(NAME)::setData(const DataFields& data)
     // Get metadata
     Metadata mdata = getMetadata();
     // Update object if the access mode permits
-    if ( mdata.gcsAccess == ACCESS_READWRITE )
+    if ( UAVObject::GetGcsAccess(mdata) == ACCESS_READWRITE )
     {
         this->data = data;
         emit objectUpdatedAuto(this); // trigger object updated event
         emit objectUpdated(this);
     }
+}
+
+void $(NAME)::emitNotifications()
+{
+    $(NOTIFY_PROPERTIES_CHANGED)
 }
 
 /**
@@ -120,9 +128,20 @@ UAVDataObject* $(NAME)::clone(quint32 instID)
 }
 
 /**
+ * Create a clone of this object only to be used to retrieve defaults
+ */
+UAVDataObject* $(NAME)::dirtyClone()
+{
+    $(NAME)* obj = new $(NAME)();
+    return obj;
+}
+
+/**
  * Static function to retrieve an instance of the object.
  */
 $(NAME)* $(NAME)::GetInstance(UAVObjectManager* objMngr, quint32 instID)
 {
     return dynamic_cast<$(NAME)*>(objMngr->getObject($(NAME)::OBJID, instID));
 }
+
+$(PROPERTIES_IMPL)

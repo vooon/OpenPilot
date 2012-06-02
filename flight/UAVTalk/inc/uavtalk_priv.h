@@ -55,8 +55,6 @@ typedef uint8_t uavtalk_checksum;
 #define UAVTALK_MIN_PACKET_LENGTH	UAVTALK_MAX_HEADER_LENGTH + UAVTALK_CHECKSUM_LENGTH
 #define UAVTALK_MAX_PACKET_LENGTH       UAVTALK_MIN_PACKET_LENGTH + UAVTALK_MAX_PAYLOAD_LENGTH
 
-typedef enum {UAVTALK_STATE_SYNC, UAVTALK_STATE_TYPE, UAVTALK_STATE_SIZE, UAVTALK_STATE_OBJID, UAVTALK_STATE_INSTID, UAVTALK_STATE_DATA, UAVTALK_STATE_CS} UAVTalkRxState;
-
 typedef struct {
     UAVObjHandle obj;
     uint8_t type;
@@ -64,6 +62,7 @@ typedef struct {
     uint32_t objId;
     uint16_t instId;
     uint32_t length;
+    uint8_t instanceLength;
     uint8_t cs;
     int32_t rxCount;
     UAVTalkRxState state;

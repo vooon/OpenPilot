@@ -36,17 +36,19 @@
 /* Enable/Disable PiOS Modules */
 #define PIOS_INCLUDE_ADC
 #define PIOS_INCLUDE_DELAY
-#if defined(USE_I2C)
-#define PIOS_INCLUDE_I2C
-#define PIOS_INCLUDE_I2C_ESC
-#endif
+//#if defined(USE_I2C)
+//#define PIOS_INCLUDE_I2C
+//#define PIOS_INCLUDE_I2C_ESC
+//#endif
 #define PIOS_INCLUDE_IRQ
 #define PIOS_INCLUDE_LED
+#define PIOS_INCLUDE_IAP
+#define PIOS_INCLUDE_TIM
 
 #define PIOS_INCLUDE_RCVR
 
 /* Supported receiver interfaces */
-#define PIOS_INCLUDE_SPEKTRUM
+#define PIOS_INCLUDE_DSM
 #define PIOS_INCLUDE_SBUS
 #define PIOS_INCLUDE_PPM
 #define PIOS_INCLUDE_PWM
@@ -54,13 +56,16 @@
 
 /* Supported USART-based PIOS modules */
 #define PIOS_INCLUDE_TELEMETRY_RF
-//#define PIOS_INCLUDE_GPS
+#define PIOS_INCLUDE_GPS
+#define PIOS_GPS_MINIMAL
 
 #define PIOS_INCLUDE_SERVO
 #define PIOS_INCLUDE_SPI
 #define PIOS_INCLUDE_SYS
 #define PIOS_INCLUDE_USART
+#define PIOS_INCLUDE_USB
 #define PIOS_INCLUDE_USB_HID
+#define PIOS_INCLUDE_USB_CDC
 #define PIOS_INCLUDE_COM
 #define PIOS_INCLUDE_SETTINGS
 #define PIOS_INCLUDE_FREERTOS
@@ -72,19 +77,11 @@
 
 #define PIOS_INCLUDE_ADXL345
 #define PIOS_INCLUDE_FLASH
+#define PIOS_INCLUDE_MPU6000
+#define PIOS_MPU6000_ACCEL
 
 /* A really shitty setting saving implementation */
 #define PIOS_INCLUDE_FLASH_SECTOR_SETTINGS
-
-/* Defaults for Logging */
-#define LOG_FILENAME 			"PIOS.LOG"
-#define STARTUP_LOG_ENABLED		1
-
-/* COM Module */
-#define GPS_BAUDRATE			19200
-#define TELEM_BAUDRATE			19200
-#define AUXUART_ENABLED			0
-#define AUXUART_BAUDRATE		19200
 
 /* Alarm Thresholds */
 #define HEAP_LIMIT_WARNING             220
@@ -106,6 +103,9 @@
 
 // This can't be too high to stop eventdispatcher thread overflowing
 #define PIOS_EVENTDISAPTCHER_QUEUE      10
+
+/* PIOS Initcall infrastructure */
+#define PIOS_INCLUDE_INITCALL
 
 #endif /* PIOS_CONFIG_H */
 /**
