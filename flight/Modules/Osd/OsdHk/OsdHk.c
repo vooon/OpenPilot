@@ -50,6 +50,7 @@ enum osd_hk_pkt_type {
 	OSD_HK_PKT_TYPE_MISC  = 0,
 	OSD_HK_PKT_TYPE_NAV   = 1,
 	OSD_HK_PKT_TYPE_MAINT = 2,
+	OSD_HK_PKT_TYPE_ATT = 3,
 };
 
 enum osd_hk_control_mode {
@@ -60,12 +61,20 @@ enum osd_hk_control_mode {
 
 struct osd_hk_blob_misc {
 	uint8_t  type;		/* Always OSD_HK_PKT_TYPE_MISC */
-	int8_t   roll;
-	int8_t   pitch;
-	uint16_t home;		/* Big Endian */
+	int16_t   roll;
+	int16_t   pitch;
+	//uint16_t home;		/* Big Endian */
 	enum osd_hk_control_mode control_mode;
 	uint8_t  low_battery;
 	uint16_t current;	/* Big Endian */
+} __attribute__((packed));
+
+struct osd_hk_blob_att {
+	uint8_t  type;		/* Always OSD_HK_PKT_TYPE_ATT */
+	int16_t   roll;
+	int16_t   pitch;
+	int16_t yaw;
+	int16_t speed;	/* Big Endian */
 } __attribute__((packed));
 
 struct osd_hk_blob_nav {
@@ -89,6 +98,7 @@ union osd_hk_pkt_blobs
 	struct osd_hk_blob_misc  misc;
 	struct osd_hk_blob_nav   nav;
 	struct osd_hk_blob_maint maint;
+	struct osd_hk_blob_att att;
 } __attribute__((packed));
 
 struct osd_hk_msg {
@@ -131,22 +141,28 @@ static void send_update(UAVObjEvent * ev)
 	 * NOTE: Only packet type 0 (MISC) is supported so far
 	 */
 	msg->sync = sync;
-	msg->t = OSD_HK_PKT_TYPE_MISC;
+	msg->t = OSD_HK_PKT_TYPE_ATT;
 
 	if (newAttitudeData) {
 		float roll;
 		AttitudeActualRollGet(&roll);
-		blob->misc.roll = (int8_t) roll;
+		//blob->misc.roll = (int16_t) roll;
+		blob->att.roll = (int16_t) roll;
 		
 		float pitch;
 		AttitudeActualPitchGet(&pitch);
-		blob->misc.pitch = (int8_t) pitch;
+		//blob->misc.pitch = (int16_t) pitch;
+		blob->att.pitch = (int16_t) pitch;
+
+		float yaw;
+		AttitudeActualYawGet(&yaw);
+		blob->att.yaw = (int16_t) yaw;
 	}
 
 	/* Field not supported yet */
-	blob->misc.control_mode = 0;
+	//blob->misc.control_mode = 0;
 
-	if (newAlarmData) {
+	/*if (newAlarmData) {
 		SystemAlarmsData alarms;
 		SystemAlarmsGet(&alarms);
 
@@ -164,7 +180,7 @@ static void send_update(UAVObjEvent * ev)
 		}
 
 		newAlarmData = false;
-	}
+	}*/
 
 #if FLIGHTBATTERYSUPPORTED
 	if (newBattData) {
@@ -181,7 +197,7 @@ static void send_update(UAVObjEvent * ev)
 		newBattData = false;
 	}
 #else
-	blob->misc.current = 0;
+	//blob->misc.current = 0;
 #endif
 
 #if POSITIONACTUAL_SUPPORTED
@@ -205,7 +221,7 @@ static void send_update(UAVObjEvent * ev)
 		newPositionActualData = false;
 	}
 #else
-	blob->misc.home = 0;
+	//blob->misc.home = 0;
 #endif
 
 	if (!PIOS_COM_SendBufferNonBlocking(osd_hk_com_id, (uint8_t *)&osd_hk_msg_buf, sizeof(osd_hk_msg_buf))) {
@@ -269,7 +285,7 @@ static int32_t OsdHkStart(void)
 #endif
 
 	/* Start a periodic timer to kick sending of an update */
-	EventPeriodicCallbackCreate(&ev, send_update, 100 / portTICK_RATE_MS);
+	EventPeriodicCallbackCreate(&ev, send_update, 25 / portTICK_RATE_MS);
 
 	return 0;
 }

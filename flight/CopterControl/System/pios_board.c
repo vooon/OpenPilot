@@ -360,7 +360,7 @@ static const struct pios_usart_cfg pios_usart_gps_flexi_cfg = {
 static const struct pios_usart_cfg pios_usart_hkosd_main_cfg = {
   .regs = USART1,
   .init = {
-    .USART_BaudRate            = 9600,
+    .USART_BaudRate            = 57600,
     .USART_WordLength          = USART_WordLength_8b,
     .USART_Parity              = USART_Parity_No,
     .USART_StopBits            = USART_StopBits_1,
@@ -396,7 +396,7 @@ static const struct pios_usart_cfg pios_usart_hkosd_main_cfg = {
 static const struct pios_usart_cfg pios_usart_hkosd_flexi_cfg = {
   .regs = USART3,
   .init = {
-    .USART_BaudRate            = 9600,
+    .USART_BaudRate            = 57600,
     .USART_WordLength          = USART_WordLength_8b,
     .USART_Parity              = USART_Parity_No,
     .USART_StopBits            = USART_StopBits_1,
@@ -603,7 +603,7 @@ static const struct pios_sbus_cfg pios_sbus_cfg = {
 
 #define PIOS_COM_GPS_RX_BUF_LEN 96
 
-#define PIOS_COM_HKOSD_TX_BUF_LEN 11
+#define PIOS_COM_HKOSD_TX_BUF_LEN 22
 
 #define PIOS_COM_TELEM_USB_RX_BUF_LEN 192
 #define PIOS_COM_TELEM_USB_TX_BUF_LEN 192
