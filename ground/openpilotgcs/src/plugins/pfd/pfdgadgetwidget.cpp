@@ -26,13 +26,18 @@
  */
 
 #include "pfdgadgetwidget.h"
+#include "altitudeholddesired.h"
+#include "stabilizationdesired.h"
 #include <utils/stylehelper.h>
 #include <utils/cachedsvgitem.h>
 #include <iostream>
 #include <QDebug>
+#include <QMessageBox>
+#include <QInputDialog>
 #include <QPainter>
 #include <QtOpenGL/QGLWidget>
 #include <cmath>
+#include <QMouseEvent>
 
 PFDGadgetWidget::PFDGadgetWidget(QWidget *parent) : QGraphicsView(parent)
 {
@@ -83,6 +88,146 @@ PFDGadgetWidget::~PFDGadgetWidget()
     dialTimer.stop();
 }
 
+
+// ******************************************************************
+
+void PFDGadgetWidget::mousePressEvent(QMouseEvent *e)
+{
+
+    QPoint mouse_posVP=e->pos();
+    QPointF mouse_pos=this->mapToScene(mouse_posVP);
+
+    qDebug()<< mouse_pos;
+
+    bool ok;
+    QInputDialog inputBox;
+
+    QRect airspeedBox(86, 336, 190-86, 379-336);
+    QRect altitudeBox(847, 336, 958-847, 379-336);
+    QRect headingBox(464, 0, 576-464, 70-0);
+    QRect turnRateBugUpperBox(514, 109, 526-514, 119-109); //(0,0,0,0);//
+    QRect turnRateBugMidBox(508, 119, 532-508, 128-119);
+    QRect turnRateBugLowerBox(500, 128, 538-500, 144-128);
+
+    ExtensionSystem::PluginManager* pm = ExtensionSystem::PluginManager::instance();
+    UAVObjectManager* objManager = pm->getObject<UAVObjectManager>();
+
+    if(headingBox.contains(mouse_pos.x(), mouse_pos.y())){
+        //Set desired heading
+
+        float currentYawSetPoint;
+        float newYawSetPoint;
+
+        //Get UAVO
+        StabilizationDesired *stabilizationDesired = StabilizationDesired::GetInstance(objManager);
+        Q_ASSERT(stabilizationDesired);
+
+        currentYawSetPoint=stabilizationDesired->getYaw();
+
+        float retVal = (float) inputBox.getDouble(this, tr("Change heading setpoint"),
+                                     tr("Set new heading in [deg]:"), currentYawSetPoint, 0, 360, 1, &ok);
+        if (ok)
+            newYawSetPoint=retVal;
+        else
+            return;
+
+
+//        stabilizationDesired->setYaw(newYawSetPoint);
+
+    }
+    else if(turnRateBugLowerBox.contains(mouse_pos.x(), mouse_pos.y()) || turnRateBugMidBox.contains(mouse_pos.x(), mouse_pos.y()) || turnRateBugUpperBox.contains(mouse_pos.x(), mouse_pos.y())){
+        //Move turn rate bug
+
+        float currentTurnRateSetPoint;
+        float newTurnRateSetPoint;
+
+//        //Get UAVO
+//        StabilizationDesired *turnRateDesired = StabilizationDesired::GetInstance(objManager);
+//        Q_ASSERT(turnRateDesired);
+
+//        currentTurnRateSetPoint=turnRateDesired->getAltitude();
+
+        float retVal = (float) inputBox.getDouble(this, tr("Change turn rate"),
+                                     tr("Set new turn rate in [deg/s]:"), currentTurnRateSetPoint, 0, 2000, 1, &ok);
+        if (ok)
+            newTurnRateSetPoint=retVal;
+        else
+            return;
+
+
+//        stabilizationDesired->setYaw(newYawSetPoint);
+
+    }
+    else if(altitudeBox.contains(mouse_pos.x(), mouse_pos.y())){
+        //Set desired altitude
+
+        float currentAltitudeSetPoint;
+        float newAltitudeSetPoint;
+
+        //Get UAVO
+        AltitudeHoldDesired *altitudeHoldDesired = AltitudeHoldDesired::GetInstance(objManager);
+        Q_ASSERT(altitudeHoldDesired);
+
+        currentAltitudeSetPoint=altitudeHoldDesired->getAltitude();
+
+        float retVal = (float) inputBox.getDouble(this, tr("Change altitude setpoint"),
+                                     tr("Set new altitude in [meters]:"), currentAltitudeSetPoint, -100000, 100000, 2, &ok);
+        if (ok)
+            newAltitudeSetPoint=retVal;
+        else
+            return;
+
+//        altitudeHoldDesired->setAltitude(newAltitudeSetPoint);
+
+    }
+    else if(airspeedBox.contains(mouse_pos.x(), mouse_pos.y())){
+        //Set desired airspeed. //DOES NOT CURRENTLY WORK BECAUSE WE DON'T HAVE THIS OBJECT
+        float currentAirspeedSetPoint;
+        float newAirspeedSetPoint;
+
+        //        //Get UAVO
+//        AirspeedDesired *airspeedDesired = AirspeedDesired::GetInstance(objManager);
+//        Q_ASSERT(airspeedDesired);
+
+//        currentAirspeedSetPoint=airspeedDesired->getAirspeed();
+
+
+        float retVal = (float) inputBox.getDouble(this, tr("Change aispeed setpoint"),
+                                     tr("Set new airspeed in [m/s]:"), currentAirspeedSetPoint, 0, 1000, 1, &ok);
+        if (ok)
+            newAirspeedSetPoint=retVal;
+        else
+            return;
+
+//        altitudeHoldDesired->setAirspeed(newAirspeedSetPoint);
+
+    }
+
+    QWidget::mousePressEvent(e);
+}
+
+void PFDGadgetWidget::mouseReleaseEvent(QMouseEvent *e)
+{
+    QWidget::mouseReleaseEvent(e);
+}
+
+void PFDGadgetWidget::mouseDoubleClickEvent(QMouseEvent *e)
+{
+    QWidget::mouseDoubleClickEvent(e);
+}
+
+void PFDGadgetWidget::mouseMoveEvent(QMouseEvent *e)
+{
+
+
+    QWidget::mouseMoveEvent(e);
+}
+
+void PFDGadgetWidget::wheelEvent(QWheelEvent *e)
+{
+    QWidget::wheelEvent(e);
+}
+
 void PFDGadgetWidget::setToolTipPrivate()
 {
     static qint32 updateRate=0;
@@ -128,9 +273,16 @@ void PFDGadgetWidget::connectNeedles() {
     ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
     UAVObjectManager *objManager = pm->getObject<UAVObjectManager>();
 
+    accelsObj = dynamic_cast<UAVDataObject*>(objManager->getObject("Accels"));
+    if (accelsObj != NULL ) {
+        connect(accelsObj, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(updateSideslip(UAVObject*)));
+    } else {
+         qDebug() << "Error: Object is unknown (Accels).";
+    }
+
     airspeedObj = dynamic_cast<UAVDataObject*>(objManager->getObject("VelocityActual"));
     if (airspeedObj != NULL ) {
-        connect(airspeedObj, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(updateAirspeed(UAVObject*)));
+        connect(airspeedObj, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(updateGroundspeed(UAVObject*)));
     } else {
          qDebug() << "Error: Object is unknown (VelocityActual).";
     }
@@ -297,14 +449,34 @@ void PFDGadgetWidget::updateHeading(UAVObject *object) {
 }
 
 /*!
-  \brief Called by updates to @PositionActual to compute airspeed from velocity
+  \brief Called by updates to @PositionActual to compute groundspeed from position
   */
-void PFDGadgetWidget::updateAirspeed(UAVObject *object) {
+void PFDGadgetWidget::updateGroundspeed(UAVObject *object) {
+
+    //This is actually the groundspeed!
+
     UAVObjectField* northField = object->getField("North");
     UAVObjectField* eastField = object->getField("East");
     if (northField && eastField) {
         double val = floor(sqrt(pow(northField->getDouble(),2) + pow(eastField->getDouble(),2))*10)/10;
         groundspeedTarget = 3.6*val*speedScaleHeight/30;
+
+        if (!dialTimer.isActive())
+            dialTimer.start(); // Rearm the dial Timer which might be stopped.
+
+    } else {
+        qDebug() << "UpdateHeading: Wrong field, maybe an issue with object disconnection ?";
+    }
+}
+
+/*!
+  \brief Called by updates to @Accels to compute sideslip
+  */
+void PFDGadgetWidget::updateSideslip(UAVObject *object) {
+
+    UAVObjectField* accelsY = object->getField("y");
+    if (accelsY) {
+        sideslipTarget = -5*(accelsY->getDouble());
 
         if (!dialTimer.isActive())
             dialTimer.start(); // Rearm the dial Timer which might be stopped.
@@ -407,11 +579,12 @@ void PFDGadgetWidget::setDialFile(QString dfn)
          m_world->setElementId("world");
          l_scene->addItem(m_world);
 
-         // red Roll scale: rollscale
+         // read Roll scale: rollscale
          m_rollscale = new CachedSvgItem();
          m_rollscale->setSharedRenderer(m_renderer);
          m_rollscale->setElementId("rollscale");
          l_scene->addItem(m_rollscale);
+
 
          // Home point:
          m_homewaypoint = new CachedSvgItem();
@@ -429,10 +602,29 @@ void PFDGadgetWidget::setDialFile(QString dfn)
          l_scene->addItem(m_foreground);
 
          ////////////////////
+         // Slip/skid indicator
+         ////////////////////
+         // Get the default location of the slip indicator:
+         QMatrix compassMatrix = m_renderer->matrixForElement("slip-indicator");
+          slipIndicatorOriginX = compassMatrix.mapRect(m_renderer->boundsOnElement("slip-indicator")).x();
+          slipIndicatorOriginY = compassMatrix.mapRect(m_renderer->boundsOnElement("slip-indicator")).y();
+         // Then once we have the initial location, we can put it
+         // into a QGraphicsSvgItem which we will display at the same
+         // place: we do this so that the heading scale can be clipped to
+         // the compass dial region.
+         m_slipindicator = new CachedSvgItem();
+         m_slipindicator->setSharedRenderer(m_renderer);
+         m_slipindicator->setElementId("slip-indicator");
+         l_scene->addItem(m_slipindicator);
+         QTransform slipIndicatorMatrix;
+         slipIndicatorMatrix.translate(slipIndicatorOriginX,slipIndicatorOriginY);
+         m_slipindicator->setTransform(slipIndicatorMatrix,false);
+
+         ////////////////////
          // Compass
          ////////////////////
          // Get the default location of the Compass:
-         QMatrix compassMatrix = m_renderer->matrixForElement("compass");
+         compassMatrix = m_renderer->matrixForElement("compass");
          qreal startX = compassMatrix.mapRect(m_renderer->boundsOnElement("compass")).x();
          qreal startY = compassMatrix.mapRect(m_renderer->boundsOnElement("compass")).y();
          // Then once we have the initial location, we can put it
@@ -754,6 +946,7 @@ void PFDGadgetWidget::setDialFile(QString dfn)
         // 2) Put the transform origin point of the needle at its center.
         m_world->setTransformOriginPoint(rectN.width()/2,rectN.height()/2);
 
+        rectB = m_background->boundingRect();
         rectN = m_rollscale->boundingRect();
         m_rollscale->setPos(rectB.width()/2-rectN.width()/2,rectB.height()/2-rectN.height()/2);
         m_rollscale->setTransformOriginPoint(rectN.width()/2,rectN.height()/2);
@@ -936,6 +1129,27 @@ void PFDGadgetWidget::moveNeedles()
     }
 
     //////
+    // Slip/skid indicator
+    //////
+    if (sideslipValue != sideslipTarget) {
+        if ( 0 && (abs(groundspeedValue-groundspeedTarget) > speedScaleHeight/100) && beSmooth ) {
+            groundspeedValue += (groundspeedTarget-groundspeedValue)/2;
+        } else {
+            sideslipValue = sideslipTarget;
+            dialCount--;
+        }
+
+        QTransform slipIndicatorMatrix;
+        slipIndicatorMatrix.translate(slipIndicatorOriginX+sideslipValue,slipIndicatorOriginY);
+        m_slipindicator->setTransform(slipIndicatorMatrix,false);
+
+//        m_slipindicator->translate(sideslipValue, 0);
+
+    } else {
+        dialCount--;
+    }
+
+    //////
     // Speed
     //////
     if (groundspeedValue != groundspeedTarget) {
@@ -984,6 +1198,8 @@ void PFDGadgetWidget::moveNeedles()
             altitudeValue = altitudeTarget;
             dialCount--;
         }
+
+        //Update the scale
         qreal x = m_altitudescale->transform().dx();
         //opd = QPointF(x,fmod(altitudeValue,altitudeScaleHeight/6));
         // fmod does rounding errors!! the formula below works better:

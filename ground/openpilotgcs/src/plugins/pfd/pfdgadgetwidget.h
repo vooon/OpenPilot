@@ -59,15 +59,21 @@ public slots:
    void updateAttitude(UAVObject *object1);
    void updateHeading(UAVObject *object1);
    void updateGPS(UAVObject *object1);
-   void updateAirspeed(UAVObject *object1);
+   void updateGroundspeed(UAVObject *object1);
    void updateAltitude(UAVObject *object1);
    void updateBattery(UAVObject *object1);
    void updateLinkStatus(UAVObject *object1);
+   void updateSideslip(UAVObject *object1);
 
 protected:
    void paintEvent(QPaintEvent *event);
    void resizeEvent(QResizeEvent *event);
 
+   void mousePressEvent(QMouseEvent *e);
+   void mouseReleaseEvent(QMouseEvent *e);
+   void mouseDoubleClickEvent(QMouseEvent *e);
+   void mouseMoveEvent(QMouseEvent *e);
+   void wheelEvent(QWheelEvent *e);
 
 private slots:
    void moveNeedles();
@@ -83,6 +89,8 @@ private:
    QGraphicsSvgItem *m_world;
    // Roll scale: rollscale
    QGraphicsSvgItem *m_rollscale;
+   // Slip indicator: slip indicator
+   QGraphicsSvgItem *m_slipindicator;
    // Compass dial:
    QGraphicsSvgItem *m_compass;
    // Compass band:
@@ -122,11 +130,18 @@ private:
    double altitudeTarget;
    double altitudeValue;
 
+//   QTransform slipIndicatorMatrix;
+   qreal slipIndicatorOriginX;
+   qreal slipIndicatorOriginY;
+   double sideslipTarget; //Expressed in m/s^2, not degrees
+   double sideslipValue; //Expressed in m/s^2, not degrees
+
    qreal compassBandWidth;
    qreal speedScaleHeight;
    qreal altitudeScaleHeight;
 
    // Name of the fields to read when an update is received:
+   UAVDataObject* accelsObj;
    UAVDataObject* airspeedObj;
    UAVDataObject* altitudeObj;
    UAVDataObject* attitudeObj;

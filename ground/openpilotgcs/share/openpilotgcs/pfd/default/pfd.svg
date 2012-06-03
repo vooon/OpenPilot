@@ -2278,6 +2278,19 @@
            x1="460.75775"
            style="fill:none;stroke:#ffffff;stroke-width:2.61937094;display:inline" />
       </g>
+      <g
+         inkscape:groupmode="layer"
+         id="layer9"
+         inkscape:label="Radar"
+         style="display:none"
+         transform="translate(-230.7,2.2)"
+         sodipodi:insensitive="true">
+        <path
+           id="slip-indicator"
+           inkscape:connector-curvature="0"
+           d="m 502.414,138.117 35.136,-0.056 -5.4,-10.141 h -24.545 l -5.191,10.197 z"
+           style="fill:#00ff00;stroke:#00ff00" />
+      </g>
     </g>
   </g>
   <g
