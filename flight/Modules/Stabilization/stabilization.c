@@ -342,6 +342,7 @@ static void stabilizationTask(void* parameters)
 		if(shouldUpdate)
 		{
 			actuatorDesired.Throttle = stabDesired.Throttle;
+			actuator.Flaperons = stabDesired.Flaperons;
 			if(dT > 15)
 				actuatorDesired.NumLongUpdates++;
 			ActuatorDesiredSet(&actuatorDesired);

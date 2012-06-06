@@ -39,7 +39,9 @@
 #include "systemsettings.h"
 #include "mixersettings.h"
 #include "actuatorsettings.h"
+#include "actuatorcommand.h"
 #include <QEventLoop>
+#include <QMessageBox>
 
 /**
   Helper delegate for the custom mixer editor table.
@@ -173,19 +175,26 @@ ConfigVehicleTypeWidget::ConfigVehicleTypeWidget(QWidget *parent) : ConfigTaskWi
     scene->setSceneRect(quad->boundingRect());
     m_aircraft->quadShape->setScene(scene);
 
-    // Put combo boxes in line one of the custom mixer table:
-    UAVDataObject* obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("MixerSettings")));
-    UAVObjectField* field = obj->getField(QString("Mixer1Type"));
-    QStringList list = field->getOptions();
-    for (int i=0;i<8;i++) {
+    // Put combo boxes in line 1 of the custom mixer table:
+    UAVDataObject* objActuator = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("ActuatorCommand")));
+    UAVObjectField* fieldActuator = objActuator->getField(QString("Channel"));
+    numActuatorElements=fieldActuator->getNumElements();
+    numActuatorElements=8; //REASSIGN BECAUSE CURRENTLY WE ONLY DRAW 8 of the 10 channels
+
+    UAVDataObject* objMixer = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("MixerSettings")));
+    UAVObjectField* fieldMixerVector = objMixer->getField(QString("Mixer1Vector"));
+    UAVObjectField* fieldMixerType = objMixer->getField(QString("Mixer1Type"));
+    QStringList list = fieldMixerType->getOptions();
+
+    for (unsigned int i=0; i<numActuatorElements; i++) {
         QComboBox* qb = new QComboBox(m_aircraft->customMixerTable);
         qb->addItems(list);
         m_aircraft->customMixerTable->setCellWidget(0,i,qb);
     }
 
     SpinBoxDelegate *sbd = new SpinBoxDelegate();
-    for (int i=1;i<8; i++) {
-        m_aircraft->customMixerTable->setItemDelegateForRow(i, sbd);
+    for (unsigned int i=0; i< fieldMixerVector->getNumElements(); i++) {
+        m_aircraft->customMixerTable->setItemDelegateForRow(i+1, sbd);
     }
 
 	//Connect aircraft type selection dropbox to callback function
@@ -212,6 +221,7 @@ ConfigVehicleTypeWidget::ConfigVehicleTypeWidget(QWidget *parent) : ConfigTaskWi
     connect(m_aircraft->customThrottle1Curve, SIGNAL(curveUpdated(QList<double>,double)), this, SLOT(updateCustomThrottle1CurveValue(QList<double>,double)));
     connect(m_aircraft->customThrottle2Curve, SIGNAL(curveUpdated(QList<double>,double)), this, SLOT(updateCustomThrottle2CurveValue(QList<double>,double)));
 
+    connect(m_aircraft->fwFlaperonsCheckBox, SIGNAL(clicked()), this, SLOT(setFlaperons()));
 //    connect(m_aircraft->fwAileron1Channel, SIGNAL(currentIndexChanged(int)), this, SLOT(toggleAileron2(int)));
 //    connect(m_aircraft->fwElevator1Channel, SIGNAL(currentIndexChanged(int)), this, SLOT(toggleElevator2(int)));
 
@@ -256,7 +266,7 @@ void ConfigVehicleTypeWidget::switchAirframeType(int index){
     m_aircraft->quadShape->fitInView(quad, Qt::KeepAspectRatio);
     if (m_aircraft->aircraftType->findText("Custom")) {
         m_aircraft->customMixerTable->resizeColumnsToContents();
-        for (int i=0;i<8;i++) {
+        for (int i=0;i<numActuatorElements;i++) {
             m_aircraft->customMixerTable->setColumnWidth(i,(m_aircraft->customMixerTable->width()-
                                                             m_aircraft->customMixerTable->verticalHeader()->width())/8);
         }
@@ -275,7 +285,7 @@ void ConfigVehicleTypeWidget::showEvent(QShowEvent *event)
     // the result is usually a ahrsbargraph that is way too small.
     m_aircraft->quadShape->fitInView(quad, Qt::KeepAspectRatio);
     m_aircraft->customMixerTable->resizeColumnsToContents();
-    for (int i=0;i<8;i++) {
+    for (int i=0;i<numActuatorElements;i++) {
         m_aircraft->customMixerTable->setColumnWidth(i,(m_aircraft->customMixerTable->width()-
                                                         m_aircraft->customMixerTable->verticalHeader()->width())/8);
     }
@@ -290,13 +300,24 @@ void ConfigVehicleTypeWidget::resizeEvent(QResizeEvent* event)
     m_aircraft->quadShape->fitInView(quad, Qt::KeepAspectRatio);
     // Make the custom table columns autostretch:
     m_aircraft->customMixerTable->resizeColumnsToContents();
-    for (int i=0;i<8;i++) {
+    for (int i=0;i<numActuatorElements;i++) {
         m_aircraft->customMixerTable->setColumnWidth(i,(m_aircraft->customMixerTable->width()-
                                                         m_aircraft->customMixerTable->verticalHeader()->width())/8);
     }
 
 }
 
+void ConfigVehicleTypeWidget::setFlaperons()
+{
+    //Check to make sure that both ailerons have been configured before allowing flaperons to be set.
+    if(m_aircraft->fwFlaperonsCheckBox->isChecked() &&
+            m_aircraft->fwAileron1ChannelBox->currentText() == m_aircraft->fwAileron2ChannelBox->currentText() ||
+            (m_aircraft->fwAileron1ChannelBox->currentText() == "None" || m_aircraft->fwAileron2ChannelBox->currentText()=="None"))
+    {
+        QMessageBox::warning(this,tr("Flaperons cannot be set."),tr("Both ailerons must be enabled for flaperons to work."),QMessageBox::Ok);
+        m_aircraft->fwFlaperonsCheckBox->setCheckState(Qt::Unchecked);
+    }
+}
 
 void ConfigVehicleTypeWidget::toggleAileron2(int index)
 {
@@ -551,9 +572,9 @@ void ConfigVehicleTypeWidget::refreshWidgetsValues(UAVObject *)
     // If the 1st element of the curve is <= -10, then the curve
     // is a straight line (that's how the mixer works on the mainboard):
     if (field->getValue(0).toInt() <= -10) {
-        m_aircraft->multiThrottleCurve->initLinearCurve(field->getNumElements(),(double)1);
-        m_aircraft->fixedWingThrottle->initLinearCurve(field->getNumElements(),(double)1);
-        m_aircraft->groundVehicleThrottle1->initLinearCurve(field->getNumElements(),(double)1);
+        m_aircraft->multiThrottleCurve->initLinearCurve(field->getNumElements(), 1.0);
+        m_aircraft->fixedWingThrottle->initLinearCurve(field->getNumElements(), 1.0);
+        m_aircraft->groundVehicleThrottle1->initLinearCurve(field->getNumElements(), 1.0);
     }
     else {
         double temp=0;
@@ -747,7 +768,7 @@ void ConfigVehicleTypeWidget::updateCustomAirframeUI()
     }
 
     // Update the table:
-    for (int i=0; i<8; i++) {
+    for (int i=0; i<numActuatorElements; i++) {
         field = obj->getField(mixerTypes.at(i));
         QComboBox* q = (QComboBox*)m_aircraft->customMixerTable->cellWidget(0,i);
         QString s = field->getValue().toString();
@@ -764,6 +785,14 @@ void ConfigVehicleTypeWidget::updateCustomAirframeUI()
         m_aircraft->customMixerTable->item(4,i)->setText(field->getValue(ti).toString());
         ti = field->getElementNames().indexOf("Yaw");
         m_aircraft->customMixerTable->item(5,i)->setText(field->getValue(ti).toString());
+        ti = field->getElementNames().indexOf("Flaperons");
+        m_aircraft->customMixerTable->item(6,i)->setText(field->getValue(ti).toString());
+        ti = field->getElementNames().indexOf("Aux0");
+        m_aircraft->customMixerTable->item(7,i)->setText(field->getValue(ti).toString());
+        ti = field->getElementNames().indexOf("Aux1");
+        m_aircraft->customMixerTable->item(8,i)->setText(field->getValue(ti).toString());
+        ti = field->getElementNames().indexOf("Aux2");
+        m_aircraft->customMixerTable->item(9,i)->setText(field->getValue(ti).toString());
     }
 }
 
@@ -810,7 +839,7 @@ void ConfigVehicleTypeWidget::updateObjectsFromWidgets()
         }
 
         // Update the table:
-        for (int i=0; i<8; i++) {
+        for (int i=0; i<numActuatorElements; i++) {
             field = obj->getField(mixerTypes.at(i));
             QComboBox* q = (QComboBox*)m_aircraft->customMixerTable->cellWidget(0,i);
             field->setValue(q->currentText());
@@ -825,11 +854,19 @@ void ConfigVehicleTypeWidget::updateObjectsFromWidgets()
             field->setValue(m_aircraft->customMixerTable->item(4,i)->text(),ti);
             ti = field->getElementNames().indexOf("Yaw");
             field->setValue(m_aircraft->customMixerTable->item(5,i)->text(),ti);
+            ti = field->getElementNames().indexOf("Flaperons");
+            field->setValue(m_aircraft->customMixerTable->item(6,i)->text(),ti);
+            ti = field->getElementNames().indexOf("Aux0");
+            field->setValue(m_aircraft->customMixerTable->item(7,i)->text(),ti);
+            ti = field->getElementNames().indexOf("Aux1");
+            field->setValue(m_aircraft->customMixerTable->item(8,i)->text(),ti);
+            ti = field->getElementNames().indexOf("Aux2");
+            field->setValue(m_aircraft->customMixerTable->item(9,i)->text(),ti);
         }
 
     }
 	
-	//WHAT DOES THIS DO?
+    //WHAT DOES THIS DO?
     UAVDataObject* obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("SystemSettings")));
     UAVObjectField* field = obj->getField(QString("AirframeType"));
     field->setValue(airframeType);
@@ -882,8 +919,10 @@ void ConfigVehicleTypeWidget::addToDirtyMonitor()
     addWidget(m_aircraft->fwElevator2ChannelBox);
     addWidget(m_aircraft->fwRudder1ChannelBox);
     addWidget(m_aircraft->fwRudder2ChannelBox);
+    addWidget(m_aircraft->fwFlaperonsCheckBox);
     addWidget(m_aircraft->elevonSlider1);
     addWidget(m_aircraft->elevonSlider2);
+    addWidget(m_aircraft->flaperonsSlider);
     addWidget(m_aircraft->widget_3->m_ccpm->ccpmType);
     addWidget(m_aircraft->widget_3->m_ccpm->ccpmTailChannel);
     addWidget(m_aircraft->widget_3->m_ccpm->ccpmEngineChannel);

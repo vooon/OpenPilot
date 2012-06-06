@@ -74,6 +74,7 @@ private:
     bool ffTuningInProgress;
     bool ffTuningPhase;
     UAVObject::Metadata accInitialData;
+    int16_t numActuatorElements;
 
 private slots:
     virtual void refreshWidgetsValues(UAVObject * obj = NULL);
@@ -96,6 +97,7 @@ private slots:
 	void throwFixedWingChannelConfigError(QString airframeType);
 	void throwGroundVehicleChannelConfigError(QString airframeType);
 	
+    void setFlaperons();
     void toggleAileron2(int index);
     void toggleElevator2(int index);
     void toggleRudder2(int index);

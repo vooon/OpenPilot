@@ -191,7 +191,16 @@ void ConfigVehicleTypeWidget::refreshFixedWingWidgetsValues(QString frameType)
 	field = obj->getField(QString("FixedWingYaw2"));
 	Q_ASSERT(field);
 	m_aircraft->fwRudder2ChannelBox->setCurrentIndex(m_aircraft->fwRudder2ChannelBox->findText(field->getValue().toString()));
-	
+
+//    obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("MixerSettings")));
+//    Q_ASSERT(obj);
+//    int chMixerNumber = m_aircraft->fwFlaperonsChannelBox->currentIndex()-1;
+//    if (chMixerNumber >= 0) { // If for some reason the actuators were incoherent, we might fail here, hence the check.
+//        field = obj->getField(mixerVectors.at(chMixerNumber));
+//        int ti = field->getElementNames().indexOf("Flaperons");
+//        m_aircraft->flaperonsSlider->setValue(field->getDouble(ti)*100);
+//    }
+
 	if (frameType == "FixedWingElevon") {
         // If the airframe is elevon, restore the slider setting
 		// Find the channel number for Elevon1 (FixedWingRoll1)
@@ -272,11 +281,16 @@ bool ConfigVehicleTypeWidget::setupFrameFixedWing(QString airframeType)
     Q_ASSERT(field);
     field->setValue(m_aircraft->fwRudder1ChannelBox->currentText());
     
-	// Throttle
+    // Throttle
     field = obj->getField("FixedWingThrottle");
     Q_ASSERT(field);
     field->setValue(m_aircraft->fwEngineChannelBox->currentText());
-	
+
+    // Flaperons
+    field = obj->getField("FixedWingFlaperons");
+    Q_ASSERT(field);
+    field->setValue(m_aircraft->fwFlaperonsCheckBox->isChecked());
+
     obj->updated();
 	
     obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("MixerSettings")));
@@ -355,7 +369,23 @@ bool ConfigVehicleTypeWidget::setupFrameFixedWing(QString airframeType)
         ti = field->getElementNames().indexOf("Pitch");
         field->setValue(127, ti);
     }
-	
+
+    // Flaperons
+    if(m_aircraft->fwFlaperonsCheckBox->isChecked() && ((m_aircraft->fwAileron1ChannelBox->currentIndex()-1 > 0) && (m_aircraft->fwAileron2ChannelBox->currentIndex()-1 > 0))){
+        tmpVal = m_aircraft->fwAileron1ChannelBox->currentIndex()-1;
+        field = obj->getField(mixerVectors.at(tmpVal));
+        resetField(field);
+        ti = field->getElementNames().indexOf("Flaperons");
+        field->setValue((double)m_aircraft->flaperonsSlider->value()*1.27, ti);
+
+        tmpVal = m_aircraft->fwAileron2ChannelBox->currentIndex()-1;
+        field = obj->getField(mixerVectors.at(tmpVal));
+        resetField(field);
+        ti = field->getElementNames().indexOf("Flaperons");
+        field->setValue(-(double)m_aircraft->flaperonsSlider->value()*1.27, ti);
+    }
+
+
     obj->updated();
     m_aircraft->fwStatusLabel->setText("Mixer generated");
 	
@@ -481,6 +511,21 @@ bool ConfigVehicleTypeWidget::setupFrameElevon(QString airframeType)
         field->setValue(-(double)m_aircraft->elevonSlider1->value()*1.27,ti);
     }
 	
+    // Flaperons
+    if(m_aircraft->fwFlaperonsCheckBox->isChecked() && ((m_aircraft->fwAileron1ChannelBox->currentIndex()-1 > 0) && (m_aircraft->fwAileron2ChannelBox->currentIndex()-1 > 0))){
+        tmpVal = m_aircraft->fwAileron1ChannelBox->currentIndex()-1;
+        field = obj->getField(mixerVectors.at(tmpVal));
+        resetField(field);
+        ti = field->getElementNames().indexOf("Flaperons");
+        field->setValue((double)m_aircraft->flaperonsSlider->value()*1.27, ti);
+
+        tmpVal = m_aircraft->fwAileron2ChannelBox->currentIndex()-1;
+        field = obj->getField(mixerVectors.at(tmpVal));
+        resetField(field);
+        ti = field->getElementNames().indexOf("Flaperons");
+        field->setValue(-(double)m_aircraft->flaperonsSlider->value()*1.27, ti);
+    }
+
     obj->updated();
     m_aircraft->fwStatusLabel->setText("Mixer generated");
     return true;
@@ -596,6 +641,22 @@ bool ConfigVehicleTypeWidget::setupFrameVtail(QString airframeType)
     ti = field->getElementNames().indexOf("Yaw");
     field->setValue(-(double)m_aircraft->elevonSlider1->value()*1.27,ti);
 	
+
+    // Flaperons
+    if(m_aircraft->fwFlaperonsCheckBox->isChecked() && ((m_aircraft->fwAileron1ChannelBox->currentIndex()-1 > 0) && (m_aircraft->fwAileron2ChannelBox->currentIndex()-1 > 0))){
+        tmpVal = m_aircraft->fwAileron1ChannelBox->currentIndex()-1;
+        field = obj->getField(mixerVectors.at(tmpVal));
+        resetField(field);
+        ti = field->getElementNames().indexOf("Flaperons");
+        field->setValue((double)m_aircraft->flaperonsSlider->value()*1.27, ti);
+
+        tmpVal = m_aircraft->fwAileron2ChannelBox->currentIndex()-1;
+        field = obj->getField(mixerVectors.at(tmpVal));
+        resetField(field);
+        ti = field->getElementNames().indexOf("Flaperons");
+        field->setValue(-(double)m_aircraft->flaperonsSlider->value()*1.27, ti);
+    }
+
     obj->updated();
     m_aircraft->fwStatusLabel->setText("Mixer generated");
     return true;

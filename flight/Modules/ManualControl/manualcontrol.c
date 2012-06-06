@@ -210,7 +210,7 @@ static void manualControlTask(void *parameters)
 
 			bool valid_input_detected = true;
 			
-			// Read channel values in us
+			// Read channel values in us. <--[BCH] IS THERE ANY NEED FOR THE NUMBER OF CHANNELS TO STAY BOUNDED?
 			for (uint8_t n = 0; 
 			     n < MANUALCONTROLSETTINGS_CHANNELGROUPS_NUMELEM && n < MANUALCONTROLCOMMAND_CHANNEL_NUMELEM;
 			     ++n) {
@@ -284,6 +284,7 @@ static void manualControlTask(void *parameters)
 				cmd.Yaw = 0;
 				cmd.Pitch = 0;
 				cmd.Collective = 0;
+				cmd.Flaperons = 0;
 				//cmd.FlightMode = MANUALCONTROLCOMMAND_FLIGHTMODE_AUTO; // don't do until AUTO implemented and functioning
 				// Important: Throttle < 0 will reset Stabilization coefficients among other things. Either change this,
 				// or leave throttle at IDLE speed or above when going into AUTO-failsafe.
@@ -320,6 +321,7 @@ static void manualControlTask(void *parameters)
 				cmd.Pitch          = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_PITCH];
 				cmd.Yaw            = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_YAW];
 				cmd.Throttle       = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_THROTTLE];
+				cmd.Flaperons      = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_FLAPERONS];
 				flightMode         = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_FLIGHTMODE];
 
 				// Apply deadband for Roll/Pitch/Yaw stick inputs
@@ -327,6 +329,7 @@ static void manualControlTask(void *parameters)
 					applyDeadband(&cmd.Roll, settings.Deadband);
 					applyDeadband(&cmd.Pitch, settings.Deadband);
 					applyDeadband(&cmd.Yaw, settings.Deadband);
+					applyDeadband(&cmd.Flaperons, settings.Deadband);
 				}
 
 				if(cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_COLLECTIVE] != PIOS_RCVR_INVALID &&
@@ -546,6 +549,7 @@ static void updateActuatorDesired(ManualControlCommandData * cmd)
 	actuator.Pitch = cmd->Pitch;
 	actuator.Yaw = cmd->Yaw;
 	actuator.Throttle = (cmd->Throttle < 0) ? -1 : cmd->Throttle;
+	actuator.Flaperons = cmd->Flaperons;
 	ActuatorDesiredSet(&actuator);
 }
 
@@ -601,6 +605,8 @@ static void updateStabilizationDesired(ManualControlCommandData * cmd, ManualCon
 	     (stab_settings[2] == STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE) ? cmd->Yaw * stabSettings.YawMax :
 	     (stab_settings[2] == STABILIZATIONDESIRED_STABILIZATIONMODE_AXISLOCK) ? cmd->Yaw * stabSettings.ManualRate[STABILIZATIONSETTINGS_MANUALRATE_YAW] :
 	     0; // this is an invalid mode
+
+	stabilization.Flaperons = cmd->Flaperons;
 
 	stabilization.Throttle = (cmd->Throttle < 0) ? -1 : cmd->Throttle;
 	StabilizationDesiredSet(&stabilization);
@@ -777,12 +783,13 @@ static void processArm(ManualControlCommandData * cmd, ManualControlSettingsData
 		static portTickType armedDisarmStart;
 		float armingInputLevel = 0;
 
-		// Calc channel see assumptions7
-		int8_t sign = ((settings->Arming-MANUALCONTROLSETTINGS_ARMING_ROLLLEFT)%2) ? -1 : 1;
-		switch ( (settings->Arming-MANUALCONTROLSETTINGS_ARMING_ROLLLEFT)/2 ) {
-			case ARMING_CHANNEL_ROLL:    armingInputLevel = sign * cmd->Roll;    break;
-			case ARMING_CHANNEL_PITCH:   armingInputLevel = sign * cmd->Pitch;   break;
-			case ARMING_CHANNEL_YAW:     armingInputLevel = sign * cmd->Yaw;     break;
+		// Calc channel, see assumptions7 <--[BCH] Why the magic value using ARMING_ROLLLEFT?
+		int8_t sign = ((settings->Arming - MANUALCONTROLSETTINGS_ARMING_ROLLLEFT)%2) ? -1 : 1;
+		switch ( (settings->Arming - MANUALCONTROLSETTINGS_ARMING_ROLLLEFT)/2 ) {
+			case ARMING_CHANNEL_ROLL:      armingInputLevel = sign * cmd->Roll;      break;
+			case ARMING_CHANNEL_PITCH:     armingInputLevel = sign * cmd->Pitch;     break;
+			case ARMING_CHANNEL_YAW:       armingInputLevel = sign * cmd->Yaw;       break;
+			case ARMING_CHANNEL_FLAPERONS: armingInputLevel = sign * cmd->Flaperons; break;
 		}
 
 		bool manualArm = false;

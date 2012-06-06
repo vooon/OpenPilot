@@ -148,6 +148,28 @@
                   <string>Output Channel Assignments</string>
                  </property>
                  <layout class="QFormLayout" name="formLayout_3">
+                  <property name="fieldGrowthPolicy">
+                   <enum>QFormLayout::FieldsStayAtSizeHint</enum>
+                  </property>
+                  <property name="leftMargin">
+                   <number>5</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>5</number>
+                  </property>
+                  <item row="0" column="1">
+                   <spacer name="verticalSpacer_2">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
                   <item row="1" column="0">
                    <widget class="QLabel" name="fwEngineLabel">
                     <property name="text">
@@ -282,18 +304,121 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="0" column="1">
-                   <spacer name="verticalSpacer_2">
+                  <item row="8" column="0">
+                   <widget class="QLabel" name="fwFlaperonsLabel">
+                    <property name="text">
+                     <string>Flaperons</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="8" column="1">
+                   <widget class="QCheckBox" name="fwFlaperonsCheckBox"/>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <widget class="QGroupBox" name="flaperonsMixBox">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="title">
+                  <string>Flaperons Mix</string>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_13">
+                  <property name="leftMargin">
+                   <number>5</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>12</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>5</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>12</number>
+                  </property>
+                  <item>
+                   <spacer name="flaperonsVerticalSpacer">
                     <property name="orientation">
                      <enum>Qt::Vertical</enum>
                     </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::Fixed</enum>
+                    </property>
                     <property name="sizeHint" stdset="0">
                      <size>
-                      <width>20</width>
+                      <width>0</width>
                       <height>20</height>
                      </size>
                     </property>
                    </spacer>
+                  </item>
+                  <item>
+                   <layout class="QHBoxLayout" name="flaperonsSliderHorizontalLayout">
+                    <item>
+                     <layout class="QVBoxLayout" name="flaperonsVerticalLayout">
+                      <item>
+                       <widget class="QLabel" name="flaperonsLabel1">
+                        <property name="minimumSize">
+                         <size>
+                          <width>85</width>
+                          <height>0</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">background-color: qlineargradient(spread:reflect, x1:0.507, y1:0, x2:0.507, y2:0.772, stop:0.208955 rgba(74, 74, 74, 255), stop:0.78607 rgba(36, 36, 36, 255));
+color: rgb(255, 255, 255);
+border-radius: 5;
+font: bold 12px;
+margin:1px;</string>
+                        </property>
+                        <property name="text">
+                         <string>Flaperons %</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QSlider" name="flaperonsSlider">
+                        <property name="sizePolicy">
+                         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                         </sizepolicy>
+                        </property>
+                        <property name="minimum">
+                         <number>-100</number>
+                        </property>
+                        <property name="maximum">
+                         <number>100</number>
+                        </property>
+                        <property name="value">
+                         <number>0</number>
+                        </property>
+                        <property name="orientation">
+                         <enum>Qt::Vertical</enum>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLabel" name="flaperonsSliderLabel1">
+                        <property name="text">
+                         <string>0</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                   </layout>
                   </item>
                  </layout>
                 </widget>
@@ -310,6 +435,15 @@
                   <string>Elevon Mix</string>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_13">
+                  <property name="leftMargin">
+                   <number>5</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>12</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>5</number>
+                  </property>
                   <item>
                    <spacer name="verticalSpacer_3">
                     <property name="orientation">
@@ -2049,6 +2183,26 @@ margin:1px;</string>
                  <string>Yaw</string>
                 </property>
                </row>
+               <row>
+                <property name="text">
+                 <string>Flaperons</string>
+                </property>
+               </row>
+               <row>
+                <property name="text">
+                 <string>Aux 0</string>
+                </property>
+               </row>
+               <row>
+                <property name="text">
+                 <string>Aux 1</string>
+                </property>
+               </row>
+               <row>
+                <property name="text">
+                 <string>Aux 2</string>
+                </property>
+               </row>
                <column>
                 <property name="text">
                  <string>Ch 1</string>
@@ -2466,6 +2620,262 @@ margin:1px;</string>
                 </property>
                </item>
                <item row="5" column="7">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="6" column="0">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="6" column="1">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="6" column="2">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="6" column="3">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="6" column="4">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="6" column="5">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="6" column="6">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="6" column="7">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="7" column="0">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="7" column="1">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="7" column="2">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="7" column="3">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="7" column="4">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="7" column="5">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="7" column="6">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="7" column="7">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="8" column="0">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="8" column="1">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="8" column="2">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="8" column="3">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="8" column="4">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="8" column="5">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="8" column="6">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="8" column="7">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="9" column="0">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="9" column="1">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="9" column="2">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="9" column="3">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="9" column="4">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="9" column="5">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="9" column="6">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="9" column="7">
                 <property name="text">
                  <string>-</string>
                 </property>
@@ -2936,30 +3346,14 @@ p, li { white-space: pre-wrap; }
    </hints>
   </connection>
   <connection>
-   <sender>elevonSlider1</sender>
+   <sender>flaperonsSlider</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>elevonSliderLabel1</receiver>
+   <receiver>flaperonsSliderLabel1</receiver>
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>124</x>
      <y>126</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>124</x>
-     <y>126</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>elevonSlider2</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>elevonSliderLabel2</receiver>
-   <slot>setNum(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>362</x>
-     <y>299</y>
     </hint>
     <hint type="destinationlabel">
      <x>124</x>
