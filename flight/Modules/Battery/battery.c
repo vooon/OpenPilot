@@ -111,8 +111,8 @@ static void onTimer(UAVObjEvent* ev)
 	FlightBatterySettingsGet(&batterySettings);
 
 	//calculate the battery parameters
-	flightBatteryData.Voltage = ((float)PIOS_ADC_PinGet(0)) * batterySettings.SensorCalibrations[FLIGHTBATTERYSETTINGS_SENSORCALIBRATIONS_VOLTAGEFACTOR]; //in Volts
-	flightBatteryData.Current = ((float)PIOS_ADC_PinGet(1)) * batterySettings.SensorCalibrations[FLIGHTBATTERYSETTINGS_SENSORCALIBRATIONS_CURRENTFACTOR]; //in Amps
+	flightBatteryData.Voltage = ((float)PIOS_ADC_PinGet(0))/4096.0f*3.3f * batterySettings.SensorCalibrations[FLIGHTBATTERYSETTINGS_SENSORCALIBRATIONS_VOLTAGEFACTOR]; //in Volts
+	flightBatteryData.Current = ((float)PIOS_ADC_PinGet(1))/4096.0f*3.3f * batterySettings.SensorCalibrations[FLIGHTBATTERYSETTINGS_SENSORCALIBRATIONS_CURRENTFACTOR]; //in Amps
 
 	flightBatteryData.ConsumedEnergy += (flightBatteryData.Current * 1000.0f * dT / 3600.0f) ;//in mAh
 	if (flightBatteryData.Current > flightBatteryData.PeakCurrent)flightBatteryData.PeakCurrent = flightBatteryData.Current; //in Amps
@@ -124,7 +124,7 @@ static void onTimer(UAVObjEvent* ev)
 	if (flightBatteryData.ConsumedEnergy<0)flightBatteryData.ConsumedEnergy=0.0;
 
 	energyRemaining = batterySettings.Capacity - flightBatteryData.ConsumedEnergy; // in mAh
-	flightBatteryData.EstimatedFlightTime = ((energyRemaining / (flightBatteryData.AvgCurrent*1000.0))*3600.0);//in Sec
+	flightBatteryData.BatteryTimeRemaining = ((energyRemaining / (flightBatteryData.AvgCurrent*1000.0))*3600.0);//in Sec
 
 	//generate alarms where needed...
 	if ((flightBatteryData.Voltage<=0)&&(flightBatteryData.Current<=0))
@@ -134,8 +134,8 @@ static void onTimer(UAVObjEvent* ev)
 	}
 	else
 	{
-		if (flightBatteryData.EstimatedFlightTime < 30) AlarmsSet(SYSTEMALARMS_ALARM_FLIGHTTIME, SYSTEMALARMS_ALARM_CRITICAL);
-		else if (flightBatteryData.EstimatedFlightTime < 60) AlarmsSet(SYSTEMALARMS_ALARM_FLIGHTTIME, SYSTEMALARMS_ALARM_WARNING);
+		if (flightBatteryData.BatteryTimeRemaining < 30) AlarmsSet(SYSTEMALARMS_ALARM_FLIGHTTIME, SYSTEMALARMS_ALARM_CRITICAL);
+		else if (flightBatteryData.BatteryTimeRemaining < 60) AlarmsSet(SYSTEMALARMS_ALARM_FLIGHTTIME, SYSTEMALARMS_ALARM_WARNING);
 		else AlarmsClear(SYSTEMALARMS_ALARM_FLIGHTTIME);
 
 		// FIXME: should make the battery voltage detection dependent on battery type.
