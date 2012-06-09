@@ -52,11 +52,9 @@ static int32_t PIOS_MS5611_Read(uint8_t address, uint8_t * buffer, uint8_t len);
 static int32_t PIOS_MS5611_WriteCommand(uint8_t command);
 
 // Move into proper driver structure with cfg stored
-static uint32_t oversampling;
+static uint8_t oversampling;
 static const struct pios_ms5611_cfg * dev_cfg;
 static int32_t i2c_id;
-
-static enum pios_ms5611_osr osr = MS5611_OSR_256;
 
 /**
  * Initialise the MS5611 sensor
@@ -65,8 +63,7 @@ int32_t ms5611_read_flag;
 void PIOS_MS5611_Init(const struct pios_ms5611_cfg * cfg, int32_t i2c_device)
 {
 	i2c_id = i2c_device;
-
-	oversampling = cfg->oversampling;
+	oversampling =(uint8_t) cfg->oversampling;
 	dev_cfg = cfg;	// Store cfg before enabling interrupt
 
 	PIOS_MS5611_WriteCommand(MS5611_RESET);
@@ -90,10 +87,10 @@ int32_t PIOS_MS5611_StartADC(ConversionTypeTypeDef Type)
 {
 	/* Start the conversion */
 	if (Type == TemperatureConv) {
-		while (PIOS_MS5611_WriteCommand(MS5611_TEMP_ADDR + osr) != 0)
+		while (PIOS_MS5611_WriteCommand(MS5611_TEMP_ADDR + oversampling) != 0)
 			continue;
 	} else if (Type == PressureConv) {
-		while (PIOS_MS5611_WriteCommand(MS5611_PRES_ADDR + osr) != 0)
+		while (PIOS_MS5611_WriteCommand(MS5611_PRES_ADDR + oversampling) != 0)
 			continue;
 	}
 
@@ -106,7 +103,7 @@ int32_t PIOS_MS5611_StartADC(ConversionTypeTypeDef Type)
  * @brief Return the delay for the current osr
  */
 int32_t PIOS_MS5611_GetDelay() {
-	switch(osr) {
+	switch(oversampling) {
 		case MS5611_OSR_256:
 			return 2;
 		case MS5611_OSR_512:
