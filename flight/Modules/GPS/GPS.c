@@ -63,13 +63,17 @@ static float GravityAccel(float latitude, float longitude, float altitude);
 // Private constants
 
 #define GPS_TIMEOUT_MS                  500
+
+#if defined(REVOLUTION)
+#define NMEA_MAX_PACKET_LENGTH			MAX_SVINFO_MSG_SIZE
+#else
 #define NMEA_MAX_PACKET_LENGTH          96 // 82 max NMEA msg size plus 12 margin (because some vendors add custom crap) plus CR plus Linefeed
 // same as in COM buffer
-
+#endif
 
 #ifdef PIOS_GPS_SETS_HOMELOCATION
 // Unfortunately need a good size stack for the WMM calculation
-	#define STACK_SIZE_BYTES            800
+	#define STACK_SIZE_BYTES            950
 #else
 	#define STACK_SIZE_BYTES            650
 #endif
@@ -285,9 +289,12 @@ static void gpsTask(void *parameters)
 					continue;
 				case UBX_CHK2:
 					ubx->header.ck_b = c;
-					if (checksum_ubx_message(ubx))
+					if (checksum_ubx_message(ubx)) // message complete and valid
 					{
-						parse_ubx_message(ubx);
+						parse_ubx_message(ubx, &GpsData);
+						timeNowMs = xTaskGetTickCount() * portTICK_RATE_MS;
+						timeOfLastUpdateMs = timeNowMs;
+						timeOfLastCommandMs = timeNowMs;
 					}
 					proto_state = START;
 					continue;
