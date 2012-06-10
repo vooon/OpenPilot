@@ -100,6 +100,8 @@ static void altitudeTask(void *parameters)
 
 	// TODO: Check the pressure sensor and set a warning if it fails test
 	
+	uint8_t convCounter =0;
+	
 	// Main task loop
 	while (1)
 	{
@@ -130,10 +132,14 @@ static void altitudeTask(void *parameters)
 		float temp, press;
 		
 		// Update the temperature data
-		PIOS_MS5611_StartADC(TemperatureConv);
-		vTaskDelay(PIOS_MS5611_GetDelay());
-		PIOS_MS5611_ReadADC();
-		
+		if(convCounter <=0)
+		{
+			convCounter=10;
+			PIOS_MS5611_StartADC(TemperatureConv);
+			vTaskDelay(PIOS_MS5611_GetDelay());
+			PIOS_MS5611_ReadADC();
+		}
+		convCounter--;
 		// Update the pressure data
 		PIOS_MS5611_StartADC(PressureConv);
 		vTaskDelay(PIOS_MS5611_GetDelay());
