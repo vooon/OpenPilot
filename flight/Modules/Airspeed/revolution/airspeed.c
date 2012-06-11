@@ -126,6 +126,7 @@ static void airspeedTask(void *parameters)
 #if defined(PIOS_INCLUDE_MPXV7002)
 			//Wait until our turn
 			vTaskDelay(SAMPLING_DELAY_MS_MPXV7002);
+			
 
 			// Update the airspeed
 			BaroAirspeedGet(&data);
@@ -136,8 +137,12 @@ static void airspeedTask(void *parameters)
 				calibrationCount++;
 				continue;
 			} else if (calibrationCount < (CALIBRATION_IDLE_MS + CALIBRATION_COUNT_MS)/SAMPLING_DELAY_MS_MPXV7002) { //Then compute the average.
-				calibrationCount++;
-				sensorCalibration=PIOS_MPXV7002_Calibrate(calibrationCount);
+				calibrationCount++; /*DO NOT MOVE FROM BEFORE sensorCalibration=... LINE, OR ELSE WILL HAVE DIVIDE BY ZERO */
+				sensorCalibration=PIOS_MPXV7002_Calibrate(calibrationCount-CALIBRATION_IDLE_MS/SAMPLING_DELAY_MS_MPXV7002);
+				
+				data.ZeroPoint=sensorCalibration;
+				data.Airspeed = 0;
+				BaroAirspeedSet(&data);
 				continue;
 			}
 			else if (sensorCalibration!= data.ZeroPoint){       //Finally, monitor the UAVO in case the user has manually changed the sensor calibration value.
@@ -145,7 +150,7 @@ static void airspeedTask(void *parameters)
 			}
 			
 			//Get CAS
-			float calibratedAirspeed= PIOS_MPXV7002_ReadAirspeed();
+			float calibratedAirspeed = PIOS_MPXV7002_ReadAirspeed();
 
 			//Get sensor value, just for telemetry purposes. 
 			//This is a silly waste of resources, and should probably be removed at some point in the future.
@@ -153,9 +158,10 @@ static void airspeedTask(void *parameters)
 			data.SensorValue=PIOS_MPXV7002_Measure();
 			
 			//Filter CAS
-			float alpha=.01f; //Low pass filter. The time constant is equal to about 100 times the sample period
+			float alpha=.01f*((float) SAMPLING_DELAY_MS_MPXV7002); //Low pass filter. The time constant is equal to about 100ms
 			float filteredAirspeed = calibratedAirspeed*(alpha)+data.Airspeed*(1.0f-alpha);
 			
+			data.Connected = BAROAIRSPEED_CONNECTED_TRUE;
 			data.Airspeed = filteredAirspeed;
 #endif			
 		}
@@ -192,14 +198,13 @@ static void airspeedTask(void *parameters)
 			
 			//Compute airspeed
 			data.Airspeed = ETS_AIRSPEED_SCALE * sqrtf((float)abs(data.SensorValue - data.ZeroPoint)); //Is this calibrated or indicated airspeed?
-		}
-		
-		data.Connected = BAROAIRSPEED_CONNECTED_TRUE;
-	
+
+			data.Connected = BAROAIRSPEED_CONNECTED_TRUE;
+		}		
+#endif
 		// Update the AirspeedActual UAVObject
 		BaroAirspeedSet(&data);
-#endif		
-	}
+	}	
 }
 
 /**
