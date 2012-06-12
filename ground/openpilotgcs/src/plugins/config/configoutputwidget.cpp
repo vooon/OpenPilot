@@ -27,6 +27,7 @@
 
 #include "configoutputwidget.h"
 #include "outputchannelform.h"
+#include "configvehicletypewidget.h"
 
 #include "uavtalk/telemetrymanager.h"
 
@@ -39,9 +40,11 @@
 #include <QMessageBox>
 #include <QDesktopServices>
 #include <QUrl>
+#include "mixersettings.h"
 #include "actuatorcommand.h"
 #include "actuatorsettings.h"
 #include "systemalarms.h"
+#include "systemsettings.h"
 #include "uavsettingsimportexport/uavsettingsimportexportfactory.h"
 
 ConfigOutputWidget::ConfigOutputWidget(QWidget *parent) : ConfigTaskWidget(parent),wasItMe(false)
@@ -68,15 +71,9 @@ ConfigOutputWidget::ConfigOutputWidget(QWidget *parent) : ConfigTaskWidget(paren
 
     connect(m_config->channelOutTest, SIGNAL(toggled(bool)), this, SLOT(runChannelTests(bool)));
 
-
-    firstUpdate = true;
-
     // Configure the task widget
     // Connect the help button
     connect(m_config->outputHelp, SIGNAL(clicked()), this, SLOT(openHelp()));
-
-    // Add custom handling of displaying things
-    connect(this,SIGNAL(refreshWidgetsValuesRequested()), this, SLOT(refreshOutputWidgetsValues()));
 
     addApplySaveButtons(m_config->saveRCOutputToRAM,m_config->saveRCOutputToSD);
 
@@ -122,7 +119,6 @@ ConfigOutputWidget::~ConfigOutputWidget()
   */
 void ConfigOutputWidget::runChannelTests(bool state)
 {
-    qDebug()<<"configoutputwidget runChannelTests"<<state;
     SystemAlarms * systemAlarmsObj = SystemAlarms::GetInstance(getObjectManager());
     SystemAlarms::DataFields systemAlarms = systemAlarmsObj->getData();
 
@@ -231,34 +227,34 @@ void ConfigOutputWidget::sendChannelTest(int index, int value)
 /**
   Request the current config from the board (RC Output)
   */
-void ConfigOutputWidget::refreshOutputWidgetsValues(UAVObject *)
+void ConfigOutputWidget::refreshWidgetsValues(UAVObject * obj)
 {
-    // Reset all channel assignements:
-    QList<OutputChannelForm*> outputChannelForms = findChildren<OutputChannelForm*>();
-    foreach(OutputChannelForm *outputChannelForm, outputChannelForms)
-    {
-        outputChannelForm->setAssignment("-");
-    }
+    Q_UNUSED(obj);
 
-    // FIXME: Use static accessor method for retrieving channel assignments
-    ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
-    Q_ASSERT(pm);
-    UAVObjectManager *objManager = pm->getObject<UAVObjectManager>();
-    Q_ASSERT(objManager);
+    bool dirty=isDirty();
 
-   // Get the channel assignements:
-    UAVDataObject * obj = dynamic_cast<UAVDataObject*>(objManager->getObject(QString("ActuatorSettings")));
-    Q_ASSERT(obj);
-    QList<UAVObjectField*> fieldList = obj->getFields();
-    foreach (UAVObjectField* field, fieldList) {
-        if (field->getUnits().contains("channel")) {
-            assignOutputChannel(obj,field->getName());
-        }
-    }
-
+    // Get Actuator Settings
     ActuatorSettings *actuatorSettings = ActuatorSettings::GetInstance(getObjectManager());
     Q_ASSERT(actuatorSettings);
     ActuatorSettings::DataFields actuatorSettingsData = actuatorSettings->getData();
+
+    // get channel descriptions
+    QStringList ChannelDesc = ConfigVehicleTypeWidget::getChannelDescriptions();
+
+    // Initialize output forms
+    QList<OutputChannelForm*> outputChannelForms = findChildren<OutputChannelForm*>();
+    foreach(OutputChannelForm *outputChannelForm, outputChannelForms)
+    {
+        outputChannelForm->setAssignment(ChannelDesc[outputChannelForm->index()]);
+
+        // init min,max,neutral
+        int minValue = actuatorSettingsData.ChannelMin[outputChannelForm->index()];
+        int maxValue = actuatorSettingsData.ChannelMax[outputChannelForm->index()];
+        outputChannelForm->minmax(minValue, maxValue);
+
+        int neutral = actuatorSettingsData.ChannelNeutral[outputChannelForm->index()];
+        outputChannelForm->neutral(neutral);
+    }
 
     // Get the SpinWhileArmed setting
     m_config->spinningArmed->setChecked(actuatorSettingsData.MotorsSpinWhileArmed == ActuatorSettings::MOTORSSPINWHILEARMED_TRUE);
@@ -275,6 +271,8 @@ void ConfigOutputWidget::refreshOutputWidgetsValues(UAVObject *)
     m_config->cb_outputRate1->setCurrentIndex(m_config->cb_outputRate1->findText(QString::number(actuatorSettingsData.ChannelUpdateFreq[0])));
     m_config->cb_outputRate2->setCurrentIndex(m_config->cb_outputRate2->findText(QString::number(actuatorSettingsData.ChannelUpdateFreq[1])));
 
+    ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
+    Q_ASSERT(pm);
     UAVObjectUtilManager* utilMngr = pm->getObject<UAVObjectUtilManager>();
     if (utilMngr) {
         int board = utilMngr->getBoardModel();
