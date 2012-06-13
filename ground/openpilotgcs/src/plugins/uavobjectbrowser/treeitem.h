@@ -33,6 +33,7 @@
 #include "uavobjectfield.h"
 #include <QtCore/QList>
 #include <QtCore/QVariant>
+#include <QtCore/QTime>
 #include <QtCore/QTimer>
 #include <QtCore/QObject>
 
@@ -71,8 +72,9 @@ public:
     virtual void apply();
 
     inline bool highlighted() { return m_highlight; }
-    void setHighlight(bool highlight);
+    void setHighlight();
     static void setHighlightTime(int time) { m_highlightTimeMs = time; }
+    void highlightExpire(QTime now);
 
     inline bool changed() { return m_changed; }
     inline void setChanged(bool changed) { m_changed = changed; }
@@ -91,7 +93,9 @@ private:
     TreeItem *m_parent;
     bool m_highlight;
     bool m_changed;
+    QTime m_expirationTime;
     QTimer m_timer;
+
 public:
     static const int dataColumn = 1;
 private:

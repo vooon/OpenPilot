@@ -32,11 +32,12 @@
 #include "uavmetaobject.h"
 #include "uavobjectfield.h"
 #include "extensionsystem/pluginmanager.h"
-#include <QtGui/QColor>
+//#include <QtGui/QColor>
 //#include <QtGui/QIcon>
 #include <QtCore/QTimer>
 #include <QtCore/QSignalMapper>
 #include <QtCore/QDebug>
+#include <QtGUI>
 
 UAVObjectTreeModel::UAVObjectTreeModel(QObject *parent) :
         QAbstractItemModel(parent),
@@ -52,6 +53,11 @@ UAVObjectTreeModel::UAVObjectTreeModel(QObject *parent) :
 
     TreeItem::setHighlightTime(m_recentlyUpdatedTimeout);
     setupModelData(objManager);
+
+    //Start timer
+    timer = new QTimer(this);
+    timer->start(50); //The period at which we check to see if a highlighted field should be reset in [ms].
+    connect(timer, SIGNAL(timeout()), this, SLOT(timeoutHighlight()));
 }
 
 UAVObjectTreeModel::~UAVObjectTreeModel()
@@ -73,8 +79,8 @@ void UAVObjectTreeModel::setupModelData(UAVObjectManager *objManager)
     connect(m_settingsTree, SIGNAL(updateHighlight(TreeItem*)), this, SLOT(updateHighlight(TreeItem*)));
     connect(m_nonSettingsTree, SIGNAL(updateHighlight(TreeItem*)), this, SLOT(updateHighlight(TreeItem*)));
 
-    QList< QList<UAVDataObject*> > objList = objManager->getDataObjects();
-    foreach (QList<UAVDataObject*> list, objList) {
+    objDataList = objManager->getDataObjects();
+    foreach (QList<UAVDataObject*> list, objDataList) {
         foreach (UAVDataObject* obj, list) {
             addDataObject(obj);
         }
@@ -109,6 +115,7 @@ void UAVObjectTreeModel::addDataObject(UAVDataObject *obj)
 void UAVObjectTreeModel::addMetaObject(UAVMetaObject *obj, TreeItem *parent)
 {
     connect(obj, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(highlightUpdatedObject(UAVObject*)));
+
     MetaObjectTreeItem *meta = new MetaObjectTreeItem(obj, tr("Meta Data"));
     connect(meta, SIGNAL(updateHighlight(TreeItem*)), this, SLOT(updateHighlight(TreeItem*)));
     foreach (UAVObjectField *field, obj->getFields()) {
@@ -124,6 +131,7 @@ void UAVObjectTreeModel::addMetaObject(UAVMetaObject *obj, TreeItem *parent)
 void UAVObjectTreeModel::addInstance(UAVObject *obj, TreeItem *parent)
 {
     connect(obj, SIGNAL(objectUpdated(UAVObject*)), this, SLOT(highlightUpdatedObject(UAVObject*)));
+
     TreeItem *item;
     if (obj->isSingleInstance()) {
         item = parent;
@@ -352,11 +360,27 @@ void UAVObjectTreeModel::highlightUpdatedObject(UAVObject *obj)
     Q_ASSERT(obj);
     ObjectTreeItem *item = findObjectTreeItem(obj);
     Q_ASSERT(item);
-    item->setHighlight(true);
+    item->setHighlight();
     item->update();
     QModelIndex itemIndex = index(item);
     Q_ASSERT(itemIndex != QModelIndex());
     emit dataChanged(itemIndex, itemIndex);
+}
+
+void UAVObjectTreeModel::timeoutHighlight()
+{
+    foreach (QList<UAVDataObject*> list, objDataList) {
+        foreach (UAVDataObject* objData, list) {
+            Q_ASSERT(objData);
+            ObjectTreeItem *item = findObjectTreeItem(objData);
+            Q_ASSERT(item);
+            item->highlightExpire(QTime::currentTime ());
+            item->update();
+            QModelIndex itemIndex = index(item);
+            Q_ASSERT(itemIndex != QModelIndex());
+            emit dataChanged(itemIndex, itemIndex);
+        }
+    }
 }
 
 ObjectTreeItem *UAVObjectTreeModel::findObjectTreeItem(UAVObject *object)

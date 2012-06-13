@@ -102,7 +102,7 @@ public:
         int valIndex = options.indexOf(value.toString());
         if (data() != valIndex || changed()) {
             TreeItem::setData(valIndex);
-            setHighlight(true);
+            setHighlight();
         }
     }
     QWidget *createEditor(QWidget *parent) {
@@ -200,7 +200,7 @@ public:
         int value = m_field->getValue(m_index).toInt();
         if (data() != value || changed()) {
             TreeItem::setData(value);
-            setHighlight(true);
+            setHighlight();
         }
     }
 
@@ -230,7 +230,7 @@ public:
         double value = m_field->getValue(m_index).toDouble();
         if (data() != value || changed()) {
             TreeItem::setData(value);
-            setHighlight(true);
+            setHighlight();
         }
     }
     QWidget *createEditor(QWidget *parent) {

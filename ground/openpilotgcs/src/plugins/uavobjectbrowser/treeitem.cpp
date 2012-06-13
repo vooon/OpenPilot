@@ -26,6 +26,7 @@
  */
 
 #include "treeitem.h"
+#include <QDebug>
 
 int TreeItem::m_highlightTimeMs = 500;
 
@@ -36,7 +37,7 @@ TreeItem::TreeItem(const QList<QVariant> &data, TreeItem *parent) :
         m_highlight(false),
         m_changed(false)
 {
-    connect(&m_timer, SIGNAL(timeout()), this, SLOT(removeHighlight()));
+//    connect(&m_timer, SIGNAL(timeout()), this, SLOT(removeHighlight()));
 }
 
 TreeItem::TreeItem(const QVariant &data, TreeItem *parent) :
@@ -46,7 +47,7 @@ TreeItem::TreeItem(const QVariant &data, TreeItem *parent) :
         m_changed(false)
 {
     m_data << data << "" << "";
-    connect(&m_timer, SIGNAL(timeout()), this, SLOT(removeHighlight()));
+//    connect(&m_timer, SIGNAL(timeout()), this, SLOT(removeHighlight()));
 }
 
 TreeItem::~TreeItem()
@@ -108,21 +109,21 @@ void TreeItem::apply() {
         child->apply();
 }
 
-void TreeItem::setHighlight(bool highlight) {
-    m_highlight = highlight;
+void TreeItem::setHighlight() {
+    m_highlight = true;
     m_changed = false;
-    if (highlight) {
-        if (m_timer.isActive()) {
-            m_timer.stop();
-        }
-        m_timer.setSingleShot(true);
-        m_timer.start(m_highlightTimeMs);
-    }
+
+    m_expirationTime=QTime::currentTime().addMSecs(m_highlightTimeMs);
     emit updateHighlight(this);
+}
+
+void TreeItem::highlightExpire(QTime now) {
+    if (now > m_expirationTime){
+        this->removeHighlight();
+    }
 }
 
 void TreeItem::removeHighlight() {
     m_highlight = false;
-    update();
     emit updateHighlight(this);
 }

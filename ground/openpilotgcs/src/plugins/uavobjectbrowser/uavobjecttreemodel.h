@@ -76,9 +76,11 @@ public slots:
 
 private slots:
     void highlightUpdatedObject(UAVObject *obj);
+    void timeoutHighlight();
     void updateHighlight(TreeItem*);
 
 private:
+    QList< QList<UAVDataObject*> > objDataList;
     QModelIndex index(TreeItem *item);
     void addDataObject(UAVDataObject *obj);
     void addMetaObject(UAVMetaObject *obj, TreeItem *parent);
@@ -97,6 +99,7 @@ private:
     int m_recentlyUpdatedTimeout;
     QColor m_recentlyUpdatedColor;
     QColor m_manuallyChangedColor;
+    QTimer *timer;
 };
 
 #endif // UAVOBJECTTREEMODEL_H
