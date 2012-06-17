@@ -52,6 +52,8 @@
 static void gpsTask(void *parameters);
 static void updateSettings();
 
+#define PIOS_GPS_SETS_HOMELOCATION
+
 #ifdef PIOS_GPS_SETS_HOMELOCATION
 static void setHomeLocation(GPSPositionData * gpsData);
 static float GravityAccel(float latitude, float longitude, float altitude);
@@ -337,9 +339,13 @@ static void setHomeLocation(GPSPositionData * gpsData)
 		home.Altitude = gpsData->Altitude + gpsData->GeoidSeparation;
 
 		// Compute home ECEF coordinates and the rotation matrix into NED
-		double LLA[3] = { ((double)home.Latitude) / 10e6, ((double)home.Longitude) / 10e6, ((double)home.Altitude) };
-		double ECEF[3];
+		//double LLA[3] = { ((double)home.Latitude) / 10e6, ((double)home.Longitude) / 10e6, ((double)home.Altitude) };
+		float LLA[3] = { home.Latitude / 10e6, home.Longitude / 10e6, home.Altitude };
+		//double ECEF[3];
+		float ECEF[3];
+		
 		RneFromLLA(LLA, (float (*)[3])home.RNE);
+		//RneFromLLA(LLA, (float (*)[3])home.RNE);
 		LLA2ECEF(LLA, ECEF);
 		// TODO: Currently UAVTalk only supports float but these conversions use double
 		// need to find out if they require that precision and if so extend UAVTAlk

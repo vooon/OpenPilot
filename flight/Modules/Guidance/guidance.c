@@ -48,6 +48,7 @@
 #include "guidancesettings.h"
 #include "attituderaw.h"
 #include "attitudeactual.h"
+#include "homelocation.h"
 #include "positiondesired.h"	// object that will be updated by the module
 #include "positionactual.h"
 #include "manualcontrol.h"
@@ -201,7 +202,9 @@ static void guidanceTask(void *parameters)
 		FlightStatusGet(&flightStatus);
 		SystemSettingsGet(&systemSettings);
 		GuidanceSettingsGet(&guidanceSettings);
-		
+		PositionDesiredData positionDesired;
+		PositionActualData positionActual;
+
 		if ((PARSE_FLIGHT_MODE(flightStatus.FlightMode) == FLIGHTMODE_GUIDANCE) &&
 		    ((systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_VTOL) ||
 		     (systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_QUADP) ||
@@ -210,8 +213,7 @@ static void guidanceTask(void *parameters)
 		{
 			if(positionHoldLast == 0) {
 				/* When enter position hold mode save current position */
-				PositionDesiredData positionDesired;
-				PositionActualData positionActual;
+				
 				PositionDesiredGet(&positionDesired);
 				PositionActualGet(&positionActual);
 				positionDesired.North = positionActual.North;
@@ -226,7 +228,21 @@ static void guidanceTask(void *parameters)
 				manualSetDesiredVelocity();			
 			updateVtolDesiredAttitude();
 			
-		} else {
+		} else if (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_RETURNTOBASE && systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_VTOL) {
+		  HomeLocationData homeLocation;
+		  HomeLocationGet(&homeLocation);
+
+		  if (homeLocation.Set == HOMELOCATION_SET_TRUE) {
+		      positionDesired.North = 0.0f;
+		      positionDesired.East = 0.0f;
+		      positionDesired.Down = -50.0f; // TODO: Fix this to config offset.
+		      PositionDesiredSet(&positionDesired);
+
+		      manualSetDesiredVelocity();
+		      updateVtolDesiredAttitude();
+		  }
+		  
+                } else {
 			// Be cleaner and get rid of global variables
 			northVelIntegral = 0;
 			eastVelIntegral = 0;
