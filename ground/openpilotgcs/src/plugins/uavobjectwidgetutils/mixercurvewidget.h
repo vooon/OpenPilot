@@ -61,6 +61,9 @@ private:
    QList<Node*> nodeList;
    double curveMin;
    double curveMax;
+   double range;
+   double calculateXPos(double val);
+   void calcRange();
 
 protected:
     void showEvent(QShowEvent *event);
