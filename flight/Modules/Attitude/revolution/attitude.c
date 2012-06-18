@@ -304,7 +304,7 @@ static int32_t updateAttitudeComplimentary(bool first_run)
 		Quaternion2R(q, Rbe);
 		MagnetometerGet(&mag);
 		HomeLocationGet(&home);
-		rot_mult(Rbe, home.Be, brot);
+		rot_mult(Rbe, home.Be, brot, FALSE);
 		
 		float mag_len = sqrtf(mag.x * mag.x + mag.y * mag.y + mag.z * mag.z);
 		mag.x /= mag_len;

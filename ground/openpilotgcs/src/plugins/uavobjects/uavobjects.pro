@@ -50,6 +50,7 @@ HEADERS += $$UAVOBJECT_SYNTHETICS/accessorydesired.h \
     $$UAVOBJECT_SYNTHETICS/actuatordesired.h \
     $$UAVOBJECT_SYNTHETICS/actuatorcommand.h \
     $$UAVOBJECT_SYNTHETICS/gpsposition.h \
+    $$UAVOBJECT_SYNTHETICS/gpsvelocity.h \
     $$UAVOBJECT_SYNTHETICS/gpstime.h \
     $$UAVOBJECT_SYNTHETICS/gpssatellites.h \
     $$UAVOBJECT_SYNTHETICS/positionactual.h \
@@ -80,6 +81,7 @@ HEADERS += $$UAVOBJECT_SYNTHETICS/accessorydesired.h \
     $$UAVOBJECT_SYNTHETICS/txpidsettings.h \
     $$UAVOBJECT_SYNTHETICS/cameradesired.h \
     $$UAVOBJECT_SYNTHETICS/faultsettings.h \
+    $$UAVOBJECT_SYNTHETICS/gpsvelocity.h \
     $$UAVOBJECT_SYNTHETICS/pipxsettings.h \
     $$UAVOBJECT_SYNTHETICS/pipxstatus.h
 
@@ -141,5 +143,6 @@ SOURCES += $$UAVOBJECT_SYNTHETICS/accessorydesired.cpp \
     $$UAVOBJECT_SYNTHETICS/txpidsettings.cpp \
     $$UAVOBJECT_SYNTHETICS/cameradesired.cpp \
     $$UAVOBJECT_SYNTHETICS/faultsettings.cpp \
+    $$UAVOBJECT_SYNTHETICS/gpsvelocity.cpp \
     $$UAVOBJECT_SYNTHETICS/pipxsettings.cpp \
     $$UAVOBJECT_SYNTHETICS/pipxstatus.cpp
