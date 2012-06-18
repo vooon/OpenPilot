@@ -131,25 +131,16 @@ void MixerCurveWidget::initCurve(QList<double> points)
         }
 
         // Position new node
-        double val = calculateXPos(points.at(i));
+        double val = calculateYPos(points.at(i));
         node->setPos(w * i, h - val * h);
         node->verticalMove(true);
         prevNode = node;
     }
 }
 
-inline double MixerCurveWidget::calculateXPos(double val) {
-    double xpos;
-
-    // adjust value between min and max and divide it by range to get % value
-    xpos = ((val > curveMax) ? curveMax : ((val < curveMin) ? curveMin : val)) / range;
-    xpos += curveMin;
-    return xpos;
-}
-
-inline void MixerCurveWidget::calcRange()
-{
-    range = curveMax - curveMin;
+inline double MixerCurveWidget::calculateYPos(double val) {
+    // Box value between min and max offset it to 0 and divide it by range to get % value
+    return (((val > curveMax) ? curveMax : ((val < curveMin) ? curveMin : val)) - curveMin) / range;
 }
 
 /**
@@ -165,22 +156,22 @@ QList<double> MixerCurveWidget::getCurve() {
 
     return list;
 }
+
 /**
   Sets a linear graph
   */
-void MixerCurveWidget::initLinearCurve(quint32 numPoints, double maxValue)
-{
+void MixerCurveWidget::initLinearCurve(quint32 numPoints, double maxValue) {
     QList<double> points;
     for (double i = 0; i < numPoints; i++) {
-        points.append(maxValue * (i /(numPoints - 1)));
+        points.append((maxValue - curveMin) * (i /(numPoints - 1)) + curveMin);
     }
     initCurve(points);
 }
+
 /**
   Setd the current curve settings
   */
-void MixerCurveWidget::setCurve(QList<double> points)
-{
+void MixerCurveWidget::setCurve(QList<double> points) {
     if (nodeList.length() != points.length())
     {
         initCurve(points);
@@ -190,15 +181,14 @@ void MixerCurveWidget::setCurve(QList<double> points)
         qreal w = plot->boundingRect().width()/(points.length()-1);
         qreal h = plot->boundingRect().height();
         for (int i=0; i<points.length(); i++) {
-            double val = calculateXPos(points.at(i));
+            double val = calculateYPos(points.at(i));
             nodeList.at(i)->setPos(w * i, h - val * h);
         }
     }
 }
 
 
-void MixerCurveWidget::showEvent(QShowEvent *event)
-{
+void MixerCurveWidget::showEvent(QShowEvent *event) {
     Q_UNUSED(event)
     // Thit fitInView method should only be called now, once the
     // widget is shown, otherwise it cannot compute its values and
@@ -207,33 +197,33 @@ void MixerCurveWidget::showEvent(QShowEvent *event)
 
 }
 
-void MixerCurveWidget::resizeEvent(QResizeEvent* event)
-{
+void MixerCurveWidget::resizeEvent(QResizeEvent* event) {
     Q_UNUSED(event);
     fitInView(plot, Qt::KeepAspectRatio);
 }
 
-void MixerCurveWidget::itemMoved(double itemValue)
-{
+void MixerCurveWidget::itemMoved(double itemValue) {
     QList<double> list = getCurve();
     emit curveUpdated(list, itemValue);
 }
 
-void MixerCurveWidget::setMin(double value)
-{
+void MixerCurveWidget::setMin(double value) {
     curveMin = value;
     calcRange();
 }
 
-void MixerCurveWidget::setMax(double value)
-{
+void MixerCurveWidget::setMax(double value) {
     curveMax = value;
     calcRange();
 }
 
-void MixerCurveWidget::setRange(double min, double max)
-{
+void MixerCurveWidget::setRange(double min, double max) {
     curveMin = min;
     curveMax = max;
     calcRange();
 }
+
+inline void MixerCurveWidget::calcRange() {
+    range = curveMax - curveMin;
+}
+

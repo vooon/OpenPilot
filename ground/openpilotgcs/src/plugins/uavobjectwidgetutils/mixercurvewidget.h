@@ -62,7 +62,7 @@ private:
    double curveMin;
    double curveMax;
    double range;
-   double calculateXPos(double val);
+   double calculateYPos(double val);
    void calcRange();
 
 protected:

@@ -479,7 +479,7 @@ void ConfigCcpmWidget::UpdateType()
   */
 void ConfigCcpmWidget::resetMixer(MixerCurveWidget *mixer, int numElements)
 {
-    mixer->initLinearCurve(numElements,(double)1);
+    mixer->initLinearCurve(numElements, 1.0);
 }
 
 void ConfigCcpmWidget::UpdateCurveWidgets()
@@ -554,7 +554,7 @@ void ConfigCcpmWidget::updateThrottleCurveValue(QList<double> curveValues0,doubl
 
     for (i=0; i<internalCurveValues.length(); i++)
     {
-        CurrentValue=m_ccpm->CurveSettings->item(i, 1 )->text().toDouble();
+        CurrentValue=m_ccpm->CurveSettings->item(i, 0 )->text().toDouble();
         if (CurrentValue!=internalCurveValues[i])
         {
             m_ccpm->CurveSettings->item(i, 0)->setText(QString().sprintf("%.3f",internalCurveValues.at(i)));
