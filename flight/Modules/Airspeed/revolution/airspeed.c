@@ -40,28 +40,60 @@
 #include "hwsettings.h"
 #include "airspeed.h"
 #include "baroairspeed.h"	// object that will be updated by the module
-#if defined(PIOS_INCLUDE_HCSR04)
-#include "sonarairspeed.h"	// object that will be updated by the module
-#endif
+#include "gpsvelocity.h"
+#include "velocityactual.h"
+#include "attitudeactual.h"
+#include "CoordinateConversions.h"
+
 
 // Private constants
-#define STACK_SIZE_BYTES 500
+#if defined (PIOS_INCLUDE_GPS)
+ #define STACK_SIZE_GPS 1000
+ #define GPS_AIRSPEED_PRESENT
+#else
+ #define STACK_SIZE_GPS 0
+#endif
+
+#if defined (PIOS_INCLUDE_MPXV7002) || defined (PIOS_INCLUDE_ETASV3)
+ #define STACK_SIZE_BARO 500
+ #define BARO_AIRSPEED_PRESENT
+#else
+ #define STACK_SIZE_BARO 0
+#endif
+
+#define STACK_SIZE_BYTES (STACK_SIZE_GPS+STACK_SIZE_BARO)
+
 #define TASK_PRIORITY (tskIDLE_PRIORITY+1)
-#define SAMPLING_DELAY_MS 50
-#define CALIBRATION_IDLE 40
-#define CALIBRATION_COUNT 40
-#define ETS_AIRSPEED_SCALE 1.0f
+
+#define SAMPLING_DELAY_MS_ETASV3                50     //Update at 20Hz
+#define SAMPLING_DELAY_MS_MPXV7002              10	    //Update at 100Hz
+#define SAMPLING_DELAY_MS_FALLTHROUGH           50     //Update at 20Hz. The fallthrough runs faster than the GPS to ensure that we don't miss GPS updates because we're slightly out of sync
+#define ETS_AIRSPEED_SCALE                      1.0f   //???
+#define CALIBRATION_IDLE_MS                     2000   //Time to wait before calibrating, in [ms]
+#define CALIBRATION_COUNT_MS                    2000   //Time to spend calibrating, in [ms]
+#define ANALOG_BARO_AIRSPEED_TIME_CONSTANT_MS   100.0f //Needs to be settable in a UAVO
+
+#define GPS_AIRSPEED_BIAS_KP           0.1f   //Needs to be settable in a UAVO
+#define GPS_AIRSPEED_BIAS_KI           0.1f   //Needs to be settable in a UAVO
+#define SAMPLING_DELAY_MS_GPS          100    //Needs to be settable in a UAVO
+#define GPS_AIRSPEED_TIME_CONSTANT_MS  500.0f //Needs to be settable in a UAVO
+
+#define F_PI 3.141526535897932f
+#define DEG2RAD (F_PI/180.0f)
 
 // Private types
 
 // Private variables
 static xTaskHandle taskHandle;
+static bool airspeedEnabled = false;
+volatile bool gpsNew = false;
 
 // Private functions
 static void airspeedTask(void *parameters);
 
-
-static bool airspeedEnabled = false;
+#ifdef GPS_AIRSPEED_PRESENT
+static void GPSVelocityUpdatedCb(UAVObjEvent * ev);
+#endif
 
 /**
  * Initialise the module, called on startup
@@ -69,14 +101,15 @@ static bool airspeedEnabled = false;
  */
 int32_t AirspeedStart()
 {	
-	
+	//Check if module is enabled or not
 	if (airspeedEnabled == false) {
 		return -1;
 	}
+		
 	// Start main task
 	xTaskCreate(airspeedTask, (signed char *)"Airspeed", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &taskHandle);
 	TaskMonitorAdd(TASKINFO_RUNNING_AIRSPEED, taskHandle);
-
+	
 	return 0;
 }
 
@@ -86,72 +119,297 @@ int32_t AirspeedStart()
  */
 int32_t AirspeedInitialize()
 {
-	#ifdef MODULE_AIRSPEED_BUILTIN
+#ifdef MODULE_AIRSPEED_BUILTIN
+	airspeedEnabled = true;
+#else
+	
+	HwSettingsInitialize();
+	uint8_t optionalModules[HWSETTINGS_OPTIONALMODULES_NUMELEM];
+	HwSettingsOptionalModulesGet(optionalModules);
+	
+	if (optionalModules[HWSETTINGS_OPTIONALMODULES_AIRSPEED] == HWSETTINGS_OPTIONALMODULES_ENABLED) {
 		airspeedEnabled = true;
-	#else
-
-		HwSettingsInitialize();
-		uint8_t optionalModules[HWSETTINGS_OPTIONALMODULES_NUMELEM];
-		HwSettingsOptionalModulesGet(optionalModules);
-
-		if (optionalModules[HWSETTINGS_OPTIONALMODULES_AIRSPEED] == HWSETTINGS_OPTIONALMODULES_ENABLED) {
-			airspeedEnabled = true;
-		} else {
-			airspeedEnabled = false;
-			return -1;
-		}
-	#endif
+	} else {
+		airspeedEnabled = false;
+		return -1;
+	}
+#endif
 	
 	BaroAirspeedInitialize();
-
+	
 	return 0;
 }
 MODULE_INITCALL(AirspeedInitialize, AirspeedStart)
+
+
 /**
  * Module thread, should not return.
  */
 static void airspeedTask(void *parameters)
 {
-	BaroAirspeedData data;
 	
-	uint8_t calibrationCount = 0;
+#ifdef BARO_AIRSPEED_PRESENT		
+	BaroAirspeedData baroAirspeedData;
+	BaroAirspeedGet(&baroAirspeedData);
+	
+	baroAirspeedData.Connected = BAROAIRSPEED_CONNECTED_FALSE;
+	
+	portTickType lastGPSTime= xTaskGetTickCount();
+
+	float airspeedErrInt=0;
+	
+	//Calibration variables
+	uint16_t calibrationCount = 0;
 	uint32_t calibrationSum = 0;
+ #if defined(PIOS_INCLUDE_MPXV7002)	
+	uint16_t sensorCalibration;
+ #endif	
+#endif
+	
+	//GPS airspeed calculation variables
+#ifdef GPS_AIRSPEED_PRESENT
+	GPSVelocityConnectCallback(GPSVelocityUpdatedCb);
+	float gpsVelOld_N;
+	float gpsVelOld_E;
+	float gpsVelOld_D;
+	float RbeCol1_old[3];
+
+
+	{ //Scoping to save memory. We really only need the old values of Rbe
+		GPSVelocityData gpsVelData;
+		GPSVelocityGet(&gpsVelData);
+
+		gpsVelOld_N=gpsVelData.North;
+		gpsVelOld_E=gpsVelData.East;
+		gpsVelOld_D=gpsVelData.Down;
+		
+		AttitudeActualData attData;
+		AttitudeActualGet(&attData);
+		
+		float Rbe[3][3];
+		float q[4] ={attData.q1, attData.q2, attData.q3, attData.q4};
+		
+		//Calculate rotation matrix
+		Quaternion2R(q, Rbe);
+
+		RbeCol1_old[0]=Rbe[0][0];
+		RbeCol1_old[1]=Rbe[0][1];
+		RbeCol1_old[2]=Rbe[0][2];
+	}
+	
+#endif
 	
 	// Main task loop
+	portTickType lastSysTime = xTaskGetTickCount();
 	while (1)
 	{
-		// Update the airspeed
-		vTaskDelay(SAMPLING_DELAY_MS);
-
-		BaroAirspeedGet(&data);
-		data.SensorValue = PIOS_ETASV3_ReadAirspeed();
-		if (data.SensorValue==-1) {
-			data.Connected = BAROAIRSPEED_CONNECTED_FALSE;
-			data.Airspeed = 0;
-			BaroAirspeedSet(&data);
-			continue;
-		}
-
-		if (calibrationCount<CALIBRATION_IDLE) {
-			calibrationCount++;
-		} else if (calibrationCount<CALIBRATION_IDLE + CALIBRATION_COUNT) {
-			calibrationCount++;
-			calibrationSum +=  data.SensorValue;
-			if (calibrationCount==CALIBRATION_IDLE+CALIBRATION_COUNT) {
-				data.ZeroPoint = calibrationSum / CALIBRATION_COUNT;
-			} else {
+		float airspeed_cas;
+		uint8_t airspeedSensorType;
+		
+		VelocityActualAirspeedGet(&airspeed_cas);		
+		//Instead of getting the whole UAVO, just get the sensortype value
+		BaroAirspeedAirspeedSensorTypeGet(&(airspeedSensorType)); //MAYBE THIS SHOULDN'T BE DONE EVERY LOOP, BUT ONCE A SECOND?
+		
+#ifdef BARO_AIRSPEED_PRESENT
+		//Find out which sensor we're using.
+		if (airspeedSensorType==BAROAIRSPEED_AIRSPEEDSENSORTYPE_DIYDRONESMPXV7002){	//DiyDrones MPXV7002
+ #if defined(PIOS_INCLUDE_MPXV7002)
+			//Wait until our turn
+			vTaskDelayUntil(&lastSysTime, SAMPLING_DELAY_MS_MPXV7002 / portTICK_RATE_MS);
+			
+			// Update the airspeed
+			BaroAirspeedGet(&baroAirspeedData);
+			
+			
+			//Calibrate sensor by averaging zero point value //THIS SHOULD NOT BE DONE IF THERE IS AN IN-AIR RESET. HOW TO DETECT THIS?
+			if (calibrationCount < CALIBRATION_IDLE_MS/SAMPLING_DELAY_MS_MPXV7002) { //First let sensor warm up and stabilize.
+				calibrationCount++;
+				continue;
+			} else if (calibrationCount < (CALIBRATION_IDLE_MS + CALIBRATION_COUNT_MS)/SAMPLING_DELAY_MS_MPXV7002) { //Then compute the average.
+				calibrationCount++; /*DO NOT MOVE FROM BEFORE sensorCalibration=... LINE, OR ELSE WILL HAVE DIVIDE BY ZERO */
+				sensorCalibration=PIOS_MPXV7002_Calibrate(calibrationCount-CALIBRATION_IDLE_MS/SAMPLING_DELAY_MS_MPXV7002);
+				
+				baroAirspeedData.ZeroPoint=sensorCalibration;
+				baroAirspeedData.Airspeed = 0;
+				BaroAirspeedSet(&baroAirspeedData);
+				baroAirspeedData.Connected = BAROAIRSPEED_CONNECTED_TRUE;
 				continue;
 			}
+			else if (sensorCalibration!= baroAirspeedData.ZeroPoint){       //Finally, monitor the UAVO in case the user has manually changed the sensor calibration value.
+				sensorCalibration=baroAirspeedData.ZeroPoint;
+				PIOS_MPXV7002_UpdateCalibration(baroAirspeedData.ZeroPoint); //This makes sense for the user if the initial calibration was not good and the user does not wish to reboot.
+			}
+			
+			//Get CAS
+			float calibratedAirspeed = PIOS_MPXV7002_ReadAirspeed();
+			
+			//Get sensor value, just for telemetry purposes. 
+			//This is a silly waste of resources, and should probably be removed at some point in the future.
+			//At this time, PIOS_MPXV7002_Measure() should become a static function and be removed from the header file.
+			//
+			//Moreover, due to the way the ADC driver is currently written, this code will return 0 more often than
+			//not. This is something that will have to change on the ADC side of things.
+			baroAirspeedData.SensorValue=PIOS_MPXV7002_Measure();
+			
+			//Filter CAS
+			float alpha=SAMPLING_DELAY_MS_MPXV7002/(SAMPLING_DELAY_MS_MPXV7002 + ANALOG_BARO_AIRSPEED_TIME_CONSTANT_MS); //Low pass filter.
+			float filteredAirspeed = calibratedAirspeed*(alpha) + baroAirspeedData.Airspeed*(1.0f-alpha);
+			
+			baroAirspeedData.Airspeed = filteredAirspeed;
+ #endif
 		}
+		else if (airspeedSensorType==BAROAIRSPEED_AIRSPEEDSENSORTYPE_EAGLETREEAIRSPEEDV3){ //Eagletree Airspeed v3
+ #if defined(PIOS_INCLUDE_ETASV3)
+			//Wait until our turn
+			vTaskDelayUntil(&lastSysTime, SAMPLING_DELAY_MS_ETASV3 / portTICK_RATE_MS);
+			
+			// Update the airspeed
+			BaroAirspeedGet(&baroAirspeedData);
+			
+			//Check to see if airspeed sensor is returning baroAirspeedData
+			baroAirspeedData.SensorValue = PIOS_ETASV3_ReadAirspeed();
+			if (baroAirspeedData.SensorValue==-1) {
+				baroAirspeedData.Connected = BAROAIRSPEED_CONNECTED_FALSE;
+				baroAirspeedData.Airspeed = 0;
+				BaroAirspeedSet(&baroAirspeedData);
+				continue;
+			}
+			
+			//Calibrate sensor by averaging zero point value //THIS SHOULD NOT BE DONE IF THERE IS AN IN-AIR RESET. HOW TO DETECT THIS?
+			if (calibrationCount < CALIBRATION_IDLE_MS/SAMPLING_DELAY_MS_ETASV3) {
+				calibrationCount++;
+				continue;
+			} else if (calibrationCount < (CALIBRATION_IDLE_MS + CALIBRATION_COUNT_MS)/SAMPLING_DELAY_MS_ETASV3) {
+				calibrationCount++;
+				calibrationSum +=  baroAirspeedData.SensorValue;
+				if (calibrationCount == (CALIBRATION_IDLE_MS + CALIBRATION_COUNT_MS)/SAMPLING_DELAY_MS_ETASV3) {
+					baroAirspeedData.ZeroPoint = (uint16_t) (((float)calibrationSum) / CALIBRATION_COUNT_MS +0.5f);
+				} else {
+					continue;
+				}
+			}
+			
+			//Compute airspeed
+			baroAirspeedData.Airspeed = ETS_AIRSPEED_SCALE * sqrtf((float)abs(baroAirspeedData.SensorValue - baroAirspeedData.ZeroPoint)); //Is this calibrated or indicated airspeed?
+			
+			baroAirspeedData.Connected = BAROAIRSPEED_CONNECTED_TRUE;
+ #endif
+		}
+		else
+#endif
+		{ //Have to catch the fallthrough, or else this loop will monopolize the processor!
+			//Likely, we have a GPS, so let's configure the fallthrough at close to GPS refresh rates
+			vTaskDelayUntil(&lastSysTime, SAMPLING_DELAY_MS_FALLTHROUGH / portTICK_RATE_MS);
+		}
+		
+		
+		
+		//Calculate airspeed as a function of GPS groundspeed and vehicle attitude.
+		//   From "IMU Wind Estimation (Theory)", by William Premerlani
+#ifdef GPS_AIRSPEED_PRESENT
+		float v_air_GPS=-1.0f;
+		
+		//Check if sufficient time has passed. This will depend on whether we have a pitot tube
+		//sensor or not. In the case we do, shoot for about once per second. Otherwise, consume GPS
+		//as quickly as possible.
+ #ifdef BARO_AIRSPEED_PRESENT		
+		if ( (lastSysTime - lastGPSTime > 1000*portTICK_RATE_MS	 ||
+				airspeedSensorType==BAROAIRSPEED_AIRSPEEDSENSORTYPE_GPSONLY )
+				&& gpsNew)
+		{			
+			lastGPSTime=lastSysTime;
+ #else 
+		if (gpsNew)
+		{				
+ #endif			
+			gpsNew=false;
+			
+			
+			float Rbe[3][3];
+			{ //Scoping to save memory. We really just need Rbe.
+				AttitudeActualData attData;
+				AttitudeActualGet(&attData);
 
-		data.Connected = BAROAIRSPEED_CONNECTED_TRUE;
+				float q[4] ={attData.q1, attData.q2, attData.q3, attData.q4};
+			
+				//Calculate rotation matrix
+				Quaternion2R(q, Rbe);
+			}
+			
+			//Calculate the cos(angle) between the two fuselage basis vectors
+			float cosDiff=(Rbe[0][0]*RbeCol1_old[0]) + (Rbe[0][1]*RbeCol1_old[1]) + (Rbe[0][2]*RbeCol1_old[2]);
+			
+			//If there's more than a 5 degree difference between two fuselage measurements, then we have sufficient delta to continue.
+			if (fabs(cosDiff) < cos(5.0f*DEG2RAD)) {
+				GPSVelocityData gpsVelData;
+				GPSVelocityGet(&gpsVelData);
+				
+				//Calculate the norm^2 of the difference between the two GPS vectors
+				float normDiffGPS2 = powf(gpsVelData.North-gpsVelOld_N,2.0f) + powf(gpsVelData.East-gpsVelOld_E,2.0f) + powf(gpsVelData.Down-gpsVelOld_D,2.0f);
+				//Calculate the norm^2 of the difference between the two fuselage vectors
+				float normDiffAttitude2=powf(Rbe[0][0]-RbeCol1_old[0],2.0f) + powf(Rbe[0][1]-RbeCol1_old[1],2.0f) + powf(Rbe[0][2]-RbeCol1_old[2],2.0f);
 
-		data.Airspeed = ETS_AIRSPEED_SCALE * sqrtf((float)abs(data.SensorValue - data.ZeroPoint));
-	
-		// Update the AirspeedActual UAVObject
-		BaroAirspeedSet(&data);
-	}
+				//Airspeed magnitude is the ratio between the two difference norms
+				v_air_GPS = sqrtf(normDiffGPS2/normDiffAttitude2);
+				
+				//Save old variables
+				gpsVelOld_N=gpsVelData.North;
+				gpsVelOld_E=gpsVelData.East;
+				gpsVelOld_D=gpsVelData.Down;
+				
+				RbeCol1_old[0]=Rbe[0][0];
+				RbeCol1_old[1]=Rbe[0][1];
+				RbeCol1_old[2]=Rbe[0][2];
+				
+			}			
+		}
+		
+		//Most of the time, we won't have computer an airspeed via GPS
+		if (v_air_GPS > 0){
+ #ifdef BARO_AIRSPEED_PRESENT		
+			if(baroAirspeedData.Connected){ //Check if there is an airspeed sensors present...
+				//Calculate error and error integral
+				float airspeedErr=v_air_GPS-baroAirspeedData.Airspeed;
+				airspeedErrInt+=airspeedErr;
+				
+				//There's already an airspeed sensor, so instead correct it for bias with PI correction
+				airspeed_cas+=airspeedErr * GPS_AIRSPEED_BIAS_KP + airspeedErrInt * GPS_AIRSPEED_BIAS_KI;
+			}
+			else
+ #endif				
+			{
+				//...there's no airspeed sensor, so everything comes from GPS. In this
+				//case, filter the airspeed for smoother output
+				float alpha=SAMPLING_DELAY_MS_GPS/(SAMPLING_DELAY_MS_GPS + GPS_AIRSPEED_TIME_CONSTANT_MS); //Low pass filter.
+				airspeed_cas=v_air_GPS*(alpha) + airspeed_cas*(1.0f-alpha);
+			}
+		}
+ #ifdef BARO_AIRSPEED_PRESENT		
+		else if(baroAirspeedData.Connected){
+			//In the case of no current GPS data-- but with valid barometric airspeed sensor-- don't forget to still add in integral error
+			airspeed_cas = baroAirspeedData.Airspeed + airspeedErrInt * GPS_AIRSPEED_BIAS_KI;
+		}
+ #endif		
+#else //No GPS support compiled. Just pass airspeed data straight through
+		airspeed_cas = baroAirspeedData.Airspeed;
+#endif
+		
+		// Update the airspeed related UAVObjects
+		VelocityActualAirspeedSet(&airspeed_cas);
+//#ifdef BARO_AIRSPEED_PRESENT	//UNCOMMENT `#IFDEF` ONCE CODE IS REFACTORED TO MOVE USES OF airspeed TO VELOCITYACTUAL
+//		if (baroAirspeedData.Connected) //UNCOMMENT `IF` ONCE CODE IS REFACTORED TO MOVE USES OF airspeed TO VELOCITYACTUAL
+//			BaroAirspeedSet(&baroAirspeedData);
+			BaroAirspeedAirspeedSet(&airspeed_cas);
+//#endif
+	}	
 }
+
+#ifdef GPS_AIRSPEED_PRESENT
+static void GPSVelocityUpdatedCb(UAVObjEvent * ev)
+{
+	gpsNew=true;
+}
+#endif
 
 /**
  * @}
