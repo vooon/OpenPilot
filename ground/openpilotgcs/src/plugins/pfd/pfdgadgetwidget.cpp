@@ -102,6 +102,12 @@ void PFDGadgetWidget::mousePressEvent(QMouseEvent *e)
     bool ok;
     QInputDialog inputBox;
 
+	
+    //This is a very ugly way of doing code. A cleaner way might be to make these objects
+    // in an invisible layer, but due to concerns about svg performance and the imminent
+    // change to QML, this code will be left as is for the time being. Once QML is ready,
+    // it should be swapped out with objects in the image themselves, instead of hard-coded
+    // coordinates.
     QRect airspeedBox(86, 336, 190-86, 379-336);
     QRect altitudeBox(847, 336, 958-847, 379-336);
     QRect headingBox(464, 0, 576-464, 70-0);
