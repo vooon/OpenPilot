@@ -291,9 +291,9 @@ static void updatePathVelocity()
 		case PATHDESIRED_MODE_DRIVEVECTOR:
 		default:
 			groundspeed = pathDesired.StartingVelocity + (pathDesired.EndingVelocity - pathDesired.StartingVelocity) *
-			bound(progress.fractional_progress,0,1);
+				bound(progress.fractional_progress,0,1);
 			altitudeSetpoint = pathDesired.Start[2] + (pathDesired.End[2] - pathDesired.Start[2]) *
-			bound(progress.fractional_progress,0,1);
+				bound(progress.fractional_progress,0,1);
 			break;
 	}
 	

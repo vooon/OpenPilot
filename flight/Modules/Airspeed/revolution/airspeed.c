@@ -36,15 +36,19 @@
  *
  */
 
+#define AIRSPEED_STORED_IN_A_PROPER_UAVO FALSE //AIRSPEED SHOULD NOT GO INTO BaroAirspeed. IT IS A STATE VARIABLE, AND NOT A MEASUREMENT
+
 #include "openpilot.h"
 #include "hwsettings.h"
 #include "airspeed.h"
-#include "baroairspeed.h"	// object that will be updated by the module
 #include "gpsvelocity.h"
+#include "baroairspeed.h"	// object that will be updated by the module
+#include "gps_airspeed.h"
+#if (AIRSPEED_STORED_IN_A_PROPER_UAVO)
 #include "velocityactual.h"
+#endif
 #include "attitudeactual.h"
 #include "CoordinateConversions.h"
-
 
 // Private constants
 #if defined (PIOS_INCLUDE_GPS)
@@ -168,35 +172,9 @@ static void airspeedTask(void *parameters)
 	
 	//GPS airspeed calculation variables
 #ifdef GPS_AIRSPEED_PRESENT
-	GPSVelocityConnectCallback(GPSVelocityUpdatedCb);
-	float gpsVelOld_N;
-	float gpsVelOld_E;
-	float gpsVelOld_D;
-	float RbeCol1_old[3];
-
-
-	{ //Scoping to save memory. We really only need the old values of Rbe
-		GPSVelocityData gpsVelData;
-		GPSVelocityGet(&gpsVelData);
-
-		gpsVelOld_N=gpsVelData.North;
-		gpsVelOld_E=gpsVelData.East;
-		gpsVelOld_D=gpsVelData.Down;
-		
-		AttitudeActualData attData;
-		AttitudeActualGet(&attData);
-		
-		float Rbe[3][3];
-		float q[4] ={attData.q1, attData.q2, attData.q3, attData.q4};
-		
-		//Calculate rotation matrix
-		Quaternion2R(q, Rbe);
-
-		RbeCol1_old[0]=Rbe[0][0];
-		RbeCol1_old[1]=Rbe[0][1];
-		RbeCol1_old[2]=Rbe[0][2];
-	}
+	GPSVelocityConnectCallback(GPSVelocityUpdatedCb);	
 	
+	gps_airspeedInitialize();
 #endif
 	
 	// Main task loop
@@ -205,8 +183,12 @@ static void airspeedTask(void *parameters)
 	{
 		float airspeed_cas;
 		uint8_t airspeedSensorType;
-		
+
+#if (AIRSPEED_STORED_IN_A_PROPER_UAVO)		
 		VelocityActualAirspeedGet(&airspeed_cas);		
+#else
+		BaroAirspeedAirspeedGet(&airspeed_cas);		
+#endif		
 		//Instead of getting the whole UAVO, just get the sensortype value
 		BaroAirspeedAirspeedSensorTypeGet(&(airspeedSensorType)); //MAYBE THIS SHOULDN'T BE DONE EVERY LOOP, BUT ONCE A SECOND?
 		
@@ -304,69 +286,29 @@ static void airspeedTask(void *parameters)
 		
 		
 		
-		//Calculate airspeed as a function of GPS groundspeed and vehicle attitude.
-		//   From "IMU Wind Estimation (Theory)", by William Premerlani
 #ifdef GPS_AIRSPEED_PRESENT
 		float v_air_GPS=-1.0f;
 		
 		//Check if sufficient time has passed. This will depend on whether we have a pitot tube
 		//sensor or not. In the case we do, shoot for about once per second. Otherwise, consume GPS
 		//as quickly as possible.
- #ifdef BARO_AIRSPEED_PRESENT		
-		if ( (lastSysTime - lastGPSTime > 1000*portTICK_RATE_MS	 ||
-				airspeedSensorType==BAROAIRSPEED_AIRSPEEDSENSORTYPE_GPSONLY )
-				&& gpsNew)
-		{			
+ #ifdef BARO_AIRSPEED_PRESENT
+		if ( (lastSysTime - lastGPSTime > 1000*portTICK_RATE_MS	 || airspeedSensorType==BAROAIRSPEED_AIRSPEEDSENSORTYPE_GPSONLY)
+				&& gpsNew) {
 			lastGPSTime=lastSysTime;
- #else 
-		if (gpsNew)
-		{				
- #endif			
-			gpsNew=false;
-			
-			
-			float Rbe[3][3];
-			{ //Scoping to save memory. We really just need Rbe.
-				AttitudeActualData attData;
-				AttitudeActualGet(&attData);
+ #else
+		if (gpsNew)	{				
+ #endif
+			gpsNew=false; //Do this first
 
-				float q[4] ={attData.q1, attData.q2, attData.q3, attData.q4};
-			
-				//Calculate rotation matrix
-				Quaternion2R(q, Rbe);
-			}
-			
-			//Calculate the cos(angle) between the two fuselage basis vectors
-			float cosDiff=(Rbe[0][0]*RbeCol1_old[0]) + (Rbe[0][1]*RbeCol1_old[1]) + (Rbe[0][2]*RbeCol1_old[2]);
-			
-			//If there's more than a 5 degree difference between two fuselage measurements, then we have sufficient delta to continue.
-			if (fabs(cosDiff) < cos(5.0f*DEG2RAD)) {
-				GPSVelocityData gpsVelData;
-				GPSVelocityGet(&gpsVelData);
-				
-				//Calculate the norm^2 of the difference between the two GPS vectors
-				float normDiffGPS2 = powf(gpsVelData.North-gpsVelOld_N,2.0f) + powf(gpsVelData.East-gpsVelOld_E,2.0f) + powf(gpsVelData.Down-gpsVelOld_D,2.0f);
-				//Calculate the norm^2 of the difference between the two fuselage vectors
-				float normDiffAttitude2=powf(Rbe[0][0]-RbeCol1_old[0],2.0f) + powf(Rbe[0][1]-RbeCol1_old[1],2.0f) + powf(Rbe[0][2]-RbeCol1_old[2],2.0f);
-
-				//Airspeed magnitude is the ratio between the two difference norms
-				v_air_GPS = sqrtf(normDiffGPS2/normDiffAttitude2);
-				
-				//Save old variables
-				gpsVelOld_N=gpsVelData.North;
-				gpsVelOld_E=gpsVelData.East;
-				gpsVelOld_D=gpsVelData.Down;
-				
-				RbeCol1_old[0]=Rbe[0][0];
-				RbeCol1_old[1]=Rbe[0][1];
-				RbeCol1_old[2]=Rbe[0][2];
-				
-			}			
+			//Calculate airspeed as a function of GPS groundspeed and vehicle attitude.
+			//   From "IMU Wind Estimation (Theory)", by William Premerlani
+			gps_airspeedGet(&v_air_GPS);			
 		}
 		
 		//Most of the time, we won't have computer an airspeed via GPS
 		if (v_air_GPS > 0){
- #ifdef BARO_AIRSPEED_PRESENT		
+ #ifdef BARO_AIRSPEED_PRESENT
 			if(baroAirspeedData.Connected){ //Check if there is an airspeed sensors present...
 				//Calculate error and error integral
 				float airspeedErr=v_air_GPS-baroAirspeedData.Airspeed;
@@ -376,7 +318,7 @@ static void airspeedTask(void *parameters)
 				airspeed_cas+=airspeedErr * GPS_AIRSPEED_BIAS_KP + airspeedErrInt * GPS_AIRSPEED_BIAS_KI;
 			}
 			else
- #endif				
+ #endif
 			{
 				//...there's no airspeed sensor, so everything comes from GPS. In this
 				//case, filter the airspeed for smoother output
@@ -384,18 +326,20 @@ static void airspeedTask(void *parameters)
 				airspeed_cas=v_air_GPS*(alpha) + airspeed_cas*(1.0f-alpha);
 			}
 		}
- #ifdef BARO_AIRSPEED_PRESENT		
+ #ifdef BARO_AIRSPEED_PRESENT
 		else if(baroAirspeedData.Connected){
 			//In the case of no current GPS data-- but with valid barometric airspeed sensor-- don't forget to still add in integral error
 			airspeed_cas = baroAirspeedData.Airspeed + airspeedErrInt * GPS_AIRSPEED_BIAS_KI;
 		}
- #endif		
+ #endif
 #else //No GPS support compiled. Just pass airspeed data straight through
 		airspeed_cas = baroAirspeedData.Airspeed;
 #endif
 		
 		// Update the airspeed related UAVObjects
+#if (AIRSPEED_STORED_IN_A_PROPER_UAVO)
 		VelocityActualAirspeedSet(&airspeed_cas);
+#endif
 //#ifdef BARO_AIRSPEED_PRESENT	//UNCOMMENT `#IFDEF` ONCE CODE IS REFACTORED TO MOVE USES OF airspeed TO VELOCITYACTUAL
 //		if (baroAirspeedData.Connected) //UNCOMMENT `IF` ONCE CODE IS REFACTORED TO MOVE USES OF airspeed TO VELOCITYACTUAL
 //			BaroAirspeedSet(&baroAirspeedData);
