@@ -37,16 +37,23 @@
 
 #include "pios_mpxv7002.h"
 
-uint32_t calibrationSum = 0;
-uint16_t calibrationOffset;
+#define AIRSPEED_ADC_PIN 1 //Not the best way to do it, but currently PiOS has no idea of connecting ADC signals in this way.
 
+uint32_t calibrationSum = 0; //static?
+uint16_t calibrationOffset; //static?
+
+
+/*
+ * Reads ADC.
+ */
 uint16_t PIOS_MPXV7002_Measure()
 {
-	return PIOS_ADC_PinGet(1);
+	return PIOS_ADC_PinGet(AIRSPEED_ADC_PIN);
 }
 
-
-//Returns zeroPoint so that the user can inspect the calibration vs. the sensor value
+/*
+ *Returns zeroPoint so that the user can inspect the calibration vs. the sensor value
+ */
 uint16_t PIOS_MPXV7002_Calibrate(uint16_t calibrationCount){
 	calibrationSum +=  PIOS_MPXV7002_Measure();
 	uint16_t zeroPoint = (uint16_t)(((float)calibrationSum) / calibrationCount + 0.5f);	
@@ -56,14 +63,25 @@ uint16_t PIOS_MPXV7002_Calibrate(uint16_t calibrationCount){
 	return zeroPoint;
 }
 
+
+/*
+ * Updates the calibration when zero point is manually set by user.
+ */
 void PIOS_MPXV7002_UpdateCalibration(uint16_t zeroPoint){
 	calibrationOffset = zeroPoint - 2.5f/3.3f*4096.0f; //The offset should set the zero point to 2.5V
 }
 
+
+/*
+ * Reads the airspeed and returns CAS (calibrated airspeed) in the case of success. 
+ * In the case of a failed read, returns -1.
+ */
 float PIOS_MPXV7002_ReadAirspeed (void)
 {
 
 	float sensorVal = PIOS_MPXV7002_Measure();
+	if (sensorVal == 0) //As of June 20th, 2012, the ADC read module was written in such a way that it reset the value to 0 immediately after a read. In case someone else reads the ADC inadvertently, we prefer not to use a reading of 0
+		return -1;
 	
 	//Calculate dynamic pressure, as per docs
 	float Qc = 5.0f*(((sensorVal - calibrationOffset)/4096.0f*3.3f)/Vcc - 0.5f);

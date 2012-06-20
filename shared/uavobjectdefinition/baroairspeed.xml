@@ -5,7 +5,9 @@
         <field name="SensorValue" units="raw" type="uint16" elements="1"/>
         <field name="ZeroPoint" units="raw" type="uint16" elements="1"/>
         <field name="Airspeed" units="m/s" type="float" elements="1"/>
-        <field name="AirspeedSensorType" units="" type="enum" elements="1" options="EagleTreeAirspeedV3,DIYDronesMPXV7002,GPSOnly"  defaultvalue="GPSOnly"/>
+        <field name="GPSAirspeed" units="m/s" type="float" elements="1"/>
+        <field name="TrueAirspeed" units="m/s" type="float" elements="1"/>
+        <field name="AirspeedSensorType" units="" type="enum" elements="1" options="EagleTreeAirspeedV3,DIYDronesMPXV7002,GPSOnly"  defaultvalue="EagleTreeAirspeedV3"/>
         <access gcs="readwrite" flight="readwrite"/>
         <telemetrygcs acked="false" updatemode="manual" period="0"/>
         <telemetryflight acked="false" updatemode="periodic" period="1000"/>
