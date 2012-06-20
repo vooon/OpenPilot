@@ -56,14 +56,14 @@ public:
 
 
 public slots:
-   void updateAttitude(UAVObject *object1);
-   void updateHeading(UAVObject *object1);
-   void updateGPS(UAVObject *object1);
-   void updateGroundspeed(UAVObject *object1);
-   void updateAltitude(UAVObject *object1);
-   void updateBattery(UAVObject *object1);
-   void updateLinkStatus(UAVObject *object1);
-   void updateSideslip(UAVObject *object1);
+   void updateAttitude(UAVObject *object);
+   void updateHeading(UAVObject *object);
+   void updateGPS(UAVObject *object);
+   void updateGroundspeed(UAVObject *object);
+   void updateAltitude(UAVObject *object);
+   void updateBattery(UAVObject *object);
+   void updateLinkStatus(UAVObject *object);
+   void updateSideslip(UAVObject *object);
 
 protected:
    void paintEvent(QPaintEvent *event);
@@ -141,9 +141,9 @@ private:
    qreal altitudeScaleHeight;
 
    // Name of the fields to read when an update is received:
-   UAVDataObject* accelsObj;
-   UAVDataObject* airspeedObj;
-   UAVDataObject* altitudeObj;
+//   UAVDataObject* accelsObj;
+//   UAVDataObject* airspeedObj;
+//   UAVDataObject* altitudeObj;
    UAVDataObject* attitudeObj;
    UAVDataObject* headingObj;
    UAVDataObject* gpsObj;
