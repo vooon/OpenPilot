@@ -186,9 +186,11 @@ static void AttitudeTask(void *parameters)
 	if(cc3d) {
 #if defined(PIOS_INCLUDE_MPU6000)
 		gyro_test = PIOS_MPU6000_Test();
+		accel_test = gyro_test;
 #endif
 	} else {
 #if defined(PIOS_INCLUDE_ADXL345)
+		gyro_test = 0;
 		accel_test = PIOS_ADXL345_Test();
 #endif
 
@@ -199,8 +201,13 @@ static void AttitudeTask(void *parameters)
 		PIOS_ADC_SetQueue(gyro_queue);
 		PIOS_ADC_Config((PIOS_ADC_RATE / 1000.0f) * UPDATE_RATE);
 #endif
-
 	}
+	
+	if (gyro_test != 0 || accel_test != 0)
+		AlarmsSet(SYSTEMALARMS_ALARM_SENSORS, SYSTEMALARMS_ALARM_CRITICAL);
+	else
+		AlarmsClear(SYSTEMALARMS_ALARM_SENSORS);
+		
 	// Force settings update to make sure rotation loaded
 	settingsUpdatedCb(AttitudeSettingsHandle());
 	
