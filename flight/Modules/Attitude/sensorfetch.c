@@ -139,7 +139,7 @@ int32_t getSensorsCC3D(float * prelim_accels, float * prelim_gyros)
 	prelim_accels[1] = -mpu6000_data.accel_x * PIOS_MPU6000_GetAccelScale();
 	prelim_accels[2] = -mpu6000_data.accel_z * PIOS_MPU6000_GetAccelScale();
 	
-	prelim_gyros[3] = 35.0f + ((float) mpu6000_data.temperature + 512.0f) / 340.0f;
+	prelim_gyros[3] = 35.0f + ((float) mpu6000_data.temperature + 512.0f) / 340.0f; //Temperature sensor has a 35deg bias. //WHY? AS PER DOCS?
 	prelim_accels[3] = 35.0f + ((float) mpu6000_data.temperature + 512.0f) / 340.0f;
 #endif
 	

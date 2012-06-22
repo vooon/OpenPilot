@@ -83,18 +83,20 @@ void ConfigCCAttitudeWidget::accelsUpdated(UAVObject * obj) {
         y_gyro_accum.append(gyrosData.y);
         z_gyro_accum.append(gyrosData.z);
     } else if ( updates == NUM_ACCEL_UPDATES ) {
-	updates++;
+        updates++;
         timer.stop();
         disconnect(obj,SIGNAL(objectUpdated(UAVObject*)),this,SLOT(accelsUpdated(UAVObject*)));
         disconnect(&timer,SIGNAL(timeout()),this,SLOT(timeout()));
 
-        float x_bias = listMean(x_accum) / ACCEL_SCALE;
-        float y_bias = listMean(y_accum) / ACCEL_SCALE;
-        float z_bias = (listMean(z_accum) + 9.81) / ACCEL_SCALE;
+        //Average and scale
+        float x_bias = listMean(x_accum) *1000.0f; //Multiply by 1000 because `accelbias` is in units
+        float y_bias = listMean(y_accum) *1000.0f; // of 1000*[m/s^2]
+        float z_bias = (listMean(z_accum) + 9.805f) *1000.0f;
 
-        float x_gyro_bias = listMean(x_gyro_accum) * 100.0f;
-        float y_gyro_bias = listMean(y_gyro_accum) * 100.0f;
+        float x_gyro_bias = listMean(x_gyro_accum) * 100.0f; //Multiply by 100 because `GyroBias`
+        float y_gyro_bias = listMean(y_gyro_accum) * 100.0f; // is in units of 100*[deg/s]
         float z_gyro_bias = listMean(z_gyro_accum) * 100.0f;
+		 
         obj->setMetadata(initialMdata);
 
         AttitudeSettings::DataFields attitudeSettingsData = AttitudeSettings::GetInstance(getObjectManager())->getData();

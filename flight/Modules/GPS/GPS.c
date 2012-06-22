@@ -38,6 +38,7 @@
 #include "NMEA.h"
 
 #include "gpsposition.h"
+#include "gpsvelocity.h"
 #include "homelocation.h"
 #include "gpstime.h"
 #include "gpssatellites.h"
@@ -137,6 +138,7 @@ int32_t GPSInitialize(void)
 
 	if (gpsPort && gpsEnabled) {
 		GPSPositionInitialize();
+		GPSVelocityInitialize();
 #if !defined(PIOS_GPS_MINIMAL)
 		GPSTimeInitialize();
 		GPSSatellitesInitialize();

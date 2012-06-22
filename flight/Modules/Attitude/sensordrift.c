@@ -42,68 +42,92 @@
 
 #include "pios.h"
 #include "hwsettings.h"
+#include <pios_board_info.h>
 #include "sensordrift.h"
+#include "CoordinateConversions.h"
+
 #include "attitude.h"
 #include "attitudeactual.h"
 #include "attitudesettings.h"
 #include "flightstatus.h"
 #include "gpsvelocity.h"
 #include "manualcontrolcommand.h"
-#include "CoordinateConversions.h"
-#include <pios_board_info.h>
+#if defined (PIOS_INCLUDE_MAGNETOMETER) //THIS PIOS DEFINE DOES NOT CURRENTLY EXIST, BUT WE SHOULD ADD IT IN ORDER TO SUPPORT ALL MAGS, NOT JUST THE HMC5883
+#include "magnetometer.h"
+#endif
+#if defined (PIOS_INCLUDE_AIRSPEED) //THIS PIOS DEFINE DOES NOT CURRENTLY EXIST, BUT WE SHOULD ADD IT IN ORDER TO SUPPORT ALL MAGS, NOT JUST THE HMC5883
+#include "baroairspeed.h"
+#endif
+
+#include "dcmstatus.h"
+#include "dcmsettings.h"
 
 //Global variables
 extern struct GlobalAttitudeVariables *glbl;
 bool firstpass_flag=true;
 
 struct GlobalDcmDriftVariables {
-	xQueueHandle gpsVelQueue;
-	
 //	float gyros_passed[3];
 	float GPSV_old[3];
 	
 	float accels_e_integrator[3];
-	float gyros_b_integrator[3];
-	float omegaCorrP[3];
 	float omegaCorrI[3];
 	
-	bool gpspresent_flag;
+	bool gpsPresent_flag;
+	volatile uint8_t gpsDataConsumption_flag;
+	bool magNewData_flag;
+	
+	float accelsKp;
+	float rollPitchKp;
+	float rollPitchKi;
+	float yawKp;
+	float yawKi;
+	float gyroCalibTau;
+	
 };
 
-struct GlobalDcmDriftVariables * drft;
+#define GPS_UNCONSUMED       0x00
+#define GPS_CONSUMED_BY_RPY  0x01
+#define GPS_CONSUMED_BY_Y    0x02
+#define GPS_CONSUMED         0xFF
+
+static struct GlobalDcmDriftVariables * drft;
 
 // Private constants
 
 // Private types
 
 // Private variables
-#define GRAV         9.805f /* 0.004f is gravity / LSB */
-#define MAXIMUM_SPIN_DCM_INTEGRAL 20.0f //in [deg/s]
-#define KIROLLPITCH 1
-#define KIYAW 1
-#define KPROLLPITCH 1
-#define KPYAW 1
+#define GRAV -9.805f
 
-#define DRIFT_TYPE CCC
+//#define DRIFT_TYPE CCC
 enum DRIFT_CORRECTION_ALGOS {
 	CCC,
 	PREMERLANI
 };
 
 // Private functions
-void gyro_drift(float gyro[3], float errYaw_b[3], float errRollPitch_b[3], float normOmegaScalar, float *omegaCorrP, float *omegaCorrI);
-void yaw_drift(float gpsV[3], float Rbe[3][3], float *errYaw_b);
-void calibrate_gyros_high_speed(float gyro[3], float omegaCorrP[3], float normOmegaScalar, float *ggain);
+void rollPitch_drift_GPS(float Rbe[3][3], float accels_e_int[3], float delT, float *errRollPitch_b);
+void gyro_drift(float gyro[3], float errYaw_b[3], float errRollPitch_b[3], float normOmegaScalar, float delT, float *omegaCorrP, float *omegaCorrI);
+void yaw_drift_MagGPS(float Rbe[3][3], bool gpsNewData_flag, bool magNewData_flag, float *errYaw_b);
+void calibrate_gyros_high_speed(float gyro[3], float omegaCorrP[3], float normOmegaScalar, float delT, float *ggain);
+void rollPitch_drift_accel(float accels[3], float gyros[3], float Rbe[3][3], float airspeed_tas, float *errRollPitch_b);
+
+static void DCMSettingsUpdatedCb(UAVObjEvent * objEv);
+static void GPSVelocityUpdatedCb(UAVObjEvent * objEv);
+#if defined (PIOS_INCLUDE_MAGNETOMETER)
+static void MagnetometerUpdatedCb(UAVObjEvent * objEv);
+#endif
 
 void updateSensorDrift(AccelsData * accelsData, GyrosData * gyrosData, const float delT){
 	// Bad practice to assume structure order, but saves memory. //WHY DOES THIS SAVE MEMORY?
 	float * gyros = &gyrosData->x;
 	float * accels = &accelsData->x;	
 	
-	if (DRIFT_TYPE==CCC) {
+	if (glbl->filter_choice==ATTITUDESETTINGS_FILTERCHOICE_CCC) {
 			CottonComplementaryCorrection(accels, gyros, delT);
 	}
-	else if(DRIFT_TYPE == PREMERLANI){	
+	else if(glbl->filter_choice==ATTITUDESETTINGS_FILTERCHOICE_PREMERLANI){	
 		if (firstpass_flag){
 			
 //			HwSettingsInitialize(); //SHOULD THIS BE COMMENTED OUT OR NOT?
@@ -112,23 +136,32 @@ void updateSensorDrift(AccelsData * accelsData, GyrosData * gyrosData, const flo
 			
 			
 			//Allocate memory for DCM drift globals
-			drft = (struct GlobalDcmDriftVariables *) malloc(sizeof(struct GlobalDcmDriftVariables));
+			drft = (struct GlobalDcmDriftVariables *) pvPortMalloc(sizeof(struct GlobalDcmDriftVariables));
 			
 			memset(drft->GPSV_old, 0, sizeof(drft->GPSV_old));
-			memset(drft->GPSV_old, 0, sizeof(drft->GPSV_old));
+			memset(drft->omegaCorrI, 0, sizeof(drft->omegaCorrI));
 			memset(drft->accels_e_integrator, 0, sizeof(drft->accels_e_integrator));
 			
 			//Create and connect queue
-			if (optionalModules[HWSETTINGS_OPTIONALMODULES_GPS] == HWSETTINGS_OPTIONALMODULES_ENABLED) {
-				drft->gpsVelQueue = xQueueCreate(1, sizeof(UAVObjEvent));
-				GPSVelocityConnectQueue(drft->gpsVelQueue);
-				drft->gpspresent_flag = true;
+			DCMSettingsConnectCallback(DCMSettingsUpdatedCb);
+
+			DCMSettingsUpdatedCb(DCMSettingsHandle());
+
+			//Set flags
+			if (optionalModules[HWSETTINGS_OPTIONALMODULES_GPS] == HWSETTINGS_OPTIONALMODULES_ENABLED && PIOS_COM_GPS) {
+				GPSVelocityConnectCallback(GPSVelocityUpdatedCb);
+				drft->gpsPresent_flag = true;
+				drft->gpsDataConsumption_flag=GPS_CONSUMED;
 			}
 			else{
-				drft->gpspresent_flag = false;
+				drft->gpsPresent_flag = false;
 			}
-						
-			//Turn off first pass flag
+
+#if defined (PIOS_INCLUDE_MAGNETOMETER)
+			MagnetometerConnectCallback(MagnetometerUpdatedCb);	
+#endif			
+			drft->magNewData_flag=false;
+			
 			firstpass_flag=false;
 		}
 		
@@ -145,270 +178,435 @@ void updateSensorDrift(AccelsData * accelsData, GyrosData * gyrosData, const flo
 /*
  * Correct sensor drift, using the 3C approach from J. Cotton
  */
-
 void CottonComplementaryCorrection(float * accels, float * gyros, const float delT)
 {
+	float grav_b[3];
+	float accel_err_b[3];
 	
+	// Rotate normalized gravity reference vector to body frame and cross with measured acceleration
+	grav_b[0] = -(2 * (glbl->q[1] * glbl->q[3] - glbl->q[0] * glbl->q[2]));
+	grav_b[1] = -(2 * (glbl->q[2] * glbl->q[3] + glbl->q[0] * glbl->q[1]));
+	grav_b[2] = -(glbl->q[0] * glbl->q[0] - glbl->q[1]*glbl->q[1] - glbl->q[2]*glbl->q[2] + glbl->q[3]*glbl->q[3]);
+	CrossProduct((const float *) accels, (const float *) grav_b, accel_err_b);
+	
+	// Account for accel magnitude
+	float accel_mag = VectorMagnitude(accels);
+	if(accel_mag < 1.0e-3f)
+		return;
+	
+	//Normalize error vector
+	accel_err_b[0] /= accel_mag;
+	accel_err_b[1] /= accel_mag;
+	accel_err_b[2] /= accel_mag;
+	
+	// Accumulate integral of error.  Scale here so that units are (deg/s) but accelKi has units of s
+	glbl->gyro_correct_int[0] += accel_err_b[0] * glbl->accelKi;
+	glbl->gyro_correct_int[1] += accel_err_b[1] * glbl->accelKi;
+
 	// Because most crafts wont get enough information from gravity to zero yaw gyro, we try
 	// and make it average zero (weakly)
 	glbl->gyro_correct_int[2] += - gyros[2] * glbl->yawBiasRate;	
 	
-	float grot[3];
-	float accel_err[3];
-	
-	// Rotate gravity to body frame and cross with accels
-	grot[0] = -(2 * (glbl->q[1] * glbl->q[3] - glbl->q[0] * glbl->q[2]));
-	grot[1] = -(2 * (glbl->q[2] * glbl->q[3] + glbl->q[0] * glbl->q[1]));
-	grot[2] = -(glbl->q[0] * glbl->q[0] - glbl->q[1]*glbl->q[1] - glbl->q[2]*glbl->q[2] + glbl->q[3]*glbl->q[3]);
-	CrossProduct((const float *) accels, (const float *) grot, accel_err);
-	
-	// Account for accel magnitude
-	float accel_mag = sqrtf(accels[0]*accels[0] + accels[1]*accels[1] + accels[2]*accels[2]);
-	if(accel_mag < 1.0e-3f)
-		return;
-	
-	accel_err[0] /= accel_mag;
-	accel_err[1] /= accel_mag;
-	accel_err[2] /= accel_mag;
-	
-	// Accumulate integral of error.  Scale here so that units are (deg/s) but accelKi has units of s
-	glbl->gyro_correct_int[0] += accel_err[0] * glbl->accelKi;
-	glbl->gyro_correct_int[1] += accel_err[1] * glbl->accelKi;
-	
-	//gyro_correct_int[2] += accel_err[2] * accelKi;
-	
-	// Correct rates based on error, integral component dealt with in updateSensors
-	gyros[0] += accel_err[0] * glbl->accelKp / delT;
-	gyros[1] += accel_err[1] * glbl->accelKp / delT;
-	gyros[2] += accel_err[2] * glbl->accelKp / delT;
+	// In this step, correct rates based on proportional error. The integral component is applied in updateSensors
+	gyros[0] += accel_err_b[0] * glbl->accelKp / delT;
+	gyros[1] += accel_err_b[1] * glbl->accelKp / delT;
+	gyros[2] += accel_err_b[2] * glbl->accelKp / delT;
 }
 
+
+#define GPS_SPEED_MIN 5 // Minimum velocity in [m/s]
+#define GPS_YAW_KP .1;
+#define MAG_YAW_KP .1;
+
+#define MAXIMUM_SPIN_DCM_INTEGRAL 20.0f //in [deg/s]
 
 /*
  * Correct sensor drift, using the DCM approach from W. Premerlani et. al
  */
-
 void DcmCorrection(float * accels, float * gyros, float Rbe[3][3], const float delT)
 {
-//	float grot[3];
-//	float accel_err[3];
-//	
-	bool correctGyroDriftDCM_flag=FALSE;
-//
-//
-	float errRollPitch_e[3];
-	float errRollPitch_b[3];
-	float errYaw_b[3];
+	float errYaw_b[3]={0,0,0};
+	float errRollPitch_b[3]={0,0,0};
 	float omegaCorrP[3];
-	float omegaCorrI[3];
 	
-	//Correct roll-pitch-yaw drift
-	{
-		//Check if the GPS has new information. If so, execute IF statement
-		//The math is derived from Roll-Pitch Gyro Drift Compensation, Rev.3, by W. Premerlani
-		if (drft->gpspresent_flag){
-			UAVObjEvent ev;
-			float accels_e[3];
+	float normOmegaScalar = VectorMagnitude(gyros);
+	
+	//Correct roll-pitch drift via GPS and accelerometer
+	//The math is derived from Roll-Pitch Gyro Drift Compensation, Rev.3, by W. Premerlani
+#if defined (PIOS_INCLUDE_GPS) 
+	if (drft->gpsPresent_flag){ 		
+		float accels_e[3];
+		
+		//Rotate accelerometer readings into Earth frame. Note that we need to take the transpose of Rbe.
+		rot_mult(Rbe, accels, accels_e, TRUE);
+		
+		//Integrate accelerometer measurements in Earth frame
+		drft->accels_e_integrator[0]+=accels_e[0]*delT;
+		drft->accels_e_integrator[1]+=accels_e[1]*delT;
+		drft->accels_e_integrator[2]+=accels_e[2]*delT;
+		
+		//Check if the GPS has new information.
+		if(!(drft->gpsDataConsumption_flag & GPS_CONSUMED_BY_RPY)) {
+			//Compute drift correction, errRollPitch_b, from GPS
+			rollPitch_drift_GPS(Rbe, drft->accels_e_integrator, delT, errRollPitch_b);
 			
-			//Rotate accelerometer readings into Earth frame. Note that we need to take the transpose of Rbe.
-			rot_mult(Rbe, accels, accels_e, TRUE);
+			//Reset integrator
+			memset(drft->accels_e_integrator, 0, sizeof(drft->accels_e_integrator)); 
 			
-			//Integrate accelerometer measurements in Earth frame
-			drft->accels_e_integrator[0]+=accels_e[0]*delT;
-			drft->accels_e_integrator[1]+=accels_e[1]*delT;
-			drft->accels_e_integrator[2]+=accels_e[2]*delT;
-			
-			if(xQueueReceive(drft->gpsVelQueue, &ev, 0) == pdTRUE) {
-				float dGPSdt_e[3];
-				
-				GPSVelocityData gpsVelocity;
-				GPSVelocityGet(&gpsVelocity);
-				
-				dGPSdt_e[0]=-(gpsVelocity.North-drft->GPSV_old[0])/delT;
-				dGPSdt_e[1]=-(gpsVelocity.East-drft->GPSV_old[1])/delT;
-				dGPSdt_e[2]=GRAV-(gpsVelocity.Down-drft->GPSV_old[2])/delT;
-				
-				drft->GPSV_old[0]=gpsVelocity.North;
-				drft->GPSV_old[1]=gpsVelocity.East;
-				drft->GPSV_old[2]=gpsVelocity.Down;
-				
-				float normdGPSdt_e=sqrtf(dGPSdt_e[0]*dGPSdt_e[0]+dGPSdt_e[1]*dGPSdt_e[1]+dGPSdt_e[2]*dGPSdt_e[2]);
-				
-				//Take cross product of integrated accelerometer measurements with integrated earth frame accelerations
-				CrossProduct(drft->accels_e_integrator, dGPSdt_e, errRollPitch_e);
-				
-				//Scale cross product
-				errRollPitch_e[0] /= normdGPSdt_e*delT;
-				errRollPitch_e[1] /= normdGPSdt_e*delT;
-				errRollPitch_e[2] /= normdGPSdt_e*delT;
-				
-				//Rotate earth drift error back into body frame;
-				rot_mult(Rbe, errRollPitch_e, errRollPitch_b, FALSE);
-				
-				correctGyroDriftDCM_flag=TRUE;
-				memset(drft->accels_e_integrator, 0, sizeof(drft->accels_e_integrator)); //Reset integrator
-			}
+			//Mark GPS data as consumed by this function
+			drft->gpsDataConsumption_flag|=GPS_CONSUMED_BY_RPY;
 		}
 	}
+#endif
 	
-	float normOmegaScalar = sqrt(gyros[0]*gyros[0] + gyros[1]*gyros[1] + gyros[2]*gyros[2]);
+#if defined (PIOS_INCLUDE_GPS) || defined (PIOS_INCLUDE_MAGNETOMETER)
+	if (!(drft->gpsDataConsumption_flag & GPS_CONSUMED_BY_Y)) {
+		yaw_drift_MagGPS(Rbe, true, drft->magNewData_flag, errYaw_b); //We're actually using new GPS data here, but it's already been stored in old by the previous function
+		
+		//Mark GPS data as consumed by this function
+		drft->gpsDataConsumption_flag|=GPS_CONSUMED_BY_Y;
+	}
+	else {
+		//In addition to calculating the roll-pitch-yaw error, we can calculate yaw drift, errYaw_b, based on GPS and attitude data
+		yaw_drift_MagGPS(Rbe, false, drft->magNewData_flag, errYaw_b); //We're actually using new GPS data here, but it's already been stored in old by the previous function
+	}
 	
-	//In addition to calculating the roll-pitch-yaw error, we can yaw drift
-	yaw_drift(drft->GPSV_old, Rbe, errYaw_b); //We're actually using new GPS data here, but it's already been stored in old by the previous function
+	//Reset flag. Not the best place to do it, but it's messy anywhere else
+	if (drft->magNewData_flag){
+		drft->magNewData_flag=false;
+	}
+#endif
+	
+	
+	DCMStatusData dcmStatus;
+	
+	dcmStatus.rawGyros[0]=gyros[0];
+	dcmStatus.rawGyros[1]=gyros[1];
+	dcmStatus.rawGyros[2]=gyros[2];
+
+	//In addition, we can calculate roll-pitch error with only the aid of an accelerometer
+#if defined(PIOS_INCLUDE_AIRSPEED)
+	BaroAirspeed baroAirspeed;
+	BaroAirspeedGet(&baroAirspeed);
+	float airspeed_tas = baroAirspeed.Airspeed;	
+#else
+	float airspeed_tas = 0;
+#endif
+	rollPitch_drift_accel(accels, gyros, Rbe, airspeed_tas, errRollPitch_b);
 	
 	//Calculate gyro drift, based on all errors
-	gyro_drift(gyros, errYaw_b, errRollPitch_b, normOmegaScalar, omegaCorrP, omegaCorrI);
+	gyro_drift(gyros, errYaw_b, errRollPitch_b, normOmegaScalar, delT, omegaCorrP, drft->omegaCorrI);
 	
-	calibrate_gyros_high_speed(gyros, omegaCorrP, normOmegaScalar, glbl->gyroGain);
+	
+	calibrate_gyros_high_speed(gyros, omegaCorrP, normOmegaScalar, delT, glbl->gyroGain);
 
-	if (correctGyroDriftDCM_flag || !correctGyroDriftDCM_flag)
-	{
-		//THIS DOES NOTHING, IT'S JUST TO FOOL THE COMPILER INTO THINKING THAT correctGyroDriftDCM_flag IS BEING USED, UNTIL I ACTUALLY PROGRAM THE CODE THAT USES IT
+	//Calculate final drift response
+	gyros[0]+=omegaCorrP[0] + drft->omegaCorrI[0];
+	gyros[1]+=omegaCorrP[1] + drft->omegaCorrI[1];
+	gyros[2]+=omegaCorrP[2] + drft->omegaCorrI[2];
+
+	//Add 0.0001% of proportional error back into gyroscope bias offset. This keeps DC elements out of the raw gyroscope data.
+	glbl->gyro_correct_int[0]+=omegaCorrP[0]/1000000.0f;
+	glbl->gyro_correct_int[1]+=omegaCorrP[1]/1000000.0f;
+	
+	// Because most crafts wont get enough information from gravity to zero yaw gyro, we try
+	// and make it average zero (weakly)
+	glbl->gyro_correct_int[2] += - gyros[2] * glbl->yawBiasRate;
+	
+	
+	if(0){
+		
+		dcmStatus.omegaCorrP[0]=omegaCorrP[0];
+		dcmStatus.omegaCorrP[1]=omegaCorrP[1];
+		dcmStatus.omegaCorrP[2]=omegaCorrP[2];
+		
+		dcmStatus.omegaCorrI[0]=drft->omegaCorrI[0];
+		dcmStatus.omegaCorrI[1]=drft->omegaCorrI[1];
+		dcmStatus.omegaCorrI[2]=drft->omegaCorrI[2];
 	}
-	//	omega = omegaGyros + omegaCorrP + omegaCorrI
-	gyros[0]+=omegaCorrP[0]+omegaCorrI[0];
-	gyros[1]+=omegaCorrP[1]+omegaCorrI[1];
-	gyros[2]+=omegaCorrP[2]+omegaCorrI[2];
+	else if(0){
+		dcmStatus.rawGyros[0]=Rbe[0][0];
+		dcmStatus.rawGyros[1]=Rbe[0][1];
+		dcmStatus.rawGyros[2]=Rbe[0][2];
+		
+		dcmStatus.omegaCorrP[0]=Rbe[1][0];
+		dcmStatus.omegaCorrP[1]=Rbe[1][1];
+		dcmStatus.omegaCorrP[2]=Rbe[1][2];
+
+		dcmStatus.omegaCorrI[0]=Rbe[2][0];
+		dcmStatus.omegaCorrI[1]=Rbe[2][1];
+		dcmStatus.omegaCorrI[2]=Rbe[2][2];
+	}
+	else{
+		dcmStatus.omegaCorrP[0]=glbl->gyroGain[0];
+		dcmStatus.omegaCorrP[1]=glbl->gyroGain[1];
+		dcmStatus.omegaCorrP[2]=glbl->gyroGain[2];
+
+		dcmStatus.omegaCorrI[0]=glbl->gyro_correct_int[0];
+		dcmStatus.omegaCorrI[1]=glbl->gyro_correct_int[1];
+		dcmStatus.omegaCorrI[2]=glbl->gyro_correct_int[2];
+	}		
+	
+	dcmStatus.normOmegaScalar=normOmegaScalar;
+	DCMStatusSet(&dcmStatus);
 }
 
 
+/*
+ * Calculate the error, as indicated by the accelerometer. It's important to use the true airspeed here, and not CAS or EAS
+ */
+void 	rollPitch_drift_accel(float accels[3], float gyros[3], float Rbe[3][3], float airspeed_tas, float *errRollPitch_b)
+{
+	float g_ref[3];
+	float errAccelsRollPitch_b[3];
+	
+	//Fuselage Z vector is simply the Z column of the rotation matrix
+	float fuselageZ[3]={Rbe[0][2], Rbe[1][2], Rbe[2][2]};
+	
+	//Calculate centripetal acceleration
+	float acc_centripetal[3]={0, gyros[2]*airspeed_tas, -gyros[1]*airspeed_tas};
+	
+	//Combine measurements and centripetal accelerations. This should give the gravity reference vector
+	g_ref[0]=accels[0]; //Remember that acc_centripetal[0] = 0
+	g_ref[1]=accels[1] - acc_centripetal[1];
+	g_ref[2]=accels[2] - acc_centripetal[2];
+	
+	//Normalize acceleration vector
+	float normG=sqrtf(g_ref[0]*g_ref[0] + g_ref[1]*g_ref[1] + g_ref[2]*g_ref[2]);
+	g_ref[0]/=normG;
+	g_ref[1]/=normG;
+	g_ref[2]/=normG;
+	
+	//Error is cross product of reference vector and estimated orientation. Reverse operation in order to have correct sign for application to error sum
+	CrossProduct((const float *)fuselageZ, (const float *) g_ref, errAccelsRollPitch_b);
+	
+	//Add errors into global error vector
+	errRollPitch_b[0]+=errAccelsRollPitch_b[0]*drft->accelsKp;
+	errRollPitch_b[1]+=errAccelsRollPitch_b[1]*drft->accelsKp;
+	errRollPitch_b[2]+=errAccelsRollPitch_b[2]*drft->accelsKp;
+}
 
-void gyro_drift(float gyro[3], float errYaw_b[3], float errRollPitch_b[3], float normOmegaScalar, float *omegaCorrP, float *omegaCorrI)
+
+/*
+ * This function takes in a number of different error rotations, weights them, and applies
+ *  them to the gyroscope readings. In addition, there is a function to increase the correction 
+ *  at high speeds in order to keep the gyro from becoming "dizzy".
+ */
+void gyro_drift(float gyro[3], float errYaw_b[3], float errRollPitch_b[3], float normOmegaScalar, float delT, float *omegaCorrP, float *omegaCorrI)
 {
 	
-	int kpyaw ;
-	int kprollpitch ;
+	float kpyaw ;
+	float kprollpitch ;
 	
 	// boost the KPs at high spin rate, to compensate for increased error due to calibration error
-	// above 50 degrees/second, scale by rotation rate divided by 50
-	
+	// above 50 degrees/second, scale by rotation rate divided by 50. As per Fast Rotations, by William Premerlani.	
 	if ( normOmegaScalar < ( 50.0f ))
 	{
-		kpyaw = KPYAW ;
-		kprollpitch = KPROLLPITCH ;
+		kpyaw = drft->yawKp;
+		kprollpitch = drft->rollPitchKp ;
 	}
 	else if ( normOmegaScalar < ( 500.0f ) )
 	{
-		kpyaw = ( KPYAW / 50.0f )*normOmegaScalar ;
-		kprollpitch = ( KPROLLPITCH / 50.0f )*normOmegaScalar ;
+		kpyaw = ( normOmegaScalar / 50.0f ) * drft->yawKp;
+		kprollpitch = ( normOmegaScalar / 50.0f ) * drft->rollPitchKp;
 	}
 	else
 	{
-		kpyaw = ( int ) ( 10.0f * KPYAW ) ;
-		kprollpitch = ( int ) ( 10.0f * KPROLLPITCH ) ;
+		kpyaw = 10.0f * drft->yawKp;
+		kprollpitch = 10.0f * drft->rollPitchKp;
 	}
 
-	omegaCorrP[0]=errRollPitch_b[0]*kprollpitch+errYaw_b[0]*kpyaw;
-	omegaCorrP[1]=errRollPitch_b[1]*kprollpitch+errYaw_b[1]*kpyaw;
-	omegaCorrP[2]=errRollPitch_b[2]*kprollpitch+errYaw_b[2]*kpyaw;
-//	VectorScale( 3 , omegacorrP , errorYawplane , kpyaw ) ; // Scale gain = 2
-//	VectorScale( 3 , errorRPScaled , errorRP , kprollpitch ) ; // Scale gain = 2
-//	VectorAdd( 3 , omegacorrP , omegacorrP , errorRPScaled ) ;
+	//Compute proportional correction.
+	omegaCorrP[0]=errRollPitch_b[0]*kprollpitch + errYaw_b[0]*kpyaw;
+	omegaCorrP[1]=errRollPitch_b[1]*kprollpitch + errYaw_b[1]*kpyaw;
+	omegaCorrP[2]=errRollPitch_b[2]*kprollpitch + errYaw_b[2]*kpyaw;
 	
-	// turn off the offset integrator while spinning, it doesn't work in that case,
-	// and it only causes trouble.
-	
+	// Compute integral correction. Turn off the offset integrator while spinning at high speeds,
+	// it doesn't work in that case, and it only causes trouble.
 	if ( normOmegaScalar < MAXIMUM_SPIN_DCM_INTEGRAL )
 	{       
-		drft->gyros_b_integrator[0] += errRollPitch_b[0]*KIROLLPITCH;
-		drft->gyros_b_integrator[1] += errRollPitch_b[1]*KIROLLPITCH;
-		drft->gyros_b_integrator[2] += errRollPitch_b[2]*KIROLLPITCH;
-		
-		drft->gyros_b_integrator[0] += errYaw_b[0]*KIYAW;
-		drft->gyros_b_integrator[1] += errYaw_b[1]*KIYAW;
-		drft->gyros_b_integrator[2] += errYaw_b[2]*KIYAW;
-	}
-	
-	omegaCorrI[0] = drft->gyros_b_integrator[0];
-	omegaCorrI[1] = drft->gyros_b_integrator[1];
-	omegaCorrI[2] = drft->gyros_b_integrator[2];
-	
-	return ;
+		omegaCorrI[0] += (errRollPitch_b[0]*drft->rollPitchKi + errYaw_b[0]* drft->yawKi) * delT;
+		omegaCorrI[1] += (errRollPitch_b[1]*drft->rollPitchKi + errYaw_b[1]* drft->yawKi) * delT;
+		omegaCorrI[2] += (errRollPitch_b[2]*drft->rollPitchKi + errYaw_b[2]* drft->yawKi) * delT;
+	}	
 }
 
-#define GYRO_CALIB_TAU 10.0
-#define MINIMUM_SPIN_RATE_GYRO_CALIB 50.0 // degrees/second
-#define GGAIN 1
-void calibrate_gyros_high_speed(float gyro[3], float omegaCorrP[3], float normOmegaScalar, float *ggain)
+
+/*
+ * From Roll-Pitch Gyro Drift Compensation, Rev 3. William Premerlani, 2012.
+ */
+void rollPitch_drift_GPS(float Rbe[3][3], float accels_e_int[3], float delT, float *errRollPitch_b)
 {
-	float normOmegaVector[3]={gyro[0]/normOmegaScalar, gyro[1]/normOmegaScalar, gyro[2]/normOmegaScalar};	
+	float errRollPitch_e[3];
+	float dGPSdt_e[3];
+	
+	GPSVelocityData gpsVelocity;
+	GPSVelocityGet(&gpsVelocity);
+	
+	dGPSdt_e[0]=       (gpsVelocity.North - drft->GPSV_old[0])/delT;
+	dGPSdt_e[1]=       (gpsVelocity.East  - drft->GPSV_old[1])/delT;
+	dGPSdt_e[2]=GRAV + (gpsVelocity.Down  - drft->GPSV_old[2])/delT;
+	
+	drft->GPSV_old[0]=gpsVelocity.North;
+	drft->GPSV_old[1]=gpsVelocity.East;
+	drft->GPSV_old[2]=gpsVelocity.Down;
+	
+	float normdGPSdt_e=sqrtf(dGPSdt_e[0]*dGPSdt_e[0] + dGPSdt_e[1]*dGPSdt_e[1] + dGPSdt_e[2]*dGPSdt_e[2]);
+	
+	//Take cross product of integrated accelerometer measurements with integrated earth frame accelerations. We should be using normalized dGPSdt, but we perform that calculation in the following line(s).
+	CrossProduct((const float *) accels_e_int, (const float *) dGPSdt_e, errRollPitch_e);
+	
+	//Scale cross product
+	errRollPitch_e[0] /= (normdGPSdt_e*delT);
+	errRollPitch_e[1] /= (normdGPSdt_e*delT);
+	errRollPitch_e[2] /= (normdGPSdt_e*delT);
+	
+	//Rotate earth drift error back into body frame;
+	rot_mult(Rbe, errRollPitch_e, errRollPitch_b, FALSE);
+}
+
+
+//Values taken from GentleNav
+#define MINIMUM_SPIN_RATE_GYRO_CALIB 50.0 // degrees/second
+/*
+ * At high speeds, the gyro gains can be honed in on. 
+ *  Taken from "Fast Rotations", William Premerlani
+ */
+void calibrate_gyros_high_speed(float gyro[3], float omegaCorrP[3], float normOmegaScalar, float delT, float *ggain)
+{
 	if ( normOmegaScalar > MINIMUM_SPIN_RATE_GYRO_CALIB )
 	{
-		int gain_change[3] ;
-		//Calculate delta gain
-		gain_change[0]=normOmegaVector[0] * omegaCorrP[0]/normOmegaScalar*( 0.025*GGAIN/GYRO_CALIB_TAU );
-		gain_change[1]=normOmegaVector[1] * omegaCorrP[1]/normOmegaScalar*( 0.025*GGAIN/GYRO_CALIB_TAU );
-		gain_change[2]=normOmegaVector[2] * omegaCorrP[2]/normOmegaScalar*( 0.025*GGAIN/GYRO_CALIB_TAU );
+		float normOmegaVector[3]={gyro[0]/normOmegaScalar, gyro[1]/normOmegaScalar, gyro[2]/normOmegaScalar};	
 		
-		//Update gains
-		ggain[0]+=gain_change[0];
-		ggain[1]+=gain_change[1];
-		ggain[2]+=gain_change[2];
+		//Calculate delta gain and update gains
+		ggain[0]+=normOmegaVector[0] * omegaCorrP[0]/normOmegaScalar * (glbl->gyroGain_ref/drft->gyroCalibTau) * delT;
+		ggain[1]+=normOmegaVector[1] * omegaCorrP[1]/normOmegaScalar * (glbl->gyroGain_ref/drft->gyroCalibTau) * delT;
+		ggain[2]+=normOmegaVector[2] * omegaCorrP[2]/normOmegaScalar * (glbl->gyroGain_ref/drft->gyroCalibTau) * delT;
 		
-		//Saturate gains
+		//Saturate gyro gains
+		float lowThresh  = 1.0f/1.05f*glbl->gyroGain_ref;
+		float highThresh = 1.05f*glbl->gyroGain_ref;
 		for (int i=0;i <3; i++){
-			ggain[i]=ggain[i] <0.9? 0.9 : ggain[i];
-			ggain[i]=ggain[i] >1.1? 1.1 : ggain[i];
+			ggain[i]=ggain[i]<lowThresh  ? lowThresh  : ggain[i];
+			ggain[i]=ggain[i]>highThresh ? highThresh : ggain[i];
 		}
 	}
-	return ;
 }
+
 
 /*
  * Although yaw correction is done in horizontal plane, it is 
  *  computed in 3 dimensions, just in case we change our minds later.
  */
 
-#define GPS_SPEED_MIN 5 // Minimum velocity in [m/s]
-#define GPS_YAW_KP .1;
-void yaw_drift(float gpsV[3], float Rbe[3][3], float *errYaw_b)
+void yaw_drift_MagGPS(float Rbe[3][3], bool gpsNewData_flag, bool magNewData_flag, float *errYaw_b)
 {
 #if defined (PIOS_INCLUDE_GPS) || defined (PIOS_INCLUDE_MAGNETOMETER)
-	
-	errYaw_b[0] = errYaw_b[1] = errYaw_b[2] = 0; //Set to zero in case there are no yaw measurements
 
 	//      Form the horizontal direction over ground based on rmat
 	float horizDirOverGndRmat[3];
 
-	//Define forward vector in body frame
-	float tmpVec[3]={1,0,0};
-
-	//Rotate forward vector into earth frame
-	rot_mult(Rbe, tmpVec, horizDirOverGndRmat, TRUE);
-
-	//Eliminate vertical component from vector
+	//Define forward vector in earth frame, Rbe' * [1;0;0], and eliminate vertical component from vector
+	horizDirOverGndRmat[0]=Rbe[0][0];
+	horizDirOverGndRmat[1]=Rbe[0][1];
 	horizDirOverGndRmat[2]=0;
+
+
  #if defined (PIOS_INCLUDE_GPS)
-	if ( gpsV[0] > GPS_SPEED_MIN || gpsV[1] > GPS_SPEED_MIN)
-	{
-		float errorGPSYaw_e[3];
-		float errorGPSYaw_b[3];
-		float horizDirOverGndGPS[3]={gpsV[0], gpsV[1], 0};
-		//      vector cross product to get the rotation error in ground frame
-		CrossProduct(horizDirOverGndRmat, horizDirOverGndGPS, errorGPSYaw_e);
-		//      convert to body frame:
-		rot_mult(Rbe, errorGPSYaw_e, errorGPSYaw_b, FALSE);
+	if (gpsNewData_flag) {
 		
-		errYaw_b[0] += errorGPSYaw_b[0]*GPS_YAW_KP;
-		errYaw_b[1] += errorGPSYaw_b[1]*GPS_YAW_KP;
-		errYaw_b[2] += errorGPSYaw_b[2]*GPS_YAW_KP;
+		GPSVelocityData gpsVelocity;
+		GPSVelocityGet(&gpsVelocity);
+
+		if ( fabs(gpsVelocity.North) > GPS_SPEED_MIN || fabs(gpsVelocity.East) > GPS_SPEED_MIN)
+		{
+			float errorGPSYaw_e;
+			float errorGPSYaw_b[3];
+			float normGPS=sqrtf(gpsVelocity.North*gpsVelocity.North + gpsVelocity.East*gpsVelocity.East);
+			float horizDirOverGndGPS[3]={gpsVelocity.North/normGPS, gpsVelocity.East/normGPS, 0}; //Normalized vector
+			
+			// vector cross product to get the rotation error in ground frame. However, save several processor cycles by 
+			// condensing the math to take advantage of the cross products null entries on the x and y elements.
+			// errorGPSYaw_e = horizDirOverGndRmat X horizDirOverGndGPS
+			errorGPSYaw_e=horizDirOverGndRmat[0]*horizDirOverGndGPS[1] - horizDirOverGndGPS[0]*horizDirOverGndRmat[1];
+			
+			// Rotate error to body frame. Again, take advantage of the yaw error vector [0;0;errorGPSYaw_e]'s null entries
+			// errorGPSYaw_b = Rbe * errorGPSYaw_e;
+			errorGPSYaw_b[0]=Rbe[0][2]*errorGPSYaw_e;
+			errorGPSYaw_b[1]=Rbe[1][2]*errorGPSYaw_e;
+			errorGPSYaw_b[2]=Rbe[2][2]*errorGPSYaw_e;
+			
+			//Sum error with existing error
+			errYaw_b[0] += errorGPSYaw_b[0]*GPS_YAW_KP;
+			errYaw_b[1] += errorGPSYaw_b[1]*GPS_YAW_KP;
+			errYaw_b[2] += errorGPSYaw_b[2]*GPS_YAW_KP;
+		}
 	}
-	
  #endif	
 	
  #if defined (PIOS_INCLUDE_MAGNETOMETER) //THIS PIOS DEFINE NOT CURRENTLY EXIST, BUT WE SHOULD ADD IT IN ORDER TO SUPPORT ALL MAGS, NOT JUST THE HMC5883
-	float errorMagYaw_e[3];
-	
-	//      vector cross product to get the rotation error in ground frame
-	CrossProduct(horizDirOverGndRmat, horizDirOverGndMag, errorMagYaw_e);
-	//      convert to body frame:
-	rot_mult(Rbe, errorMagYaw_e, errorMagYaw_b, FALSE);
-
-	errYaw_b[0] += errorMagYaw_e[0]*MAG_YAW_KP;
-	errYaw_b[1] += errorMagYaw_e[1]*MAG_YAW_KP;
-	errYaw_b[2] += errorMagYaw_e[2]*MAG_YAW_KP;
- #endif
+	if (magNewData_flag){
+		MagnetometerData magnetometerData;
+		MagnetometerGet(&magnetometerData);
+		
+		
+		float errorMagYaw_e;
+		float errorMagYaw_b[3];
+		float horizDirOverGndMag[3];
+		float mags_b[3]={magnetometerData.x, magnetometerData.y, magnetometerData.z};
+		
+		// Rotate magnetometer to earth frame and eliminate vertical component
+		rot_mult(Rbe, mags_b, horizDirOverGndMag, true);
+		horizDirOverGndMag[2]=0;
+		
+		//Compute norm
+		float normMag=VectorMagnitude(horizDirOverGndMag);
+		
+		//Normalize mag_vector. Recall that horizDirOverGndMag[2]=0
+		horizDirOverGndMag[0]/=normMag;
+		horizDirOverGndMag[1]/=normMag;
+		
+		// vector cross product to get the rotation error in ground frame. However, save several processor cycles by 
+		// condensing the math to take advantage of the cross products null entries on the x and y elements.
+		// errorMagYaw_e = horizDirOverGndRmat X horizDirOverGndMag
+		errorMagYaw_e=horizDirOverGndRmat[0]*horizDirOverGndMag[1] - horizDirOverGndMag[0]*horizDirOverGndRmat[1];
+		
+		// Rotate error to body frame. Again, take advantage of the yaw error vector [0;0;errorGPSYaw_e]'s null entries
+		// errorMagYaw_b = Rbe * errorMagYaw_e;
+		errorMagYaw_b[0]=Rbe[0][2]*errorMagYaw_e;
+		errorMagYaw_b[1]=Rbe[1][2]*errorMagYaw_e;
+		errorMagYaw_b[2]=Rbe[2][2]*errorMagYaw_e;
+		
+		errYaw_b[0] += errorMagYaw_b[0]*MAG_YAW_KP;
+		errYaw_b[1] += errorMagYaw_b[1]*MAG_YAW_KP;
+		errYaw_b[2] += errorMagYaw_b[2]*MAG_YAW_KP;
+	}
+#endif
 #endif	
+}
+
+static void GPSVelocityUpdatedCb(UAVObjEvent * objEv)
+{
+	drft->gpsDataConsumption_flag=GPS_UNCONSUMED;
+}
+
+#if defined (PIOS_INCLUDE_MAGNETOMETER)
+static void MagnetometerUpdatedCb(UAVObjEvent * objEv)
+{
+	drft->magNewData_flag=true;
+}
+#endif
+
+static void DCMSettingsUpdatedCb(UAVObjEvent * objEv) {
+	DCMSettingsData dcmSettingsData;	
+	DCMSettingsGet(&dcmSettingsData);
+	
+	drft->accelsKp = dcmSettingsData.accelsKp;
+	drft->rollPitchKp = dcmSettingsData.rollPitchKp;
+	drft->rollPitchKi = dcmSettingsData.rollPitchKi;
+	drft->yawKp = dcmSettingsData.yawKp;
+	drft->yawKi = dcmSettingsData.yawKi;
+	drft->gyroCalibTau = dcmSettingsData.gyroCalibrationTau;
 }
 
 /**

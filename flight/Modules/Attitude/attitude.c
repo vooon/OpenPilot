@@ -60,17 +60,18 @@
 #include "manualcontrolcommand.h"
 #include "CoordinateConversions.h"
 #include <pios_board_info.h>
- 
+#include "dcmstatus.h"
+#include "dcmsettings.h"
+
 // Private constants
-#define STACK_SIZE_BYTES 540
+#define STACK_SIZE_BYTES 700
 #define TASK_PRIORITY (tskIDLE_PRIORITY+3)
 
 #define SENSOR_PERIOD     4
 #define LOOP_RATE_MS      25.0f
 #define GYRO_NEUTRAL_BIAS 1665
-#define GRAV         9.805f
-#define ACCEL_SCALE  (GRAV * 0.004f)
-/* 0.004f is gravity / LSB */
+#define GRAV             -9.805f
+#define DEG2RAD          (3.141592654f/180.0f)
 
 #define PI_MOD(x) (fmod(x + M_PI, M_PI * 2) - M_PI)
 // Private types
@@ -84,8 +85,6 @@ static void AttitudeTask(void *parameters);
 static xQueueHandle gyro_queue;
 
 static int32_t updateSensors(AccelsData * accelsData, GyrosData * gyrosData, bool cc3d_flag);
-//static int32_t getSensorsCC(float * prelim_accels, float * prelim_gyros);
-//static int32_t getSensorsCC3D(float * prelim_accels, float * prelim_gyros);
 static void updateAttitude(float * gyros, float dT);
 static void settingsUpdatedCb(UAVObjEvent * objEv);
 
@@ -106,7 +105,7 @@ int32_t AttitudeStart(void)
 	xTaskCreate(AttitudeTask, (signed char *)"Attitude", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &taskHandle);
 	TaskMonitorAdd(TASKINFO_RUNNING_ATTITUDE, taskHandle);
 	PIOS_WDG_RegisterFlag(PIOS_WDG_ATTITUDE);
-	
+
 	return 0;
 }
 
@@ -116,11 +115,16 @@ int32_t AttitudeStart(void)
  */
 int32_t AttitudeInitialize(void)
 {
+	//Initialize UAVObjects
 	AttitudeActualInitialize();
 	AttitudeSettingsInitialize();
 	AccelsInitialize();
 	GyrosInitialize();
-	
+	DCMStatusInitialize();
+	DCMSettingsInitialize();
+
+	glbl=(struct GlobalAttitudeVariables*) pvPortMalloc(sizeof(struct GlobalAttitudeVariables));
+
 	// Initialize quaternion
 	AttitudeActualData attitude;
 	AttitudeActualGet(&attitude);
@@ -133,11 +137,10 @@ int32_t AttitudeInitialize(void)
 	//--------
 	// If bootloader runs, cannot trust the global values to init to 0.
 	//--------
-	memset(glbl->gyro_correct_int, 0, 3*sizeof(glbl->gyro_correct_int));
+	memset(glbl->gyro_correct_int, 0, sizeof(glbl->gyro_correct_int));
 	
-	glbl=(struct GlobalAttitudeVariables*) malloc(sizeof(struct GlobalAttitudeVariables));
-	
-	glbl->accelKi= 0;
+
+	//Initialize variables. //IS THIS EVEN NECESSARY, SINCE WE CALL settingsUpdatedCb BELOW BEFORE THE MAIN LOOP?
 	glbl->accelKi = 0;
 	glbl->accelKp = 0;
 	glbl->yawBiasRate = 0;
@@ -151,7 +154,7 @@ int32_t AttitudeInitialize(void)
 	glbl->q[3] = 0;
 	for(uint8_t i = 0; i < 3; i++)
 		for(uint8_t j = 0; j < 3; j++)
-			glbl->Rbs[i][j] = 0;
+			glbl->Rsb[i][j] = 0;
 	
 	glbl->trim_requested = false;
 	
@@ -187,12 +190,12 @@ static void AttitudeTask(void *parameters)
 
 	if(cc3d_flag) {
 #if defined(PIOS_INCLUDE_MPU6000)
-		glbl->gyroGain[0] = glbl->gyroGain[1] = glbl->gyroGain[2] = 1;
+		glbl->gyroGain[0] = glbl->gyroGain[1] = glbl->gyroGain[2] = glbl->gyroGain_ref = 1;
 		gyro_test = PIOS_MPU6000_Test();
 #endif
 	} else {
 #if defined(PIOS_INCLUDE_ADXL345)
-		glbl->gyroGain[0] = glbl->gyroGain[1] = glbl->gyroGain[2] = 0.42;
+		glbl->gyroGain[0] = glbl->gyroGain[1] = glbl->gyroGain[2] = glbl->gyroGain_ref = 0.42;
 		accel_test = PIOS_ADXL345_Test();
 #endif
 
@@ -207,31 +210,45 @@ static void AttitudeTask(void *parameters)
 	}
 	// Force settings update to make sure rotation loaded
 	settingsUpdatedCb(AttitudeSettingsHandle());
-	
-	// Main task loop
+
+	//Store the original filter specs. This is because we currently have a poor way of calibrating the Premerlani approach
+	uint8_t originalFilter=glbl->filter_choice;
+
+	// --------------------------- //
+	// Main task loop. Never exits //
+	// --------------------------- //
 	while (1) {
-		
 		FlightStatusData flightStatus;
 		FlightStatusGet(&flightStatus);
 
-		//Change gyro calibration parameters
-		if((xTaskGetTickCount() < 7000) && (xTaskGetTickCount() > 1000)) {
+		//Change gyro calibration parameters...
+		if((xTaskGetTickCount() > 1000) && (xTaskGetTickCount() < 7000)) { //...during first 7 seconds or so...
+			
 			// For first 7 seconds use accels to get gyro bias
 			glbl->accelKp = 1;
 			glbl->accelKi = 0.9;
 			glbl->yawBiasRate = 0.23;
 			init = 0;
+			
+			//Force to use the CCC, because of the way it calibrates
+			glbl->filter_choice=ATTITUDESETTINGS_FILTERCHOICE_CCC;
 		}
-		else if (glbl->zero_during_arming && (flightStatus.Armed == FLIGHTSTATUS_ARMED_ARMING)) {
+		else if (glbl->zero_during_arming && (flightStatus.Armed == FLIGHTSTATUS_ARMED_ARMING)) { //...during arming...
 			glbl->accelKp = 1;
 			glbl->accelKi = 0.9;
 			glbl->yawBiasRate = 0.23;
 			init = 0;
-		} else if (init == 0) {
+			
+			//Force to use the CCC, because of the way it calibrates
+			glbl->filter_choice=ATTITUDESETTINGS_FILTERCHOICE_CCC;
+		} else if (init == 0) { //...once fully armed.
 			// Reload settings (all the rates)
 			AttitudeSettingsAccelKiGet(&glbl->accelKi);
 			AttitudeSettingsAccelKpGet(&glbl->accelKp);
 			AttitudeSettingsYawBiasRateGet(&glbl->yawBiasRate);
+
+			glbl->filter_choice=originalFilter;
+			
 			init = 1;
 		}
 		
@@ -241,7 +258,7 @@ static void AttitudeTask(void *parameters)
 		GyrosData gyros;
 		int32_t retval = 0;
 		
-		//Get sensor data, rotate, filter, and output to UAVO
+		//Get sensor data, rotate, filter, and output to UAVO. This is the function that calls the wait structures that limit the loop rate
 		retval = updateSensors(&accels, &gyros, cc3d_flag);
 
 		// Update attitude. Only do so when sensor data is good
@@ -257,15 +274,17 @@ static void AttitudeTask(void *parameters)
 				delT = (thisSysTime == lastSysTime) ? 0.001 : (portMAX_DELAY & (thisSysTime - lastSysTime)) / portTICK_RATE_MS / 1000.0f;
 				lastSysTime = thisSysTime;
 				
-				//Update sensor drift loop
-				updateSensorDrift(&accels, &gyros, delT);
+				//Update sensor estimation with drift PI feedback
+				if(glbl->bias_correct_gyro) { 
+					updateSensorDrift(&accels, &gyros, delT);
+				}
 //				applyDrift(&accels, &gyros);
 				
-				//Update UAVO a second time, double pumping the loop. First time was at the end of updateSensors
+				//Update UAVOs with most accurate sensor data
 				AccelsSet(&accels);
-				GyrosSet(&accels);
+				GyrosSet(&gyros);
 				
-//				float * gyrosVec = &gyros.x;
+//				float gyrosVec[3] = {gyros.x, gyros.y, gyros.z};
 				updateAttitude(&gyros.x, delT);
 			}
 
@@ -287,7 +306,7 @@ static int32_t updateSensors(AccelsData * accels, GyrosData * gyros, bool cc3d_f
 		retval=getSensorsCC(prelim_accels, prelim_gyros, &gyro_queue);
 	}
 	
-	if (retval < 0) {
+	if (retval < 0) { //No sensor data!
 		return retval;
 	}
 
@@ -296,28 +315,54 @@ static int32_t updateSensors(AccelsData * accels, GyrosData * gyros, bool cc3d_f
 		float tmpVec[3];
 		
 		//Rotate the vector into a temporary vector, and then copy back into the original vectors.
-		rot_mult(glbl->Rbs, prelim_accels, tmpVec, FALSE);
-		memcpy(prelim_accels, tmpVec, 3*sizeof(tmpVec));
-		rot_mult(glbl->Rbs, prelim_gyros,  tmpVec, FALSE);
-		memcpy(prelim_gyros,  tmpVec, 3*sizeof(tmpVec));
+		rot_mult(glbl->Rsb, prelim_accels, tmpVec, true);
+		memcpy(prelim_accels, tmpVec, sizeof(tmpVec));
+		
+		rot_mult(glbl->Rsb, prelim_gyros,  tmpVec, true);
+		memcpy(prelim_gyros,  tmpVec, sizeof(tmpVec));
 	}
 
-	// Correct accels biases. NOTE: the biases are in the body frame
+	//Correct accels biases. 
+	// NOTE: At this point, prelim_accels has now been rotated into the body frame, as are the accel biases
 	accels->x = prelim_accels[0] - glbl->accelbias[0];
 	accels->y = prelim_accels[1] - glbl->accelbias[1];
 	accels->z = prelim_accels[2] - glbl->accelbias[2];
 
-	//Correct gyroscope biases. NOTE: the biases are in the body frame
+	//Correct gyroscope biases. 
+	// NOTE: At this point, prelim_gyros has now been rotated into the body frame, as are the gyro biases
 	if(glbl->bias_correct_gyro) { 
 		// Applying integral component here so it can be seen on the gyros and correct bias
 		gyros->x = prelim_gyros[0] + glbl->gyro_correct_int[0];
 		gyros->y = prelim_gyros[1] + glbl->gyro_correct_int[1];
 		gyros->z = prelim_gyros[2] + glbl->gyro_correct_int[2];
 	}
+	else {
+		gyros->x = prelim_gyros[0];
+		gyros->y = prelim_gyros[1];
+		gyros->z = prelim_gyros[2];
+		
+	}
+
 	
-	//Update UAVOs a first time, priming the loop. Second time is at the end of the main task
-	GyrosSet(gyros);
-	AccelsSet(accels);
+	//CopterControl has a function which can generate on the fly a correct hovering accelerometer bias for
+	//quadcopters and helicopters. See more on the wiki and forums: ???
+	if (glbl->trim_requested) {
+		if (glbl->trim_samples >= MAX_TRIM_FLIGHT_SAMPLES) {
+			glbl->trim_requested = false;
+		} else {
+			uint8_t armed;
+			float throttle;
+			FlightStatusArmedGet(&armed);
+			ManualControlCommandThrottleGet(&throttle);  // Until flight status indicates airborne
+			if ((armed == FLIGHTSTATUS_ARMED_ARMED) && (throttle > 0)) {
+				glbl->trim_samples++;
+				// Store the digitally scaled version since that is what we use for bias
+				glbl->trim_accels[0] += accels->x;
+				glbl->trim_accels[1] += accels->y;
+				glbl->trim_accels[2] += accels->z;
+			}
+		}
+	}
 	
 	return 0;
 	
@@ -382,21 +427,21 @@ static void settingsUpdatedCb(UAVObjEvent * objEv) {
 	AttitudeSettingsData attitudeSettings;
 	AttitudeSettingsGet(&attitudeSettings);
 	
-	
 	glbl->accelKp = attitudeSettings.AccelKp;
 	glbl->accelKi = attitudeSettings.AccelKi;
 	glbl->yawBiasRate = attitudeSettings.YawBiasRate;
-	glbl->gyroGain[0] = glbl->gyroGain[1] = glbl->gyroGain[2] = attitudeSettings.GyroGain;
-	
+	glbl->gyroGain[0] = glbl->gyroGain[1] = glbl->gyroGain[2] = glbl->gyroGain_ref = attitudeSettings.GyroGain;
+
 	glbl->zero_during_arming = (attitudeSettings.ZeroDuringArming == ATTITUDESETTINGS_ZERODURINGARMING_TRUE);
 	glbl->bias_correct_gyro = (attitudeSettings.BiasCorrectGyro == ATTITUDESETTINGS_BIASCORRECTGYRO_TRUE);
+	glbl->filter_choice = attitudeSettings.FilterChoice;
+
+	glbl->accelbias[0] = attitudeSettings.AccelBias[ATTITUDESETTINGS_ACCELBIAS_X]/1000.0f; //Divide by 1000 because `accelbias` is in units
+	glbl->accelbias[1] = attitudeSettings.AccelBias[ATTITUDESETTINGS_ACCELBIAS_Y]/1000.0f; // of 1000*[m/s^2]
+	glbl->accelbias[2] = attitudeSettings.AccelBias[ATTITUDESETTINGS_ACCELBIAS_Z]/1000.0f;
 	
-	glbl->accelbias[0] = attitudeSettings.AccelBias[ATTITUDESETTINGS_ACCELBIAS_X];
-	glbl->accelbias[1] = attitudeSettings.AccelBias[ATTITUDESETTINGS_ACCELBIAS_Y];
-	glbl->accelbias[2] = attitudeSettings.AccelBias[ATTITUDESETTINGS_ACCELBIAS_Z];
-	
-	glbl->gyro_correct_int[0] = attitudeSettings.GyroBias[ATTITUDESETTINGS_GYROBIAS_X] / 100.0f;
-	glbl->gyro_correct_int[1] = attitudeSettings.GyroBias[ATTITUDESETTINGS_GYROBIAS_Y] / 100.0f;
+	glbl->gyro_correct_int[0] = attitudeSettings.GyroBias[ATTITUDESETTINGS_GYROBIAS_X] / 100.0f; //Divide by 100 because `GyroBias` 
+	glbl->gyro_correct_int[1] = attitudeSettings.GyroBias[ATTITUDESETTINGS_GYROBIAS_Y] / 100.0f; // is in units of 100*[deg/s]
 	glbl->gyro_correct_int[2] = attitudeSettings.GyroBias[ATTITUDESETTINGS_GYROBIAS_Z] / 100.0f;
 	
 	//Calculate sensor to board rotation matrix. If the matrix is the identity, don't expend cycles on rotation
@@ -404,16 +449,14 @@ static void settingsUpdatedCb(UAVObjEvent * objEv) {
 	   attitudeSettings.BoardRotation[2] == 0) {
 		glbl->rotate = false;
 		
-		// Shouldn't be used, but to be safe
+		// Shouldn't need to be used, but just to be safe we will anyway
 		float rotationQuat[4] = {1,0,0,0};
-		Quaternion2R(rotationQuat, glbl->Rbs);
+		Quaternion2R(rotationQuat, glbl->Rsb);
 	} else {
-		float rotationQuat[4];
-		const float rpy[3] = {attitudeSettings.BoardRotation[ATTITUDESETTINGS_BOARDROTATION_ROLL],
-			attitudeSettings.BoardRotation[ATTITUDESETTINGS_BOARDROTATION_PITCH],
-			attitudeSettings.BoardRotation[ATTITUDESETTINGS_BOARDROTATION_YAW]};
-		RPY2Quaternion(rpy, rotationQuat);
-		Quaternion2R(rotationQuat, glbl->Rbs);
+		float rpy[3] = {attitudeSettings.BoardRotation[ATTITUDESETTINGS_BOARDROTATION_ROLL]*DEG2RAD,
+			attitudeSettings.BoardRotation[ATTITUDESETTINGS_BOARDROTATION_PITCH]*DEG2RAD,
+			attitudeSettings.BoardRotation[ATTITUDESETTINGS_BOARDROTATION_YAW]*DEG2RAD};
+		Euler2R(rpy, glbl->Rsb);
 		glbl->rotate = true;
 	}
 	
@@ -427,12 +470,13 @@ static void settingsUpdatedCb(UAVObjEvent * objEv) {
 		glbl->trim_requested = false;
 		attitudeSettings.AccelBias[ATTITUDESETTINGS_ACCELBIAS_X] = glbl->trim_accels[0] / glbl->trim_samples;
 		attitudeSettings.AccelBias[ATTITUDESETTINGS_ACCELBIAS_Y] = glbl->trim_accels[1] / glbl->trim_samples;
-		// Z should average -grav
-		attitudeSettings.AccelBias[ATTITUDESETTINGS_ACCELBIAS_Z] = glbl->trim_accels[2] / glbl->trim_samples + GRAV / ACCEL_SCALE;
+		// Z should average -g
+		attitudeSettings.AccelBias[ATTITUDESETTINGS_ACCELBIAS_Z] = glbl->trim_accels[2] / glbl->trim_samples - GRAV;
 		attitudeSettings.TrimFlight = ATTITUDESETTINGS_TRIMFLIGHT_NORMAL;
 		AttitudeSettingsSet(&attitudeSettings);
-	} else
+	} else {
 		glbl->trim_requested = false;
+	}
 }
 
 /**

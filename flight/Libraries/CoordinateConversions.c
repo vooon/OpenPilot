@@ -174,9 +174,9 @@ void RPY2Quaternion(const float rpy[3], float q[4])
 //** Find Rbe, that rotates a vector from earth fixed to body frame, from quaternion **
 void Quaternion2R(float q[4], float Rbe[3][3])
 {
-
+	
 	float q0s = q[0] * q[0], q1s = q[1] * q[1], q2s = q[2] * q[2], q3s = q[3] * q[3];
-
+	
 	Rbe[0][0] = q0s + q1s - q2s - q3s;
 	Rbe[0][1] = 2 * (q[1] * q[2] + q[0] * q[3]);
 	Rbe[0][2] = 2 * (q[1] * q[3] - q[0] * q[2]);
@@ -186,6 +186,25 @@ void Quaternion2R(float q[4], float Rbe[3][3])
 	Rbe[2][0] = 2 * (q[1] * q[3] + q[0] * q[2]);
 	Rbe[2][1] = 2 * (q[2] * q[3] - q[0] * q[1]);
 	Rbe[2][2] = q0s - q1s - q2s + q3s;
+}
+
+//** Find Rbe, that rotates a vector from earth fixed to body frame, from euler angles **
+void Euler2R(float rpy[3], float Rbe[3][3])
+{
+	
+	float sF = sinf(rpy[0]), cF = cosf(rpy[0]);
+	float sT = sinf(rpy[1]), cT = cosf(rpy[1]);
+	float sP = sinf(rpy[2]), cP = cosf(rpy[2]);
+	
+	Rbe[0][0] = cT*cP;
+	Rbe[0][1] = cT*sP;
+	Rbe[0][2] = -sT;
+	Rbe[1][0] = sF*sT*cP - cF*sP;
+	Rbe[1][1] = sF*sT*sP + cF*cP;
+	Rbe[1][2] = cT*sF;
+	Rbe[2][0] = cF*sT*cP + sF*sP;
+	Rbe[2][1] = cF*sT*sP - sF*cP;
+	Rbe[2][2] = cT*cF;
 }
 
 // ****** Express LLA in a local NED Base Frame ********
