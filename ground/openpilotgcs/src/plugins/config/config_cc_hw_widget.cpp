@@ -46,6 +46,8 @@ ConfigCCHWWidget::ConfigCCHWWidget(QWidget *parent) : ConfigTaskWidget(parent)
     addApplySaveButtons(m_telemetry->saveTelemetryToRAM,m_telemetry->saveTelemetryToSD);
     addUAVObjectToWidgetRelation("HwSettings","CC_FlexiPort",m_telemetry->cbFlexi);
     addUAVObjectToWidgetRelation("HwSettings","CC_MainPort",m_telemetry->cbTele);
+    addUAVObjectToWidgetRelation("HwSettings","OptionalModules",m_telemetry->cbGpsEnabled,"GPS"); //OPTIONALMODULES_GPS
+    m_telemetry->cbGpsEnabled->hide();
     addUAVObjectToWidgetRelation("HwSettings","CC_RcvrPort",m_telemetry->cbRcvr);
     addUAVObjectToWidgetRelation("HwSettings","USB_HIDPort",m_telemetry->cbUsbHid);
     addUAVObjectToWidgetRelation("HwSettings","USB_VCPPort",m_telemetry->cbUsbVcp);
@@ -91,6 +93,15 @@ void ConfigCCHWWidget::widgetsContentsChanged()
     }
     else
     {
+        if (m_telemetry->cbTele->currentIndex() == HwSettings::CC_MAINPORT_GPS || m_telemetry->cbFlexi->currentIndex() == HwSettings::CC_MAINPORT_GPS)
+        {
+            m_telemetry->cbGpsEnabled->setCurrentIndex(1);
+        }
+
+        else
+        {
+            m_telemetry->cbGpsEnabled->setCurrentIndex(0);
+        }
         m_telemetry->problems->setText("");
         enableControls(true);
     }
