@@ -48,23 +48,28 @@ public:
     enum { Type = UserType + 1 };
     int type() const { return Type; }
 
+
     void verticalMove(bool flag);
 
     QRectF boundingRect() const;
     QPainterPath shape() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
+    double value();
+
 protected:
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
+    QVariant itemChange(GraphicsItemChange change, const QVariant &val);
 
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     
 private:
+
     QList<Edge *> edgeList;
     QPointF newPos;
     MixerCurveWidget *graph;
     bool vertical;
+
 };
 
 #endif  // MIXERCURVEPOINT_H

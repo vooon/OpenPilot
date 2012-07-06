@@ -84,7 +84,7 @@ public:
     };
 
     ConfigTaskWidget(QWidget *parent = 0);
-    ~ConfigTaskWidget();
+    virtual ~ConfigTaskWidget();
 
     void disableMouseWheelEvents();
     bool eventFilter( QObject * obj, QEvent * evt );
@@ -145,6 +145,7 @@ private slots:
     void reloadButtonClicked();
 private:
     bool isConnected;
+    bool allowWidgetUpdates;
     QStringList objectsList;
     QList <objectToWidget*> objOfInterest;
     ExtensionSystem::PluginManager *pm;

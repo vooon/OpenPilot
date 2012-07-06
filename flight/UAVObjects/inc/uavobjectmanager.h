@@ -59,10 +59,10 @@ typedef void* UAVObjHandle;
  * Object update mode, used by multiple modules (e.g. telemetry and logger)
  */
 typedef enum {
-	UPDATEMODE_PERIODIC = 0, /** Automatically update object at periodic intervals */
-	UPDATEMODE_ONCHANGE = 1, /** Only update object when its data changes */
-	UPDATEMODE_THROTTLED = 2, /** Object is updated on change, but not more often than the interval time */
-	UPDATEMODE_MANUAL = 3 /** Manually update object, by calling the updated() function */
+	UPDATEMODE_MANUAL = 0, /** Manually update object, by calling the updated() function */
+	UPDATEMODE_PERIODIC = 1, /** Automatically update object at periodic intervals */
+	UPDATEMODE_ONCHANGE = 2, /** Only update object when its data changes */
+	UPDATEMODE_THROTTLED = 3 /** Object is updated on change, but not more often than the interval time */
 } UAVObjUpdateMode;
 
 /**
@@ -74,8 +74,8 @@ typedef enum {
  *
  *   Bit(s)  Name                     Meaning
  *   ------  ----                     -------
- *      0    access                   Defines the access level for the local transactions (readonly=0 and readwrite=1)
- *      1    gcsAccess                Defines the access level for the local GCS transactions (readonly=0 and readwrite=1), not used in the flight s/w
+ *      0    access                   Defines the access level for the local transactions (readonly=1 and readwrite=0)
+ *      1    gcsAccess                Defines the access level for the local GCS transactions (readonly=1 and readwrite=0), not used in the flight s/w
  *      2    telemetryAcked           Defines if an ack is required for the transactions of this object (1:acked, 0:not acked)
  *      3    gcsTelemetryAcked        Defines if an ack is required for the transactions of this object (1:acked, 0:not acked)
  *    4-5    telemetryUpdateMode      Update mode used by the telemetry module (UAVObjUpdateMode)
