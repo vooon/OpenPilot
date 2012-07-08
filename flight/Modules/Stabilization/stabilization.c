@@ -38,6 +38,7 @@
 #include "ratedesired.h"
 #include "stabilizationdesired.h"
 #include "attitudeactual.h"
+#include "accels.h"
 #include "gyros.h"
 #include "flightstatus.h"
 #include "manualcontrol.h" // Just to get a macro
@@ -55,7 +56,7 @@
 #define TASK_PRIORITY (tskIDLE_PRIORITY+4)
 #define FAILSAFE_TIMEOUT_MS 30
 
-enum {PID_RATE_ROLL, PID_RATE_PITCH, PID_RATE_YAW, PID_ROLL, PID_PITCH, PID_YAW, PID_VBAR_ROLL, PID_VBAR_PITCH, PID_VBAR_YAW, PID_MAX};
+enum {PID_RATE_ROLL, PID_RATE_PITCH, PID_RATE_YAW, PID_ATT_ROLL, PID_ATT_PITCH, PID_ATT_YAW, PID_VBAR_ROLL, PID_VBAR_PITCH, PID_VBAR_YAW, PID_MAX};
 
 enum {ROLL,PITCH,YAW,MAX_AXES};
 
@@ -168,14 +169,16 @@ static void stabilizationTask(void* parameters)
 			continue;
 		}
 
-		dT = PIOS_DELAY_DiffuS(timeval) * 1.0e-6f;
+		uint32_t dT_int = PIOS_DELAY_DiffuS(timeval);
 		timeval = PIOS_DELAY_GetRaw();
+		dT = dT_int * 1.0e-6f;
 
 		FlightStatusGet(&flightStatus);
 		StabilizationDesiredGet(&stabDesired);
 		AttitudeActualGet(&attitudeActual);
 		GyrosGet(&gyrosData);
-
+		ActuatorDesiredGet(&actuatorDesired);
+		
 #if defined(DIAGNOSTICS)
 		RateDesiredGet(&rateDesired);
 #endif
@@ -218,13 +221,14 @@ static void stabilizationTask(void* parameters)
 #endif
 
 
-		gyro_filtered[0] = gyro_filtered[0] * gyro_alpha + gyrosData.x * (1 - gyro_alpha);
+		//WHY IS THIS IN STABILIZATION? IF THE GOAL IS TO REDUCE OUTPUT JITTER, THEN WE CAN FILTER THE OUTPUTS TO THE SAME EFFECT.
+ 		gyro_filtered[0] = gyro_filtered[0] * gyro_alpha + gyrosData.x * (1 - gyro_alpha);
 		gyro_filtered[1] = gyro_filtered[1] * gyro_alpha + gyrosData.y * (1 - gyro_alpha);
 		gyro_filtered[2] = gyro_filtered[2] * gyro_alpha + gyrosData.z * (1 - gyro_alpha);
 
+		float *rateDesiredAxis = &rateDesired.Roll; //WHY ARE WE REINITIALIZING THESE EVERY LOOP?
 		float *attitudeDesiredAxis = &stabDesired.Roll;
 		float *actuatorDesiredAxis = &actuatorDesired.Roll;
-		float *rateDesiredAxis = &rateDesired.Roll;
 
 		//Calculate desired rate
 		for(uint8_t i=0; i< MAX_AXES; i++)
@@ -236,7 +240,7 @@ static void stabilizationTask(void* parameters)
 					rateDesiredAxis[i] = attitudeDesiredAxis[i];
 
 					// Zero attitude and axis lock accumulators
-					pids[PID_ROLL + i].iAccumulator = 0;
+					pids[PID_ATT_ROLL + i].iAccumulator = 0;
 					axis_lock_accum[i] = 0;
 					break;
 
@@ -252,12 +256,12 @@ static void stabilizationTask(void* parameters)
 					rateDesiredAxis[i] = attitudeDesiredAxis[i] + weak_leveling;
 
 					// Zero attitude and axis lock accumulators
-					pids[PID_ROLL + i].iAccumulator = 0;
+					pids[PID_ATT_ROLL + i].iAccumulator = 0;
 					axis_lock_accum[i] = 0;
 					break;
 				}
 				case STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE:
-					rateDesiredAxis[i] = ApplyPid(&pids[PID_ROLL + i], local_error[i], dT);
+					rateDesiredAxis[i] = ApplyPid(&pids[PID_ATT_ROLL + i], local_error[i], dT);
 					
 					if(rateDesiredAxis[i] > settings.MaximumRate[i])
 						rateDesiredAxis[i] = settings.MaximumRate[i];
@@ -281,7 +285,7 @@ static void stabilizationTask(void* parameters)
 						else if(axis_lock_accum[i] < -max_axis_lock)
 							axis_lock_accum[i] = -max_axis_lock;
 
-						rateDesiredAxis[i] = ApplyPid(&pids[PID_ROLL + i], axis_lock_accum[i], dT);
+						rateDesiredAxis[i] = ApplyPid(&pids[PID_ATT_ROLL + i], axis_lock_accum[i], dT);
 					}
 					
 					if(rateDesiredAxis[i] > settings.MaximumRate[i])
@@ -311,7 +315,7 @@ static void stabilizationTask(void* parameters)
 #if defined(DIAGNOSTICS)
 		RateDesiredSet(&rateDesired);
 #endif
-		ActuatorDesiredGet(&actuatorDesired);
+//		ActuatorDesiredGet(&actuatorDesired);
 		//Calculate desired command
 		for(uint32_t i = 0; i < MAX_AXES; i++)
 		{
@@ -349,29 +353,73 @@ static void stabilizationTask(void* parameters)
 					break;
 				}
 				case STABILIZATIONDESIRED_STABILIZATIONMODE_NONE:
-					switch (i)
 				{
+					switch (i)
+					{
 					case ROLL:
 						actuatorDesiredAxis[i] = bound(attitudeDesiredAxis[i]);
 						shouldUpdate = 1;
 						pids[PID_RATE_ROLL].iAccumulator = 0;
-						pids[PID_ROLL].iAccumulator = 0;
+						pids[PID_ATT_ROLL].iAccumulator = 0;
 						break;
 					case PITCH:
 						actuatorDesiredAxis[i] = bound(attitudeDesiredAxis[i]);
 						shouldUpdate = 1;
 						pids[PID_RATE_PITCH].iAccumulator = 0;
-						pids[PID_PITCH].iAccumulator = 0;
+						pids[PID_ATT_PITCH].iAccumulator = 0;
 						break;
 					case YAW:
 						actuatorDesiredAxis[i] = bound(attitudeDesiredAxis[i]);
 						shouldUpdate = 1;
 						pids[PID_RATE_YAW].iAccumulator = 0;
-						pids[PID_YAW].iAccumulator = 0;
+						pids[PID_ATT_YAW].iAccumulator = 0;
 						break;
-				}
+					}
 					break;
+				}
+				case STABILIZATIONDESIRED_STABILIZATIONMODE_COORDINATEDFLIGHT:
+				{
+					switch (i)
+					{
+						case ROLL: //No coordinated stabilization possible with ROLL. Coordinated flight stabilization affects only YAW.
+							actuatorDesiredAxis[i] = bound(attitudeDesiredAxis[i]);
+							shouldUpdate = 1;
+							pids[PID_RATE_ROLL].iAccumulator = 0;
+							pids[PID_ATT_ROLL].iAccumulator = 0;
+							break;
+						case PITCH: //No coordinated stabilization possible with PITCH. Coordinated flight stabilization affects only YAW.
+							actuatorDesiredAxis[i] = bound(attitudeDesiredAxis[i]);
+							shouldUpdate = 1;
+							pids[PID_RATE_PITCH].iAccumulator = 0;
+							pids[PID_ATT_PITCH].iAccumulator = 0;
+							break;
+						case YAW:
+							if ( stabDesired.StabilizationMode[ROLL]==STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE && //If we are in roll attitude mode..
+								 fabs(stabDesired.Roll) > 3.0f && //...and we've requested more than 3 degrees of roll...
+								 fabs(stabDesired.Yaw) < 0.02) { //...and we currently have no yaw input within a 2% deadband
+								AccelsData accelsData;
+								AccelsGet(&accelsData);
+								float errorSlip=-accelsData.y;
 
+								//Apply a 1 second rise time filter to the accelerometer driven output. 
+								// This reduces jitter in the tail, and helps dampen aileron oscillations 
+								// due to the increased turning radius
+								float alpha = 1.0f-1.0f/(1.0f+1.0f/dT);
+								
+								float command=(1-alpha)*ApplyPid(&pids[PID_RATE_YAW], errorSlip, dT) + alpha*actuatorDesiredAxis[i];
+								actuatorDesiredAxis[i] = bound(command);
+							}
+							else{ //Else, yaw input is either passed through manually or we're not requesting
+								actuatorDesiredAxis[i] = bound(attitudeDesiredAxis[i]);
+								shouldUpdate = 1;
+								pids[PID_RATE_YAW].iAccumulator = 0;
+								pids[PID_ATT_YAW].iAccumulator = 0;
+							}
+							break;
+					}
+					break;
+				}
+				break;
 			}
 		}
 
@@ -384,7 +432,7 @@ static void stabilizationTask(void* parameters)
 		if(shouldUpdate)
 		{
 			actuatorDesired.Throttle = stabDesired.Throttle;
-			if(dT > 15)
+			if(dT > 15) //WHY DO WE CARE ABOUT THIS? MORE EXPLANATION IS NECESSARY
 				actuatorDesired.NumLongUpdates++;
 			ActuatorDesiredSet(&actuatorDesired);
 		}
@@ -407,7 +455,7 @@ float ApplyPid(pid_type * pid, const float err, float dT)
 	float diff = (err - pid->lastErr);
 	pid->lastErr = err;
 
-	// Scale up accumulator by 1000 while computing to avoid losing precision
+	// Scale up accumulator by 1000 while computing to avoid losing precision //IS THIS STILL NECESSARY WITH FLOATING POINT?
 	pid->iAccumulator += err * (pid->i * dT * 1000.0f);
 	if(pid->iAccumulator > (pid->iLim * 1000.0f)) {
 		pid->iAccumulator = pid->iLim * 1000.0f;
@@ -465,19 +513,19 @@ static void SettingsUpdatedCb(UAVObjEvent * ev)
 	pids[PID_RATE_YAW].iLim = settings.YawRatePID[STABILIZATIONSETTINGS_YAWRATEPID_ILIMIT];
 
 	// Set the roll attitude PI constants
-	pids[PID_ROLL].p = settings.RollPI[STABILIZATIONSETTINGS_ROLLPI_KP];
-	pids[PID_ROLL].i = settings.RollPI[STABILIZATIONSETTINGS_ROLLPI_KI];
-	pids[PID_ROLL].iLim = settings.RollPI[STABILIZATIONSETTINGS_ROLLPI_ILIMIT];
+	pids[PID_ATT_ROLL].p = settings.RollPI[STABILIZATIONSETTINGS_ROLLPI_KP];
+	pids[PID_ATT_ROLL].i = settings.RollPI[STABILIZATIONSETTINGS_ROLLPI_KI];
+	pids[PID_ATT_ROLL].iLim = settings.RollPI[STABILIZATIONSETTINGS_ROLLPI_ILIMIT];
 
 	// Set the pitch attitude PI constants
-	pids[PID_PITCH].p = settings.PitchPI[STABILIZATIONSETTINGS_PITCHPI_KP];
-	pids[PID_PITCH].i = settings.PitchPI[STABILIZATIONSETTINGS_PITCHPI_KI];
-	pids[PID_PITCH].iLim = settings.PitchPI[STABILIZATIONSETTINGS_PITCHPI_ILIMIT];
+	pids[PID_ATT_PITCH].p = settings.PitchPI[STABILIZATIONSETTINGS_PITCHPI_KP];
+	pids[PID_ATT_PITCH].i = settings.PitchPI[STABILIZATIONSETTINGS_PITCHPI_KI];
+	pids[PID_ATT_PITCH].iLim = settings.PitchPI[STABILIZATIONSETTINGS_PITCHPI_ILIMIT];
 
 	// Set the yaw attitude PI constants
-	pids[PID_YAW].p = settings.YawPI[STABILIZATIONSETTINGS_YAWPI_KP];
-	pids[PID_YAW].i = settings.YawPI[STABILIZATIONSETTINGS_YAWPI_KI];
-	pids[PID_YAW].iLim = settings.YawPI[STABILIZATIONSETTINGS_YAWPI_ILIMIT];
+	pids[PID_ATT_YAW].p = settings.YawPI[STABILIZATIONSETTINGS_YAWPI_KP];
+	pids[PID_ATT_YAW].i = settings.YawPI[STABILIZATIONSETTINGS_YAWPI_KI];
+	pids[PID_ATT_YAW].iLim = settings.YawPI[STABILIZATIONSETTINGS_YAWPI_ILIMIT];
 
 	// Set the roll attitude PI constants
 	pids[PID_VBAR_ROLL].p = settings.VbarRollPI[STABILIZATIONSETTINGS_VBARROLLPI_KP];
