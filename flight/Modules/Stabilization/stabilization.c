@@ -399,12 +399,22 @@ static void stabilizationTask(void* parameters)
 								 fabs(stabDesired.Yaw) < 0.02) { //...and we currently have no yaw input within a 2% deadband
 								AccelsData accelsData;
 								AccelsGet(&accelsData);
-								float errorSlip=-accelsData.y;
+								
+								//Reset integral if we have changed roll to opposite direction from rudder. This implies that we have changed desired turning direction.
+								if ((stabDesired.Roll > 0 && actuatorDesiredAxis[i] < 0) || (stabDesired.Roll < 0 && actuatorDesiredAxis[i] > 0)){
+									pids[PID_RATE_YAW].iAccumulator = 0;
+								}
+								
+								//Coordinate flight can simply be seen as ensuring that there is no lateral acceleration in the
+								// body frame. As such, we use the (noisy) accelerometer data as our measurement. Ideally, at 
+								// some point in the future we will estimate acceleration and then we can use the estimated value
+								// instead of the measured value.
+								float errorSlip = -accelsData.y;
 
-								//Apply a 1 second rise time filter to the accelerometer driven output. 
+								//Apply a 1 second rise time low-pass filter to the accelerometer driven output. 
 								// This reduces jitter in the tail, and helps dampen aileron oscillations 
-								// due to the increased turning radius
-								float alpha = 1.0f-1.0f/(1.0f+1.0f/dT);
+								// due to the decreased turning radius as rudder input is applied.
+								float alpha = 1.0f-dT/(dT+1.0f);
 								
 								float command=(1-alpha)*ApplyPid(&pids[PID_RATE_YAW], errorSlip, dT) + alpha*actuatorDesiredAxis[i];
 								actuatorDesiredAxis[i] = bound(command);
