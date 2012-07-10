@@ -26,6 +26,7 @@ OTHER_FILES += UAVObjects.pluginspec
 HEADERS += $$UAVOBJECT_SYNTHETICS/accessorydesired.h \
     $$UAVOBJECT_SYNTHETICS/baroaltitude.h \
     $$UAVOBJECT_SYNTHETICS/baroairspeed.h \
+    $$UAVOBJECT_SYNTHETICS/airspeedsettings.h \
     $$UAVOBJECT_SYNTHETICS/attitudeactual.h \
     $$UAVOBJECT_SYNTHETICS/attitudesimulated.h \
     $$UAVOBJECT_SYNTHETICS/altholdsmoothed.h \
@@ -94,11 +95,13 @@ HEADERS += $$UAVOBJECT_SYNTHETICS/accessorydesired.h \
     $$UAVOBJECT_SYNTHETICS/faultsettings.h \
     $$UAVOBJECT_SYNTHETICS/pipxsettings.h \
     $$UAVOBJECT_SYNTHETICS/pipxstatus.h \
+    $$UAVOBJECT_SYNTHETICS/windvelocity.h \
     $$UAVOBJECT_SYNTHETICS/osdsettings.h
 
 SOURCES += $$UAVOBJECT_SYNTHETICS/accessorydesired.cpp \
     $$UAVOBJECT_SYNTHETICS/baroaltitude.cpp \
     $$UAVOBJECT_SYNTHETICS/baroairspeed.cpp \
+    $$UAVOBJECT_SYNTHETICS/airspeedsettings.cpp \
     $$UAVOBJECT_SYNTHETICS/attitudeactual.cpp \
     $$UAVOBJECT_SYNTHETICS/attitudesimulated.cpp \
     $$UAVOBJECT_SYNTHETICS/altholdsmoothed.cpp \
@@ -168,4 +171,5 @@ SOURCES += $$UAVOBJECT_SYNTHETICS/accessorydesired.cpp \
     $$UAVOBJECT_SYNTHETICS/faultsettings.cpp \
     $$UAVOBJECT_SYNTHETICS/pipxsettings.cpp \
     $$UAVOBJECT_SYNTHETICS/pipxstatus.cpp \
+    $$UAVOBJECT_SYNTHETICS/windvelocity.cpp \
     $$UAVOBJECT_SYNTHETICS/osdsettings.cpp
