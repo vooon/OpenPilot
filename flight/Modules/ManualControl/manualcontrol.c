@@ -390,17 +390,17 @@ static void manualControlTask(void *parameters)
 						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_ARMING:
 							break;
 						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_ACC0:
-							accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0];
+							accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY1];
 							if(AccessoryDesiredInstSet(0, &accessory) != 0)
 								AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
 							break;
 						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_ACC1:
-							accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0];
+							accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY1];
 							if(AccessoryDesiredInstSet(1, &accessory) != 0)
 								AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
 							break;
 						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_ACC2:
-							accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0];
+							accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY1];
 							if(AccessoryDesiredInstSet(2, &accessory) != 0)
 								AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
 							break;
@@ -422,17 +422,17 @@ static void manualControlTask(void *parameters)
 						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_ARMING:
 							break;
 						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_ACC0:
-							accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0];
+							accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY2];
 							if(AccessoryDesiredInstSet(0, &accessory) != 0)
 								AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
 							break;
 						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_ACC1:
-							accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0];
+							accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY2];
 							if(AccessoryDesiredInstSet(1, &accessory) != 0)
 								AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
 							break;
 						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_ACC2:
-							accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0];
+							accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY2];
 							if(AccessoryDesiredInstSet(2, &accessory) != 0)
 								AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
 							break;
