@@ -86,7 +86,7 @@ static uint16_t lastChannelUpdateFreq[ACTUATORSETTINGS_CHANNELUPDATEFREQ_NUMELEM
 //this structure is equivalent to the UAVObjects for one mixer.
 typedef struct {
 	uint8_t type;
-	int8_t matrix[5];
+	int8_t matrix[MIXERSETTINGS_MIXER1VECTOR_NUMELEM];
 } __attribute__((packed)) Mixer_t;
 
 /**
@@ -264,6 +264,7 @@ static void actuatorTask(void* parameters)
 				break;
 		}
 
+		//[BCH]<-- This is a giant section of code, it should have an explanation about its intended purpose
 		for(int ct=0; ct < MAX_MIX_ACTUATORS; ct++)
 		{
 			if(mixers[ct].type == MIXERSETTINGS_MIXER1TYPE_DISABLED) {
@@ -387,7 +388,9 @@ float ProcessMixer(const int index, const float curve1, const float curve2,
 	(((float)mixer->matrix[MIXERSETTINGS_MIXER1VECTOR_THROTTLECURVE2] / 128.0f) * curve2) +
 	(((float)mixer->matrix[MIXERSETTINGS_MIXER1VECTOR_ROLL] / 128.0f) * desired->Roll) +
 	(((float)mixer->matrix[MIXERSETTINGS_MIXER1VECTOR_PITCH] / 128.0f) * desired->Pitch) +
-	(((float)mixer->matrix[MIXERSETTINGS_MIXER1VECTOR_YAW] / 128.0f) * desired->Yaw);
+	(((float)mixer->matrix[MIXERSETTINGS_MIXER1VECTOR_YAW] / 128.0f) * desired->Yaw) +
+	(((float)mixer->matrix[MIXERSETTINGS_MIXER1VECTOR_FLAPS] / 128.0f) * desired->Flaps)+
+	(((float)mixer->matrix[MIXERSETTINGS_MIXER1VECTOR_SPOILERS] / 128.0f) * desired->Spoilers);
 	if(mixer->type == MIXERSETTINGS_MIXER1TYPE_MOTOR)
 	{
 		if(result < 0.0f) //idle throttle

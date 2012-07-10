@@ -1,28 +1,31 @@
 <xml>
     <object name="ManualControlSettings" singleinstance="true" settings="true">
         <description>Settings to indicate how to decode receiver input by @ref ManualControlModule.</description>
+	<!-- Note: the number of elements in ChannelGroups must be identical to the value set in ManualControlCommand.Channel -->
         <field name="ChannelGroups" units="Channel Group" type="enum" 
 	       elementnames="Throttle,Roll,Pitch,Yaw,FlightMode,Collective,Accessory0,Accessory1,Accessory2"
 	       options="PWM,PPM,DSM (MainPort),DSM (FlexiPort),S.Bus,GCS,None" defaultvalue="None"/>
-	<field name="ChannelNumber" units="channel" type="uint8" defaultvalue="0"
+        <field name="ChannelNumber" units="channel" type="uint8" defaultvalue="0"
 	       elementnames="Throttle,Roll,Pitch,Yaw,FlightMode,Collective,Accessory0,Accessory1,Accessory2"/>
-	<field name="ChannelMin" units="us" type="int16" defaultvalue="1000"
+        <field name="ChannelMin" units="us" type="int16" defaultvalue="1000"
 	       elementnames="Throttle,Roll,Pitch,Yaw,FlightMode,Collective,Accessory0,Accessory1,Accessory2"/>
-	<field name="ChannelNeutral" units="us" type="int16" defaultvalue="1500"
+        <field name="ChannelNeutral" units="us" type="int16" defaultvalue="1500"
 	       elementnames="Throttle,Roll,Pitch,Yaw,FlightMode,Collective,Accessory0,Accessory1,Accessory2"/>
-	<field name="ChannelMax" units="us" type="int16" defaultvalue="2000"
+        <field name="ChannelMax" units="us" type="int16" defaultvalue="2000"
 	       elementnames="Throttle,Roll,Pitch,Yaw,FlightMode,Collective,Accessory0,Accessory1,Accessory2"/>
-	       
+           	       
+        <field name="AccessoryRouting" units="" type="enum" elementnames="Accessory0,Accessory1,Accessory2" options="None,Flaps,Spoilers,Arming,Acc0,Acc1,Acc2" defaultvalue="None,None,None"/>
+           
         <field name="Deadband" units="%" type="float" elements="1" defaultvalue="0"/>
 
         <field name="Arming" units="" type="enum" elements="1" options="Always Disarmed,Always Armed,Roll Left,Roll Right,Pitch Forward,Pitch Aft,Yaw Left,Yaw Right" defaultvalue="Always Disarmed"/>
 
-	<!-- Note these options should be identical to those in StabilizationDesired.StabilizationMode -->
+	<!-- Note: these options should be identical to those in StabilizationDesired.StabilizationMode -->
         <field name="Stabilization1Settings" units="" type="enum" elementnames="Roll,Pitch,Yaw" options="None,Rate,Attitude,AxisLock,WeakLeveling,VirtualBar" defaultvalue="Attitude,Attitude,Rate"/>
         <field name="Stabilization2Settings" units="" type="enum" elementnames="Roll,Pitch,Yaw" options="None,Rate,Attitude,AxisLock,WeakLeveling,VirtualBar" defaultvalue="Attitude,Attitude,Rate"/>
         <field name="Stabilization3Settings" units="" type="enum" elementnames="Roll,Pitch,Yaw" options="None,Rate,Attitude,AxisLock,WeakLeveling,VirtualBar" defaultvalue="Attitude,Attitude,Rate"/>
 
-	<!-- Note these options values should be identical to those defined in FlightMode -->
+	<!-- Note: these options values should be identical to those defined in FlightMode -->
         <field name="FlightModeNumber" units="" type="uint8" elements="1" defaultvalue="3"/>
         <field name="FlightModePosition" units="" type="enum" elements="6" options="Manual,Stabilized1,Stabilized2,Stabilized3,AltitudeHold,VelocityControl,PositionHold" defaultvalue="Manual,Stabilized1,Stabilized2,Stabilized3,AltitudeHold,PositionHold"/>
 

@@ -374,6 +374,10 @@ static void stabilizationTask(void* parameters)
 
 			}
 		}
+		
+		//Pass flaps and spoilers through to the actuator UAVO
+		actuatorDesired.Flaps = stabDesired.Flaps;
+		actuatorDesired.Spoilers = stabDesired.Spoilers;
 
 		// Save dT
 		actuatorDesired.UpdateTime = dT * 1000;
@@ -381,6 +385,8 @@ static void stabilizationTask(void* parameters)
 		if(PARSE_FLIGHT_MODE(flightStatus.FlightMode) == FLIGHTMODE_MANUAL)
 			shouldUpdate = 0;
 
+		//What is this trying to do? How come does one single axis being FlightMode="None" turn
+		// off this entire update?
 		if(shouldUpdate)
 		{
 			actuatorDesired.Throttle = stabDesired.Throttle;
@@ -388,6 +394,7 @@ static void stabilizationTask(void* parameters)
 				actuatorDesired.NumLongUpdates++;
 			ActuatorDesiredSet(&actuatorDesired);
 		}
+		
 
 		if(flightStatus.Armed != FLIGHTSTATUS_ARMED_ARMED ||
 		   (lowThrottleZeroIntegral && stabDesired.Throttle < 0) ||

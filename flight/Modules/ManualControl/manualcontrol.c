@@ -209,7 +209,7 @@ static void manualControlTask(void *parameters)
 
 			bool valid_input_detected = true;
 			
-			// Read channel values in us
+			// Read channel values in us <--[BCH] IS THERE ANY NEED FOR THE NUMBER OF CHANNELS TO STAY BOUNDED?
 			for (uint8_t n = 0; 
 			     n < MANUALCONTROLSETTINGS_CHANNELGROUPS_NUMELEM && n < MANUALCONTROLCOMMAND_CHANNEL_NUMELEM;
 			     ++n) {
@@ -227,7 +227,10 @@ static void manualControlTask(void *parameters)
 				if(cmd.Channel[n] == PIOS_RCVR_TIMEOUT)
 					valid_input_detected = false;
 				else
+				{
+					// Scale channels to [-1,+1] range
 					scaledChannel[n] = scaleChannel(cmd.Channel[n], settings.ChannelMax[n],	settings.ChannelMin[n], settings.ChannelNeutral[n]);
+				}
 			}
 
 			// Check settings, if error raise alarm
@@ -280,12 +283,15 @@ static void manualControlTask(void *parameters)
 				connected_count = 0;
 				disconnected_count = 0;
 			}
-
+			
+			//[BCH] What does this section do?
 			if (cmd.Connected == MANUALCONTROLCOMMAND_CONNECTED_FALSE) {
 				cmd.Throttle = -1;	// Shut down engine with no control
 				cmd.Roll = 0;
 				cmd.Yaw = 0;
 				cmd.Pitch = 0;
+				cmd.Flaps = 0;
+				cmd.Spoilers = 0;
 				cmd.Collective = 0;
 				//cmd.FlightMode = MANUALCONTROLCOMMAND_FLIGHTMODE_AUTO; // don't do until AUTO implemented and functioning
 				// Important: Throttle < 0 will reset Stabilization coefficients among other things. Either change this,
@@ -295,7 +301,7 @@ static void manualControlTask(void *parameters)
 				AccessoryDesiredData accessory;
 				// Set Accessory 0
 				if (settings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0] != 
-					MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE) {
+					MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE) {//[BHC] What are these checks doing?					
 					accessory.AccessoryVal = 0;
 					if(AccessoryDesiredInstSet(0, &accessory) != 0)
 						AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
@@ -318,7 +324,7 @@ static void manualControlTask(void *parameters)
 			} else {
 				AlarmsClear(SYSTEMALARMS_ALARM_MANUALCONTROL);
 
-				// Scale channels to -1 -> +1 range
+				//Assign scaled channels to UAVO
 				cmd.Roll           = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ROLL];
 				cmd.Pitch          = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_PITCH];
 				cmd.Yaw            = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_YAW];
@@ -334,30 +340,106 @@ static void manualControlTask(void *parameters)
 
 				if(cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_COLLECTIVE] != PIOS_RCVR_INVALID &&
 				   cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_COLLECTIVE] != PIOS_RCVR_NODRIVER &&
-				   cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_COLLECTIVE] != PIOS_RCVR_TIMEOUT)
+				   cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_COLLECTIVE] != PIOS_RCVR_TIMEOUT){
 					cmd.Collective = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_COLLECTIVE];
+				}
 				   
 				AccessoryDesiredData accessory;
 				// Set Accessory 0
 				if (settings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0] != 
-					MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE) {
-					accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0];
-					if(AccessoryDesiredInstSet(0, &accessory) != 0)
-						AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
+					MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE) {//[BHC] What are these checks doing?
+					switch (settings.AccessoryRouting[MANUALCONTROLSETTINGS_ACCESSORYROUTING_ACCESSORY0]) {
+						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_FLAPS:
+							cmd.Flaps = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0];
+							break;
+						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_SPOILERS:
+							cmd.Spoilers = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0];
+							break;
+						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_ARMING:
+							break;
+						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_ACC0:
+							accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0];
+							if(AccessoryDesiredInstSet(0, &accessory) != 0)
+								AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
+							break;
+						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_ACC1:
+							accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0];
+							if(AccessoryDesiredInstSet(1, &accessory) != 0)
+								AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
+							break;
+						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_ACC2:
+							accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0];
+							if(AccessoryDesiredInstSet(2, &accessory) != 0)
+								AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
+							break;
+						default:
+							//WHAT SHOULD WE DO IN CASE OF A DEFAULT? IS DOING NOTHING ACCEPTABLE?
+							break;
+					}
 				}
 				// Set Accessory 1
 				if (settings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY1] != 
 					MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE) {
-					accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY1];
-					if(AccessoryDesiredInstSet(1, &accessory) != 0)
-						AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
+					switch (settings.AccessoryRouting[MANUALCONTROLSETTINGS_ACCESSORYROUTING_ACCESSORY1]) {
+						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_FLAPS:
+							cmd.Flaps = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY1];
+							break;
+						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_SPOILERS:
+							cmd.Spoilers = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY1];
+							break;
+						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_ARMING:
+							break;
+						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_ACC0:
+							accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0];
+							if(AccessoryDesiredInstSet(0, &accessory) != 0)
+								AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
+							break;
+						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_ACC1:
+							accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0];
+							if(AccessoryDesiredInstSet(1, &accessory) != 0)
+								AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
+							break;
+						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_ACC2:
+							accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0];
+							if(AccessoryDesiredInstSet(2, &accessory) != 0)
+								AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
+							break;
+						default:
+							//WHAT SHOULD WE DO IN CASE OF A DEFAULT? IS DOING NOTHING ACCEPTABLE?
+							break;
+					}
 				}
 				// Set Accessory 2
 				if (settings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY2] != 
 					MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE) {
-					accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY2];
-					if(AccessoryDesiredInstSet(2, &accessory) != 0)
-						AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
+					switch (settings.AccessoryRouting[MANUALCONTROLSETTINGS_ACCESSORYROUTING_ACCESSORY2]) {
+						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_FLAPS:
+							cmd.Flaps = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY2];
+							break;
+						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_SPOILERS:
+							cmd.Spoilers = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY2];
+							break;
+						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_ARMING:
+							break;
+						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_ACC0:
+							accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0];
+							if(AccessoryDesiredInstSet(0, &accessory) != 0)
+								AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
+							break;
+						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_ACC1:
+							accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0];
+							if(AccessoryDesiredInstSet(1, &accessory) != 0)
+								AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
+							break;
+						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_ACC2:
+							accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0];
+							if(AccessoryDesiredInstSet(2, &accessory) != 0)
+								AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
+							break;
+						default:
+							//WHAT SHOULD WE DO IN CASE OF A DEFAULT? IS DOING NOTHING ACCEPTABLE?
+							break;
+					}
 				}
 
 				processFlightMode(&settings, flightMode);
@@ -547,7 +629,9 @@ static void updateActuatorDesired(ManualControlCommandData * cmd)
 	actuator.Roll = cmd->Roll;
 	actuator.Pitch = cmd->Pitch;
 	actuator.Yaw = cmd->Yaw;
-	actuator.Throttle = (cmd->Throttle < 0) ? -1 : cmd->Throttle;
+	actuator.Flaps = (cmd->Flaps < -0.95) ? -1 : cmd->Flaps;           //Use 95% in order to ensure that the flaps stay shut, despite TX jitter
+	actuator.Spoilers = (cmd->Spoilers < -0.95) ? -1 : cmd->Spoilers;  //Use 95% in order to ensure that the spoilers stay shut, despite TX jitter
+	actuator.Throttle = (cmd->Throttle < 0) ? -1 : cmd->Throttle;      //Use 0% in order to ensure that the throttle stays at 0, despite TX jitter
 	ActuatorDesiredSet(&actuator);
 }
 
@@ -607,7 +691,9 @@ static void updateStabilizationDesired(ManualControlCommandData * cmd, ManualCon
 	     (stab_settings[2] == STABILIZATIONDESIRED_STABILIZATIONMODE_VIRTUALBAR) ? cmd->Yaw :
 	     0; // this is an invalid mode
 
-	stabilization.Throttle = (cmd->Throttle < 0) ? -1 : cmd->Throttle;
+	stabilization.Flaps = (cmd->Flaps < -0.95) ? -1 : cmd->Flaps;          //Use 95% in order to ensure that the flaps stay shut, despite TX jitter
+	stabilization.Spoilers = (cmd->Spoilers < -0.95) ? -1 : cmd->Spoilers; //Use 95% in order to ensure that the spoilers stay shut, despite TX jitter
+	stabilization.Throttle = (cmd->Throttle < 0) ? -1 : cmd->Throttle;     //Use 0% in order to ensure that the throttle stays at 0, despite TX jitter
 	StabilizationDesiredSet(&stabilization);
 }
 
