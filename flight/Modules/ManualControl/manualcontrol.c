@@ -83,7 +83,7 @@ static void updateActuatorDesired(ManualControlCommandData * cmd);
 static void updateStabilizationDesired(ManualControlCommandData * cmd, ManualControlSettingsData * settings);
 static void altitudeHoldDesired(ManualControlCommandData * cmd);
 static void processFlightMode(ManualControlSettingsData * settings, float flightMode);
-static void processArm(ManualControlCommandData * cmd, ManualControlSettingsData * settings);
+static void processArm(ManualControlCommandData * cmd, ManualControlSettingsData * settings, bool armSwitchHigh);
 static void setArmedIfChanged(uint8_t val);
 
 static void manualControlTask(void *parameters);
@@ -285,6 +285,7 @@ static void manualControlTask(void *parameters)
 			}
 			
 			//[BCH] What does this section do?
+			bool armSwitchHigh=false;
 			if (cmd.Connected == MANUALCONTROLCOMMAND_CONNECTED_FALSE) {
 				cmd.Throttle = -1;	// Shut down engine with no control
 				cmd.Roll = 0;
@@ -356,6 +357,10 @@ static void manualControlTask(void *parameters)
 							cmd.Spoilers = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0];
 							break;
 						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_ARMING:
+							if (scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0] > ARMED_THRESHOLD)
+								armSwitchHigh=true;
+							else
+								armSwitchHigh=false;
 							break;
 						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_ACC0:
 							accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0];
@@ -388,6 +393,10 @@ static void manualControlTask(void *parameters)
 							cmd.Spoilers = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY1];
 							break;
 						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_ARMING:
+							if (scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY1] > ARMED_THRESHOLD)
+								armSwitchHigh=true;
+							else
+								armSwitchHigh=false;
 							break;
 						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_ACC0:
 							accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY1];
@@ -420,6 +429,10 @@ static void manualControlTask(void *parameters)
 							cmd.Spoilers = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY2];
 							break;
 						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_ARMING:
+							if (scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY2] > ARMED_THRESHOLD)
+								armSwitchHigh=true;
+							else
+								armSwitchHigh=false;
 							break;
 						case MANUALCONTROLSETTINGS_ACCESSORYROUTING_ACC0:
 							accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY2];
@@ -447,7 +460,7 @@ static void manualControlTask(void *parameters)
 			}
 
 			// Process arming outside conditional so system will disarm when disconnected
-			processArm(&cmd, &settings);
+			processArm(&cmd, &settings, armSwitchHigh);
 			
 			// Update cmd object
 			ManualControlCommandSet(&cmd);
@@ -629,8 +642,8 @@ static void updateActuatorDesired(ManualControlCommandData * cmd)
 	actuator.Roll = cmd->Roll;
 	actuator.Pitch = cmd->Pitch;
 	actuator.Yaw = cmd->Yaw;
-	actuator.Flaps = (cmd->Flaps < -0.95) ? -1 : cmd->Flaps;           //Use 95% in order to ensure that the flaps stay shut, despite TX jitter
-	actuator.Spoilers = (cmd->Spoilers < -0.95) ? -1 : cmd->Spoilers;  //Use 95% in order to ensure that the spoilers stay shut, despite TX jitter
+	actuator.Flaps = ((int8_t) (cmd->Flaps * 5.0f))/5.0f;    //Limit flaps to 10 positions
+	actuator.Spoilers = ((int8_t) (cmd->Flaps * 5.0f))/5.0f; //Limit spoilers to 10 positions
 	actuator.Throttle = (cmd->Throttle < 0) ? -1 : cmd->Throttle;      //Use 0% in order to ensure that the throttle stays at 0, despite TX jitter
 	ActuatorDesiredSet(&actuator);
 }
@@ -691,8 +704,8 @@ static void updateStabilizationDesired(ManualControlCommandData * cmd, ManualCon
 	     (stab_settings[2] == STABILIZATIONDESIRED_STABILIZATIONMODE_VIRTUALBAR) ? cmd->Yaw :
 	     0; // this is an invalid mode
 
-	stabilization.Flaps = (cmd->Flaps < -0.95) ? -1 : cmd->Flaps;          //Use 95% in order to ensure that the flaps stay shut, despite TX jitter
-	stabilization.Spoilers = (cmd->Spoilers < -0.95) ? -1 : cmd->Spoilers; //Use 95% in order to ensure that the spoilers stay shut, despite TX jitter
+	stabilization.Flaps = ((int8_t) (cmd->Flaps * 5.0f))/5.0f;    //Limit flaps to 10 positions
+	stabilization.Spoilers = ((int8_t) (cmd->Flaps * 5.0f))/5.0f; //Limit spoilers to 10 positions
 	stabilization.Throttle = (cmd->Throttle < 0) ? -1 : cmd->Throttle;     //Use 0% in order to ensure that the throttle stays at 0, despite TX jitter
 	StabilizationDesiredSet(&stabilization);
 }
@@ -825,7 +838,7 @@ static void setArmedIfChanged(uint8_t val) {
  * @param[out] cmd The structure to set the armed in
  * @param[in] settings Settings indicating the necessary position
  */
-static void processArm(ManualControlCommandData * cmd, ManualControlSettingsData * settings)
+static void processArm(ManualControlCommandData * cmd, ManualControlSettingsData * settings, bool armSwitchHigh)
 {
 
 	bool lowThrottle = cmd->Throttle <= 0;
@@ -869,11 +882,12 @@ static void processArm(ManualControlCommandData * cmd, ManualControlSettingsData
 		float armingInputLevel = 0;
 
 		// Calc channel see assumptions7
-		int8_t sign = ((settings->Arming-MANUALCONTROLSETTINGS_ARMING_ROLLLEFT)%2) ? -1 : 1;
-		switch ( (settings->Arming-MANUALCONTROLSETTINGS_ARMING_ROLLLEFT)/2 ) {
+		int8_t sign = ((settings->Arming - MANUALCONTROLSETTINGS_ARMING_ROLLLEFT)%2) ? -1 : 1; //IS THE COMPILER GOOD ENOUGH TO CATCH THAT WE CALCULATE THE SAME QUANTITY, (settings->Arming - MANUALCONTROLSETTINGS_ARMING_ROLLLEFT), TWICE IN A ROW?
+		switch ( (settings->Arming - MANUALCONTROLSETTINGS_ARMING_ROLLLEFT)/2 ) {
 			case ARMING_CHANNEL_ROLL:    armingInputLevel = sign * cmd->Roll;    break;
 			case ARMING_CHANNEL_PITCH:   armingInputLevel = sign * cmd->Pitch;   break;
 			case ARMING_CHANNEL_YAW:     armingInputLevel = sign * cmd->Yaw;     break;
+			case ARMING_CHANNEL_TOGGLE:  armingInputLevel = sign * (armSwitchHigh ? 1:-1);          break;
 		}
 
 		bool manualArm = false;
