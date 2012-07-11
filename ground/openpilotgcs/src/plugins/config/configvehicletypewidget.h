@@ -74,6 +74,7 @@ private:
     QStringList channelNames;
     QStringList mixerTypes;
     QStringList mixerVectors;
+    QStringList routingNames;
 
     QGraphicsSvgItem *quad;
     bool ffTuningInProgress;
@@ -88,10 +89,15 @@ private slots:
     void setComboCurrentIndex(QComboBox* box, int index);
 
     void setupAirframeUI(QString type);
-	
+
+    void setupFlaps(QString type);
+    void setupSpoilers(QString type);
+
     void toggleAileron2(int index);
     void toggleElevator2(int index);
     void toggleRudder2(int index);
+    void toggleFlap2(int index);
+    void toggleSpoiler2(int index);
     void switchAirframeType(int index);
     void resetFwMixer();
     void resetMrMixer();

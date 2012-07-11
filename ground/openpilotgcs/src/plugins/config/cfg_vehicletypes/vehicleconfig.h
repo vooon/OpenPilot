@@ -76,6 +76,10 @@ typedef struct {
     uint FixedWingPitch2:4;
     uint FixedWingYaw1:4;
     uint FixedWingYaw2:4;
+    uint FixedWingFlap1:4;
+    uint FixedWingFlap2:4;
+    uint FixedWingSpoiler1:4;
+    uint FixedWingSpoiler2:4;
     uint padding:4;         //32bits
     quint32 padding1;
     quint32 padding2;
@@ -117,7 +121,9 @@ class VehicleConfig: public ConfigTaskWidget
         /* Enumeration options for field MixerType */
         typedef enum { MIXERTYPE_DISABLED=0, MIXERTYPE_MOTOR=1, MIXERTYPE_SERVO=2, MIXERTYPE_CAMERAROLL=3, MIXERTYPE_CAMERAPITCH=4, MIXERTYPE_CAMERAYAW=5, MIXERTYPE_ACCESSORY0=6, MIXERTYPE_ACCESSORY1=7, MIXERTYPE_ACCESSORY2=8, MIXERTYPE_ACCESSORY3=9, MIXERTYPE_ACCESSORY4=10, MIXERTYPE_ACCESSORY5=11 } MixerTypeElem;
         /* Array element names for field MixerVector */
-        typedef enum { MIXERVECTOR_THROTTLECURVE1=0, MIXERVECTOR_THROTTLECURVE2=1, MIXERVECTOR_ROLL=2, MIXERVECTOR_PITCH=3, MIXERVECTOR_YAW=4 } MixerVectorElem;
+        //1)SHOULDN'T THESE NOT BE GIVEN SPECIFIC VALUES?
+        //2)SHOULDN'T THIS JUST BE PULLING FROM MixerSettings UAVO?
+        typedef enum { MIXERVECTOR_THROTTLECURVE1=0, MIXERVECTOR_THROTTLECURVE2=1, MIXERVECTOR_ROLL=2, MIXERVECTOR_PITCH=3, MIXERVECTOR_YAW=4, MIXERVECTOR_FLAPS=5, MIXERVECTOR_SPOILERS=6 } MixerVectorElem;
 
         static GUIConfigDataUnion GetConfigData();
         static void SetConfigData(GUIConfigDataUnion configData);

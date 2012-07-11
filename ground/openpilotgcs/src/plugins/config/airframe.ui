@@ -19,7 +19,7 @@
      <property name="currentIndex">
       <number>0</number>
      </property>
-     <widget class="QWidget" name="tabWidgetPage1">
+     <widget class="QWidget" name="MixerSettingsTab">
       <attribute name="title">
        <string>Mixer Settings</string>
       </attribute>
@@ -148,6 +148,22 @@
                   <string>Output Channel Assignments</string>
                  </property>
                  <layout class="QFormLayout" name="formLayout_3">
+                  <property name="fieldGrowthPolicy">
+                   <enum>QFormLayout::FieldsStayAtSizeHint</enum>
+                  </property>
+                  <item row="0" column="1">
+                   <spacer name="verticalSpacer_2">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
                   <item row="1" column="0">
                    <widget class="QLabel" name="fwEngineLabel">
                     <property name="text">
@@ -281,19 +297,6 @@
                      <string>Select output channel for a secondary rudder</string>
                     </property>
                    </widget>
-                  </item>
-                  <item row="0" column="1">
-                   <spacer name="verticalSpacer_2">
-                    <property name="orientation">
-                     <enum>Qt::Vertical</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>20</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                   </spacer>
                   </item>
                  </layout>
                 </widget>
@@ -2049,6 +2052,16 @@ margin:1px;</string>
                  <string>Yaw</string>
                 </property>
                </row>
+               <row>
+                <property name="text">
+                 <string>Flaps</string>
+                </property>
+               </row>
+               <row>
+                <property name="text">
+                 <string>Spoilers</string>
+                </property>
+               </row>
                <column>
                 <property name="text">
                  <string>Ch 1</string>
@@ -2473,6 +2486,134 @@ margin:1px;</string>
                  <set>AlignHCenter|AlignVCenter|AlignCenter</set>
                 </property>
                </item>
+               <item row="6" column="0">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="6" column="1">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="6" column="2">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="6" column="3">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="6" column="4">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="6" column="5">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="6" column="6">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="6" column="7">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="7" column="0">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="7" column="1">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="7" column="2">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="7" column="3">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="7" column="4">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="7" column="5">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="7" column="6">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
+               <item row="7" column="7">
+                <property name="text">
+                 <string>-</string>
+                </property>
+                <property name="textAlignment">
+                 <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+                </property>
+               </item>
               </widget>
              </item>
             </layout>
@@ -2483,9 +2624,169 @@ margin:1px;</string>
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab">
+     <widget class="QWidget" name="AdvancedSettingsTab">
       <attribute name="title">
-       <string>Advanced Settings</string>
+       <string>Accessory Settings</string>
+      </attribute>
+      <widget class="QWidget" name="gridLayoutWidget">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>591</width>
+         <height>111</height>
+        </rect>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_3">
+        <item row="0" column="1">
+         <widget class="QComboBox" name="fwFlapsType">
+          <item>
+           <property name="text">
+            <string>None</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Classic</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Crow flaps</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Flaperons</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="fwFlapsTypeLabel">
+          <property name="text">
+           <string>Flaps type:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QLabel" name="fwSpoilersTypeLabel">
+          <property name="text">
+           <string>Spoilers type:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="4">
+         <widget class="QComboBox" name="fwSpoilersType">
+          <item>
+           <property name="text">
+            <string>None</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Spoilers</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Airbrakes</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Spoilerons</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="fwFlap1Label">
+          <property name="text">
+           <string>Flaps 1:</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QComboBox" name="fwFlap1ChannelBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="fwFlap2Label">
+          <property name="text">
+           <string>Flaps 2:</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QComboBox" name="fwFlap2ChannelBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="4">
+         <widget class="QComboBox" name="fwSpoiler2ChannelBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="4">
+         <widget class="QComboBox" name="fwSpoiler1ChannelBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <widget class="QLabel" name="fwSpoiler1Label">
+          <property name="text">
+           <string>Spoiler 1:</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="3">
+         <widget class="QLabel" name="fwSpoiler2Label">
+          <property name="text">
+           <string>Spoiler 2:</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <spacer name="horizontalSpacer_10">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QWidget" name="FeedforwardSettingsTab">
+      <attribute name="title">
+       <string>Feedforward Settings</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_25">
        <item>
@@ -2899,6 +3200,68 @@ p, li { white-space: pre-wrap; }
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>aircraftType</tabstop>
+  <tabstop>fixedWingType</tabstop>
+  <tabstop>fwEngineChannelBox</tabstop>
+  <tabstop>fwAileron1ChannelBox</tabstop>
+  <tabstop>fwAileron2ChannelBox</tabstop>
+  <tabstop>fwElevator1ChannelBox</tabstop>
+  <tabstop>fwElevator2ChannelBox</tabstop>
+  <tabstop>fwRudder1ChannelBox</tabstop>
+  <tabstop>fwRudder2ChannelBox</tabstop>
+  <tabstop>elevonSlider1</tabstop>
+  <tabstop>elevonSlider2</tabstop>
+  <tabstop>fwThrottleReset</tabstop>
+  <tabstop>multirotorFrameType</tabstop>
+  <tabstop>mrRollMixLevel</tabstop>
+  <tabstop>mrPitchMixLevel</tabstop>
+  <tabstop>mrYawMixLevel</tabstop>
+  <tabstop>quadShape</tabstop>
+  <tabstop>mrThrottleCurveReset</tabstop>
+  <tabstop>triYawChannelBox</tabstop>
+  <tabstop>multiMotorChannelBox1</tabstop>
+  <tabstop>multiMotorChannelBox2</tabstop>
+  <tabstop>multiMotorChannelBox3</tabstop>
+  <tabstop>multiMotorChannelBox4</tabstop>
+  <tabstop>multiMotorChannelBox5</tabstop>
+  <tabstop>multiMotorChannelBox6</tabstop>
+  <tabstop>multiMotorChannelBox7</tabstop>
+  <tabstop>multiMotorChannelBox8</tabstop>
+  <tabstop>groundVehicleType</tabstop>
+  <tabstop>gvEngineChannelBox</tabstop>
+  <tabstop>gvAileron1ChannelBox</tabstop>
+  <tabstop>gvAileron2ChannelBox</tabstop>
+  <tabstop>gvMotor1ChannelBox</tabstop>
+  <tabstop>gvMotor2ChannelBox</tabstop>
+  <tabstop>gvSteering1ChannelBox</tabstop>
+  <tabstop>gvSteering2ChannelBox</tabstop>
+  <tabstop>differentialSteeringSlider1</tabstop>
+  <tabstop>differentialSteeringSlider2</tabstop>
+  <tabstop>gvThrottleCurve1Reset</tabstop>
+  <tabstop>gvThrottleCurve2Reset</tabstop>
+  <tabstop>customReset1</tabstop>
+  <tabstop>customReset2</tabstop>
+  <tabstop>customMixerTable</tabstop>
+  <tabstop>fwFlapsType</tabstop>
+  <tabstop>fwSpoilersType</tabstop>
+  <tabstop>fwFlap1ChannelBox</tabstop>
+  <tabstop>fwSpoiler1ChannelBox</tabstop>
+  <tabstop>fwFlap2ChannelBox</tabstop>
+  <tabstop>fwSpoiler2ChannelBox</tabstop>
+  <tabstop>feedForwardSlider</tabstop>
+  <tabstop>accelTime</tabstop>
+  <tabstop>decelTime</tabstop>
+  <tabstop>maxAccelSlider</tabstop>
+  <tabstop>ffTestBox1</tabstop>
+  <tabstop>ffTestBox2</tabstop>
+  <tabstop>ffTestBox3</tabstop>
+  <tabstop>textBrowser</tabstop>
+  <tabstop>airframeHelp</tabstop>
+  <tabstop>saveAircraftToRAM</tabstop>
+  <tabstop>saveAircraftToSD</tabstop>
+ </tabstops>
  <resources>
   <include location="../coreplugin/core.qrc"/>
  </resources>

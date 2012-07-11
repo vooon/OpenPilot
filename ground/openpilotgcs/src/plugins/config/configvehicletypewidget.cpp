@@ -100,6 +100,7 @@ ConfigVehicleTypeWidget::ConfigVehicleTypeWidget(QWidget *parent) : ConfigTaskWi
 
     addApplySaveButtons(m_aircraft->saveAircraftToRAM,m_aircraft->saveAircraftToSD);
 
+    //
     addUAVObject("SystemSettings");
     addUAVObject("MixerSettings");
     addUAVObject("ActuatorSettings");
@@ -140,8 +141,8 @@ ConfigVehicleTypeWidget::ConfigVehicleTypeWidget(QWidget *parent) : ConfigTaskWi
     m_aircraft->multirotorFrameType->setCurrentIndex(2); //Set default model to "Quad X"
 
 
-	//NEW STYLE: Loop through the widgets looking for all widgets that have "ChannelBox" in their name
-	//  The upshot of this is that ALL new ComboBox widgets for selecting the output channel must have "ChannelBox" in their name
+    //Loop through the widgets looking for all child widgets that have "ChannelBox" in their name. The upshot
+    // of this is that ALL new ComboBox widgets for selecting the output channel must have "ChannelBox" in their name
 	foreach(QComboBox *combobox, this->findChildren<QComboBox*>(QRegExp("\\S+ChannelBo\\S+")))//FOR WHATEVER REASON, THIS DOES NOT WORK WITH ChannelBox. ChannelBo is sufficiently accurate
 	{
         combobox->addItems(channelNames);
@@ -221,6 +222,10 @@ ConfigVehicleTypeWidget::ConfigVehicleTypeWidget(QWidget *parent) : ConfigTaskWi
     connect(m_aircraft->customThrottle1Curve, SIGNAL(curveUpdated(QList<double>,double)), this, SLOT(updateCustomThrottle1CurveValue(QList<double>,double)));
     connect(m_aircraft->customThrottle2Curve, SIGNAL(curveUpdated(QList<double>,double)), this, SLOT(updateCustomThrottle2CurveValue(QList<double>,double)));
 
+
+    connect(m_aircraft->fwFlapsType, SIGNAL(currentIndexChanged(QString)), this, SLOT(setupFlaps(QString)));
+    connect(m_aircraft->fwSpoilersType, SIGNAL(currentIndexChanged(QString)), this, SLOT(setupSpoilers(QString)));
+
 //    connect(m_aircraft->fwAileron1Channel, SIGNAL(currentIndexChanged(int)), this, SLOT(toggleAileron2(int)));
 //    connect(m_aircraft->fwElevator1Channel, SIGNAL(currentIndexChanged(int)), this, SLOT(toggleElevator2(int)));
 
@@ -235,9 +240,61 @@ ConfigVehicleTypeWidget::ConfigVehicleTypeWidget(QWidget *parent) : ConfigTaskWi
     refreshWidgetsValues();
     addToDirtyMonitor();
 
+
+
     disableMouseWheelEvents();
 }
 
+
+void ConfigVehicleTypeWidget::setupFlaps(QString flapsType)
+{
+    if(flapsType == "None"){
+        m_aircraft->fwFlap1ChannelBox->setEnabled(false);
+        m_aircraft->fwFlap1Label->setEnabled(false);
+        m_aircraft->fwFlap2ChannelBox->setEnabled(false);
+        m_aircraft->fwFlap2Label->setEnabled(false);
+    } else if(flapsType == "Classic"){
+        m_aircraft->fwFlap1ChannelBox->setEnabled(true);
+        m_aircraft->fwFlap1Label->setEnabled(true);
+        m_aircraft->fwFlap2ChannelBox->setEnabled(true);
+        m_aircraft->fwFlap2Label->setEnabled(true);
+    } else if(flapsType == "Crow flaps"){
+        m_aircraft->fwFlap1ChannelBox->setEnabled(true);
+        m_aircraft->fwFlap1Label->setEnabled(true);
+        m_aircraft->fwFlap2ChannelBox->setEnabled(true);
+        m_aircraft->fwFlap2Label->setEnabled(true);
+    } else if(flapsType == "Flaperons"){
+        m_aircraft->fwFlap1ChannelBox->setEnabled(false);
+        m_aircraft->fwFlap1Label->setEnabled(false);
+        m_aircraft->fwFlap2ChannelBox->setEnabled(false);
+        m_aircraft->fwFlap2Label->setEnabled(false);
+    }
+}
+
+void ConfigVehicleTypeWidget::setupSpoilers(QString spoilersType)
+{
+    if(spoilersType == "None"){
+        m_aircraft->fwSpoiler1ChannelBox->setEnabled(false);
+        m_aircraft->fwSpoiler1Label->setEnabled(false);
+        m_aircraft->fwSpoiler2ChannelBox->setEnabled(false);
+        m_aircraft->fwSpoiler2Label->setEnabled(false);
+    } else if(spoilersType == "Spoilers"){
+        m_aircraft->fwSpoiler1ChannelBox->setEnabled(true);
+        m_aircraft->fwSpoiler1Label->setEnabled(true);
+        m_aircraft->fwSpoiler2ChannelBox->setEnabled(true);
+        m_aircraft->fwSpoiler2Label->setEnabled(true);
+    } else if(spoilersType == "Spoilerons"){
+        m_aircraft->fwSpoiler1ChannelBox->setEnabled(true);
+        m_aircraft->fwSpoiler1Label->setEnabled(true);
+        m_aircraft->fwSpoiler2ChannelBox->setEnabled(true);
+        m_aircraft->fwSpoiler2Label->setEnabled(true);
+    } else if(spoilersType == "Airbrakes"){
+        m_aircraft->fwSpoiler1ChannelBox->setEnabled(true);
+        m_aircraft->fwSpoiler1Label->setEnabled(true);
+        m_aircraft->fwSpoiler2ChannelBox->setEnabled(true);
+        m_aircraft->fwSpoiler2Label->setEnabled(true);
+    }
+}
 
 /**
  Destructor
@@ -336,9 +393,30 @@ QStringList ConfigVehicleTypeWidget::getChannelDescriptions()
   */
 void ConfigVehicleTypeWidget::switchAirframeType(int index)
 {
+    //If airframe is a fixed wing or custom setup, activate flaps and spoilers. Otherwise disable them.
+    if(m_aircraft->aircraftType->currentText()=="Fixed Wing" || m_aircraft->aircraftType->currentText()=="Custom"){
+        m_aircraft->fwFlapsType->setEnabled(true);
+        m_aircraft->fwFlapsTypeLabel->setEnabled(true);
+        m_aircraft->fwSpoilersType->setEnabled(true);
+        m_aircraft->fwSpoilersTypeLabel->setEnabled(true);
+    }
+    else
+    {
+        m_aircraft->fwFlapsType->setEnabled(false);
+        m_aircraft->fwFlapsTypeLabel->setEnabled(false);
+        m_aircraft->fwSpoilersType->setEnabled(false);
+        m_aircraft->fwSpoilersTypeLabel->setEnabled(false);
+
+        //Disable spoiler and flap comboboxes and labels
+        setupFlaps("None");
+        setupSpoilers("None");
+    }
+
     m_aircraft->airframesWidget->setCurrentIndex(index);
     m_aircraft->quadShape->setSceneRect(quad->boundingRect());
     m_aircraft->quadShape->fitInView(quad, Qt::KeepAspectRatio);
+
+    //WHAT IS THIS `if` DOING? THE TEXT `CUSTOM` IS ALWAYS IN THIS MENU, SO THIS SECTION IS GUARANTEED TO BE EVALUATED.
     if (m_aircraft->aircraftType->findText("Custom")) {
         m_aircraft->customMixerTable->resizeColumnsToContents();
         for (int i=0;i<8;i++) {
@@ -415,6 +493,35 @@ void ConfigVehicleTypeWidget::toggleRudder2(int index)
         m_aircraft->fwRudder2Label->setEnabled(false);
     }
 }
+
+void ConfigVehicleTypeWidget::toggleFlap2(int index)
+{
+    if (index) {
+        m_aircraft->fwFlap2ChannelBox->setEnabled(true);
+        m_aircraft->fwFlap2Label->setEnabled(true);
+    } else {
+        m_aircraft->fwFlap2ChannelBox->setEnabled(false);
+        m_aircraft->fwFlap2Label->setEnabled(false);
+    }
+}
+
+void ConfigVehicleTypeWidget::toggleSpoiler2(int index)
+{
+    if (index) {
+        m_aircraft->fwSpoiler2ChannelBox->setEnabled(true);
+        m_aircraft->fwSpoiler2Label->setEnabled(true);
+    } else {
+        m_aircraft->fwSpoiler2ChannelBox->setEnabled(false);
+        m_aircraft->fwSpoiler2Label->setEnabled(false);
+    }
+}
+
+
+/////////////////////////////////////////////////////////
+/// Accessory mapping
+/////////////////////////////////////////////////////////
+//void ConfigVehicleTypeWidget::configureFlaps{
+//}
 
 /////////////////////////////////////////////////////////
 /// Feed Forward Testing
@@ -608,7 +715,7 @@ void ConfigVehicleTypeWidget::updateCustomThrottle2CurveValue(QList<double> list
   * Aircraft settings
   **************************/
 /**
-  Refreshes the current value of the SystemSettings which holds the aircraft type
+  Refreshes the current value of the SystemSettings which holds the vehicle type
   */
 void ConfigVehicleTypeWidget::refreshWidgetsValues(UAVObject * o)
 {
@@ -663,7 +770,7 @@ void ConfigVehicleTypeWidget::refreshWidgetsValues(UAVObject * o)
         m_aircraft->groundVehicleThrottle2->initLinearCurve(curveValues.count(), 1.0);
     }
 
-    // Load the Settings for fixed wing frames:
+    // Load the airframe settings:
     if (frameType.startsWith("FixedWing")) {
 		
         // Retrieve fixed wing settings
@@ -688,7 +795,7 @@ void ConfigVehicleTypeWidget::refreshWidgetsValues(UAVObject * o)
 	} else if (frameType == "Custom") {
         setComboCurrentIndex(m_aircraft->aircraftType, m_aircraft->aircraftType->findText("Custom"));
 	}	
-	
+
     updateCustomAirframeUI();
     setDirty(dirty);
 }
@@ -807,6 +914,10 @@ void ConfigVehicleTypeWidget::updateCustomAirframeUI()
                 QString::number(vconfig->getMixerVectorValue(mixer,channel,VehicleConfig::MIXERVECTOR_PITCH)));
             m_aircraft->customMixerTable->item(5,channel)->setText(
                 QString::number(vconfig->getMixerVectorValue(mixer,channel,VehicleConfig::MIXERVECTOR_YAW)));
+            m_aircraft->customMixerTable->item(6,channel)->setText(
+                QString::number(vconfig->getMixerVectorValue(mixer,channel,VehicleConfig::MIXERVECTOR_FLAPS)));
+            m_aircraft->customMixerTable->item(7,channel)->setText(
+                QString::number(vconfig->getMixerVectorValue(mixer,channel,VehicleConfig::MIXERVECTOR_SPOILERS)));
         }
     }
 
@@ -945,6 +1056,10 @@ void ConfigVehicleTypeWidget::addToDirtyMonitor()
     addWidget(m_aircraft->fwElevator2ChannelBox);
     addWidget(m_aircraft->fwRudder1ChannelBox);
     addWidget(m_aircraft->fwRudder2ChannelBox);
+    addWidget(m_aircraft->fwFlap1ChannelBox);
+    addWidget(m_aircraft->fwFlap2ChannelBox);
+    addWidget(m_aircraft->fwSpoiler1ChannelBox);
+    addWidget(m_aircraft->fwSpoiler2ChannelBox);
     addWidget(m_aircraft->elevonSlider1);
     addWidget(m_aircraft->elevonSlider2);
     addWidget(m_heli->m_ccpm->ccpmType);

@@ -82,6 +82,7 @@ ConfigInputWidget::ConfigInputWidget(QWidget *parent) : ConfigTaskWidget(parent)
     connect(m_config->wzBack,SIGNAL(clicked()),this,SLOT(wzBack()));
 
     m_config->stackedWidget->setCurrentIndex(0);
+    //Directly connect Buttons to UAVOs
     addUAVObjectToWidgetRelation("ManualControlSettings","FlightModePosition",m_config->fmsModePos1,0);
     addUAVObjectToWidgetRelation("ManualControlSettings","FlightModePosition",m_config->fmsModePos2,1);
     addUAVObjectToWidgetRelation("ManualControlSettings","FlightModePosition",m_config->fmsModePos3,2);
@@ -99,6 +100,10 @@ ConfigInputWidget::ConfigInputWidget(QWidget *parent) : ConfigTaskWidget(parent)
     addUAVObjectToWidgetRelation("ManualControlSettings","Stabilization1Settings",m_config->fmsSsPos1Yaw,"Yaw");
     addUAVObjectToWidgetRelation("ManualControlSettings","Stabilization2Settings",m_config->fmsSsPos2Yaw,"Yaw");
     addUAVObjectToWidgetRelation("ManualControlSettings","Stabilization3Settings",m_config->fmsSsPos3Yaw,"Yaw");
+
+    addUAVObjectToWidgetRelation("ManualControlSettings", "AccessoryRouting", m_config->acc0RoutingBox, ManualControlSettings::ACCESSORYROUTING_ACCESSORY0);
+    addUAVObjectToWidgetRelation("ManualControlSettings", "AccessoryRouting", m_config->acc1RoutingBox, ManualControlSettings::ACCESSORYROUTING_ACCESSORY1);
+    addUAVObjectToWidgetRelation("ManualControlSettings", "AccessoryRouting", m_config->acc2RoutingBox, ManualControlSettings::ACCESSORYROUTING_ACCESSORY2);
 
     addUAVObjectToWidgetRelation("ManualControlSettings","Arming",m_config->armControl);
     addUAVObjectToWidgetRelation("ManualControlSettings","ArmedTimeout",m_config->armTimeout,0,1000);

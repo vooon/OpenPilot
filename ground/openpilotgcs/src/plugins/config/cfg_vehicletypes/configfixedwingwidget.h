@@ -56,6 +56,8 @@ private:
     bool setupFrameElevon(QString airframeType);
     bool setupFrameVtail(QString airframeType);
 
+    void configureFlapsSpoilers(UAVDataObject* mixer, int aileronChannel1, int aileronChannel2);
+
     virtual void ResetActuators(GUIConfigDataUnion* configData);
     virtual QStringList getChannelDescriptions();
 

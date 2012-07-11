@@ -62,7 +62,7 @@ void ConfigTaskWidget::addUAVObject(QString objectName)
     addUAVObjectToWidgetRelation(objectName,"",NULL);
 }
 /**
- * Add an UAVObject field to widget relation to the management system
+ * Add a UAVObject field to widget relation to the management system
  * @param object name of the object to add
  * @param field name of the field to add
  * @param widget pointer to the widget whitch will display/define the field value
@@ -85,7 +85,7 @@ void ConfigTaskWidget::addUAVObjectToWidgetRelation(QString object, QString fiel
  * @param widget pointer to the widget whitch will display/define the field value
  * @param element name of the element of the field element to add to this relation
  * @param scale scale value of this relation
- * @param isLimited bool to signal if this widget contents is limited in value
+ * @param isLimited bool to signal if this widget contents are limited in value
  * @param defaultReloadGroups default and reload groups this relation belongs to
  * @param instID instance ID of the object used on this relation
  */
@@ -104,13 +104,13 @@ void ConfigTaskWidget::addUAVObjectToWidgetRelation(QString object, QString fiel
     addUAVObjectToWidgetRelation(object, field, widget,index,scale,isLimited,defaultReloadGroups,instID);
 }
 /**
- * Add an UAVObject field to widget relation to the management system
+ * Add a UAVObject field to widget relation to the management system
  * @param object name of the object to add
  * @param field name of the field to add
  * @param widget pointer to the widget whitch will display/define the field value
  * @param index index of the element of the field to add to this relation
  * @param scale scale value of this relation
- * @param isLimited bool to signal if this widget contents is limited in value
+ * @param isLimited bool to signal if this widget contents are limited in value
  * @param defaultReloadGroups default and reload groups this relation belongs to
  * @param instID instance ID of the object used on this relation
  */
@@ -913,7 +913,7 @@ void ConfigTaskWidget::disconnectWidgetUpdatesToSlot(QWidget * widget,const char
 
 }
 /**
- * Sets a widget value from an UAVObject field
+ * Sets a widget value from a UAVObject field
  * @param widget pointer for the widget to set
  * @param field pointer to the UAVObject field to use
  * @param index index of the element to use

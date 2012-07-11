@@ -139,6 +139,10 @@ void ConfigFixedWingWidget::ResetActuators(GUIConfigDataUnion* configData)
     configData->fixedwing.FixedWingRoll2 = 0;
     configData->fixedwing.FixedWingYaw1 = 0;
     configData->fixedwing.FixedWingYaw2 = 0;
+    configData->fixedwing.FixedWingFlap1 = 0;
+    configData->fixedwing.FixedWingFlap2 = 0;
+    configData->fixedwing.FixedWingSpoiler1 = 0;
+    configData->fixedwing.FixedWingSpoiler2 = 0;
     configData->fixedwing.FixedWingThrottle = 0;
 }
 
@@ -168,6 +172,14 @@ QStringList ConfigFixedWingWidget::getChannelDescriptions()
         channelDesc[configData.fixedwing.FixedWingYaw1-1] = QString("FixedWingYaw1");
     if (configData.fixedwing.FixedWingYaw2 > 0)
         channelDesc[configData.fixedwing.FixedWingYaw2-1] = QString("FixedWingYaw2");
+    if (configData.fixedwing.FixedWingFlap1 > 0)
+        channelDesc[configData.fixedwing.FixedWingFlap1-1] = QString("FixedWingFlap1");
+    if (configData.fixedwing.FixedWingFlap2 > 0)
+        channelDesc[configData.fixedwing.FixedWingFlap2-1] = QString("FixedWingFlap2");
+    if (configData.fixedwing.FixedWingSpoiler1 > 0)
+        channelDesc[configData.fixedwing.FixedWingSpoiler1-1] = QString("FixedWingSpoiler1");
+    if (configData.fixedwing.FixedWingSpoiler2 > 0)
+        channelDesc[configData.fixedwing.FixedWingSpoiler2-1] = QString("FixedWingSpoiler2");
     if (configData.fixedwing.FixedWingThrottle > 0)
         channelDesc[configData.fixedwing.FixedWingThrottle-1] = QString("FixedWingThrottle");
 
@@ -226,6 +238,10 @@ void ConfigFixedWingWidget::refreshWidgetsValues(QString frameType)
     setComboCurrentIndex(m_aircraft->fwElevator2ChannelBox, fixed.FixedWingPitch2);
     setComboCurrentIndex(m_aircraft->fwRudder1ChannelBox, fixed.FixedWingYaw1);
     setComboCurrentIndex(m_aircraft->fwRudder2ChannelBox, fixed.FixedWingYaw2);
+    setComboCurrentIndex(m_aircraft->fwFlap1ChannelBox, fixed.FixedWingFlap1);
+    setComboCurrentIndex(m_aircraft->fwFlap2ChannelBox, fixed.FixedWingFlap2);
+    setComboCurrentIndex(m_aircraft->fwSpoiler1ChannelBox, fixed.FixedWingSpoiler1);
+    setComboCurrentIndex(m_aircraft->fwSpoiler2ChannelBox, fixed.FixedWingSpoiler2);
 
     UAVDataObject* mixer= dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("MixerSettings")));
     Q_ASSERT(mixer);
@@ -276,6 +292,11 @@ bool ConfigFixedWingWidget::setupFrameFixedWing(QString airframeType)
     config.fixedwing.FixedWingRoll1 = m_aircraft->fwAileron1ChannelBox->currentIndex();
     config.fixedwing.FixedWingRoll2 = m_aircraft->fwAileron2ChannelBox->currentIndex();
     config.fixedwing.FixedWingYaw1 = m_aircraft->fwRudder1ChannelBox->currentIndex();
+    config.fixedwing.FixedWingYaw2 = m_aircraft->fwRudder2ChannelBox->currentIndex();
+    config.fixedwing.FixedWingFlap1 = m_aircraft->fwFlap1ChannelBox->currentIndex();
+    config.fixedwing.FixedWingFlap2 = m_aircraft->fwFlap2ChannelBox->currentIndex();
+    config.fixedwing.FixedWingSpoiler1 = m_aircraft->fwSpoiler1ChannelBox->currentIndex();
+    config.fixedwing.FixedWingSpoiler2 = m_aircraft->fwSpoiler2ChannelBox->currentIndex();
     config.fixedwing.FixedWingThrottle = m_aircraft->fwEngineChannelBox->currentIndex();
 
     SetConfigData(config);
@@ -289,51 +310,53 @@ bool ConfigFixedWingWidget::setupFrameFixedWing(QString airframeType)
 
     // 1. Assign the servo/motor/none for each channel
 
-    int channel;
     //disable all
-    for (channel=0; channel<VehicleConfig::CHANNEL_NUMELEM; channel++)
+    for (int channel=0; channel<VehicleConfig::CHANNEL_NUMELEM; channel++)
     {
         setMixerType(mixer,channel,VehicleConfig::MIXERTYPE_DISABLED);
         resetMixerVector(mixer, channel);
     }
 
     //motor
-    channel = m_aircraft->fwEngineChannelBox->currentIndex()-1;
-    setMixerType(mixer,channel,VehicleConfig::MIXERTYPE_MOTOR);
-    setMixerVectorValue(mixer,channel,VehicleConfig::MIXERVECTOR_THROTTLECURVE1, 127);
+    int motorChannel = m_aircraft->fwEngineChannelBox->currentIndex()-1;
+    setMixerType(mixer,motorChannel,VehicleConfig::MIXERTYPE_MOTOR);
+    setMixerVectorValue(mixer,motorChannel,VehicleConfig::MIXERVECTOR_THROTTLECURVE1, 127);
 
     //rudder
-    channel = m_aircraft->fwRudder1ChannelBox->currentIndex()-1;
-    setMixerType(mixer,channel,VehicleConfig::MIXERTYPE_SERVO);
-    setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_YAW, 127);
+    int rudderChannel = m_aircraft->fwRudder1ChannelBox->currentIndex()-1;
+    setMixerType(mixer,rudderChannel,VehicleConfig::MIXERTYPE_SERVO);
+    setMixerVectorValue(mixer, rudderChannel, VehicleConfig::MIXERVECTOR_YAW, 127);
 
     //ailerons
-    channel = m_aircraft->fwAileron1ChannelBox->currentIndex()-1;
-    if (channel > -1) {
-        setMixerType(mixer,channel,VehicleConfig::MIXERTYPE_SERVO);
-        setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_ROLL, 127);
+    int aileronChannel1 = m_aircraft->fwAileron1ChannelBox->currentIndex()-1;
+    int aileronChannel2 = m_aircraft->fwAileron2ChannelBox->currentIndex()-1;
+    if (aileronChannel1 > -1) {
+        setMixerType(mixer,aileronChannel1,VehicleConfig::MIXERTYPE_SERVO);
+        setMixerVectorValue(mixer, aileronChannel1, VehicleConfig::MIXERVECTOR_ROLL, 127);
 
-        channel = m_aircraft->fwAileron2ChannelBox->currentIndex()-1;
-        setMixerType(mixer,channel,VehicleConfig::MIXERTYPE_SERVO);
-        setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_ROLL, 127);
+        setMixerType(mixer,aileronChannel2,VehicleConfig::MIXERTYPE_SERVO);
+        setMixerVectorValue(mixer, aileronChannel2, VehicleConfig::MIXERVECTOR_ROLL, 127);
     }
 
     //elevators
-    channel = m_aircraft->fwElevator1ChannelBox->currentIndex()-1;
-    if (channel > -1) {
-        setMixerType(mixer,channel,VehicleConfig::MIXERTYPE_SERVO);
-        setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_PITCH, 127);
+    int elevatorChannel1 = m_aircraft->fwElevator1ChannelBox->currentIndex()-1;
+    int elevatorChannel2 = m_aircraft->fwElevator2ChannelBox->currentIndex()-1;
+    if (elevatorChannel1 > -1) {
+        setMixerType(mixer,elevatorChannel1,VehicleConfig::MIXERTYPE_SERVO);
+        setMixerVectorValue(mixer, elevatorChannel1, VehicleConfig::MIXERVECTOR_PITCH, 127);
 
-        channel = m_aircraft->fwElevator2ChannelBox->currentIndex()-1;
-        setMixerType(mixer,channel,VehicleConfig::MIXERTYPE_SERVO);
-        setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_PITCH, 127);
+        setMixerType(mixer,elevatorChannel2,VehicleConfig::MIXERTYPE_SERVO);
+        setMixerVectorValue(mixer, elevatorChannel2, VehicleConfig::MIXERVECTOR_PITCH, 127);
     }
+
+    //Setup flaps and spoilers
+    configureFlapsSpoilers(mixer, aileronChannel1, aileronChannel2);
+
 
     m_aircraft->fwStatusLabel->setText("Mixer generated");
 	
     return true;
 }
-
 
 
 /**
@@ -354,6 +377,10 @@ bool ConfigFixedWingWidget::setupFrameElevon(QString airframeType)
     config.fixedwing.FixedWingRoll2 = m_aircraft->fwAileron2ChannelBox->currentIndex();
     config.fixedwing.FixedWingYaw1 = m_aircraft->fwRudder1ChannelBox->currentIndex();
     config.fixedwing.FixedWingYaw2 = m_aircraft->fwRudder2ChannelBox->currentIndex();
+    config.fixedwing.FixedWingFlap1 = m_aircraft->fwFlap1ChannelBox->currentIndex();
+    config.fixedwing.FixedWingFlap2 = m_aircraft->fwFlap2ChannelBox->currentIndex();
+    config.fixedwing.FixedWingSpoiler1 = m_aircraft->fwSpoiler1ChannelBox->currentIndex();
+    config.fixedwing.FixedWingSpoiler2 = m_aircraft->fwSpoiler2ChannelBox->currentIndex();
     config.fixedwing.FixedWingThrottle = m_aircraft->fwEngineChannelBox->currentIndex();
 
     SetConfigData(config);
@@ -368,45 +395,48 @@ bool ConfigFixedWingWidget::setupFrameElevon(QString airframeType)
 
     // 1. Assign the servo/motor/none for each channel
 
-    int channel;
     double value;
     //disable all
-    for (channel=0; channel<VehicleConfig::CHANNEL_NUMELEM; channel++)
+    for (int channel=0; channel<VehicleConfig::CHANNEL_NUMELEM; channel++)
     {
         setMixerType(mixer,channel,VehicleConfig::MIXERTYPE_DISABLED);
         resetMixerVector(mixer, channel);
     }
 
     //motor
-    channel = m_aircraft->fwEngineChannelBox->currentIndex()-1;
-    setMixerType(mixer,channel,VehicleConfig::MIXERTYPE_MOTOR);
-    setMixerVectorValue(mixer,channel,VehicleConfig::MIXERVECTOR_THROTTLECURVE1, 127);
+    int motorChannel = m_aircraft->fwEngineChannelBox->currentIndex()-1;
+    setMixerType(mixer,motorChannel,VehicleConfig::MIXERTYPE_MOTOR);
+    setMixerVectorValue(mixer,motorChannel,VehicleConfig::MIXERVECTOR_THROTTLECURVE1, 127);
 
     //rudders
-    channel = m_aircraft->fwRudder1ChannelBox->currentIndex()-1;
-    setMixerType(mixer,channel,VehicleConfig::MIXERTYPE_SERVO);
-    setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_YAW, 127);
+    int rudderChannel1 = m_aircraft->fwRudder1ChannelBox->currentIndex()-1;
+    setMixerType(mixer,rudderChannel1,VehicleConfig::MIXERTYPE_SERVO);
+    setMixerVectorValue(mixer, rudderChannel1, VehicleConfig::MIXERVECTOR_YAW, 127);
 
-    channel = m_aircraft->fwRudder2ChannelBox->currentIndex()-1;
-    setMixerType(mixer,channel,VehicleConfig::MIXERTYPE_SERVO);
-    setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_YAW, -127);
+    int rudderChannel2 = m_aircraft->fwRudder2ChannelBox->currentIndex()-1;
+    setMixerType(mixer,rudderChannel2,VehicleConfig::MIXERTYPE_SERVO);
+    setMixerVectorValue(mixer, rudderChannel2, VehicleConfig::MIXERVECTOR_YAW, -127);
 
     //ailerons
-    channel = m_aircraft->fwAileron1ChannelBox->currentIndex()-1;
-    if (channel > -1) {
-        setMixerType(mixer,channel,VehicleConfig::MIXERTYPE_SERVO);
+    int aileronChannel1 = m_aircraft->fwAileron1ChannelBox->currentIndex()-1;
+    int aileronChannel2 = m_aircraft->fwAileron2ChannelBox->currentIndex()-1;
+    if (aileronChannel1 > -1) {
+        setMixerType(mixer,aileronChannel1,VehicleConfig::MIXERTYPE_SERVO);
         value = (double)(m_aircraft->elevonSlider2->value()*1.27);
-        setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_PITCH, value);
+        setMixerVectorValue(mixer, aileronChannel1, VehicleConfig::MIXERVECTOR_PITCH, value);
         value = (double)(m_aircraft->elevonSlider1->value()*1.27);
-        setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_ROLL, value);
+        setMixerVectorValue(mixer, aileronChannel1, VehicleConfig::MIXERVECTOR_ROLL, value);
 
-        channel = m_aircraft->fwAileron2ChannelBox->currentIndex()-1;
-        setMixerType(mixer,channel,VehicleConfig::MIXERTYPE_SERVO);
+        setMixerType(mixer,aileronChannel2,VehicleConfig::MIXERTYPE_SERVO);
         value = (double)(m_aircraft->elevonSlider2->value()*1.27);
-        setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_PITCH, value);
+        setMixerVectorValue(mixer, aileronChannel2, VehicleConfig::MIXERVECTOR_PITCH, value);
         value = (double)(m_aircraft->elevonSlider1->value()*1.27);
-        setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_ROLL, -value);
+        setMixerVectorValue(mixer, aileronChannel2, VehicleConfig::MIXERVECTOR_ROLL, -value);
     }
+
+    //Setup flaps and spoilers
+    configureFlapsSpoilers(mixer, aileronChannel1, aileronChannel2);
+
 
     m_aircraft->fwStatusLabel->setText("Mixer generated");
     return true;
@@ -432,6 +462,10 @@ bool ConfigFixedWingWidget::setupFrameVtail(QString airframeType)
     config.fixedwing.FixedWingPitch2 = m_aircraft->fwElevator2ChannelBox->currentIndex();
     config.fixedwing.FixedWingRoll1 = m_aircraft->fwAileron1ChannelBox->currentIndex();
     config.fixedwing.FixedWingRoll2 = m_aircraft->fwAileron2ChannelBox->currentIndex();
+    config.fixedwing.FixedWingFlap1 = m_aircraft->fwFlap1ChannelBox->currentIndex();
+    config.fixedwing.FixedWingFlap2 = m_aircraft->fwFlap2ChannelBox->currentIndex();
+    config.fixedwing.FixedWingSpoiler1 = m_aircraft->fwSpoiler1ChannelBox->currentIndex();
+    config.fixedwing.FixedWingSpoiler2 = m_aircraft->fwSpoiler2ChannelBox->currentIndex();
     config.fixedwing.FixedWingThrottle = m_aircraft->fwEngineChannelBox->currentIndex();
 
     SetConfigData(config);
@@ -446,59 +480,114 @@ bool ConfigFixedWingWidget::setupFrameVtail(QString airframeType)
 
     // 1. Assign the servo/motor/none for each channel
 
-    int channel;
     double value;
     //disable all
-    for (channel=0; channel<VehicleConfig::CHANNEL_NUMELEM; channel++)
+    for (int channel=0; channel<VehicleConfig::CHANNEL_NUMELEM; channel++)
     {
         setMixerType(mixer,channel,VehicleConfig::MIXERTYPE_DISABLED);
         resetMixerVector(mixer, channel);
     }
 
     //motor
-    channel = m_aircraft->fwEngineChannelBox->currentIndex()-1;
-    setMixerType(mixer,channel,VehicleConfig::MIXERTYPE_MOTOR);
-    setMixerVectorValue(mixer,channel,VehicleConfig::MIXERVECTOR_THROTTLECURVE1, 127);
+    int motorChannel = m_aircraft->fwEngineChannelBox->currentIndex()-1;
+    setMixerType(mixer,motorChannel,VehicleConfig::MIXERTYPE_MOTOR);
+    setMixerVectorValue(mixer,motorChannel,VehicleConfig::MIXERVECTOR_THROTTLECURVE1, 127);
 
     //rudders
-    channel = m_aircraft->fwRudder1ChannelBox->currentIndex()-1;
-    setMixerType(mixer,channel,VehicleConfig::MIXERTYPE_SERVO);
-    setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_YAW, 127);
+    int rudderChannel1 = m_aircraft->fwRudder1ChannelBox->currentIndex()-1;
+    setMixerType(mixer,rudderChannel1,VehicleConfig::MIXERTYPE_SERVO);
+    setMixerVectorValue(mixer, rudderChannel1, VehicleConfig::MIXERVECTOR_YAW, 127);
 
-    channel = m_aircraft->fwRudder2ChannelBox->currentIndex()-1;
-    setMixerType(mixer,channel,VehicleConfig::MIXERTYPE_SERVO);
-    setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_YAW, -127);
+    int rudderChannel2 = m_aircraft->fwRudder2ChannelBox->currentIndex()-1;
+    setMixerType(mixer,rudderChannel2,VehicleConfig::MIXERTYPE_SERVO);
+    setMixerVectorValue(mixer, rudderChannel2, VehicleConfig::MIXERVECTOR_YAW, -127);
 
     //ailerons
-    channel = m_aircraft->fwAileron1ChannelBox->currentIndex()-1;
-    if (channel > -1) {
-        setMixerType(mixer,channel,VehicleConfig::MIXERTYPE_SERVO);
-        setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_ROLL, 127);
+    int aileronChannel1 = m_aircraft->fwAileron1ChannelBox->currentIndex()-1;
+    int aileronChannel2 = m_aircraft->fwAileron2ChannelBox->currentIndex()-1;
+    if (aileronChannel1 > -1) {
+        setMixerType(mixer,aileronChannel1,VehicleConfig::MIXERTYPE_SERVO);
+        setMixerVectorValue(mixer, aileronChannel1, VehicleConfig::MIXERVECTOR_ROLL, 127);
 
-        channel = m_aircraft->fwAileron2ChannelBox->currentIndex()-1;
-        setMixerType(mixer,channel,VehicleConfig::MIXERTYPE_SERVO);
-        setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_ROLL, -127);
+        setMixerType(mixer,aileronChannel2,VehicleConfig::MIXERTYPE_SERVO);
+        setMixerVectorValue(mixer, aileronChannel2, VehicleConfig::MIXERVECTOR_ROLL, -127);
     }
 
     //vtail
-    channel = m_aircraft->fwElevator1ChannelBox->currentIndex()-1;
-    if (channel > -1) {
-        setMixerType(mixer,channel,VehicleConfig::MIXERTYPE_SERVO);
+    int elevatorChannel1 = m_aircraft->fwElevator1ChannelBox->currentIndex()-1;
+    int elevatorChannel2 = m_aircraft->fwElevator2ChannelBox->currentIndex()-1;
+    if (elevatorChannel1 > -1) {
+        setMixerType(mixer,elevatorChannel1,VehicleConfig::MIXERTYPE_SERVO);
         value = (double)(m_aircraft->elevonSlider2->value()*1.27);
-        setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_PITCH, value);
+        setMixerVectorValue(mixer, elevatorChannel1, VehicleConfig::MIXERVECTOR_PITCH, value);
         value = (double)(m_aircraft->elevonSlider1->value()*1.27);
-        setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_YAW, value);
+        setMixerVectorValue(mixer, elevatorChannel1, VehicleConfig::MIXERVECTOR_YAW, value);
 
-        channel = m_aircraft->fwElevator2ChannelBox->currentIndex()-1;
-        setMixerType(mixer,channel,VehicleConfig::MIXERTYPE_SERVO);
+        setMixerType(mixer,elevatorChannel2,VehicleConfig::MIXERTYPE_SERVO);
         value = (double)(m_aircraft->elevonSlider2->value()*1.27);
-        setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_PITCH, value);
+        setMixerVectorValue(mixer, elevatorChannel2, VehicleConfig::MIXERVECTOR_PITCH, value);
         value = (double)(m_aircraft->elevonSlider1->value()*1.27);
-        setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_YAW, -value);
+        setMixerVectorValue(mixer, elevatorChannel2, VehicleConfig::MIXERVECTOR_YAW, -value);
     }
+
+    //Setup flaps and spoilers
+    configureFlapsSpoilers(mixer, aileronChannel1, aileronChannel2);
 
     m_aircraft->fwStatusLabel->setText("Mixer generated");
     return true;
+}
+
+
+void ConfigFixedWingWidget::configureFlapsSpoilers(UAVDataObject* mixer, int aileronChannel1, int aileronChannel2)
+{
+    //flaps
+    int flapsChannel1 = m_aircraft->fwFlap1ChannelBox->currentIndex()-1;
+    int flapsChannel2 = m_aircraft->fwFlap2ChannelBox->currentIndex()-1;
+    if (flapsChannel1 > -1 && m_aircraft->fwFlapsType->currentText()!="None") {
+
+        if (m_aircraft->fwFlapsType->currentText()=="Classic"){
+            setMixerType(mixer,flapsChannel1,VehicleConfig::MIXERTYPE_SERVO);
+            setMixerType(mixer,flapsChannel2,VehicleConfig::MIXERTYPE_SERVO);
+
+            setMixerVectorValue(mixer, flapsChannel1, VehicleConfig::MIXERVECTOR_FLAPS, 127);
+            setMixerVectorValue(mixer, flapsChannel2, VehicleConfig::MIXERVECTOR_FLAPS, -127);
+        } else if (m_aircraft->fwFlapsType->currentText()=="Crow flaps" && (aileronChannel1 > 0 && aileronChannel2 > 0)){
+            setMixerType(mixer,flapsChannel1,VehicleConfig::MIXERTYPE_SERVO);
+            setMixerType(mixer,flapsChannel2,VehicleConfig::MIXERTYPE_SERVO);
+
+            setMixerVectorValue(mixer, flapsChannel1, VehicleConfig::MIXERVECTOR_FLAPS, 127);
+            setMixerVectorValue(mixer, flapsChannel2, VehicleConfig::MIXERVECTOR_FLAPS, -127);
+
+            setMixerVectorValue(mixer, aileronChannel1, VehicleConfig::MIXERVECTOR_FLAPS, 50);
+            setMixerVectorValue(mixer, aileronChannel2, VehicleConfig::MIXERVECTOR_FLAPS, -50);
+
+        } else if (m_aircraft->fwFlapsType->currentText()=="Flaperons" && (aileronChannel1 > 0 && aileronChannel2 > 0)){
+            setMixerVectorValue(mixer, aileronChannel1, VehicleConfig::MIXERVECTOR_FLAPS, 50);
+            setMixerVectorValue(mixer, aileronChannel2, VehicleConfig::MIXERVECTOR_FLAPS, -50);
+        }
+    }
+
+    //spoilers
+    int spoilersChannel1 = m_aircraft->fwSpoiler1ChannelBox->currentIndex()-1;
+    int spoilersChannel2 = m_aircraft->fwSpoiler2ChannelBox->currentIndex()-1;
+    if (spoilersChannel1 > -1 && m_aircraft->fwSpoilersType->currentText()!="None") {
+        setMixerType(mixer,spoilersChannel1,VehicleConfig::MIXERTYPE_SERVO);
+        setMixerType(mixer,spoilersChannel2,VehicleConfig::MIXERTYPE_SERVO);
+
+        if (m_aircraft->fwSpoilersType->currentText()=="Spoilers"){
+            setMixerVectorValue(mixer, spoilersChannel1, VehicleConfig::MIXERVECTOR_SPOILERS, 127);
+            setMixerVectorValue(mixer, spoilersChannel2, VehicleConfig::MIXERVECTOR_SPOILERS, -127);
+        } else if (m_aircraft->fwSpoilersType->currentText()=="Airbrakes"){
+            setMixerVectorValue(mixer, spoilersChannel1, VehicleConfig::MIXERVECTOR_SPOILERS, 127);
+            setMixerVectorValue(mixer, spoilersChannel2, VehicleConfig::MIXERVECTOR_SPOILERS, -127);
+        } else if (m_aircraft->fwSpoilersType->currentText()=="Spoilerons"){
+            setMixerVectorValue(mixer, spoilersChannel1, VehicleConfig::MIXERVECTOR_SPOILERS, 127);
+            setMixerVectorValue(mixer, spoilersChannel2, VehicleConfig::MIXERVECTOR_SPOILERS, -127);
+
+            setMixerVectorValue(mixer, spoilersChannel1, VehicleConfig::MIXERVECTOR_ROLL, 127);
+            setMixerVectorValue(mixer, spoilersChannel2, VehicleConfig::MIXERVECTOR_ROLL, 127);
+        }
+    }
 }
 
 /**

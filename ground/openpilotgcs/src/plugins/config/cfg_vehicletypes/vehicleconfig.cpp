@@ -191,11 +191,15 @@ void VehicleConfig::resetMixerVector(UAVDataObject* mixer, int channel)
     Q_ASSERT(mixer);
 
     if (channel >= 0 && channel < mixerVectors.count()) {
+
+        //SHOULDN'T WE BE ITERATING THOUGH THIS, INSTEAD OF USING HARD CODE? ALL THESE ELEMENTS ARE IN THE UAVOs.
         setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_THROTTLECURVE1, 0);
         setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_THROTTLECURVE2, 0);
         setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_PITCH, 0);
         setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_ROLL, 0);
         setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_YAW, 0);
+        setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_FLAPS, 0);
+        setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_SPOILERS, 0);
     }
 }
 
