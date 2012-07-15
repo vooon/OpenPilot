@@ -129,7 +129,7 @@ static int32_t PIOS_HMC5883_Config(const struct pios_hmc5883_cfg * cfg)
 	uint8_t MODE = 0x00;
 	CTRLB = 0;
 	
-	CTRLA |= (uint8_t) (cfg->M_ODR | cfg->Meas_Conf);
+	CTRLA |= (uint8_t) (cfg->M_ODR | cfg->Meas_Conf | cfg->Oversample);
 	CTRLB |= (uint8_t) (cfg->Gain);
 	MODE |= (uint8_t) (cfg->Mode);
 	

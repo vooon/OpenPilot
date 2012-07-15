@@ -60,6 +60,11 @@
 #define PIOS_HMC5883_ODR_30			0x14
 #define PIOS_HMC5883_ODR_75			0x18
 
+#define PIOS_HMC5883_OS_X1		0x00
+#define PIOS_HMC5883_OS_X2		0x20
+#define PIOS_HMC5883_OS_X4		0x40
+#define PIOS_HMC5883_OS_X8		0x60
+
 /* Measure configuration */
 #define PIOS_HMC5883_MEASCONF_NORMAL		0x00
 #define PIOS_HMC5883_MEASCONF_BIAS_POS		0x01
@@ -98,7 +103,7 @@ struct pios_hmc5883_cfg {
 	uint8_t Meas_Conf;	/* Measurement Configuration,: Normal, positive bias, or negative bias --> here below the relative define */
 	uint8_t Gain;		/* Gain Configuration, select the full scale --> here below the relative define (See datasheet page 11 for more details) */
 	uint8_t Mode;
-	
+	uint8_t Oversample; 
 };
 
 /* Public Functions */
