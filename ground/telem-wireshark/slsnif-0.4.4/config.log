@@ -611,6 +611,7 @@ on box
 config.status:683: creating Makefile
 config.status:683: creating src/Makefile
 config.status:787: creating config.h
+config.status:957: config.h is unchanged
 config.status:1121: executing depfiles commands
 
 ## ---------------- ##

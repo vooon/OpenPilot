@@ -66,7 +66,7 @@ void proto_reg_handoff_op_uavtalk(void);
 
 #define UAVTALK_HEADER_SIZE 8
 #define UAVTALK_TRAILER_SIZE 1
-static int dissect_op_uavtalk(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree)
+static void dissect_op_uavtalk(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree)
 {
   gint offset = 0;
 
@@ -133,7 +133,7 @@ static int dissect_op_uavtalk(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tre
     }
   }
 
-  return UAVTALK_HEADER_SIZE + UAVTALK_TRAILER_SIZE;
+ // return UAVTALK_HEADER_SIZE + UAVTALK_TRAILER_SIZE;
 }
 
 void proto_register_op_uavtalk(void)
@@ -177,6 +177,8 @@ void proto_register_op_uavtalk(void)
 					      "UAVTALK", 
 					      "uavtalk");
 
+   register_dissector("uavtalk",dissect_op_uavtalk,proto_op_uavtalk); //register dissector for use as custom DLT
+
    /* Allow subdissectors for each objid to bind for decoding */
    uavtalk_subdissector_table = register_dissector_table("uavtalk.objid", "UAVObject ID", FT_UINT32, BASE_HEX);
 
@@ -193,8 +195,9 @@ void proto_reg_handoff_op_uavtalk(void)
 {
    static dissector_handle_t op_uavtalk_handle;
 
-   op_uavtalk_handle = new_create_dissector_handle(dissect_op_uavtalk, proto_op_uavtalk);
+   op_uavtalk_handle = find_dissector("uavtalk");
    dissector_add_handle("udp.port", op_uavtalk_handle);  /* for "decode as" */
+   dissector_add_handle("usb-linux-mmap", op_uavtalk_handle);
 
    if (global_op_uavtalk_port != 0) {
       dissector_add_uint("udp.port", global_op_uavtalk_port, op_uavtalk_handle);
