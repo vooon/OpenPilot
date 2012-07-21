@@ -52,10 +52,10 @@ FLASH_TOOL = OPENOCD
 MODULES = Sensors Attitude/revolution ManualControl Stabilization Actuator
 MODULES += Battery
 MODULES += Altitude/revolution  GPS FirmwareIAP
-MODULES += Airspeed/revolution
-MODULES += AltitudeHold VtolPathFollower FixedWingPathFollower PathPlanner
-MODULES += CameraStab
-MODULES += OveroSync
+#MODULES += Airspeed/revolution
+#MODULES += AltitudeHold VtolPathFollower FixedWingPathFollower PathPlanner
+#MODULES += CameraStab
+#MODULES += OveroSync
 MODULES += Telemetry
 PYMODULES = 
 #FlightPlan

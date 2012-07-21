@@ -383,6 +383,11 @@ static void SensorsTask(void *parameters)
 			gyrosData.y -= gyrosBias.y;
 			gyrosData.z -= gyrosBias.z;
 		}
+		
+		static uint32_t last_timeval;
+		gyrosData.temperature = PIOS_DELAY_DiffuS(last_timeval);
+		last_timeval = PIOS_DELAY_GetRaw();
+		gyrosData.timestamp = last_timeval;
 		GyrosSet(&gyrosData);
 		
 		// Because most crafts wont get enough information from gravity to zero yaw gyro, we try

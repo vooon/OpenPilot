@@ -386,6 +386,7 @@ static void stabilizationTask(void* parameters)
 			actuatorDesired.Throttle = stabDesired.Throttle;
 			if(dT > 15)
 				actuatorDesired.NumLongUpdates++;
+			actuatorDesired.timestamp = gyrosData.timestamp;
 			ActuatorDesiredSet(&actuatorDesired);
 		}
 

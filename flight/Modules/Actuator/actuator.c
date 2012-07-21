@@ -347,6 +347,7 @@ static void actuatorTask(void* parameters)
 			command.MaxUpdateTime = 1000.0f*dT;
 		
 		// Update output object
+		command.gyro_age = PIOS_DELAY_DiffuS(desired.timestamp);
 		ActuatorCommandSet(&command);
 		// Update in case read only (eg. during servo configuration)
 		ActuatorCommandGet(&command);
