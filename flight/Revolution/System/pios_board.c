@@ -443,7 +443,7 @@ void PIOS_Board_Init(void) {
 	
 	//PIOS_IAP_Init();
 
-#if defined(PIOS_INCLUDE_USB)
+#if defined(NOT_PIOS_INCLUDE_USB)
 	/* Initialize board specific USB data */
 	PIOS_USB_BOARD_DATA_Init();
 
