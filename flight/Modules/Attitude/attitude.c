@@ -60,7 +60,7 @@
 #include <pios_board_info.h>
  
 // Private constants
-#define STACK_SIZE_BYTES 540
+#define STACK_SIZE_BYTES 840
 #define TASK_PRIORITY (tskIDLE_PRIORITY+3)
 
 #define SENSOR_PERIOD 4
@@ -172,33 +172,13 @@ static void AttitudeTask(void *parameters)
 {
 	uint8_t init = 0;
 	AlarmsClear(SYSTEMALARMS_ALARM_ATTITUDE);
-	
-	// Set critical error and wait until the accel is producing data
-	while(PIOS_ADXL345_FifoElements() == 0) {
-		AlarmsSet(SYSTEMALARMS_ALARM_ATTITUDE, SYSTEMALARMS_ALARM_CRITICAL);
-		PIOS_WDG_UpdateFlag(PIOS_WDG_ATTITUDE);
-	}
-	
 	const struct pios_board_info * bdinfo = &pios_board_info_blob;
 	
-	bool cc3d = bdinfo->board_rev == 0x02;
+	bool cc3d = true;
 
 	if(cc3d) {
-#if defined(PIOS_INCLUDE_MPU6000)
 		gyro_test = PIOS_MPU6000_Test();
-#endif
 	} else {
-#if defined(PIOS_INCLUDE_ADXL345)
-		accel_test = PIOS_ADXL345_Test();
-#endif
-
-#if defined(PIOS_INCLUDE_ADC)
-		// Create queue for passing gyro data, allow 2 back samples in case
-		gyro_queue = xQueueCreate(1, sizeof(float) * 4);
-		PIOS_Assert(gyro_queue != NULL);
-		PIOS_ADC_SetQueue(gyro_queue);
-		PIOS_ADC_Config((PIOS_ADC_RATE / 1000.0f) * UPDATE_RATE);
-#endif
 
 	}
 	// Force settings update to make sure rotation loaded
@@ -236,10 +216,7 @@ static void AttitudeTask(void *parameters)
 		GyrosData gyros;
 		int32_t retval = 0;
 
-		if (cc3d)
 			retval = updateSensorsCC3D(&accels, &gyros);
-		else
-			retval = updateSensors(&accels, &gyros);
 
 		// Only update attitude when sensor data is good
 		if (retval != 0)
@@ -263,99 +240,7 @@ float gyros_passed[3];
  */
 static int32_t updateSensors(AccelsData * accels, GyrosData * gyros)
 {
-	struct pios_adxl345_data accel_data;
-	float gyro[4];
-	
-	// Only wait the time for two nominal updates before setting an alarm
-	if(xQueueReceive(gyro_queue, (void * const) gyro, UPDATE_RATE * 2) == errQUEUE_EMPTY) {
-		AlarmsSet(SYSTEMALARMS_ALARM_ATTITUDE, SYSTEMALARMS_ALARM_ERROR);
-		return -1;
-	}
 
-	// Do not read raw sensor data in simulation mode
-	if (GyrosReadOnly() || AccelsReadOnly())
-		return 0;
-
-	// No accel data available
-	if(PIOS_ADXL345_FifoElements() == 0)
-		return -1;
-	
-	// First sample is temperature
-	gyros->x = -(gyro[1] - GYRO_NEUTRAL) * gyroGain;
-	gyros->y = (gyro[2] - GYRO_NEUTRAL) * gyroGain;
-	gyros->z = -(gyro[3] - GYRO_NEUTRAL) * gyroGain;
-	
-	int32_t x = 0;
-	int32_t y = 0;
-	int32_t z = 0;
-	uint8_t i = 0;
-	uint8_t samples_remaining;
-	do {
-		i++;
-		samples_remaining = PIOS_ADXL345_Read(&accel_data);
-		x +=  accel_data.x;
-		y += -accel_data.y;
-		z += -accel_data.z;
-	} while ( (i < 32) && (samples_remaining > 0) );
-	gyros->temperature = samples_remaining;
-
-	float accel[3] = {(float) x / i, (float) y / i, (float) z / i};
-	
-	if(rotate) {
-		// TODO: rotate sensors too so stabilization is well behaved
-		float vec_out[3];
-		rot_mult(R, accel, vec_out);
-		accels->x = vec_out[0];
-		accels->y = vec_out[1];
-		accels->z = vec_out[2];
-		rot_mult(R, &gyros->x, vec_out);
-		gyros->x = vec_out[0];
-		gyros->y = vec_out[1];
-		gyros->z = vec_out[2];
-	} else {
-		accels->x = accel[0];
-		accels->y = accel[1];
-		accels->z = accel[2];
-	}
-	
-	if (trim_requested) {
-		if (trim_samples >= MAX_TRIM_FLIGHT_SAMPLES) {
-			trim_requested = false;
-		} else {
-			uint8_t armed;
-			float throttle;
-			FlightStatusArmedGet(&armed);
-			ManualControlCommandThrottleGet(&throttle);  // Until flight status indicates airborne
-			if ((armed == FLIGHTSTATUS_ARMED_ARMED) && (throttle > 0)) {
-				trim_samples++;
-				// Store the digitally scaled version since that is what we use for bias
-				trim_accels[0] += accels->x;
-				trim_accels[1] += accels->y;
-				trim_accels[2] += accels->z;
-			}
-		}
-	}
-	
-	// Scale accels and correct bias
-	accels->x = (accels->x - accelbias[0]) * ACCEL_SCALE;
-	accels->y = (accels->y - accelbias[1]) * ACCEL_SCALE;
-	accels->z = (accels->z - accelbias[2]) * ACCEL_SCALE;
-	
-	if(bias_correct_gyro) {
-		// Applying integral component here so it can be seen on the gyros and correct bias
-		gyros->x += gyro_correct_int[0];
-		gyros->y += gyro_correct_int[1];
-		gyros->z += gyro_correct_int[2];
-	}
-	
-	// Because most crafts wont get enough information from gravity to zero yaw gyro, we try
-	// and make it average zero (weakly)
-	gyro_correct_int[2] += - gyros->z * yawBiasRate;
-
-	GyrosSet(gyros);
-	AccelsSet(accels);
-
-	return 0;
 }
 
 /**
@@ -375,12 +260,12 @@ static int32_t updateSensorsCC3D(AccelsData * accelsData, GyrosData * gyrosData)
 	if(xQueueReceive(queue, (void *) &mpu6000_data, SENSOR_PERIOD) == errQUEUE_EMPTY)
 		return -1;	// Error, no data
 
-	gyros[0] = -mpu6000_data.gyro_y * PIOS_MPU6000_GetScale();
-	gyros[1] = -mpu6000_data.gyro_x * PIOS_MPU6000_GetScale();
+	gyros[0] = mpu6000_data.gyro_y * PIOS_MPU6000_GetScale();
+	gyros[1] = mpu6000_data.gyro_x * PIOS_MPU6000_GetScale();
 	gyros[2] = -mpu6000_data.gyro_z * PIOS_MPU6000_GetScale();
 	
-	accels[0] = -mpu6000_data.accel_y * PIOS_MPU6000_GetAccelScale();
-	accels[1] = -mpu6000_data.accel_x * PIOS_MPU6000_GetAccelScale();
+	accels[0] = mpu6000_data.accel_y * PIOS_MPU6000_GetAccelScale();
+	accels[1] = mpu6000_data.accel_x * PIOS_MPU6000_GetAccelScale();
 	accels[2] = -mpu6000_data.accel_z * PIOS_MPU6000_GetAccelScale();
 
 	gyrosData->temperature = 35.0f + ((float) mpu6000_data.temperature + 512.0f) / 340.0f;
