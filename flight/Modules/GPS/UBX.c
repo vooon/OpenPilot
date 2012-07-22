@@ -191,6 +191,8 @@ void parse_ubx_nav_posllh (UBX_NAV_POSLLH *posllh, GPSPositionData *GpsPosition)
 			GpsPosition->GeoidSeparation = (float)(posllh->height - posllh->hMSL)*0.001f;
 			GpsPosition->Latitude = posllh->lat;
 			GpsPosition->Longitude = posllh->lon;
+			GpsPosition->hAcc = (float)posllh->hAcc*0.001f;
+			GpsPosition->vAcc = (float)posllh->vAcc*0.001f;
 		}
 	}
 }
@@ -251,6 +253,7 @@ void parse_ubx_nav_velned (UBX_NAV_VELNED *velned, GPSPositionData *GpsPosition)
 			GpsVelocity.North	= (float)velned->velN/100.0f;
 			GpsVelocity.East	= (float)velned->velE/100.0f;
 			GpsVelocity.Down	= (float)velned->velD/100.0f;
+			GpsVelocity.sAcc	= (float)velned->sAcc/100.0f;
 			GPSVelocitySet(&GpsVelocity);
 			GpsPosition->Groundspeed = (float)velned->gSpeed * 0.01f;
 			GpsPosition->Heading = (float)velned->heading * 1.0e-5f;
