@@ -216,8 +216,9 @@ static void objectUpdatedCb(UAVObjEvent * ev)
 		ObjectPersistenceGet(&objper);
 
 		int retval = 1;
-		FlightStatusData flightStatus;
-		FlightStatusGet(&flightStatus);
+
+		uint8_t flightArmed;
+		FlightStatusArmedGet(&flightArmed);
 
 		// When this is called because of this method don't do anything
 		if (objper.Operation == OBJECTPERSISTENCE_OPERATION_ERROR ||
@@ -226,7 +227,7 @@ static void objectUpdatedCb(UAVObjEvent * ev)
 		}
 
 		// Execute action if disarmed
-		if(flightStatus.Armed != FLIGHTSTATUS_ARMED_DISARMED) {
+		if(flightArmed != FLIGHTSTATUS_ARMED_DISARMED) {
 			retval = -1;
 		} else if (objper.Operation == OBJECTPERSISTENCE_OPERATION_LOAD) {
 			if (objper.Selection == OBJECTPERSISTENCE_SELECTION_SINGLEOBJECT) {
