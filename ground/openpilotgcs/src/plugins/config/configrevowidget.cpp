@@ -908,9 +908,12 @@ void ConfigRevoWidget::doGetNoiseSample(UAVObject * obj)
         Magnetometer * mags = Magnetometer::GetInstance(getObjectManager());
         Q_ASSERT(mags);
         Magnetometer::DataFields magData = mags->getData();
-        mag_accum_x.append(magData.x);
-        mag_accum_y.append(magData.y);
-        mag_accum_z.append(magData.z);
+        double mag[3] = {magData.x, magData.y, magData.z};
+        double mag_norm = sqrt(mag[0] * mag[0] + mag[1] * mag[1] + mag[2] * mag[2]);
+
+        mag_accum_x.append(mag[0] / mag_norm);
+        mag_accum_y.append(mag[1] / mag_norm);
+        mag_accum_z.append(mag[2] / mag_norm);
         break;
     }
     default:
