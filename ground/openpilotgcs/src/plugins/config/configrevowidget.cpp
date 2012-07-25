@@ -955,6 +955,8 @@ void ConfigRevoWidget::doGetNoiseSample(UAVObject * obj)
             revoCalData.mag_var[RevoCalibration::MAG_VAR_Y] = listVar(mag_accum_y);
             revoCalData.mag_var[RevoCalibration::MAG_VAR_Z] = listVar(mag_accum_z);
             revoCalibration->setData(revoCalData);
+
+            m_ui->sixPointCalibInstructions->setText("Noise calibration complete.");
         }
     }
 }
