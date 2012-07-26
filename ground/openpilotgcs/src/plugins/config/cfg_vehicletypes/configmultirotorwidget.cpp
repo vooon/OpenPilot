@@ -101,7 +101,7 @@ void ConfigMultiRotorWidget::setupUI(QString frameType)
     }
     else if (frameType == "QuadX" || frameType == "Quad X") {
         setComboCurrentIndex( m_aircraft->multirotorFrameType, m_aircraft->multirotorFrameType->findText("Quad X"));
-		quad->setElementId("quad-X");
+        quad->setElementId("quad-x");
 		
 		//Enable all necessary motor channel boxes...
         for (i=1; i <=4; i++) {
@@ -274,6 +274,8 @@ QStringList ConfigMultiRotorWidget::getChannelDescriptions()
         channelDesc[multi.VTOLMotorW-1] = QString("VTOLMotorW");
     if (multi.VTOLMotorE > 0 && multi.VTOLMotorE < ConfigMultiRotorWidget::CHANNEL_NUMELEM)
         channelDesc[multi.VTOLMotorE-1] = QString("VTOLMotorE");
+    if (multi.TRIYaw > 0 && multi.TRIYaw <= ConfigMultiRotorWidget::CHANNEL_NUMELEM)
+        channelDesc[multi.TRIYaw-1] = QString("Tri-Yaw");
 
     return channelDesc;
 }
