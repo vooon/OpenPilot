@@ -83,7 +83,7 @@ static portTickType lastSysTime;
 static void updateActuatorDesired(ManualControlCommandData * cmd);
 static void updateStabilizationDesired(ManualControlCommandData * cmd, ManualControlSettingsData * settings);
 static void altitudeHoldDesired(ManualControlCommandData * cmd, bool flightModeChanged);
-static void updatePathDesired(ManualControlCommandData * cmd, bool flightModeChanged, bool home);
+static void updatePointDesired(ManualControlCommandData * cmd, bool flightModeChanged, bool home);
 static void processFlightMode(ManualControlSettingsData * settings, float flightMode);
 static void processArm(ManualControlCommandData * cmd, ManualControlSettingsData * settings);
 static void setArmedIfChanged(uint8_t val);
@@ -397,10 +397,13 @@ static void manualControlTask(void *parameters)
 						altitudeHoldDesired(&cmd, lastFlightMode != flightStatus.FlightMode);
 						break;
 					case FLIGHTSTATUS_FLIGHTMODE_POSITIONHOLD:
-						updatePathDesired(&cmd, lastFlightMode != flightStatus.FlightMode, false);
+						updatePointDesired(&cmd, lastFlightMode != flightStatus.FlightMode, false);
 						break;
 					case FLIGHTSTATUS_FLIGHTMODE_RETURNTOBASE:
-						updatePathDesired(&cmd, lastFlightMode != flightStatus.FlightMode, true);
+						updatePointDesired(&cmd, lastFlightMode != flightStatus.FlightMode, true);
+						break;
+					case FLIGHTSTATUS_FLIGHTMODE_PATHPLANNER:
+						//Nothing to be done here
 						break;
 					default:
 						AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_CRITICAL);
@@ -627,7 +630,7 @@ static void updateStabilizationDesired(ManualControlCommandData * cmd, ManualCon
  * @brief Update the position desired to current location when
  * enabled and allow the waypoint to be moved by transmitter
  */
-static void updatePathDesired(ManualControlCommandData * cmd, bool flightModeChanged, bool home)
+static void updatePointDesired(ManualControlCommandData * cmd, bool flightModeChanged, bool home)
 {
 	if (home && flightModeChanged) {
 		// Simple Return To Base mode - keep altitude the same, fly to home position
@@ -647,7 +650,7 @@ static void updatePathDesired(ManualControlCommandData * cmd, bool flightModeCha
 		pathDesired.Mode = PATHDESIRED_MODE_FLYENDPOINT;
 		PathDesiredSet(&pathDesired);
 	} else if(flightModeChanged) {
-		// After not being in this mode for a while init at current height
+		// After coming back to this mode, init at 10m over current height
 		PositionActualData positionActual;
 		PositionActualGet(&positionActual);
 		
@@ -735,9 +738,9 @@ static void altitudeHoldDesired(ManualControlCommandData * cmd, bool flightModeC
 #else
 
 // TODO: These functions should never be accessible on CC.  Any configuration that
-// could allow them to be called sholud already throw an error to prevent this happening
+// could allow them to be called should already throw an error to prevent this happening
 // in flight
-static void updatePathDesired(ManualControlCommandData * cmd, bool flightModeChanged, bool home)
+static void updatePointDesired(ManualControlCommandData * cmd, bool flightModeChanged, bool home)
 {
 	AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_ERROR);
 }

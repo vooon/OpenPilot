@@ -211,7 +211,7 @@ static void path_circle(float * start_point, float * end_point, float * cur_poin
 	
 	status->fractional_progress = (clockwise?1:-1) * atan2f( diff_north, diff_east) - atan2f( radius_north, radius_east);
 
-	// error is current radius minus wanted radius - positive if too close
+	// error is wanted radius minus current radius - positive if too close to center
 	status->error = radius - cradius;
 
 	// Compute direction to correct error

@@ -179,8 +179,11 @@ static void pathPlannerTask(void *parameters)
 
 		// negative destinations DISABLE this feature
 		if (pathStatus.Status == PATHSTATUS_STATUS_CRITICAL && waypointActive.Index != pathAction.ErrorDestination && pathAction.ErrorDestination >= 0) {
+/*
+ RETURN TO ERROR DESTINATION IS NOT WARRANTED BY MANY OF THE PATHSTATUS_CRITICAL_ERRORS. MANY OF THE PATHSTATUS_CRITICAL_ERRORS ARE NOT ACTUALLY CRITICAL ERRORS AT ALL IN THE GUIDANCE SENSE. IF THE PLANE STALLS, IT CAN BE SUFFICIENT TO NOSE OVER IN ORDER TO REGAIN AIRSPEED. THERE'S NO NEED TO RESET TO HOME IN THE CASE OF A STALL RECOVERY
 			setWaypoint(pathAction.ErrorDestination);
 			continue;
+*/ 
 		}
 
 		// check if condition has been met
@@ -577,7 +580,7 @@ static void createPathBox()
 	// Draw O
 	WaypointData waypoint;
 	waypoint.Action = 0;
-	waypoint.Velocity = 2;
+	waypoint.Velocity = 11; // [m/s]
 	
 //	waypoint.Position[0] = 50;
 //	waypoint.Position[1] = -30;
@@ -607,6 +610,7 @@ static void createPathBox()
 //	waypoint.Position[1] = 30;
 	waypoint.Position[0] = 10;
 	waypoint.Position[1] = -100;
+	waypoint.Velocity = 8; // [m/s]
 
 	waypoint.Position[2] = -10-350;
 	WaypointInstSet(3, &waypoint);
@@ -615,6 +619,7 @@ static void createPathBox()
 //	waypoint.Position[1] = -120;
 	waypoint.Position[0] = 10;
 	waypoint.Position[1] = 120;
+	waypoint.Velocity = 7; // [m/s]
 
 	waypoint.Position[2] = 1000;
 	WaypointInstSet(4, &waypoint);
