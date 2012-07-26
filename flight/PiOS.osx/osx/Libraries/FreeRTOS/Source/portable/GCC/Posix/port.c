@@ -460,8 +460,8 @@ sigset_t xSignalToBlock;
 		usleep(portTICK_RATE_MICROSECONDS * 0.8);
 		vPortSystemTickHandler(SIG_TICK);	
 		i++;
-		if (i % 1000 == 0)
-			fprintf(stderr,".");
+//		if (i % 1000 == 0)
+//			fprintf(stderr,".");
 		//if (i % 5000 == 0)
 		//	printTasks();
 	}

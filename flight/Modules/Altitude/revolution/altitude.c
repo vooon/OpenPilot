@@ -42,18 +42,23 @@
 #if defined(PIOS_INCLUDE_HCSR04)
 #include "sonaraltitude.h"	// object that will be updated by the module
 #endif
+#include "homelocation.h"
+#include "gpsposition.h"
 
 // Private constants
-#define STACK_SIZE_BYTES 500
+#define STACK_SIZE_BYTES 530
 #define TASK_PRIORITY (tskIDLE_PRIORITY+1)
 
 // Private types
 
 // Private variables
 static xTaskHandle taskHandle;
+static float p0;
+static uint8_t calibration=0;
 
 // Private functions
 static void altitudeTask(void *parameters);
+static void GPSPositionUpdatedCb(UAVObjEvent * ev);
 
 /**
  * Initialise the module, called on startup
@@ -82,7 +87,10 @@ int32_t AltitudeInitialize()
 
 	return 0;
 }
+
 MODULE_INITCALL(AltitudeInitialize, AltitudeStart)
+
+
 /**
  * Module thread, should not return.
  */
@@ -97,6 +105,12 @@ static void altitudeTask(void *parameters)
 	PIOS_HCSR04_Init();
 	PIOS_HCSR04_Trigger();
 #endif
+	
+
+	GPSPositionConnectCallback(GPSPositionUpdatedCb);
+
+	static portTickType lastSysTime;
+	lastSysTime = xTaskGetTickCount();	
 
 	// TODO: Check the pressure sensor and set a warning if it fails test
 	
@@ -145,13 +159,52 @@ static void altitudeTask(void *parameters)
 		
 		data.Temperature = temp;
 		data.Pressure = press;
-		data.Altitude = 44330.0f * (1.0f - powf(data.Pressure / MS5611_P0, (1.0f / 5.255f)));
+
+		// If this is the first time through the loop, calculate pressure at sea level, knowing the altitude at home.
+		if (calibration==0) {
+			calibration=2;
+			float homeLocationAltitude;
+			HomeLocationAltitudeGet(&homeLocationAltitude);
+			
+			p0=data.Pressure/pow(1-homeLocationAltitude/44330, 5.255f);
+		}
+		else if (calibration==1) {
+			calibration=2;
+			float gpsPositionAltitude, gpsPositionGeoidSeparation;
+			GPSPositionAltitudeGet(&gpsPositionAltitude);
+			GPSPositionGeoidSeparationGet(&gpsPositionGeoidSeparation);
+			
+			//Filter p0, using a 1000 second rise time (In aviation, it is recommended to check the barometric pressure every 15 minutes or so)
+			portTickType thisSysTime = xTaskGetTickCount();
+			float dT = (thisSysTime - lastSysTime) / portTICK_RATE_MS / 1000.0f;
+			lastSysTime = thisSysTime;
+			
+			float alpha=dT/(dT+1000.0f);
+			p0=alpha*data.Pressure/pow(1-(gpsPositionAltitude+gpsPositionGeoidSeparation)/44330, 5.255f)+(1-alpha)*p0;
+		}
+		
+		
+		// Compute the current pressure altitude (all pressures in kPa)
+		data.Altitude = 44330.0f * (1.0f - powf(data.Pressure / p0, (1.0f / 5.255f)));
 	
 		// Update the AltitudeActual UAVObject
 		BaroAltitudeSet(&data);
 	}
 }
 
+static void GPSPositionUpdatedCb(UAVObjEvent * ev){
+	//Pick every 10th update, so as to reduce processor load
+	if (calibration++ > 11){
+		uint8_t gpsPositionStatus;
+		GPSPositionStatusGet(&gpsPositionStatus);
+		if (gpsPositionStatus != GPSPOSITION_STATUS_NOFIX && gpsPositionStatus != GPSPOSITION_STATUS_NOGPS){
+			calibration = 1; //DO NOT set calibration = 0
+		}
+		else{
+			calibration = 2; //DO NOT set calibration = 0
+		}
+	}
+}
 /**
  * @}
  * @}

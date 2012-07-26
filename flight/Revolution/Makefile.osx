@@ -53,13 +53,13 @@ FLASH_TOOL = OPENOCD
 USE_THUMB_MODE = YES
 
 # List of modules to include
-MODULES +=  Actuator ManualControl Stabilization 
-MODULES += AltitudeHold VtolPathFollower PathPlanner
+MODULES +=  Actuator ManualControl Stabilization Airspeed/revolution GPS
+MODULES += AltitudeHold FixedWingPathFollower PathPlanner
 MODULES += Attitude/revolution
 #MODULES += OveroSync/simulated
 
 # To run simulation instead of connect to SITL
-MODULES += Sensors/simulated
+#MODULES += Sensors/simulated
 
 MODULES += Telemetry
 

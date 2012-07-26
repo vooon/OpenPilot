@@ -548,6 +548,7 @@ static uint8_t conditionImmediate() {
 static void createPathBox()
 {
 
+	
 	uint16_t t;
 	for (t=UAVObjGetNumInstances(PathActionHandle());t<10;t++) {
 		PathActionCreateInstance();
@@ -570,44 +571,116 @@ static void createPathBox()
 	PathActionInstSet(0,&action);
 	PathActionInstSet(1,&action);
 	PathActionInstSet(2,&action);
+	
+	WaypointCreateInstances(5);
+	
+	// Draw O
+	WaypointData waypoint;
+	waypoint.Action = 0;
+	waypoint.Velocity = 2;
+	
+//	waypoint.Position[0] = 50;
+//	waypoint.Position[1] = -30;
+	waypoint.Position[0] = 20;
+	waypoint.Position[1] = 30;
+	
+	waypoint.Position[2] = -30-350;
+	WaypointInstSet(0, &waypoint);
+	
+//	waypoint.Position[0] = -30;
+//	waypoint.Position[1] = -70;
+	waypoint.Position[0] = -30;
+	waypoint.Position[1] = 30;
+	
+	waypoint.Position[2] = -20-350;
+	WaypointInstSet(1, &waypoint);
+	
+//	waypoint.Position[0] = -30;
+//	waypoint.Position[1] = 30;
+	waypoint.Position[0] = -30;
+	waypoint.Position[1] = -100;
+	
+	waypoint.Position[2] = -20-350;
+	WaypointInstSet(2, &waypoint);
+	
+//	waypoint.Position[0] = 0;
+//	waypoint.Position[1] = 30;
+	waypoint.Position[0] = 10;
+	waypoint.Position[1] = -100;
 
-	WaypointCreateInstances(6);
+	waypoint.Position[2] = -10-350;
+	WaypointInstSet(3, &waypoint);
+	
+//	waypoint.Position[0] = 0;
+//	waypoint.Position[1] = -120;
+	waypoint.Position[0] = 10;
+	waypoint.Position[1] = 120;
+
+	waypoint.Position[2] = 1000;
+	WaypointInstSet(4, &waypoint);
+
+	
+/*	uint16_t t;
+	for (t=UAVObjGetNumInstances(PathActionHandle());t<10;t++) {
+		PathActionCreateInstance();
+	}
+	PathActionData action;
+	PathActionInstGet(0,&action);
+	action.Mode = PATHACTION_MODE_FLYVECTOR;
+	action.ModeParameters[0]=0;
+	action.ModeParameters[1]=0;
+	action.ModeParameters[2]=0;
+	action.ModeParameters[3]=0;
+	action.EndCondition = PATHACTION_ENDCONDITION_LEGREMAINING;
+	action.ConditionParameters[0] = 0;
+	action.ConditionParameters[1] = 0;
+	action.ConditionParameters[2] = 0;
+	action.ConditionParameters[3] = 0;
+	action.Command = PATHACTION_COMMAND_ONCONDITIONNEXTWAYPOINT;
+	action.JumpDestination = 0;
+	action.ErrorDestination = 0;
+	PathActionInstSet(0,&action);
+	PathActionInstSet(1,&action);
+	PathActionInstSet(2,&action);
+
+	WaypointCreateInstances(5);
 
 	// Draw O
 	WaypointData waypoint;
 	waypoint.Action = 0;
 	waypoint.Velocity = 2;
 
-	waypoint.Position[0] = 5;
-	waypoint.Position[1] = 5;
-	waypoint.Position[2] = -10;
+	waypoint.Position[0] = 50;
+	waypoint.Position[1] = 50;
+	waypoint.Position[2] = -50;
 	WaypointInstSet(0, &waypoint);
 
-	waypoint.Position[0] = -5;
-	waypoint.Position[1] = 5;
+	waypoint.Position[0] = -50;
+	waypoint.Position[1] = 50;
 	WaypointInstSet(1, &waypoint);
 
-	waypoint.Position[0] = -5;
-	waypoint.Position[1] = -5;
+	waypoint.Position[0] = -50;
+	waypoint.Position[1] = -100;
 	WaypointInstSet(2, &waypoint);
 
-	waypoint.Position[0] = 5;
-	waypoint.Position[1] = -5;
+	waypoint.Position[0] = 50;
+	waypoint.Position[1] = -100;
 	WaypointInstSet(3, &waypoint);
 
-	waypoint.Position[0] = 5;
-	waypoint.Position[1] = 5;
+	waypoint.Position[0] = 50;
+	waypoint.Position[1] = 50;
 	WaypointInstSet(4, &waypoint);
 
-	waypoint.Position[0] = 0;
-	waypoint.Position[1] = 0;
-	WaypointInstSet(5, &waypoint);
+//	waypoint.Position[0] = 0;
+//	waypoint.Position[1] = 0;
+//	WaypointInstSet(5, &waypoint);
+*/	
 }
 
 // demo path - logo
 static void createPathLogo()
 {
-	#define SIZE 10.0f
+	#define SIZE 1.5f
 	PathActionData action;
 	PathActionInstGet(0,&action);
 	action.Mode = PATHACTION_MODE_FLYVECTOR;
@@ -686,6 +759,7 @@ static void createPathLogo()
 	waypoint.Position[2] = -30;
 	WaypointInstSet(41, &waypoint);
 
+	
 }
 
 /**

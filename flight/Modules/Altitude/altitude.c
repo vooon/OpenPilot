@@ -190,7 +190,7 @@ static void altitudeTask(void *parameters)
 			data.Pressure = alt_ds_pres / (1000.0f * alt_ds_size);
 			alt_ds_pres = 0;
 
-			// Compute the current altitude (all pressures in kPa)
+			// Compute the current pressure altitude (all pressures in kPa)
 			data.Altitude = 44330.0 * (1.0 - powf((data.Pressure / (BMP085_P0 / 1000.0)), (1.0 / 5.255)));
 
 			// Update the AltitudeActual UAVObject

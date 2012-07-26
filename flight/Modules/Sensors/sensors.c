@@ -63,7 +63,7 @@
 #include <pios_board_info.h>
 
 // Private constants
-#define STACK_SIZE_BYTES 700
+#define STACK_SIZE_BYTES 1700
 #define TASK_PRIORITY (tskIDLE_PRIORITY+3)
 #define SENSOR_PERIOD 2
 

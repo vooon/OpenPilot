@@ -29,6 +29,7 @@
  */
 
 // ****************
+#define MODULE_GPS_BUILTIN
 
 #include "openpilot.h"
 #include "GPS.h"
@@ -90,8 +91,9 @@ static char* gps_rx_buffer;
 static uint32_t timeOfLastCommandMs;
 static uint32_t timeOfLastUpdateMs;
 
+#if defined(PIOS_INCLUDE_GPS_NMEA_PARSER) || defined(PIOS_INCLUDE_GPS_UBX_PARSER)
 static struct GPS_RX_STATS gpsRxStats;
-
+#endif
 // ****************
 /**
  * Initialise the gps module

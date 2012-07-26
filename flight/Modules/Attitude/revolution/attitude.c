@@ -638,7 +638,7 @@ static int32_t updateAttitudeINSGPS(bool first_run, bool outdoor_mode)
 			// Transform the GPS position into NED coordinates
 			getNED(&gpsPosition, NED);
 			
-			// Initialize barometric offset to cirrent GPS NED coordinate
+			// Initialize barometric offset to current GPS NED coordinate
 			baroOffset = -NED[2] - baroData.Altitude;
 
 			xQueueReceive(magQueue, &ev, 100 / portTICK_RATE_MS);
@@ -768,7 +768,7 @@ static int32_t updateAttitudeINSGPS(bool first_run, bool outdoor_mode)
 		INSSetPosVelVar(1e2f, 1e2f);
 		vel[0] = vel[1] = vel[2] = 0;
 		NED[0] = NED[1] = 0;
-		NED[2] = -(baroData.Altitude + baroOffset);
+		NED[2] = -(baroData.Altitude /*+ baroOffset*/);
 		sensors |= HORIZ_SENSORS | HORIZ_POS_SENSORS;
 		sensors |= POS_SENSORS |VERT_SENSORS;
 	}
@@ -785,7 +785,7 @@ static int32_t updateAttitudeINSGPS(bool first_run, bool outdoor_mode)
 	 * although probably should occur within INS itself
 	 */
 	if (sensors)
-		INSCorrection(&magData.x, NED, vel, ( baroData.Altitude + baroOffset ), sensors);
+		INSCorrection(&magData.x, NED, vel, ( baroData.Altitude /*+ baroOffset*/ ), sensors);
 
 	// Copy the position and velocity into the UAVO
 	PositionActualData positionActual;

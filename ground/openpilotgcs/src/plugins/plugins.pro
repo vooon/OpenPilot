@@ -75,13 +75,13 @@ plugin_modelview.depends = plugin_coreplugin
 plugin_modelview.depends += plugin_uavobjects
 SUBDIRS += plugin_modelview
 
-!contains(QT_VERSION, ^4\\.8\\..*) {
+#!contains(QT_VERSION, ^4\\.8\\..*) {
 #Notify gadget
 plugin_notify.subdir = notify
 plugin_notify.depends = plugin_coreplugin
 plugin_notify.depends += plugin_uavobjects
 SUBDIRS += plugin_notify
-}
+#}
 
 #Uploader gadget
 plugin_uploader.subdir = uploader

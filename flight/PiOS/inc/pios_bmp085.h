@@ -40,7 +40,7 @@
 #define BMP085_PRES_ADDR		(0x34 + (BMP085_OVERSAMPLING << 6))
 #define BMP085_TEMP_ADDR		0x2E
 #define BMP085_ADC_MSB			0xF6
-#define BMP085_P0			101325
+//#define BMP085_P0			101325
 
 /* Local Types */
 typedef struct {

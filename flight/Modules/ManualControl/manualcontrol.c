@@ -82,8 +82,8 @@ static portTickType lastSysTime;
 // Private functions
 static void updateActuatorDesired(ManualControlCommandData * cmd);
 static void updateStabilizationDesired(ManualControlCommandData * cmd, ManualControlSettingsData * settings);
-static void altitudeHoldDesired(ManualControlCommandData * cmd, bool changed);
-static void updatePathDesired(ManualControlCommandData * cmd, bool changed, bool home);
+static void altitudeHoldDesired(ManualControlCommandData * cmd, bool flightModeChanged);
+static void updatePathDesired(ManualControlCommandData * cmd, bool flightModeChanged, bool home);
 static void processFlightMode(ManualControlSettingsData * settings, float flightMode);
 static void processArm(ManualControlCommandData * cmd, ManualControlSettingsData * settings);
 static void setArmedIfChanged(uint8_t val);
@@ -627,25 +627,17 @@ static void updateStabilizationDesired(ManualControlCommandData * cmd, ManualCon
  * @brief Update the position desired to current location when
  * enabled and allow the waypoint to be moved by transmitter
  */
-static void updatePathDesired(ManualControlCommandData * cmd, bool changed,bool home)
+static void updatePathDesired(ManualControlCommandData * cmd, bool flightModeChanged, bool home)
 {
-	static portTickType lastSysTime;
-	portTickType thisSysTime;
-	float dT;
-
-	thisSysTime = xTaskGetTickCount();
-	dT = (thisSysTime - lastSysTime) / portTICK_RATE_MS / 1000.0f;
-	lastSysTime = thisSysTime;
-
-	if (home && changed) {
+	if (home && flightModeChanged) {
 		// Simple Return To Base mode - keep altitude the same, fly to home position
 		PositionActualData positionActual;
 		PositionActualGet(&positionActual);
 		
 		PathDesiredData pathDesired;
 		PathDesiredGet(&pathDesired);
-		pathDesired.Start[PATHDESIRED_START_NORTH] = 0;
-		pathDesired.Start[PATHDESIRED_START_EAST] = 0;
+		pathDesired.Start[PATHDESIRED_START_NORTH] = positionActual.North;
+		pathDesired.Start[PATHDESIRED_START_EAST] = positionActual.East;
 		pathDesired.Start[PATHDESIRED_START_DOWN] = positionActual.Down - 10;
 		pathDesired.End[PATHDESIRED_END_NORTH] = 0;
 		pathDesired.End[PATHDESIRED_END_EAST] = 0;
@@ -654,16 +646,16 @@ static void updatePathDesired(ManualControlCommandData * cmd, bool changed,bool 
 		pathDesired.EndingVelocity=0;
 		pathDesired.Mode = PATHDESIRED_MODE_FLYENDPOINT;
 		PathDesiredSet(&pathDesired);
-	} else if(changed) {
+	} else if(flightModeChanged) {
 		// After not being in this mode for a while init at current height
 		PositionActualData positionActual;
 		PositionActualGet(&positionActual);
 		
 		PathDesiredData pathDesired;
 		PathDesiredGet(&pathDesired);
-		pathDesired.Start[PATHDESIRED_END_NORTH] = positionActual.North;
-		pathDesired.Start[PATHDESIRED_END_EAST] = positionActual.East;
-		pathDesired.Start[PATHDESIRED_END_DOWN] = positionActual.Down - 10;
+		pathDesired.Start[PATHDESIRED_START_NORTH] = positionActual.North-1; //Offset by one so that the two points don't perfectly coincide
+		pathDesired.Start[PATHDESIRED_START_EAST] = positionActual.East;
+		pathDesired.Start[PATHDESIRED_START_DOWN] = positionActual.Down - 10;
 		pathDesired.End[PATHDESIRED_END_NORTH] = positionActual.North;
 		pathDesired.End[PATHDESIRED_END_EAST] = positionActual.East;
 		pathDesired.End[PATHDESIRED_END_DOWN] = positionActual.Down - 10;
@@ -674,6 +666,19 @@ static void updatePathDesired(ManualControlCommandData * cmd, bool changed,bool 
 	} else {
 		
 /*Disable this section, until such time as proper discussion can be had about how to implement it for all types of crafts.		
+		static portTickType lastSysTime;
+		portTickType thisSysTime;
+		float dT;
+		
+		thisSysTime = xTaskGetTickCount();
+		dT = (thisSysTime - lastSysTime) / portTICK_RATE_MS / 1000.0f;
+		lastSysTime = thisSysTime;
+		
+		//Saturate step time.
+		if (dT > .1) {
+			dT=.1;
+		}
+		
 		PathDesiredData pathDesired;
 		PathDesiredGet(&pathDesired);
 		pathDesired.End[PATHDESIRED_END_NORTH] += dT * -cmd->Pitch;
@@ -689,7 +694,7 @@ static void updatePathDesired(ManualControlCommandData * cmd, bool changed,bool 
  * enabled and enable altitude mode for stabilization
  * @todo: Need compile flag to exclude this from copter control
  */
-static void altitudeHoldDesired(ManualControlCommandData * cmd, bool changed)
+static void altitudeHoldDesired(ManualControlCommandData * cmd, bool flightModeChanged)
 {
 	const float DEADBAND_HIGH = 0.55;
 	const float DEADBAND_LOW = 0.45;
@@ -714,7 +719,7 @@ static void altitudeHoldDesired(ManualControlCommandData * cmd, bool changed)
 	
 	float currentDown;
 	PositionActualDownGet(&currentDown);
-	if(changed) {
+	if(flightModeChanged) {
 		// After not being in this mode for a while init at current height
 		altitudeHoldDesired.Altitude = 0;
 		zeroed = false;
@@ -732,12 +737,12 @@ static void altitudeHoldDesired(ManualControlCommandData * cmd, bool changed)
 // TODO: These functions should never be accessible on CC.  Any configuration that
 // could allow them to be called sholud already throw an error to prevent this happening
 // in flight
-static void updatePathDesired(ManualControlCommandData * cmd, bool changed, bool home)
+static void updatePathDesired(ManualControlCommandData * cmd, bool flightModeChanged, bool home)
 {
 	AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_ERROR);
 }
 
-static void altitudeHoldDesired(ManualControlCommandData * cmd, bool changed)
+static void altitudeHoldDesired(ManualControlCommandData * cmd, bool flightModeChanged)
 {
 	AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_ERROR);
 }
