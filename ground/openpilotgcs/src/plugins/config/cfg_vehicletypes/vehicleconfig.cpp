@@ -167,10 +167,8 @@ void VehicleConfig::setMixerType(UAVDataObject* mixer, int channel, MixerTypeEle
         Q_ASSERT(field);
 
         if (field) {
-            if (mixerType >= 0 && mixerType < mixerTypeDescriptions.count())
-            {
+            if (mixerType >= 0 && mixerType < mixerTypeDescriptions.count()) {
                 field->setValue(mixerTypeDescriptions[mixerType]);
-                mixer->updated();
             }
         }
     }
@@ -218,7 +216,6 @@ void VehicleConfig::setMixerVectorValue(UAVDataObject* mixer, int channel, Mixer
 
         if (field) {
             field->setDouble(value, elementName);
-            mixer->updated();
         }
     }
 }
