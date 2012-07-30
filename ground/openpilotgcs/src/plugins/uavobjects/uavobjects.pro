@@ -51,7 +51,6 @@ HEADERS += $$UAVOBJECT_SYNTHETICS/accessorydesired.h \
     $$UAVOBJECT_SYNTHETICS/actuatorcommand.h \
     $$UAVOBJECT_SYNTHETICS/gpsairspeed.h \
     $$UAVOBJECT_SYNTHETICS/gpsposition.h \
-    $$UAVOBJECT_SYNTHETICS/gpsvelocity.h \
     $$UAVOBJECT_SYNTHETICS/gpstime.h \
     $$UAVOBJECT_SYNTHETICS/gpssatellites.h \
     $$UAVOBJECT_SYNTHETICS/gpssettings.h \
@@ -117,7 +116,6 @@ SOURCES += $$UAVOBJECT_SYNTHETICS/accessorydesired.cpp \
     $$UAVOBJECT_SYNTHETICS/actuatorcommand.cpp \
     $$UAVOBJECT_SYNTHETICS/gpsairspeed.cpp \
     $$UAVOBJECT_SYNTHETICS/gpsposition.cpp \
-    $$UAVOBJECT_SYNTHETICS/gpsvelocity.cpp \
     $$UAVOBJECT_SYNTHETICS/gpstime.cpp \
     $$UAVOBJECT_SYNTHETICS/gpssatellites.cpp \
     $$UAVOBJECT_SYNTHETICS/gpssettings.cpp \
