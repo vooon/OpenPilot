@@ -369,7 +369,6 @@ static int32_t updateSensors(AccelsData * accels, GyrosData * gyros, bool cc3d_f
 }
 
 
-
 static void updateAttitude(float * gyros, float dT)
 {
 	

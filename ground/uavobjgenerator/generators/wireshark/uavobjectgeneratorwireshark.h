@@ -1,14 +1,10 @@
 /**
  ******************************************************************************
- * @addtogroup OpenPilotModules OpenPilot Modules
- * @{
- * @addtogroup GSPModule GPS Module
- * @brief Process GPS information
- * @{
  *
- * @file       NMEA.h
+ * @file       uavobjectgeneratorflight.h
  * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2010.
- * @brief      GPS module, handles GPS and NMEA stream
+ * @brief      produce flight code for uavobjects
+ *
  * @see        The GNU Public License (GPL) Version 3
  *
  *****************************************************************************/
@@ -28,15 +24,25 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef NMEA_H
-#define NMEA_H
+#ifndef UAVOBJECTGENERATORWIRESHARK_H
+#define UAVOBJECTGENERATORWIRESHARK_H
 
-#include <stdbool.h>
-#include <stdint.h>
+#include "../generator_common.h"
 
-#define NMEA_MAX_PACKET_LENGTH          96
+class UAVObjectGeneratorWireshark
+{
+public:
+    bool generate(UAVObjectParser* gen,QString templatepath,QString outputpath);
+    QStringList fieldTypeStrHf;
+    QStringList fieldTypeStrGlib;
+    QString wiresharkCodeTemplate, wiresharkMakeTemplate;
+    QDir wiresharkCodePath;
+    QDir wiresharkOutputPath;
 
-extern bool NMEA_update_position(char *nmea_sentence);
-extern bool NMEA_checksum(char *nmea_sentence);
+private:
+    bool process_object(ObjectInfo* info, QDir outputpath);
 
-#endif /* NMEA_H */
+};
+
+#endif
+
