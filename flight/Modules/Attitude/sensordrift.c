@@ -179,7 +179,7 @@ void updateSensorDrift(AccelsData * accelsData, GyrosData * gyrosData, const flo
 		else if(glbl->filter_choice==ATTITUDESETTINGS_FILTERCHOICE_PREMERLANI)
 #endif
 		{
-			DcmCorrection(accels, gyros, Rbe, delT, true);
+			DcmCorrection(accels, gyros, Rbe, delT, false);
 		}
 	}
 }
@@ -245,9 +245,9 @@ void DcmCorrection(float * accels, float * gyros, float Rbe[3][3], const float d
 	DCMStatusData dcmStatus;
 	DCMStatusGet(&dcmStatus);
 	
-//	dcmStatus.rawGyros[0]=gyros[0];
-//	dcmStatus.rawGyros[1]=gyros[1];
-//	dcmStatus.rawGyros[2]=gyros[2];
+	dcmStatus.rawGyros[0]=gyros[0];
+	dcmStatus.rawGyros[1]=gyros[1];
+	dcmStatus.rawGyros[2]=gyros[2];
 	
 	
 	//Correct roll-pitch drift via GPS and accelerometer

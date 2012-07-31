@@ -45,7 +45,7 @@ struct GlobalAttitudeVariables {
 	bool rotate;
 	bool zero_during_arming;
 	bool bias_correct_gyro;	
-	bool filter_choice;
+	uint8_t filter_choice;
 	
 	// For running trim flights
 	volatile bool trim_requested;
