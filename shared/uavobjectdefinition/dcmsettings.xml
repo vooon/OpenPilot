@@ -1,11 +1,11 @@
 <xml>
     <object name="DCMSettings" singleinstance="true" settings="true">
         <description>The DCM settings</description>
-        <field name="rollPitchKp" units="deg/s" type="float" elements="1" defaultvalue=".01"/>
-        <field name="rollPitchKi" units="deg/s" type="float" elements="1" defaultvalue=".0005"/>
+        <field name="rollPitchKp" units="deg/s" type="float" elements="1" defaultvalue="20"/>
+        <field name="rollPitchKi" units="deg/s" type="float" elements="1" defaultvalue="1"/>
         <field name="yawKp" units="deg/s" type="float" elements="1" defaultvalue="0"/>
         <field name="yawKi" units="deg/s" type="float" elements="1" defaultvalue="0"/>
-        <field name="accelsKp" units="deg/s" type="float" elements="1" defaultvalue="2000"/>
+        <field name="accelsKp" units="deg/s" type="float" elements="1" defaultvalue="1"/>
         <field name="gyroCalibrationTau" units="deg/s" type="float" elements="1" defaultvalue="100"/>
         <access gcs="readwrite" flight="readwrite"/>
         <telemetrygcs acked="true" updatemode="onchange" period="0"/>
