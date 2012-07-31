@@ -64,7 +64,7 @@
 #include "dcmsettings.h"
 
 // Private constants
-#define STACK_SIZE_BYTES 700
+#define STACK_SIZE_BYTES 800
 #define TASK_PRIORITY (tskIDLE_PRIORITY+3)
 
 #define SENSOR_PERIOD     4
@@ -188,14 +188,21 @@ static void AttitudeTask(void *parameters)
 	//Test if board is CopterControl or CC3D
 	bool cc3d_flag = (bdinfo->board_rev == 0x02);
 
+	if(cc3d_flag)
+		glbl->gyroGain_ref=1.0f;
+	else
+		glbl->gyroGain_ref=0.42f;
+	AttitudeSettingsGyroGainSet(&glbl->gyroGain_ref);	
+	
+	// Force settings update to make sure rotation loaded
+	settingsUpdatedCb(AttitudeSettingsHandle());
+	
 	if(cc3d_flag) {
 #if defined(PIOS_INCLUDE_MPU6000)
-		glbl->gyroGain[0] = glbl->gyroGain[1] = glbl->gyroGain[2] = glbl->gyroGain_ref = 1;
 		gyro_test = PIOS_MPU6000_Test();
 #endif
 	} else {
 #if defined(PIOS_INCLUDE_ADXL345)
-		glbl->gyroGain[0] = glbl->gyroGain[1] = glbl->gyroGain[2] = glbl->gyroGain_ref = 0.42;
 		accel_test = PIOS_ADXL345_Test();
 #endif
 
@@ -208,8 +215,6 @@ static void AttitudeTask(void *parameters)
 #endif
 
 	}
-	// Force settings update to make sure rotation loaded
-	settingsUpdatedCb(AttitudeSettingsHandle());
 
 	//Store the original filter specs. This is because we currently have a poor way of calibrating the Premerlani approach
 	uint8_t originalFilter=glbl->filter_choice;
@@ -429,7 +434,7 @@ static void settingsUpdatedCb(UAVObjEvent * objEv) {
 	glbl->accelKp = attitudeSettings.AccelKp;
 	glbl->accelKi = attitudeSettings.AccelKi;
 	glbl->yawBiasRate = attitudeSettings.YawBiasRate;
-	glbl->gyroGain[0] = glbl->gyroGain[1] = glbl->gyroGain[2] = glbl->gyroGain_ref = attitudeSettings.GyroGain;
+	glbl->gyroGain[0] = glbl->gyroGain[1] = glbl->gyroGain[2] = glbl->gyroGain_ref = attitudeSettings.GyroGain;		
 
 	glbl->zero_during_arming = (attitudeSettings.ZeroDuringArming == ATTITUDESETTINGS_ZERODURINGARMING_TRUE);
 	glbl->bias_correct_gyro = (attitudeSettings.BiasCorrectGyro == ATTITUDESETTINGS_BIASCORRECTGYRO_TRUE);

@@ -82,6 +82,11 @@
 #define PIOS_INCLUDE_MPU6000
 #define PIOS_MPU6000_ACCEL
 
+#if defined (PIOS_GPS_PROVIDES_AIRSPEED) || defined (PIOS_BARO_PROVIDES_AIRSPEED)
+ #define PIOS_PROVIDES_AIRSPEED
+#endif
+
+
 /* A really shitty setting saving implementation */
 #define PIOS_INCLUDE_FLASH_SECTOR_SETTINGS
 
@@ -95,7 +100,7 @@
 
 /* Task stack sizes */
 #define PIOS_ACTUATOR_STACK_SIZE       1020
-#define PIOS_MANUAL_STACK_SIZE          724
+#define PIOS_MANUAL_STACK_SIZE          764
 #define PIOS_SYSTEM_STACK_SIZE          460
 #define PIOS_STABILIZATION_STACK_SIZE   524
 #define PIOS_TELEM_STACK_SIZE           500

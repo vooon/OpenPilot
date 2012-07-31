@@ -36,6 +36,6 @@
 
 void updateSensorDrift(AccelsData * accelsData, GyrosData * gyrosData, const float delT);
 void CottonComplementaryCorrection(float * accels, float * gyros, const float delT);
-void DcmCorrection(float * accels, float * gyros, float Rbe[3][3], const float delT);
+void DcmCorrection(float * accels, float * gyros, float Rbe[3][3], const float delT, bool GPS_Drift_Compensation);
 
 #endif // SENSORDRIFT_H
