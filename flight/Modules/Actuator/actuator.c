@@ -77,6 +77,12 @@ static MixerSettingsData mixerSettings;
 static uint8_t nMixers;
 static Mixer_t * mixers;
 
+static uint8_t MotorsSpinWhileArmed;
+static int16_t ChannelMax[ACTUATORCOMMAND_CHANNEL_NUMELEM];
+static int16_t ChannelMin[ACTUATORCOMMAND_CHANNEL_NUMELEM];
+static int16_t ChannelNeutral[ACTUATORCOMMAND_CHANNEL_NUMELEM];
+
+
 // Private functions
 static void actuatorTask(void* parameters);
 static int16_t scaleChannel(float value, int16_t max, int16_t min, int16_t neutral);
@@ -161,16 +167,11 @@ static void actuatorTask(void* parameters)
 	ActuatorCommandData command;
 	ActuatorDesiredData desired;
 	MixerStatusData mixerStatus;
-	FlightStatusData flightStatus;
+	uint8_t flightStatusArmed;
 
 	//Load settings
 	MixerSettingsUpdatedCb(MixerSettingsHandle());
 	ActuatorSettingsUpdatedCb(ActuatorSettingsHandle());
-
-	uint8_t MotorsSpinWhileArmed;
-	int16_t ChannelMax[ACTUATORCOMMAND_CHANNEL_NUMELEM];
-	int16_t ChannelMin[ACTUATORCOMMAND_CHANNEL_NUMELEM];
-	int16_t ChannelNeutral[ACTUATORCOMMAND_CHANNEL_NUMELEM];
 
 	change_update_rate();
 	
@@ -204,17 +205,13 @@ static void actuatorTask(void* parameters)
 			dT = (thisSysTime - lastSysTime) / portTICK_RATE_MS / 1000.0f;
 		lastSysTime = thisSysTime;
 
-		FlightStatusGet(&flightStatus);
+		FlightStatusArmedGet(&flightStatusArmed);
 		ActuatorDesiredGet(&desired);
 		ActuatorCommandGet(&command);
 
 #if defined(DIAGNOSTICS)
 		MixerStatusGet(&mixerStatus);
 #endif
-		ActuatorSettingsMotorsSpinWhileArmedGet(&MotorsSpinWhileArmed);
-		ActuatorSettingsChannelMaxGet(ChannelMax);
-		ActuatorSettingsChannelMinGet(ChannelMin);
-		ActuatorSettingsChannelNeutralGet(ChannelNeutral);
 
 		if((nMixers < 2) && !ActuatorCommandReadOnly()) //Nothing can fly with less than two mixers. <--Sounds like a challenge! [KDS]
 		{
@@ -224,7 +221,7 @@ static void actuatorTask(void* parameters)
 
 		AlarmsClear(SYSTEMALARMS_ALARM_ACTUATOR);
 
-		bool armed = flightStatus.Armed == FLIGHTSTATUS_ARMED_ARMED;
+		bool armed = flightStatusArmed == FLIGHTSTATUS_ARMED_ARMED;
 		bool positiveThrottle = desired.Throttle >= 0.00f;
 		bool spinWhileArmed = MotorsSpinWhileArmed == ACTUATORSETTINGS_MOTORSSPINWHILEARMED_TRUE;
 
@@ -513,10 +510,6 @@ static int16_t scaleChannel(float value, int16_t max, int16_t min, int16_t neutr
 static void setFailsafe()
 {
 	/* grab only the modules parts that we are going to use */
-	int16_t ChannelMin[ACTUATORCOMMAND_CHANNEL_NUMELEM];
-	ActuatorSettingsChannelMinGet(ChannelMin);
-	int16_t ChannelNeutral[ACTUATORCOMMAND_CHANNEL_NUMELEM];
-	ActuatorSettingsChannelNeutralGet(ChannelNeutral);
 	int16_t Channel[ACTUATORCOMMAND_CHANNEL_NUMELEM];
 	ActuatorCommandChannelGet(Channel);
 
@@ -652,6 +645,11 @@ static void ActuatorSettingsUpdatedCb(UAVObjEvent * ev)
 	ActuatorSettingsGet(&actuatorSettings);
 	
 	uint16_t ChannelUpdateFreq[ACTUATORSETTINGS_CHANNELUPDATEFREQ_NUMELEM];
+	
+	ActuatorSettingsMotorsSpinWhileArmedGet(&MotorsSpinWhileArmed);
+	ActuatorSettingsChannelMaxGet(ChannelMax);
+	ActuatorSettingsChannelMinGet(ChannelMin);
+	ActuatorSettingsChannelNeutralGet(ChannelNeutral);	
 	
 	ActuatorSettingsChannelUpdateFreqGet(ChannelUpdateFreq);
 	// check if the any rate setting is changed
