@@ -77,6 +77,8 @@ typedef enum
 static xTaskHandle taskHandle;
 static ArmState_t armState;
 static portTickType lastSysTime;
+static ManualControlSettingsData manCtrlSettings;
+static StabilizationSettingsData stabSettings;
 
 // Private functions
 static void updateActuatorDesired(ManualControlCommandData * cmd);
@@ -85,6 +87,9 @@ static void altitudeHoldDesired(ManualControlCommandData * cmd);
 static void processFlightMode(ManualControlSettingsData * settings, float flightMode);
 static void processArm(ManualControlCommandData * cmd, ManualControlSettingsData * settings);
 static void setArmedIfChanged(uint8_t val);
+static void ManualControlSettingsUpdatedCb(UAVObjEvent * objEv);
+static void StabilizationSettingsUpdatedCb(UAVObjEvent * objEv);
+
 
 static void manualControlTask(void *parameters);
 static float scaleChannel(int16_t value, int16_t max, int16_t min, int16_t neutral);
@@ -137,6 +142,9 @@ int32_t ManualControlInitialize()
 	ReceiverActivityInitialize();
 	ManualControlSettingsInitialize();
 
+	StabilizationSettingsConnectCallback(&StabilizationSettingsUpdatedCb);
+	ManualControlSettingsConnectCallback(&ManualControlSettingsUpdatedCb);
+	
 	return 0;
 }
 MODULE_INITCALL(ManualControlInitialize, ManualControlStart)
@@ -146,10 +154,12 @@ MODULE_INITCALL(ManualControlInitialize, ManualControlStart)
  */
 static void manualControlTask(void *parameters)
 {
-	ManualControlSettingsData settings;
 	ManualControlCommandData cmd;
 	FlightStatusData flightStatus;
 	float flightMode = 0;
+	
+	ManualControlSettingsUpdatedCb(ManualControlSettingsHandle());
+	StabilizationSettingsUpdatedCb(StabilizationSettingsHandle());
 
 	uint8_t disconnected_count = 0;
 	uint8_t connected_count = 0;
@@ -177,9 +187,6 @@ static void manualControlTask(void *parameters)
 		// Wait until next update
 		vTaskDelayUntil(&lastSysTime, UPDATE_PERIOD_MS / portTICK_RATE_MS);
 		PIOS_WDG_UpdateFlag(PIOS_WDG_MANUAL);
-
-		// Read settings
-		ManualControlSettingsGet(&settings);
 
 		/* Update channel activity monitor */
 		if (flightStatus.Armed == ARM_STATE_DISARMED) {
@@ -215,11 +222,11 @@ static void manualControlTask(void *parameters)
 			     ++n) {
 				extern uint32_t pios_rcvr_group_map[];
 
-				if (settings.ChannelGroups[n] >= MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE) {
+				if (manCtrlSettings.ChannelGroups[n] >= MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE) {
 					cmd.Channel[n] = PIOS_RCVR_INVALID;
 				} else {
-					cmd.Channel[n] = PIOS_RCVR_Read(pios_rcvr_group_map[settings.ChannelGroups[n]],
-									settings.ChannelNumber[n]);
+					cmd.Channel[n] = PIOS_RCVR_Read(pios_rcvr_group_map[manCtrlSettings.ChannelGroups[n]],
+									manCtrlSettings.ChannelNumber[n]);
 				}
 				
 				// If a channel has timed out this is not valid data and we shouldn't update anything
@@ -227,14 +234,14 @@ static void manualControlTask(void *parameters)
 				if(cmd.Channel[n] == PIOS_RCVR_TIMEOUT)
 					valid_input_detected = false;
 				else
-					scaledChannel[n] = scaleChannel(cmd.Channel[n], settings.ChannelMax[n],	settings.ChannelMin[n], settings.ChannelNeutral[n]);
+					scaledChannel[n] = scaleChannel(cmd.Channel[n], manCtrlSettings.ChannelMax[n],	manCtrlSettings.ChannelMin[n], manCtrlSettings.ChannelNeutral[n]);
 			}
 
 			// Check settings, if error raise alarm
-			if (settings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_ROLL] >= MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE ||
-				settings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_PITCH] >= MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE ||
-				settings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_YAW] >= MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE ||
-				settings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_THROTTLE] >= MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE ||
+			if (manCtrlSettings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_ROLL] >= MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE ||
+				manCtrlSettings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_PITCH] >= MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE ||
+				manCtrlSettings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_YAW] >= MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE ||
+				manCtrlSettings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_THROTTLE] >= MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE ||
 				// Check all channel mappings are valid
 				cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ROLL] == (uint16_t) PIOS_RCVR_INVALID ||
 				cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_PITCH] == (uint16_t) PIOS_RCVR_INVALID ||
@@ -246,10 +253,10 @@ static void manualControlTask(void *parameters)
 				cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_YAW] == (uint16_t) PIOS_RCVR_NODRIVER ||
 				cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_THROTTLE] == (uint16_t) PIOS_RCVR_NODRIVER ||
 				// Check the FlightModeNumber is valid
-				settings.FlightModeNumber < 1 || settings.FlightModeNumber > MANUALCONTROLSETTINGS_FLIGHTMODEPOSITION_NUMELEM ||
+				manCtrlSettings.FlightModeNumber < 1 || manCtrlSettings.FlightModeNumber > MANUALCONTROLSETTINGS_FLIGHTMODEPOSITION_NUMELEM ||
 				// Similar checks for FlightMode channel but only if more than one flight mode has been set. Otherwise don't care
-				((settings.FlightModeNumber > 1) && (
-					settings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_FLIGHTMODE] >= MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE ||
+				((manCtrlSettings.FlightModeNumber > 1) && (
+					manCtrlSettings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_FLIGHTMODE] >= MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE ||
 					cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_FLIGHTMODE] == (uint16_t) PIOS_RCVR_INVALID ||
 					cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_FLIGHTMODE] == (uint16_t) PIOS_RCVR_NODRIVER))) {
 
@@ -265,10 +272,10 @@ static void manualControlTask(void *parameters)
 			}
 
 			// decide if we have valid manual input or not
-			valid_input_detected &= validInputRange(settings.ChannelMin[MANUALCONTROLSETTINGS_CHANNELGROUPS_THROTTLE], settings.ChannelMax[MANUALCONTROLSETTINGS_CHANNELGROUPS_THROTTLE], cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_THROTTLE]) &&
-			     validInputRange(settings.ChannelMin[MANUALCONTROLSETTINGS_CHANNELGROUPS_ROLL], settings.ChannelMax[MANUALCONTROLSETTINGS_CHANNELGROUPS_ROLL], cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ROLL]) &&
-			     validInputRange(settings.ChannelMin[MANUALCONTROLSETTINGS_CHANNELGROUPS_YAW], settings.ChannelMax[MANUALCONTROLSETTINGS_CHANNELGROUPS_YAW], cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_YAW]) &&
-			     validInputRange(settings.ChannelMin[MANUALCONTROLSETTINGS_CHANNELGROUPS_PITCH], settings.ChannelMax[MANUALCONTROLSETTINGS_CHANNELGROUPS_PITCH], cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_PITCH]);
+			valid_input_detected &= validInputRange(manCtrlSettings.ChannelMin[MANUALCONTROLSETTINGS_CHANNELGROUPS_THROTTLE], manCtrlSettings.ChannelMax[MANUALCONTROLSETTINGS_CHANNELGROUPS_THROTTLE], cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_THROTTLE]) &&
+			     validInputRange(manCtrlSettings.ChannelMin[MANUALCONTROLSETTINGS_CHANNELGROUPS_ROLL], manCtrlSettings.ChannelMax[MANUALCONTROLSETTINGS_CHANNELGROUPS_ROLL], cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ROLL]) &&
+			     validInputRange(manCtrlSettings.ChannelMin[MANUALCONTROLSETTINGS_CHANNELGROUPS_YAW], manCtrlSettings.ChannelMax[MANUALCONTROLSETTINGS_CHANNELGROUPS_YAW], cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_YAW]) &&
+			     validInputRange(manCtrlSettings.ChannelMin[MANUALCONTROLSETTINGS_CHANNELGROUPS_PITCH], manCtrlSettings.ChannelMax[MANUALCONTROLSETTINGS_CHANNELGROUPS_PITCH], cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_PITCH]);
 
 			// Implement hysteresis loop on connection status
 			if (valid_input_detected && (++connected_count > 10)) {
@@ -294,21 +301,21 @@ static void manualControlTask(void *parameters)
 				
 				AccessoryDesiredData accessory;
 				// Set Accessory 0
-				if (settings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0] != 
+				if (manCtrlSettings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0] != 
 					MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE) {
 					accessory.AccessoryVal = 0;
 					if(AccessoryDesiredInstSet(0, &accessory) != 0)
 						AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
 				}
 				// Set Accessory 1
-				if (settings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY1] != 
+				if (manCtrlSettings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY1] != 
 					MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE) {
 					accessory.AccessoryVal = 0;
 					if(AccessoryDesiredInstSet(1, &accessory) != 0)
 						AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
 				}
 				// Set Accessory 2
-				if (settings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY2] != 
+				if (manCtrlSettings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY2] != 
 					MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE) {
 					accessory.AccessoryVal = 0;
 					if(AccessoryDesiredInstSet(2, &accessory) != 0)
@@ -326,10 +333,10 @@ static void manualControlTask(void *parameters)
 				flightMode         = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_FLIGHTMODE];
 
 				// Apply deadband for Roll/Pitch/Yaw stick inputs
-				if (settings.Deadband) {
-					applyDeadband(&cmd.Roll, settings.Deadband);
-					applyDeadband(&cmd.Pitch, settings.Deadband);
-					applyDeadband(&cmd.Yaw, settings.Deadband);
+				if (manCtrlSettings.Deadband) {
+					applyDeadband(&cmd.Roll, manCtrlSettings.Deadband);
+					applyDeadband(&cmd.Pitch, manCtrlSettings.Deadband);
+					applyDeadband(&cmd.Yaw, manCtrlSettings.Deadband);
 				}
 
 				if(cmd.Channel[MANUALCONTROLSETTINGS_CHANNELGROUPS_COLLECTIVE] != PIOS_RCVR_INVALID &&
@@ -339,33 +346,33 @@ static void manualControlTask(void *parameters)
 				   
 				AccessoryDesiredData accessory;
 				// Set Accessory 0
-				if (settings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0] != 
+				if (manCtrlSettings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0] != 
 					MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE) {
 					accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY0];
 					if(AccessoryDesiredInstSet(0, &accessory) != 0)
 						AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
 				}
 				// Set Accessory 1
-				if (settings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY1] != 
+				if (manCtrlSettings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY1] != 
 					MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE) {
 					accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY1];
 					if(AccessoryDesiredInstSet(1, &accessory) != 0)
 						AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
 				}
 				// Set Accessory 2
-				if (settings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY2] != 
+				if (manCtrlSettings.ChannelGroups[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY2] != 
 					MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE) {
 					accessory.AccessoryVal = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ACCESSORY2];
 					if(AccessoryDesiredInstSet(2, &accessory) != 0)
 						AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_WARNING);
 				}
 
-				processFlightMode(&settings, flightMode);
+				processFlightMode(&manCtrlSettings, flightMode);
 
 			}
 
 			// Process arming outside conditional so system will disarm when disconnected
-			processArm(&cmd, &settings);
+			processArm(&cmd, &manCtrlSettings);
 			
 			// Update cmd object
 			ManualControlCommandSet(&cmd);
@@ -386,7 +393,7 @@ static void manualControlTask(void *parameters)
 				updateActuatorDesired(&cmd);
 				break;
 			case FLIGHTMODE_STABILIZED:
-				updateStabilizationDesired(&cmd, &settings);
+				updateStabilizationDesired(&cmd, &manCtrlSettings);
 				break;
 			case FLIGHTMODE_GUIDANCE:
 				switch(flightStatus.FlightMode) {
@@ -555,10 +562,7 @@ static void updateStabilizationDesired(ManualControlCommandData * cmd, ManualCon
 {
 	StabilizationDesiredData stabilization;
 	StabilizationDesiredGet(&stabilization);
-
-	StabilizationSettingsData stabSettings;
-	StabilizationSettingsGet(&stabSettings);
-
+	
 	uint8_t * stab_settings;
 	FlightStatusData flightStatus;
 	FlightStatusGet(&flightStatus);
@@ -626,7 +630,6 @@ static void altitudeHoldDesired(ManualControlCommandData * cmd)
 	AltitudeHoldDesiredGet(&altitudeHoldDesired);
 
 	StabilizationSettingsData stabSettings;
-	StabilizationSettingsGet(&stabSettings);
 
 	thisSysTime = xTaskGetTickCount();
 	dT = (thisSysTime - lastSysTime) / portTICK_RATE_MS / 1000.0f;
@@ -900,6 +903,17 @@ static void applyDeadband(float *value, float deadband)
 		else
 			*value += deadband;
 }
+
+
+static void ManualControlSettingsUpdatedCb(UAVObjEvent * objEv){
+	// Read settings
+	ManualControlSettingsGet(&manCtrlSettings);	
+}
+static void StabilizationSettingsUpdatedCb(UAVObjEvent * objEv){
+	// Read settings
+	StabilizationSettingsGet(&stabSettings);
+}
+
 
 /**
   * @}
