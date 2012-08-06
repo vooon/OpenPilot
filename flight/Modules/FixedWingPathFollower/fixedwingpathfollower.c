@@ -705,7 +705,7 @@ static uint8_t updateFixedDesiredAttitude(uint8_t pathDesiredMode)
 	float pece=p[1]-c[1];
 	float d=sqrtf(pncn*pncn + pece*pece);
 
-#define ROLL_FOR_HOLDING_CIRCLE 15.0f	 //Assume that we want a 20deg bank angle. This should yield a nice, non-agressive turn	
+#define ROLL_FOR_HOLDING_CIRCLE 15.0f	 //Assume that we want a 15 degree bank angle. This should yield a nice, non-agressive turn	
 		
 	//Calculate radius, rho, using r*omega=v and omega = g/V_g * tan(phi)
 	//THIS SHOULD ONLY BE CALCULATED ONCE, INSTEAD OF EVERY TIME
