@@ -63,7 +63,7 @@
 #include <dosfs.h>
 
 /* Mass Storage Device Includes */
-#include <msd.h>
+//#include <msd.h>
 #endif
 
 /* Generic initcall infrastructure */
@@ -150,6 +150,9 @@
 #endif
 #if defined(PIOS_INCLUDE_VIDEO)
 #include <pios_video.h>
+#endif
+#if defined(PIOS_INCLUDE_WAVE)
+#include <pios_wavplay.h>
 #endif
 
 #if defined(PIOS_INCLUDE_FLASH)
