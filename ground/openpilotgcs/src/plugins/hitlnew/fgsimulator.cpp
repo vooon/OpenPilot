@@ -115,9 +115,9 @@ bool FGSimulator::setupProcess()
                  "--vc=100 " +
                  "--log-level=alert " +
                  "--generic=socket,out,20," + settings.hostAddress + "," + QString::number(settings.inPort) + ",udp,opfgprotocol");
-    if(!settings.manual)
+    if(!settings.manualControl)
     {
-        args.append(" --generic=socket,in,400," + settings.remoteHostAddress + "," + QString::number(settings.outPort) + ",udp,opfgprotocol");
+        args.append(" --generic=socket,in,400," + settings.remoteAddress + "," + QString::number(settings.outPort) + ",udp,opfgprotocol");
     }
 
     // Start FlightGear - only if checkbox is selected in HITL options page
@@ -204,7 +204,7 @@ void FGSimulator::transmitUpdate()
 
         QByteArray data = cmd.toAscii();
 
-        if(outSocket->writeDatagram(data, QHostAddress(settings.remoteHostAddress), settings.outPort) == -1)
+        if(outSocket->writeDatagram(data, QHostAddress(settings.remoteAddress), settings.outPort) == -1)
         {
             emit processOutput("Error sending UDP packet to FG: " + outSocket->errorString() + "\n");
         }
@@ -216,7 +216,7 @@ void FGSimulator::transmitUpdate()
         // V2.0 does not currently work with --generic-protocol
     }
     
-    if(!settings.manual)
+    if(!settings.manualControl)
     {
         actData.Roll = ailerons;
         actData.Pitch = -elevator;

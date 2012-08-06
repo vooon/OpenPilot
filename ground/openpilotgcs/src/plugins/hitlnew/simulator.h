@@ -108,14 +108,43 @@ typedef struct _CONNECTION
     QString binPath;
     QString dataPath;
     QString hostAddress;
-    QString remoteHostAddress;
+    QString remoteAddress;
     int outPort;
     int inPort;
-    bool manual;
     bool startSim;
     bool addNoise;
     QString latitude;
     QString longitude;
+
+
+
+    //Added by Hhrrrr
+    bool homeLocation;
+    quint16 homeLocRate;
+
+    bool attRaw;
+    quint8 attRawRate;
+
+    bool attActual;
+    bool attActHW;
+    bool attActSim;
+    bool attActCalc;
+
+    bool sonarAltitude;
+    float sonarMaxAlt;
+    quint16 sonarAltRate;
+
+    bool groundTruth;
+    bool gpsPosition;
+    quint16 gpsPosRate;
+
+    bool inputCommand;
+    bool gcsReciever;
+    bool manualControl;
+    bool manualOutput;
+    quint8 outputRate;
+
+
 } SimulatorSettings;
 
 
@@ -142,6 +171,7 @@ struct Output2OP{
     float rollRate;     //[deg/s]
     float pitchRate;     //[deg/s]
     float yawRate;     //[deg/s]
+    float delT;
 };
 
 
@@ -218,6 +248,7 @@ protected:
     BaroAltitude* baroAlt;
     BaroAirspeed* baroAirspeed;
     AttitudeActual* attActual;
+    AttitudeSettings* attSettings;
     VelocityActual* velActual;
     GPSPosition* gpsPos;
     GPSVelocity* gpsVel;

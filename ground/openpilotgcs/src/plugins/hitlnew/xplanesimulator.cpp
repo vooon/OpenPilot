@@ -144,7 +144,7 @@ void XplaneSimulator::transmitUpdate()
     buf.append(reinterpret_cast<const char*>(&none), sizeof(none));
 //    TraceBuf(buf.data(),41);
 
-    if(outSocket->writeDatagram(buf, QHostAddress(settings.remoteHostAddress), settings.outPort) == -1)
+    if(outSocket->writeDatagram(buf, QHostAddress(settings.remoteAddress), settings.outPort) == -1)
     {
         emit processOutput("Error sending UDP packet to XPlane: " + outSocket->errorString() + "\n");
     }
@@ -166,7 +166,7 @@ void XplaneSimulator::transmitUpdate()
     buf.append(reinterpret_cast<const char*>(&none), sizeof(none));
     buf.append(reinterpret_cast<const char*>(&none), sizeof(none));
 
-    if(outSocket->writeDatagram(buf, QHostAddress(settings.remoteHostAddress), settings.outPort) == -1)
+    if(outSocket->writeDatagram(buf, QHostAddress(settings.remoteAddress), settings.outPort) == -1)
     {
         emit processOutput("Error sending UDP packet to XPlane: " + outSocket->errorString() + "\n");
     }
