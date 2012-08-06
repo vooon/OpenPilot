@@ -32,23 +32,30 @@
 #include <QUdpSocket>
 #include <QTimer>
 #include <QProcess>
+#include <qmath.h>
+
 #include "qscopedpointer.h"
 #include "uavtalk/telemetrymanager.h"
 #include "uavobjectmanager.h"
+
+#include "accels.h"
 #include "actuatordesired.h"
-#include "manualcontrolcommand.h"
-#include "positionactual.h"
-#include "velocityactual.h"
+#include "actuatorcommand.h"
+#include "attitudeactual.h"
+#include "attitudesettings.h"
 #include "baroaltitude.h"
 #include "baroairspeed.h"
-#include "attitudeactual.h"
+#include "gcsreceiver.h"
+#include "gcstelemetrystats.h"
 #include "gpsposition.h"
 #include "gpsvelocity.h"
-#include "homelocation.h"
-#include "accels.h"
 #include "gyros.h"
-#include "gcstelemetrystats.h"
 #include "flightstatus.h"
+#include "homelocation.h"
+#include "manualcontrolcommand.h"
+#include "positionactual.h"
+#include "sonaraltitude.h"
+#include "velocityactual.h"
 
 #include "utils/coordinateconversions.h"
 
@@ -132,9 +139,9 @@ struct Output2OP{
     float accX;       //[m/s^2]
     float accY;       //[m/s^2]
     float accZ;       //[m/s^2]
-    float rollRate;
-    float pitchRate;
-    float yawRate;
+    float rollRate;     //[deg/s]
+    float pitchRate;     //[deg/s]
+    float yawRate;     //[deg/s]
 };
 
 
@@ -197,12 +204,14 @@ protected:
     static const float INHG2KPA;
     static const float FPS2CMPS;
     static const float DEG2RAD;
+    static const float RAD2DEG;
 
     QProcess* simProcess;
     QTime* time;
     QUdpSocket* inSocket;//(new QUdpSocket());
     QUdpSocket* outSocket;
 
+    ActuatorCommand* actCommand;
     ActuatorDesired* actDesired;
     ManualControlCommand* manCtrlCommand;
     FlightStatus* flightStatus;
