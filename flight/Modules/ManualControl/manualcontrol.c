@@ -38,6 +38,7 @@
 #include "manualcontrolsettings.h"
 #include "stabilizationsettings.h"
 #include "manualcontrolcommand.h"
+#include "attitudeactual.h"
 #include "actuatordesired.h"
 #include "stabilizationdesired.h"
 #include "flighttelemetrystats.h"
@@ -177,6 +178,15 @@ static void manualControlTask(void *parameters)
 	lastSysTime = xTaskGetTickCount();
 	while (1) {
 		float scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_NUMELEM];
+
+				AttitudeActualData attitude;
+				AttitudeActualGet(&attitude);
+				scaledChannel[1] = attitude.Roll / 180.0f;
+				scaledChannel[2] = attitude.Pitch / 180.0f;
+				scaledChannel[3] = attitude.Yaw / 360.0f;
+				PIOS_USB_RCTX_Update(pios_usb_rctx_id,
+						scaledChannel,
+						NELEMENTS(scaledChannel));
 
 		// Wait until next update
 		vTaskDelayUntil(&lastSysTime, UPDATE_PERIOD_MS / portTICK_RATE_MS);
@@ -375,6 +385,11 @@ static void manualControlTask(void *parameters)
 			ManualControlCommandSet(&cmd);
 #if defined(PIOS_INCLUDE_USB_RCTX)
 			if (pios_usb_rctx_id) {
+				AttitudeActualData attitude;
+				AttitudeActualGet(&attitude);
+				scaledChannel[1] = attitude.Roll / 180.0f;
+				scaledChannel[2] = attitude.Pitch / 180.0f;
+				scaledChannel[3] = attitude.Yaw / 360.0f;
 				PIOS_USB_RCTX_Update(pios_usb_rctx_id,
 						scaledChannel,
 						NELEMENTS(scaledChannel));
