@@ -64,6 +64,8 @@ public:
     IPconnectionConfiguration * Config() const { return m_config; }
     IPconnectionOptionsPage * Optionspage() const { return m_optionspage; }
 
+    QString getHostID() {return m_config->HostName();}
+    int getPort() {return m_config->Port();}
 
 
 protected slots:

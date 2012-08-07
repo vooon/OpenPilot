@@ -166,6 +166,13 @@ plugin_logging.depends += plugin_uavobjects
 plugin_logging.depends += plugin_uavtalk
 SUBDIRS += plugin_logging
 
+# Telemetry data streaming plugin
+plugin_streaming.subdir = streaming
+plugin_streaming.depends = plugin_coreplugin
+plugin_streaming.depends += plugin_uavobjects
+plugin_streaming.depends += plugin_uavtalk
+SUBDIRS += plugin_streaming
+
 #GCS Control of UAV gadget
 plugin_gcscontrol.subdir = gcscontrol
 plugin_gcscontrol.depends = plugin_coreplugin
