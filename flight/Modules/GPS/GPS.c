@@ -35,14 +35,15 @@
 
 #include "gpsposition.h"
 #include "gpsairspeed.h"
-#include "homelocation.h"
 #include "gpstime.h"
 #include "gpssatellites.h"
 #include "gpsvelocity.h"
 #include "gpssettings.h"
+#include "homelocation.h"
+#include "hwsettings.h"
+
 #include "WorldMagModel.h"
 #include "CoordinateConversions.h"
-#include "hwsettings.h"
 
 #include "NMEA.h"
 #include "UBX.h"
@@ -147,9 +148,9 @@ int32_t GPSInitialize(void)
 		GPSTimeInitialize();
 		GPSSatellitesInitialize();
 #endif
-#ifdef PIOS_GPS_SETS_HOMELOCATION
+
 		HomeLocationInitialize();
-#endif
+
 #if defined(PIOS_GPS_PROVIDES_AIRSPEED)
 		GPSAirspeedInitialize();
 #endif

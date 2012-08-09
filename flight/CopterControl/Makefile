@@ -97,6 +97,8 @@ endif
 
 # List of mandatory modules to include
 MODULES = Attitude Stabilization Actuator ManualControl FirmwareIAP
+#MODULES += StateT3
+#MODULES += FixedWingPathFollower
 # Telemetry must be last to grab the optional modules (why?)
 MODULES += Telemetry
 
@@ -189,6 +191,8 @@ SRC += $(OPUAVSYNTHDIR)/actuatorsettings.c
 SRC += $(OPUAVSYNTHDIR)/accels.c
 SRC += $(OPUAVSYNTHDIR)/gyros.c
 SRC += $(OPUAVSYNTHDIR)/attitudeactual.c
+SRC += $(OPUAVSYNTHDIR)/positionactual.c
+SRC += $(OPUAVSYNTHDIR)/velocityactual.c
 SRC += $(OPUAVSYNTHDIR)/manualcontrolcommand.c
 SRC += $(OPUAVSYNTHDIR)/i2cstats.c
 SRC += $(OPUAVSYNTHDIR)/watchdogstatus.c
@@ -204,6 +208,7 @@ SRC += $(OPUAVSYNTHDIR)/gpsposition.c
 SRC += $(OPUAVSYNTHDIR)/gpsvelocity.c
 SRC += $(OPUAVSYNTHDIR)/gpsairspeed.c
 SRC += $(OPUAVSYNTHDIR)/gpssettings.c
+SRC += $(OPUAVSYNTHDIR)/homelocation.c
 SRC += $(OPUAVSYNTHDIR)/hwsettings.c
 SRC += $(OPUAVSYNTHDIR)/gcsreceiver.c
 SRC += $(OPUAVSYNTHDIR)/receiveractivity.c
@@ -504,7 +509,7 @@ CFLAGS += -fpromote-loop-indices
 endif
 
 CFLAGS += -Wall
-CFLAGS += -Werror
+#CFLAGS += -Werror
 CFLAGS += -Wa,-adhlns=$(addprefix $(OUTDIR)/, $(notdir $(addsuffix .lst, $(basename $<))))
 # Compiler flags to generate dependency files:
 CFLAGS += -MD -MP -MF $(OUTDIR)/dep/$(@F).d
