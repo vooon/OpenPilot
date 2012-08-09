@@ -242,12 +242,12 @@ void DcmCorrection(float * accels, float * gyros, float Rbe[3][3], const float d
 	float normOmegaScalar = VectorMagnitude(gyros);
 
 	//Output raw gyro data to UAVO
-	DCMStatusData dcmStatus;
-	DCMStatusGet(&dcmStatus);
-	
-	dcmStatus.rawGyros[0]=gyros[0];
-	dcmStatus.rawGyros[1]=gyros[1];
-	dcmStatus.rawGyros[2]=gyros[2];
+//	DCMStatusData dcmStatus;
+//	DCMStatusGet(&dcmStatus);
+//	
+//	dcmStatus.rawGyros[0]=gyros[0];
+//	dcmStatus.rawGyros[1]=gyros[1];
+//	dcmStatus.rawGyros[2]=gyros[2];
 	
 	
 	//Correct roll-pitch drift via GPS and accelerometer
@@ -334,7 +334,7 @@ void DcmCorrection(float * accels, float * gyros, float Rbe[3][3], const float d
 	// and make it average zero (weakly)
 	glbl->gyro_correct_int[2] += - gyros[2] * glbl->yawBiasRate;
 	
-	
+/*	
 	if(1){
 		
 		dcmStatus.omegaCorrP[0]=drft->gpsVelocityDataConsumption_flag;
@@ -371,6 +371,7 @@ void DcmCorrection(float * accels, float * gyros, float Rbe[3][3], const float d
 //	dcmStatus.normOmegaScalar=drft->gpsVelocityDataConsumption_flag;
 	dcmStatus.normOmegaScalar=drft->delT_between_GPS;
 	DCMStatusSet(&dcmStatus);
+*/ 
 }
 
 

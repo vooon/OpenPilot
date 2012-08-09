@@ -64,7 +64,7 @@
 #include "dcmsettings.h"
 
 // Private constants
-#define STACK_SIZE_BYTES 800
+#define STACK_SIZE_BYTES 700
 #define TASK_PRIORITY (tskIDLE_PRIORITY+3)
 
 #define SENSOR_PERIOD     4
@@ -120,7 +120,7 @@ int32_t AttitudeInitialize(void)
 	AttitudeSettingsInitialize();
 	AccelsInitialize();
 	GyrosInitialize();
-	DCMStatusInitialize();
+//	DCMStatusInitialize();
 	DCMSettingsInitialize();
 
 	glbl=(struct GlobalAttitudeVariables*) pvPortMalloc(sizeof(struct GlobalAttitudeVariables));
