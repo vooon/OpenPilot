@@ -34,6 +34,7 @@ import org.openpilot.uavtalk.UAVDataObject;
 import org.openpilot.uavtalk.UAVObject;
 import org.openpilot.uavtalk.UAVObjectManager;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -48,9 +49,15 @@ import android.graphics.Point;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.KeyEvent;
+import android.view.View;
+import android.widget.PopupMenu;
+import android.widget.Toast;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
@@ -67,9 +74,11 @@ public class UAVLocation extends MapActivity
 //	private static boolean WARN = LOGLEVEL > 1;
 	private static boolean DEBUG = LOGLEVEL > 0;
 
-	private MapView mapView;
+	//private MapView mapView;
+	private MyCustomMapView mapView;
 	private MapController mapController;
-
+	private GeoPoint mContextMenuGeoPoint = null;
+	
 	UAVObjectManager objMngr;
     boolean mBound = false;
     boolean mConnected = false;
@@ -79,10 +88,11 @@ public class UAVLocation extends MapActivity
     GeoPoint uavLocation;
 
     @Override public void onCreate(Bundle icicle) {
-		super.onCreate(icicle);
-		setContentView(R.layout.map_layout);
-		mapView = (MapView)findViewById(R.id.map_view);
+    	super.onCreate(icicle);
+        setContentView(R.layout.mycustommapview);
+        mapView = (MyCustomMapView)findViewById(R.id.mapview);
 		mapController = mapView.getController();
+	    registerForContextMenu(mapView);
 
 		mapView.displayZoomControls(true);
 		Double lat = 37.422006*1E6;
@@ -90,7 +100,7 @@ public class UAVLocation extends MapActivity
 		homeLocation = new GeoPoint(lat.intValue(), lng.intValue());
 		uavLocation = homeLocation;
 		mapController.setCenter(homeLocation);
-		mapController.setZoom(18);
+		mapController.setZoom(16);
 
 		List<Overlay> overlays = mapView.getOverlays();
 		UAVOverlay myOverlay = new UAVOverlay();
@@ -133,13 +143,81 @@ public class UAVLocation extends MapActivity
 		filter.addAction(OPTelemetryService.INTENT_ACTION_CONNECTED);
 		filter.addAction(OPTelemetryService.INTENT_ACTION_DISCONNECTED);
 		registerReceiver(connectedReceiver, filter);
-	}
+	
+		mapView.setOnLongpressListener(new MyCustomMapView.OnLongpressListener() {
+        public void onLongpress(final MapView view, final GeoPoint longpressLocation) {
+        	mContextMenuGeoPoint = longpressLocation;
+            runOnUiThread(new Runnable() {
+            public void run() {
+                // Insert your longpress action here
+            	//Toast.makeText(mapView.getContext(), "You pressed here: Lat:", Toast.LENGTH_LONG).show();
+            	openContextMenu(view);
+            }
+        });
+        }
+    });
+    }
 
-	//@Override
-	@Override
+    @Override
 	protected boolean isRouteDisplayed() {
 		// IMPORTANT: This method must return true if your Activity // is displaying driving directions. Otherwise return false.
 		return false;
+	}
+	
+	  @Override
+	  public void onCreateContextMenu(ContextMenu menu, View v,
+	      ContextMenuInfo menuInfo) {
+	    super.onCreateContextMenu(menu, v, menuInfo);
+	
+	    MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.map_menu, menu);
+	  }
+	  
+	  @Override
+	  public boolean onContextItemSelected(MenuItem item) {
+		  int lat = mContextMenuGeoPoint.getLatitudeE6();
+		  int lon = mContextMenuGeoPoint.getLongitudeE6();
+	      switch (item.getItemId()) {
+		      case R.id.poi1:
+
+		        return true;
+		      case R.id.poi2:
+		    	  Toast.makeText(mapView.getContext(), "You pressed here: Lat:" + lat/1000000.0 + " Lon:" + lon/1000000.0, Toast.LENGTH_LONG).show();
+		        return true;
+			case R.id.view1:
+				mapView.setSatellite(true);
+				mapView.invalidate();
+		        return true;
+			case R.id.view2:	
+				mapView.setSatellite(false);
+				mapView.invalidate();
+		        return true;
+			default:
+				return super.onContextItemSelected(item);
+	      }
+	  }
+	
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		switch (keyCode) {
+			case KeyEvent.KEYCODE_DPAD_UP:
+				mapController.zoomIn();
+				break;
+			case KeyEvent.KEYCODE_DPAD_DOWN:
+				mapController.zoomOut();
+				break;
+			case KeyEvent.KEYCODE_DPAD_LEFT:
+				mapController.setZoom(17);
+				mapView.setSatellite(true);
+				mapView.invalidate();
+				break;
+			case KeyEvent.KEYCODE_DPAD_RIGHT:	
+				mapController.setZoom(17);
+				mapView.setSatellite(false);
+				mapView.invalidate();	
+				break;
+				
+		}
+		return super.onKeyDown(keyCode, event);
 	}
 
 	public class UAVOverlay extends Overlay {
