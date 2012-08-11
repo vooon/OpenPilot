@@ -306,9 +306,7 @@ static int32_t RadioComBridgeInitialize(void)
 	data->gcs_uavtalk_params.sendQueue = data->radioPacketQueue;
 	data->gcs_uavtalk_params.recvQueue = data->gcsEventQueue;
 	data->gcs_uavtalk_params.wdg = PIOS_WDG_COMGCS;
-	// Always allow connection to the GCS via HID if the USB is plugged in,
-	// except when the user has selected the VCP to connect to GCS.
-	data->gcs_uavtalk_params.checkHID = PIOS_COM_UAVTALK || !PIOS_COM_GCS || (PIOS_COM_GCS != PIOS_COM_VCP);
+	data->gcs_uavtalk_params.checkHID = true;
 	data->gcs_uavtalk_params.comPort = PIOS_COM_GCS;
 	if (PIOS_COM_UAVTALK)
 	{
@@ -1003,9 +1001,9 @@ static void receiveData(uint8_t *buf, uint8_t len, int8_t rssi, int8_t afc)
 	data->RSSI = rssi;
 
 	// Packet data should go to transparent com if it's configured,
-	// USB HID if it's connected, otherwise, GCS or UAVTalk com if it's configured.
-	uint32_t outputPort = PIOS_COM_TRANS_COM ? PIOS_COM_TRANS_COM : (PIOS_COM_UAVTALK ? PIOS_COM_UAVTALK : PIOS_COM_GCS);
-	bool checkHid = (PIOS_COM_TRANS_COM == 0) && (PIOS_COM_GCS != PIOS_COM_VCP);
+	// USB HID if it's connected, otherwise, UAVTalk com if it's configured.
+	uint32_t outputPort = PIOS_COM_TRANS_COM ? PIOS_COM_TRANS_COM : PIOS_COM_UAVTALK;
+	bool checkHid = (PIOS_COM_TRANS_COM == 0);
 	transmitData(outputPort, buf, len, checkHid);
 }
 

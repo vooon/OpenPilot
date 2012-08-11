@@ -154,7 +154,6 @@ void PIOS_Board_Init(void) {
 
 	switch (pipxSettings.VCPConfig)
 	{
-	case PIPXSETTINGS_VCPCONFIG_GCS:
 	case PIPXSETTINGS_VCPCONFIG_SERIAL:
 	case PIPXSETTINGS_VCPCONFIG_DEBUG:
 	{
@@ -173,9 +172,6 @@ void PIOS_Board_Init(void) {
 		}
 		switch (pipxSettings.VCPConfig)
 		{
-		case PIPXSETTINGS_VCPCONFIG_GCS:
-			pios_com_gcs_com_id = pios_com_vcp_id;
-			break;
 		case PIPXSETTINGS_VCPCONFIG_SERIAL:
 			pios_com_trans_com_id = pios_com_vcp_id;
 			break;
