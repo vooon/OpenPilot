@@ -38,7 +38,6 @@ import org.openpilot.androidgcs.telemetry.OPTelemetryService.TelemTask;
 import org.openpilot.uavtalk.UAVObject;
 import org.openpilot.uavtalk.UAVObjectManager;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -50,6 +49,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -61,7 +63,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.PopupMenu;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.maps.GeoPoint;
@@ -93,6 +95,15 @@ public class UAVLocation extends MapActivity
     GeoPoint homeLocation;
     GeoPoint uavLocation;
 
+	boolean towerEnabled;
+	boolean gpsEnabled;
+	
+	LocationManager gpsLocationManager;
+	LocationManager towerLocationManager;
+	MyLocationListener gpsLocationListener;
+	MyLocationListener towerLocationListener;
+	private TextView myLongitude, myLatitude, myAltitude;
+    
     @Override public void onCreate(Bundle icicle) {
     	super.onCreate(icicle);
         setContentView(R.layout.mycustommapview);
@@ -105,12 +116,16 @@ public class UAVLocation extends MapActivity
 		Double lng = -122.084095*1E6;
 		homeLocation = new GeoPoint(lat.intValue(), lng.intValue());
 		uavLocation = homeLocation;
-		mapController.setCenter(homeLocation);
+		//mapController.setCenter(homeLocation);
 		mapController.setZoom(16);
 
 		List<Overlay> overlays = mapView.getOverlays();
 		UAVOverlay myOverlay = new UAVOverlay();
 		overlays.add(myOverlay);
+		
+		  myLongitude = (TextView)findViewById(R.id.longitude);
+		  myLatitude = (TextView)findViewById(R.id.latitude);
+		  myAltitude = (TextView)findViewById(R.id.altitude);
 
 		MyLocationOverlay myLocationOverlay = new MyLocationOverlay(this, mapView);
 		myLocationOverlay.enableMyLocation();
@@ -118,8 +133,26 @@ public class UAVLocation extends MapActivity
 		overlays.add(myLocationOverlay);
 
 		mapView.postInvalidate();
+		gpsLocationListener = new MyLocationListener();
+		towerLocationListener = new MyLocationListener();
+		gpsLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		towerLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
+		CheckTowerAndGpsStatus();
+		if(gpsEnabled)
+		{
+			gpsLocationManager.requestLocationUpdates( LocationManager.GPS_PROVIDER, 0, 0, gpsLocationListener);
 	
+			  //Get the current location in start-up
+			Location last = gpsLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+			if(last != null)
+			{
+			  GeoPoint initGeoPoint = new GeoPoint(
+			   (int)(last.getLatitude()*1000000),
+			   (int)(last.getLongitude()*1000000));			  
+			   CenterLocation(initGeoPoint,(last.getAltitude()));
+			}
+		}
 		mapView.setOnLongpressListener(new MyCustomMapView.OnLongpressListener() {
         public void onLongpress(final MapView view, final GeoPoint longpressLocation) {
         	mContextMenuGeoPoint = longpressLocation;
@@ -134,6 +167,29 @@ public class UAVLocation extends MapActivity
     });
     }
 
+    private void CenterLocation(GeoPoint centerGeoPoint, double Altitude)
+    {
+    	mapController.animateTo(centerGeoPoint);
+     
+    
+	     myLongitude.setText("Longitude: "+
+	      String.valueOf((float)centerGeoPoint.getLongitudeE6()/1000000)
+	      );
+	     myLatitude.setText("Latitude: "+
+	    	      String.valueOf((float)centerGeoPoint.getLatitudeE6()/1000000)
+	    	      );
+	     myAltitude.setText("Altitude: "+
+	    	      String.valueOf(Altitude)
+	    	      );
+    };
+
+	private void CheckTowerAndGpsStatus() {
+		towerEnabled = towerLocationManager
+				.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+		gpsEnabled = gpsLocationManager
+				.isProviderEnabled(LocationManager.GPS_PROVIDER);
+	}
+    
     @Override
 	protected boolean isRouteDisplayed() {
 		// IMPORTANT: This method must return true if your Activity // is displaying driving directions. Otherwise return false.
@@ -172,7 +228,42 @@ public class UAVLocation extends MapActivity
 				return super.onContextItemSelected(item);
 	      }
 	  }
-	
+
+	  
+	  /* Class My Location Listener */
+
+	  public class MyLocationListener implements LocationListener
+	  {
+		  @Override
+		  public void onLocationChanged(Location loc)
+		  {
+			GeoPoint myGeoPoint = new GeoPoint(
+				(int)(loc.getLatitude()*1000000),
+				(int)(loc.getLongitude()*1000000));
+			
+			CenterLocation(myGeoPoint,loc.getAltitude());
+		  }
+		  @Override
+		  public void onProviderDisabled(String provider)
+		  {
+			  Toast.makeText( getApplicationContext(),
+					  "Gps Disabled",
+					  Toast.LENGTH_SHORT ).show();
+		  }
+		  @Override
+		  public void onProviderEnabled(String provider)
+		  {
+			  Toast.makeText( getApplicationContext(),
+					  "Gps Enabled",
+					  Toast.LENGTH_SHORT).show();
+		  }
+
+		  @Override
+		  public void onStatusChanged(String provider, int status, Bundle extras)
+		  {
+		  }
+	  }/* End of Class MyLocationListener */
+	  
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		switch (keyCode) {
 			case KeyEvent.KEYCODE_DPAD_UP:
