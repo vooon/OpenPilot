@@ -115,6 +115,9 @@
 #if defined(PIOS_INCLUDE_I2C_ESC)
 #include <pios_i2c_esc.h>
 #endif
+#if defined(PIOS_INCLUDE_DYNAMIXEL_SERVO)
+#include <pios_dynamixel_servo.h>
+#endif
 #if defined(PIOS_INCLUDE_IMU3000)
 #include <pios_imu3000.h>
 #endif

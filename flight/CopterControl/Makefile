@@ -257,6 +257,7 @@ SRC += $(PIOSCOMMON)/pios_mpu6000.c
 SRC += $(PIOSCOMMON)/pios_com.c
 #SRC += $(PIOSCOMMON)/pios_i2c_esc.c
 #SRC += $(PIOSCOMMON)/pios_bmp085.c
+SRC += $(PIOSCOMMON)/pios_dynamixel_servo.c
 SRC += $(PIOSCOMMON)/pios_rcvr.c
 SRC += $(PIOSCOMMON)/pios_gcsrcvr.c
 SRC += $(PIOSCOMMON)/printf-stdarg.c

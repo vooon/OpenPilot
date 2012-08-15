@@ -151,7 +151,9 @@ int32_t PIOS_USART_Init(uint32_t * usart_id, const struct pios_usart_cfg * cfg)
 	}
 
 	/* Initialize the USART Rx and Tx pins */
-	GPIO_Init(usart_dev->cfg->rx.gpio, &usart_dev->cfg->rx.init);
+	if (!usart_dev->cfg->half_duplex) {
+		GPIO_Init(usart_dev->cfg->rx.gpio, &usart_dev->cfg->rx.init);
+	}
 	GPIO_Init(usart_dev->cfg->tx.gpio, &usart_dev->cfg->tx.init);
 
 	/* Enable USART clock */
@@ -166,7 +168,11 @@ int32_t PIOS_USART_Init(uint32_t * usart_id, const struct pios_usart_cfg * cfg)
 		RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
 		break;
 	}
-  
+
+	if (usart_dev->cfg->half_duplex) {
+		USART_HalfDuplexCmd(usart_dev->cfg->regs, ENABLE);
+	}
+
 	/* Configure the USART */
 	USART_Init(usart_dev->cfg->regs, &usart_dev->cfg->init);
   

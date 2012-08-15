@@ -45,6 +45,7 @@ struct pios_usart_cfg {
 	struct stm32_gpio rx;
 	struct stm32_gpio tx;
 	struct stm32_irq irq;
+	bool half_duplex;
 };
 
 extern int32_t PIOS_USART_Init(uint32_t * usart_id, const struct pios_usart_cfg * cfg);

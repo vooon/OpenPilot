@@ -69,6 +69,13 @@ uint32_t pios_com_bridge_id;
 
 uint32_t pios_usb_rctx_id;
 
+#if defined(PIOS_INCLUDE_DYNAMIXEL_SERVO)
+#define PIOS_COM_DYNAMIXEL_RX_BUF_LEN 20
+#define PIOS_COM_DYNAMIXEL_TX_BUF_LEN 20
+
+uint32_t pios_com_dynamixel_id;
+#endif	/* PIOS_INCLUDE_DYNAMIXEL_SERVO */
+
 /**
  * Configuration for MPU6000 chip
  */
@@ -623,6 +630,27 @@ void PIOS_Board_Init(void) {
 			}
 		}
 #endif	/* PIOS_INCLUDE_I2C */
+		break;
+	case HWSETTINGS_CC_FLEXIPORT_DYNAMIXELSERVO:
+#if defined(PIOS_INCLUDE_DYNAMIXEL_SERVO)
+		{
+			uint32_t pios_usart_dynamixel_id;
+			if (PIOS_USART_Init(&pios_usart_dynamixel_id, &pios_usart_dynamixel_flexi_cfg)) {
+				PIOS_Assert(0);
+			}
+
+			uint8_t * rx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_DYNAMIXEL_RX_BUF_LEN);
+			PIOS_Assert(rx_buffer);
+			uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_DYNAMIXEL_TX_BUF_LEN);
+			PIOS_Assert(tx_buffer);
+			if (PIOS_COM_Init(&pios_com_dynamixel_id, &pios_usart_com_driver, pios_usart_dynamixel_id,
+						rx_buffer, PIOS_COM_DYNAMIXEL_RX_BUF_LEN,
+						tx_buffer, PIOS_COM_DYNAMIXEL_TX_BUF_LEN)) {
+				PIOS_Assert(0);
+			}
+			
+		}
+#endif	/* PIOS_INCLUDE_DYNAMIXEL_SERVO */
 		break;
 	}
 

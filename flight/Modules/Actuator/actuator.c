@@ -645,6 +645,11 @@ static bool set_channel(uint8_t mixer_channel, uint16_t value) {
 			return PIOS_SetAstec4Speed(settings.ChannelAddr[mixer_channel],value);
 			break;
 #endif
+#if defined(PIOS_INCLUDE_DYNAMIXEL_SERVO)
+		case ACTUATORSETTINGS_CHANNELTYPE_DYNAMIXEL:
+			return PIOS_DYNAMIXEL_SetPosition(settings.ChannelAddr[mixer_channel],value);
+			break;
+#endif	/* PIOS_INCLUDE_DYNAMIXEL_SERVO */
 		default:
 			return false;
 	}

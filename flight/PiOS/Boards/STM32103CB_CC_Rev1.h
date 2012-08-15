@@ -151,6 +151,9 @@ extern uint32_t pios_com_vcp_id;
 extern uint32_t pios_com_telem_usb_id;
 #define PIOS_COM_TELEM_USB              (pios_com_telem_usb_id)
 
+extern uint32_t pios_com_dynamixel_id;
+#define PIOS_COM_DYNAMIXEL		(pios_com_dynamixel_id)
+
 //-------------------------
 // ADC
 // PIOS_ADC_PinGet(0) = Gyro Z

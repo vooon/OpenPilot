@@ -56,6 +56,7 @@
 
 /* Supported USART-based PIOS modules */
 #define PIOS_INCLUDE_TELEMETRY_RF
+#define PIOS_INCLUDE_DYNAMIXEL_SERVO
 #define PIOS_INCLUDE_GPS
 #define PIOS_GPS_MINIMAL
 #define PIOS_INCLUDE_GPS_NMEA_PARSER /* Include the NMEA protocol parser */
