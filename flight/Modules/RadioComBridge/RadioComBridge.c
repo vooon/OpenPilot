@@ -39,6 +39,7 @@
 #include <pipxsettings.h>
 #include <uavtalk_priv.h>
 #include <pios_rfm22b.h>
+#include <pios_ppm_priv.h>
 #include <ecc.h>
 #if defined(PIOS_INCLUDE_FLASH_EEPROM)
 #include <pios_eeprom.h>
@@ -1064,14 +1065,25 @@ static void StatusHandler(PHStatusPacketHandle status, int8_t rssi, int8_t afc)
  */
 static void PPMHandler(uint16_t *channels)
 {
-	GCSReceiverData rcvr;
+	// Send the PPM out the PPM port if the user has configured it, otherwise send out a GCSReceiver packet to the UAVTalk port.
+	uint8_t flexi_config;
+	PipXSettingsFlexiConfigGet(&flexi_config);
+	if (flexi_config == PIPXSETTINGS_FLEXICONFIG_PPM_OUT)
+	{
+		for (uint8_t i = 0; i < GCSRECEIVER_CHANNEL_NUMELEM; ++i)
+			PIOS_PPM_OUT_Set(i, channels[i]);
+	}
+	else
+	{
+		GCSReceiverData rcvr;
 
-	// Copy the receiver channels into the GCSReceiver object.
-	for (uint8_t i = 0; i < GCSRECEIVER_CHANNEL_NUMELEM; ++i)
-		rcvr.Channel[i] = channels[i];
+		// Copy the receiver channels into the GCSReceiver object.
+		for (uint8_t i = 0; i < GCSRECEIVER_CHANNEL_NUMELEM; ++i)
+			rcvr.Channel[i] = channels[i];
 
-	// Set the GCSReceiverData object.
-	GCSReceiverSet(&rcvr);
+		// Set the GCSReceiverData object.
+		GCSReceiverSet(&rcvr);
+	}
 }
 
 static BufferedReadHandle BufferedReadInit(uint32_t com_port, uint16_t buffer_length)

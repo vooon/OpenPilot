@@ -294,16 +294,23 @@ void PIOS_Board_Init(void) {
 	case PIPXSETTINGS_FLEXICONFIG_PPM_IN:
 #if defined(PIOS_INCLUDE_PPM)
 	{
-			uint32_t pios_ppm_id;
-			PIOS_PPM_Init(&pios_ppm_id, &pios_ppm_cfg);
+		uint32_t pios_ppm_id;
+		PIOS_PPM_Init(&pios_ppm_id, &pios_ppm_cfg);
 
-			if (PIOS_RCVR_Init(&pios_ppm_rcvr_id, &pios_ppm_rcvr_driver, pios_ppm_id)) {
-				PIOS_Assert(0);
-			}
+		if (PIOS_RCVR_Init(&pios_ppm_rcvr_id, &pios_ppm_rcvr_driver, pios_ppm_id)) {
+			PIOS_Assert(0);
 		}
+	}
 #endif	/* PIOS_INCLUDE_PPM */
 	break;
 	case PIPXSETTINGS_FLEXICONFIG_PPM_OUT:
+#if defined(PIOS_INCLUDE_PPM)
+	{
+		uint32_t pios_ppm_out_id;
+		PIOS_PPM_Out_Init(&pios_ppm_out_id, &pios_ppm_out_cfg);
+	}
+#endif	/* PIOS_INCLUDE_PPM */
+	break;
 	case PIPXSETTINGS_FLEXICONFIG_RSSI:
 	case PIPXSETTINGS_FLEXICONFIG_DISABLED:
 		break;

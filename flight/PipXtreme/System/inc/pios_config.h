@@ -61,6 +61,7 @@
 #define PIOS_INCLUDE_WDG
 #define PIOS_INCLUDE_BL_HELPER
 #define PIOS_INCLUDE_FLASH_EEPROM
+#define PIOS_INCLUDE_PPM_OUT
 
 /* Defaults for Logging */
 #define LOG_FILENAME 			"PIOS.LOG"
