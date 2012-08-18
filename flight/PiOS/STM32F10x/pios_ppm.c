@@ -49,11 +49,6 @@ const struct pios_rcvr_driver pios_ppm_rcvr_driver = {
 #define PIOS_PPM_IN_MAX_CHANNEL_PULSE_US	2250   // microseconds
 
 #define PIOS_PPM_OUT_MAX_DEVS             1
-#define PIOS_PPM_OUT_MAX_CHANNELS		      8
-#define PIOS_PPM_OUT_FRAME_PERIOD_US      20000  // microseconds
-#define PIOS_PPM_OUT_HIGH_PULSE_US        300    // microseconds
-#define PIOS_PPM_OUT_MIN_CHANNEL_PULSE_US	200    // microseconds
-#define PIOS_PPM_OUT_MAX_CHANNEL_PULSE_US	2200   // microseconds
 
 /* Local Variables */
 static TIM_ICInitTypeDef TIM_ICInitStructure;
@@ -91,9 +86,10 @@ struct pios_ppm_out_dev {
 
 	uint8_t inverted;
 	uint32_t triggering_period;
-	uint8_t ChannelSum;
 	uint8_t NumChannelCounter;
 	uint32_t ChannelValue[PIOS_PPM_OUT_MAX_CHANNELS];
+	uint32_t OutputChannelValue[PIOS_PPM_OUT_MAX_CHANNELS];
+	uint32_t ChannelSum;
 
 	uint8_t supv_timer;
 	bool Tracking;
@@ -424,8 +420,8 @@ int32_t PIOS_PPM_Out_Init(uint32_t * ppm_id, const struct pios_ppm_out_cfg * cfg
 	/* Set up the state variables */
 	ppm_dev->inverted=0;
 	ppm_dev->triggering_period = PIOS_PPM_OUT_HIGH_PULSE_US;
-	ppm_dev->ChannelSum = 0;
 	ppm_dev->NumChannelCounter = 0;
+	ppm_dev->ChannelSum = 0;
 
 	// Flush counter variables
 	for (uint8_t i = 0; i < PIOS_PPM_OUT_MAX_CHANNELS; i++)
@@ -525,18 +521,27 @@ static void PIOS_PPM_OUT_tim_edge_cb (uint32_t tim_id, uint32_t context, uint8_t
 	struct pios_ppm_out_dev *ppm_dev = (struct pios_ppm_out_dev *)context;
 	uint32_t pulse_width;
 
-	// Finish out the frame if we reached the last channel.
-	if ((ppm_dev->NumChannelCounter >= PIOS_PPM_OUT_MAX_CHANNELS))
+	// Send out the start pulse before the first pulse.
+	if(ppm_dev->NumChannelCounter == 0)
 	{
-		pulse_width = PIOS_PPM_OUT_FRAME_PERIOD_US - ppm_dev->ChannelSum;
-		ppm_dev->NumChannelCounter = 0;
+		// Grab the next set of channel values.
 		ppm_dev->ChannelSum = 0;
+		for (uint8_t i = 0; i < PIOS_PPM_OUT_MAX_CHANNELS; ++i)
+			ppm_dev->ChannelSum += (ppm_dev->OutputChannelValue[i] = ppm_dev->ChannelValue[i]) + PIOS_PPM_OUT_HIGH_PULSE_US;
+		// The start pulse width is the remainder after all the channels are output.
+		pulse_width = ppm_dev->cfg->frame_period - ppm_dev->ChannelSum;
 	}
 	else
-		ppm_dev->ChannelSum += (pulse_width = ppm_dev->ChannelValue[ppm_dev->NumChannelCounter++]);
+		pulse_width = ppm_dev->OutputChannelValue[ppm_dev->NumChannelCounter - 1];
 
 	// Initiate the pulse
 	TIM_SetAutoreload(ppm_dev->cfg->channel->timer, pulse_width - 1);
+
+	// Reset the counter if required.
+	if ((ppm_dev->NumChannelCounter >= PIOS_PPM_OUT_MAX_CHANNELS))
+		ppm_dev->NumChannelCounter = 0;
+	else
+		ppm_dev->NumChannelCounter++;
 
 	return;
 }

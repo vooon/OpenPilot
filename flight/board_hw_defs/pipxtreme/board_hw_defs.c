@@ -497,6 +497,8 @@ const struct pios_ppm_out_cfg pios_ppm_out_cfg = {
 		.TIM_OCNIdleState = TIM_OCNIdleState_Reset,
 	},
 	.channel = pios_tim_ppmout,
+	.frame_period = PIOS_PPM_OUT_FRAME_PERIOD_US,
+	.high_pulse_period = PIOS_PPM_OUT_HIGH_PULSE_US,
 };
 
 #endif /* PIOS_INCLUDE_PPM_OUT */

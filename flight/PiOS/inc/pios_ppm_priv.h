@@ -43,6 +43,8 @@ struct pios_ppm_cfg {
 struct pios_ppm_out_cfg {
 	TIM_OCInitTypeDef tim_oc_init;
 	const struct pios_tim_channel * channel;
+	uint32_t frame_period; // microseconds
+	uint16_t high_pulse_period; // microseconds
 };
 
 extern const struct pios_rcvr_driver pios_ppm_rcvr_driver;

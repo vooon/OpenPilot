@@ -237,6 +237,13 @@ extern uint32_t pios_ppm_rcvr_id;
 #define PIOS_PPM_PACKET_UPDATE_PERIOD_MS 25
 
 //-------------------------
+// Receiver PPM output
+//-------------------------
+#define PIOS_PPM_OUT_MAX_CHANNELS         8
+#define PIOS_PPM_OUT_FRAME_PERIOD_US      20000  // microseconds
+#define PIOS_PPM_OUT_HIGH_PULSE_US        300    // microseconds
+
+//-------------------------
 // Servo outputs
 //-------------------------
 #define PIOS_SERVO_UPDATE_HZ                    50
