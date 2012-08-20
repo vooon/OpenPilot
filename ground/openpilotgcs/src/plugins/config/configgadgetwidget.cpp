@@ -59,7 +59,7 @@ ConfigGadgetWidget::ConfigGadgetWidget(QWidget *parent) : QWidget(parent)
     ftw->setIconSize(64);
 
     QVBoxLayout *layout = new QVBoxLayout;
-    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setContentsMargins(0, 0, 750, 0);
     layout->addWidget(ftw);
     setLayout(layout);
 
