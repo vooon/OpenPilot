@@ -2,26 +2,14 @@
   <General>
     <AutoConnect>true</AutoConnect>
     <AutoSelect>true</AutoSelect>
+    <Description>Wide Screen</Description>
+    <Details>None</Details>
     <ExpertMode>false</ExpertMode>
-    <LastPreferenceCategory>Notify Plugin</LastPreferenceCategory>
-    <LastPreferencePage>settings</LastPreferencePage>
+    <OverrideLanguage>en_AU</OverrideLanguage>
     <SaveSettingsOnExit>true</SaveSettingsOnExit>
-    <SettingsWindowHeight>600</SettingsWindowHeight>
-    <SettingsWindowWidth>800</SettingsWindowWidth>
+    <StyleSheet>default</StyleSheet>
     <UDPMirror>false</UDPMirror>
-    <Description>Wide configuration</Description>
-    <Details>Default configuration built for wide screens (17"up)</Details>
-    <StyleSheet>wide</StyleSheet>
   </General>
-  <IPconnection>
-    <Current>
-      <arr_1>
-        <Port>1</Port>
-        <UseTCP>0</UseTCP>
-      </arr_1>
-      <size>1</size>
-    </Current>
-  </IPconnection>
   <KeyBindings>
     <size>0</size>
   </KeyBindings>
@@ -48,49 +36,30 @@
       <data>
         <Current>
           <arr_1>
-            <CurrentLanguage>default</CurrentLanguage>
-            <DataObject>FlightStatus</DataObject>
+            <CurrentLanguage></CurrentLanguage>
+            <DataObject></DataObject>
             <ExpireTimeout>0</ExpireTimeout>
             <Mute>false</Mute>
-            <ObjectField>Armed</ObjectField>
+            <ObjectField></ObjectField>
             <RangeLimit>0</RangeLimit>
             <Repeat>0</Repeat>
             <SayOrder>0</SayOrder>
-            <Sound1>armed</Sound1>
+            <Sound1></Sound1>
             <Sound2></Sound2>
             <Sound3></Sound3>
-            <SoundCollectionPath>%%DATAPATH%%sounds</SoundCollectionPath>
-            <Value1>Armed</Value1>
+            <SoundCollectionPath></SoundCollectionPath>
+            <Value1></Value1>
             <Value2>0</Value2>
           </arr_1>
           <size>1</size>
         </Current>
-        <EnableSound>true</EnableSound>
+        <EnableSound>false</EnableSound>
         <listNotifies>
-          <arr_1>
-            <CurrentLanguage>default</CurrentLanguage>
-            <DataObject>FlightStatus</DataObject>
-            <ExpireTimeout>15</ExpireTimeout>
-            <Mute>false</Mute>
-            <ObjectField>Armed</ObjectField>
-            <RangeLimit>0</RangeLimit>
-            <Repeat>0</Repeat>
-            <SayOrder>0</SayOrder>
-            <Sound1>armed</Sound1>
-            <Sound2></Sound2>
-            <Sound3></Sound3>
-            <SoundCollectionPath>%%DATAPATH%%sounds</SoundCollectionPath>
-            <Value1>Armed</Value1>
-            <Value2>0</Value2>
-          </arr_1>
-          <size>1</size>
+          <size>0</size>
         </listNotifies>
       </data>
     </SoundNotifyPlugin>
   </Plugins>
-  <SerialConnection>
-    <speed>57600</speed>
-  </SerialConnection>
   <UAVGadgetConfigurations>
     <ConfigGadget>
       <default>
@@ -180,7 +149,10 @@
           <beSmooth>false</beSmooth>
           <dialBackgroundID>background</dialBackgroundID>
           <dialFile>%%DATAPATH%%dials/default/barometer.svg</dialFile>
+          <dialForegroundID></dialForegroundID>
           <dialNeedleID1>needle</dialNeedleID1>
+          <dialNeedleID2></dialNeedleID2>
+          <dialNeedleID3></dialNeedleID3>
           <font>MS Shell Dlg 2,8.25,-1,5,50,0,0,0,0,0</font>
           <needle1DataObject>BaroAltitude</needle1DataObject>
           <needle1Factor>10</needle1Factor>
@@ -212,7 +184,10 @@
           <beSmooth>false</beSmooth>
           <dialBackgroundID>background</dialBackgroundID>
           <dialFile>%%DATAPATH%%dials/default/vsi.svg</dialFile>
+          <dialForegroundID></dialForegroundID>
           <dialNeedleID1>needle</dialNeedleID1>
+          <dialNeedleID2></dialNeedleID2>
+          <dialNeedleID3></dialNeedleID3>
           <font>MS Shell Dlg 2,8.25,-1,5,50,0,0,0,0,0</font>
           <needle1DataObject>VelocityActual</needle1DataObject>
           <needle1Factor>0.01</needle1Factor>
@@ -246,6 +221,8 @@
           <dialFile>%%DATAPATH%%dials/default/compass.svg</dialFile>
           <dialForegroundID>foreground</dialForegroundID>
           <dialNeedleID1>needle</dialNeedleID1>
+          <dialNeedleID2></dialNeedleID2>
+          <dialNeedleID3></dialNeedleID3>
           <font>MS Shell Dlg 2,8.25,-1,5,50,0,0,0,0,0</font>
           <needle1DataObject>AttitudeActual</needle1DataObject>
           <needle1Factor>-1</needle1Factor>
@@ -349,6 +326,8 @@
           <dialFile>%%DATAPATH%%dials/deluxe/barometer.svg</dialFile>
           <dialForegroundID>foreground</dialForegroundID>
           <dialNeedleID1>needle</dialNeedleID1>
+          <dialNeedleID2></dialNeedleID2>
+          <dialNeedleID3></dialNeedleID3>
           <font>MS Shell Dlg 2,8.25,-1,5,50,0,0,0,0,0</font>
           <needle1DataObject>BaroAltitude</needle1DataObject>
           <needle1Factor>10</needle1Factor>
@@ -382,6 +361,8 @@
           <dialFile>%%DATAPATH%%dials/deluxe/vsi.svg</dialFile>
           <dialForegroundID>foreground</dialForegroundID>
           <dialNeedleID1>needle</dialNeedleID1>
+          <dialNeedleID2></dialNeedleID2>
+          <dialNeedleID3></dialNeedleID3>
           <font>MS Shell Dlg 2,8.25,-1,5,50,0,0,0,0,0</font>
           <needle1DataObject>VelocityActual</needle1DataObject>
           <needle1Factor>0.01</needle1Factor>
@@ -415,6 +396,8 @@
           <dialFile>%%DATAPATH%%dials/deluxe/compass.svg</dialFile>
           <dialForegroundID>foreground</dialForegroundID>
           <dialNeedleID1>needle</dialNeedleID1>
+          <dialNeedleID2></dialNeedleID2>
+          <dialNeedleID3></dialNeedleID3>
           <font>MS Shell Dlg 2,8.25,-1,5,50,0,0,0,0,0</font>
           <needle1DataObject>AttitudeActual</needle1DataObject>
           <needle1Factor>-1</needle1Factor>
@@ -448,6 +431,8 @@
           <dialFile>%%DATAPATH%%dials/deluxe/speed.svg</dialFile>
           <dialForegroundID>foreground</dialForegroundID>
           <dialNeedleID1>needle</dialNeedleID1>
+          <dialNeedleID2></dialNeedleID2>
+          <dialNeedleID3></dialNeedleID3>
           <font>MS Shell Dlg 2,8.25,-1,5,50,0,0,0,0,0</font>
           <needle1DataObject>GPSPosition</needle1DataObject>
           <needle1Factor>3.6</needle1Factor>
@@ -549,7 +534,10 @@
           <beSmooth>false</beSmooth>
           <dialBackgroundID>background</dialBackgroundID>
           <dialFile>%%DATAPATH%%dials/default/speed.svg</dialFile>
+          <dialForegroundID></dialForegroundID>
           <dialNeedleID1>needle</dialNeedleID1>
+          <dialNeedleID2></dialNeedleID2>
+          <dialNeedleID3></dialNeedleID3>
           <font>MS Shell Dlg 2,8.25,-1,5,50,0,0,0,0,0</font>
           <needle1DataObject>GPSPosition</needle1DataObject>
           <needle1Factor>3.6</needle1Factor>
@@ -651,7 +639,10 @@
           <beSmooth>false</beSmooth>
           <dialBackgroundID>background</dialBackgroundID>
           <dialFile>%%DATAPATH%%dials/hi-contrast/barometer.svg</dialFile>
+          <dialForegroundID></dialForegroundID>
           <dialNeedleID1>needle</dialNeedleID1>
+          <dialNeedleID2></dialNeedleID2>
+          <dialNeedleID3></dialNeedleID3>
           <font>MS Shell Dlg 2,8.25,-1,5,50,0,0,0,0,0</font>
           <needle1DataObject>BaroAltitude</needle1DataObject>
           <needle1Factor>10</needle1Factor>
@@ -683,7 +674,10 @@
           <beSmooth>false</beSmooth>
           <dialBackgroundID>background</dialBackgroundID>
           <dialFile>%%DATAPATH%%dials/hi-contrast/vsi.svg</dialFile>
+          <dialForegroundID></dialForegroundID>
           <dialNeedleID1>needle</dialNeedleID1>
+          <dialNeedleID2></dialNeedleID2>
+          <dialNeedleID3></dialNeedleID3>
           <font>MS Shell Dlg 2,8.25,-1,5,50,0,0,0,0,0</font>
           <needle1DataObject>VelocityActual</needle1DataObject>
           <needle1Factor>0.01</needle1Factor>
@@ -717,6 +711,8 @@
           <dialFile>%%DATAPATH%%dials/hi-contrast/compass.svg</dialFile>
           <dialForegroundID>foreground</dialForegroundID>
           <dialNeedleID1>needle</dialNeedleID1>
+          <dialNeedleID2></dialNeedleID2>
+          <dialNeedleID3></dialNeedleID3>
           <font>MS Shell Dlg 2,8.25,-1,5,50,0,0,0,0,0</font>
           <needle1DataObject>AttitudeActual</needle1DataObject>
           <needle1Factor>-1</needle1Factor>
@@ -748,7 +744,10 @@
           <beSmooth>false</beSmooth>
           <dialBackgroundID>background</dialBackgroundID>
           <dialFile>%%DATAPATH%%dials/hi-contrast/speed.svg</dialFile>
+          <dialForegroundID></dialForegroundID>
           <dialNeedleID1>needle</dialNeedleID1>
+          <dialNeedleID2></dialNeedleID2>
+          <dialNeedleID3></dialNeedleID3>
           <font>MS Shell Dlg 2,8.25,-1,5,50,0,0,0,0,0</font>
           <needle1DataObject>GPSPosition</needle1DataObject>
           <needle1Factor>3.6</needle1Factor>
@@ -780,6 +779,7 @@
           <beSmooth>false</beSmooth>
           <dialBackgroundID>background</dialBackgroundID>
           <dialFile>%%DATAPATH%%dials/hi-contrast/thermometer.svg</dialFile>
+          <dialForegroundID></dialForegroundID>
           <dialNeedleID1>needle</dialNeedleID1>
           <dialNeedleID2>needle2</dialNeedleID2>
           <dialNeedleID3>needle3</dialNeedleID3>
@@ -814,6 +814,7 @@
           <beSmooth>false</beSmooth>
           <dialBackgroundID>background</dialBackgroundID>
           <dialFile>%%DATAPATH%%dials/default/thermometer.svg</dialFile>
+          <dialForegroundID></dialForegroundID>
           <dialNeedleID1>needle</dialNeedleID1>
           <dialNeedleID2>needle2</dialNeedleID2>
           <dialNeedleID3>needle3</dialNeedleID3>
@@ -848,6 +849,7 @@
           <beSmooth>false</beSmooth>
           <dialBackgroundID>background</dialBackgroundID>
           <dialFile>%%DATAPATH%%dials/default/thermometer.svg</dialFile>
+          <dialForegroundID></dialForegroundID>
           <dialNeedleID1>needle</dialNeedleID1>
           <dialNeedleID2>needle2</dialNeedleID2>
           <dialNeedleID3>needle3</dialNeedleID3>
@@ -913,6 +915,7 @@
           <channel5Reverse>false</channel5Reverse>
           <channel6Reverse>false</channel6Reverse>
           <channel7Reverse>false</channel7Reverse>
+          <controlHostUDP></controlHostUDP>
           <controlPortUDP>0</controlPortUDP>
           <controlsMode>2</controlsMode>
           <pitchChannel>1</pitchChannel>
@@ -965,6 +968,8 @@
           <dataPath>\usr\share\games\FlightGear</dataPath>
           <hostAddress>127.0.0.1</hostAddress>
           <inPort>9009</inPort>
+          <latitude></latitude>
+          <longitude></longitude>
           <manual>false</manual>
           <outPort>9010</outPort>
           <remoteHostAddress>127.0.0.1</remoteHostAddress>
@@ -982,6 +987,8 @@
           <dataPath>\usr\share\games\FlightGear</dataPath>
           <hostAddress>127.0.0.3</hostAddress>
           <inPort>6756</inPort>
+          <latitude></latitude>
+          <longitude></longitude>
           <manual>false</manual>
           <outPort>49000</outPort>
           <remoteHostAddress>127.0.0.1</remoteHostAddress>
@@ -1003,6 +1010,8 @@
           <attActual>true</attActual>
           <attRaw>true</attRaw>
           <attRawRate>20</attRawRate>
+          <binPath></binPath>
+          <dataPath></dataPath>
           <gcsReciever>true</gcsReciever>
           <gpsPosRate>200</gpsPosRate>
           <gpsPosition>true</gpsPosition>
@@ -1721,6 +1730,14 @@
         </data>
       </default>
     </OPMapGadget>
+    <OsgEarthviewGadget>
+      <default>
+        <configInfo>
+          <locked>false</locked>
+          <version>0.0.0</version>
+        </configInfo>
+      </default>
+    </OsgEarthviewGadget>
     <PFDGadget>
       <raw>
         <configInfo>
@@ -1802,6 +1819,7 @@
         <data>
           <LoggingEnabled>false</LoggingEnabled>
           <LoggingNewFileOnConnect>false</LoggingNewFileOnConnect>
+          <LoggingPath></LoggingPath>
           <configurationStreamVersion>1000</configurationStreamVersion>
           <dataSize>60</dataSize>
           <plotCurve0>
@@ -1847,6 +1865,7 @@
         <data>
           <LoggingEnabled>false</LoggingEnabled>
           <LoggingNewFileOnConnect>false</LoggingNewFileOnConnect>
+          <LoggingPath></LoggingPath>
           <configurationStreamVersion>1000</configurationStreamVersion>
           <dataSize>20</dataSize>
           <plotCurve0>
@@ -1902,6 +1921,7 @@
         <data>
           <LoggingEnabled>false</LoggingEnabled>
           <LoggingNewFileOnConnect>false</LoggingNewFileOnConnect>
+          <LoggingPath></LoggingPath>
           <configurationStreamVersion>1000</configurationStreamVersion>
           <dataSize>60</dataSize>
           <plotCurve0>
@@ -1947,6 +1967,7 @@
         <data>
           <LoggingEnabled>false</LoggingEnabled>
           <LoggingNewFileOnConnect>false</LoggingNewFileOnConnect>
+          <LoggingPath></LoggingPath>
           <configurationStreamVersion>1000</configurationStreamVersion>
           <dataSize>60</dataSize>
           <plotCurve0>
@@ -1972,6 +1993,7 @@
         <data>
           <LoggingEnabled>false</LoggingEnabled>
           <LoggingNewFileOnConnect>false</LoggingNewFileOnConnect>
+          <LoggingPath></LoggingPath>
           <configurationStreamVersion>1000</configurationStreamVersion>
           <dataSize>40</dataSize>
           <plotCurve0>
@@ -2067,6 +2089,7 @@
         <data>
           <LoggingEnabled>false</LoggingEnabled>
           <LoggingNewFileOnConnect>false</LoggingNewFileOnConnect>
+          <LoggingPath></LoggingPath>
           <configurationStreamVersion>1000</configurationStreamVersion>
           <dataSize>60</dataSize>
           <plotCurve0>
@@ -2112,6 +2135,7 @@
         <data>
           <LoggingEnabled>false</LoggingEnabled>
           <LoggingNewFileOnConnect>false</LoggingNewFileOnConnect>
+          <LoggingPath></LoggingPath>
           <configurationStreamVersion>1000</configurationStreamVersion>
           <dataSize>60</dataSize>
           <plotCurve0>
@@ -2157,12 +2181,13 @@
         <data>
           <LoggingEnabled>false</LoggingEnabled>
           <LoggingNewFileOnConnect>false</LoggingNewFileOnConnect>
+          <LoggingPath></LoggingPath>
           <configurationStreamVersion>1000</configurationStreamVersion>
           <dataSize>60</dataSize>
           <plotCurve0>
             <color>4294901760</color>
             <mathFunction>None</mathFunction>
-            <uavField>X</uavField>
+            <uavField>x</uavField>
             <uavObject>Magnetometer</uavObject>
             <yMaximum>0</yMaximum>
             <yMeanSamples>1</yMeanSamples>
@@ -2172,7 +2197,7 @@
           <plotCurve1>
             <color>4283782655</color>
             <mathFunction>None</mathFunction>
-            <uavField>Y</uavField>
+            <uavField>y</uavField>
             <uavObject>Magnetometer</uavObject>
             <yMaximum>0</yMaximum>
             <yMeanSamples>1</yMeanSamples>
@@ -2182,7 +2207,7 @@
           <plotCurve2>
             <color>4283804160</color>
             <mathFunction>None</mathFunction>
-            <uavField>Z</uavField>
+            <uavField>z</uavField>
             <uavObject>Magnetometer</uavObject>
             <yMaximum>0</yMaximum>
             <yMeanSamples>1</yMeanSamples>
@@ -2202,6 +2227,7 @@
         <data>
           <LoggingEnabled>false</LoggingEnabled>
           <LoggingNewFileOnConnect>false</LoggingNewFileOnConnect>
+          <LoggingPath></LoggingPath>
           <configurationStreamVersion>1000</configurationStreamVersion>
           <dataSize>240</dataSize>
           <plotCurve0>
@@ -2337,6 +2363,7 @@
         <data>
           <LoggingEnabled>false</LoggingEnabled>
           <LoggingNewFileOnConnect>false</LoggingNewFileOnConnect>
+          <LoggingPath></LoggingPath>
           <configurationStreamVersion>1000</configurationStreamVersion>
           <dataSize>20</dataSize>
           <plotCurve0>
@@ -2382,6 +2409,7 @@
         <data>
           <LoggingEnabled>false</LoggingEnabled>
           <LoggingNewFileOnConnect>false</LoggingNewFileOnConnect>
+          <LoggingPath></LoggingPath>
           <configurationStreamVersion>1000</configurationStreamVersion>
           <dataSize>240</dataSize>
           <plotCurve0>
@@ -2396,6 +2424,9 @@
           </plotCurve0>
           <plotCurve1>
             <color>0</color>
+            <mathFunction></mathFunction>
+            <uavField></uavField>
+            <uavObject></uavObject>
             <yMaximum>0</yMaximum>
             <yMeanSamples>1</yMeanSamples>
             <yMinimum>0</yMinimum>
@@ -2543,11 +2574,23 @@
     <Mode2>
       <showToolbars>false</showToolbars>
       <splitter>
-        <classId>ConfigGadget</classId>
-        <gadget>
-          <activeConfiguration>default</activeConfiguration>
-        </gadget>
-        <type>uavGadget</type>
+        <side0>
+          <classId>ConfigGadget</classId>
+          <gadget>
+            <activeConfiguration>default</activeConfiguration>
+          </gadget>
+          <type>uavGadget</type>
+        </side0>
+        <side1>
+          <classId>UAVObjectBrowser</classId>
+          <gadget>
+            <activeConfiguration>default</activeConfiguration>
+          </gadget>
+          <type>uavGadget</type>
+        </side1>
+        <splitterOrientation>1</splitterOrientation>
+        <splitterSizes>@Variant(AAAACQAAAAA=)</splitterSizes>
+        <type>splitter</type>
       </splitter>
       <version>UAVGadgetManagerV1</version>
     </Mode2>
