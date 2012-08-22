@@ -58,11 +58,14 @@ static void setHomeLocation(GPSPositionData * gpsData);
 static float GravityAccel(float latitude, float longitude, float altitude);
 #endif
 
+static void GPSPositionUpdatedCb(UAVObjEvent * objEv);
+static bool gpsNew_flag;
 // ****************
 // Private constants
 
-#define GPS_TIMEOUT_MS                  500
+#define GPS_TIMEOUT_MS                  1500
 
+#define F_PI                            3.14159265358979323846f
 
 #ifdef PIOS_GPS_SETS_HOMELOCATION
 // Unfortunately need a good size stack for the WMM calculation
@@ -149,6 +152,9 @@ int32_t GPSInitialize(void)
 		HomeLocationInitialize();
 #endif
 		updateSettings();
+
+		GPSPositionConnectCallback(&GPSPositionUpdatedCb);
+		gpsNew_flag=false;
 	}
 
 	if (gpsPort && gpsEnabled) {
@@ -192,37 +198,57 @@ static void gpsTask(void *parameters)
 	timeOfLastUpdateMs = timeNowMs;
 	timeOfLastCommandMs = timeNowMs;
 
+	GPSVelocityData GpsVelocity;
+	static float GPSAltitudeOld;
+
 	GPSPositionGet(&gpsposition);
 	// Loop forever
 	while (1)
 	{
 		uint8_t c;
+		// Do not update position and velocity estimates when in simulation mode
+		if (!GPSPositionReadOnly()){
+			// This blocks the task until there is something on the buffer
+			while (PIOS_COM_ReceiveBuffer(gpsPort, &c, 1, xDelay) > 0)
+			{
+				int res;
+				switch (gpsProtocol) {
+	#if defined(PIOS_INCLUDE_GPS_NMEA_PARSER)
+					case GPSSETTINGS_DATAPROTOCOL_NMEA:
+						res = parse_nmea_stream (c,gps_rx_buffer, &gpsposition, &gpsRxStats);
+						break;
+	#endif
+	#if defined(PIOS_INCLUDE_GPS_UBX_PARSER)
+					case GPSSETTINGS_DATAPROTOCOL_UBX:
+						res = parse_ubx_stream (c,gps_rx_buffer, &gpsposition, &gpsRxStats);
+						break;
+	#endif
+					default:
+						res = NO_PARSER; // this should not happen
+						break;
+				}
 
-		// This blocks the task until there is something on the buffer
-		while (PIOS_COM_ReceiveBuffer(gpsPort, &c, 1, xDelay) > 0)
-		{
-			int res;
-			switch (gpsProtocol) {
-#if defined(PIOS_INCLUDE_GPS_NMEA_PARSER)
-				case GPSSETTINGS_DATAPROTOCOL_NMEA:
-					res = parse_nmea_stream (c,gps_rx_buffer, &gpsposition, &gpsRxStats);
-					break;
-#endif
-#if defined(PIOS_INCLUDE_GPS_UBX_PARSER)
-				case GPSSETTINGS_DATAPROTOCOL_UBX:
-					res = parse_ubx_stream (c,gps_rx_buffer, &gpsposition, &gpsRxStats);
-					break;
-#endif
-				default:
-					res = NO_PARSER; // this should not happen
-					break;
+				if (res == PARSER_COMPLETE) {
+					timeNowMs = xTaskGetTickCount() * portTICK_RATE_MS;
+					timeOfLastUpdateMs = timeNowMs;
+					timeOfLastCommandMs = timeNowMs;
+				}
 			}
-
-			if (res == PARSER_COMPLETE) {
-				timeNowMs = xTaskGetTickCount() * portTICK_RATE_MS;
+		} else {
+			if (gpsNew_flag) {
+				uint32_t timeNowMs = xTaskGetTickCount() * portTICK_RATE_MS;
+				/*** We use data from the GPSPosition to calculate GPSVelocity ***/
+				GPSPositionGet(&gpsposition);
+				if (gpsposition.Status != GPSPOSITION_STATUS_NOFIX) {
+					GpsVelocity.North = gpsposition.Groundspeed * cosf(gpsposition.Heading * F_PI / 180.0f);
+					GpsVelocity.East = gpsposition.Groundspeed * sinf(gpsposition.Heading * F_PI / 180.0f);
+					GpsVelocity.Down = ((gpsposition.Altitude-GPSAltitudeOld) / (timeNowMs - timeOfLastUpdateMs)) * 1000.0f ;
+					GPSVelocitySet(&GpsVelocity);
+					GPSAltitudeOld = gpsposition.Altitude;
+				}
 				timeOfLastUpdateMs = timeNowMs;
-				timeOfLastCommandMs = timeNowMs;
-			}
+				gpsNew_flag = false;
+			} else vTaskDelay(xDelay);
 		}
 
 		// Check for GPS timeout
@@ -348,6 +374,10 @@ static void updateSettings()
 	}
 }
 
+static void GPSPositionUpdatedCb(UAVObjEvent * objEv)
+{
+	gpsNew_flag=true;
+}
 /** 
   * @}
   * @}

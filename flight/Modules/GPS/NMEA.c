@@ -42,7 +42,8 @@
 //#define ENABLE_DEBUG_MSG						///< define to enable debug-messages
 #define DEBUG_PORT		PIOS_COM_TELEM_RF		///< defines which serial port is ued for debug-messages
 
-
+// Private constants
+#define F_PI 3.14159265358979323846f
 
 // Debugging
 #ifdef ENABLE_DEBUG_MSG
@@ -501,6 +502,21 @@ static bool nmeaProcessGPGGA(GPSPositionData * GpsData, bool* gpsDataUpdated, ch
 
 	// geoid separation
 	GpsData->GeoidSeparation = NMEA_real_to_float(param[11]);
+
+	// We use data from the GGA message to compute GPSVelocity
+	GPSVelocityData GpsVelocity;
+	uint32_t timeNowMs = xTaskGetTickCount() * portTICK_RATE_MS;
+	static uint32_t timeOfLastUpdateMs = 0;
+	static float GPSAltitudeOld;
+
+	if (GpsData->Status != GPSPOSITION_STATUS_NOFIX) {
+		GpsVelocity.North = GpsData->Groundspeed * cosf(GpsData->Heading * F_PI / 180.0f);
+		GpsVelocity.East = GpsData->Groundspeed * sinf(GpsData->Heading * F_PI / 180.0f);
+		GpsVelocity.Down = ((GpsData->Altitude-GPSAltitudeOld) / (timeNowMs - timeOfLastUpdateMs)) * 1000.0f ;
+		GPSVelocitySet(&GpsVelocity);
+		GPSAltitudeOld = GpsData->Altitude;
+	}
+	timeOfLastUpdateMs = timeNowMs;
 
 	return true;
 }
