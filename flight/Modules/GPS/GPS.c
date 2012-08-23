@@ -61,7 +61,7 @@ static float GravityAccel(float latitude, float longitude, float altitude);
 // ****************
 // Private constants
 
-#define GPS_TIMEOUT_MS                  500
+#define GPS_TIMEOUT_MS                  1500
 
 
 #ifdef PIOS_GPS_SETS_HOMELOCATION

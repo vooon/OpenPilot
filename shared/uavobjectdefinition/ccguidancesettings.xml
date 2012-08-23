@@ -1,0 +1,34 @@
+<xml>
+	<object name="CCGuidanceSettings" singleinstance="true" settings="true">
+		<description>Settings for the @ref CCGuidanceModule</description>
+		<field name="Yaw" units="deg" type="float" elementnames="1" defaultvalue="0"/>
+		<field name="Pitch" units="deg" type="float" elementnames="Kp,Climb,Sink,Neutral" defaultvalue="2,10,-10,0"/>
+		<field name="Roll" units="deg" type="float" elementnames="Max,Neutral" defaultvalue="35,0"/>
+		<field name="Trottle" units="" type="float" elementnames="Kp,StepMax,Max,Min" defaultvalue="0.02,0.2,1,0"/>
+		<field name="ReturnTobaseAltitudeOffset" units="meter" type="int16" elements="1" defaultvalue="75"/>
+		<field name="RadiusBase" units="meter" type="uint16" elementnames="1" defaultvalue="100"/>
+		<field name="CircleAroundBaseAngle" units="deg" type="int8" elements="1" defaultvalue="50"/>
+		<field name="CircleAroundBase" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
+		<field name="TacksAngle" units="deg" type="int8" elementnames="1" defaultvalue="20"/>
+		<field name="TacksNums" units="" type="uint8" elementnames="1" defaultvalue="0"/>
+		<field name="PeriodCorrectBiasYaw" units="msec" type="uint16" elements="1" defaultvalue="5000"/>
+		<field name="GroundSpeedMinForCorrectBiasYaw" units="m/sec" type="uint8" elementnames="1" defaultvalue="2"/>
+		<field name="GroundSpeedMax" units="m/sec" type="uint8" elementnames="1" defaultvalue="15"/>
+		<field name="FailSafeRTB" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
+		<field name="TrottleControl" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
+		<field name="HomeLocationEnableRequestSet" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
+		<field name="HomeLocationSet" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
+		<field name="HomeLocationLatitude" units="deg * 10e7" type="int32" elements="1" defaultvalue="0"/>
+		<field name="HomeLocationLongitude" units="deg * 10e7" type="int32" elements="1" defaultvalue="0"/>
+		<field name="HomeLocationAltitude" units="m over geoid" type="float" elements="1" defaultvalue="0"/>
+		<field name="TargetLocationSet" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
+		<field name="TargetLocationLatitude" units="deg * 10e7" type="int32" elements="1" defaultvalue="0"/>
+		<field name="TargetLocationLongitude" units="deg * 10e7" type="int32" elements="1" defaultvalue="0"/>
+		<field name="TargetLocationAltitude" units="m over geoid" type="float" elements="1" defaultvalue="0"/>
+		<field name="UpdatePeriod" units="msec" type="uint16" elements="1" defaultvalue="300"/>
+		<access gcs="readwrite" flight="readwrite"/>
+		<telemetrygcs acked="true" updatemode="onchange" period="0"/>
+		<telemetryflight acked="true" updatemode="onchange" period="0"/>
+		<logging updatemode="manual" period="0"/>
+	</object>
+</xml>

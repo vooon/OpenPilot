@@ -214,7 +214,8 @@ static void stabilizationTask(void* parameters)
 		float local_error[3] = {stabDesired.Roll - attitudeActual.Roll,
 			stabDesired.Pitch - attitudeActual.Pitch,
 			stabDesired.Yaw - attitudeActual.Yaw};
-		local_error[2] = fmodf(local_error[2] + 180, 360) - 180;
+		if (local_error[2]<-180.0f) local_error[2]+=360.0f;
+		else if (local_error[2]>180.0f) local_error[2]-=360.0f;
 #endif
 
 
