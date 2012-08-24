@@ -38,6 +38,7 @@
 #include "gpstime.h"
 #include "gpssatellites.h"
 #include "GPS.h"
+#include "gps_airspeed.h"
 
 //#define ENABLE_DEBUG_MSG						///< define to enable debug-messages
 #define DEBUG_PORT		PIOS_COM_TELEM_RF		///< defines which serial port is ued for debug-messages
@@ -515,6 +516,9 @@ static bool nmeaProcessGPGGA(GPSPositionData * GpsData, bool* gpsDataUpdated, ch
 		GpsVelocity.Down = ((GpsData->Altitude-GPSAltitudeOld) / (timeNowMs - timeOfLastUpdateMs)) * 1000.0f ;
 		GPSVelocitySet(&GpsVelocity);
 		GPSAltitudeOld = GpsData->Altitude;
+#if defined(PIOS_GPS_PROVIDES_AIRSPEED)
+		gps_airspeed_update(&GpsVelocity);
+#endif
 	}
 	timeOfLastUpdateMs = timeNowMs;
 

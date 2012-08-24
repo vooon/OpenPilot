@@ -254,6 +254,9 @@ static void gpsTask(void *parameters)
 					GpsVelocity.Down = ((gpsposition.Altitude-GPSAltitudeOld) / (timeNowMs - timeOfLastUpdateMs)) * 1000.0f ;
 					GPSVelocitySet(&GpsVelocity);
 					GPSAltitudeOld = gpsposition.Altitude;
+#if defined(PIOS_GPS_PROVIDES_AIRSPEED)
+					gps_airspeed_update(&GpsVelocity);
+#endif
 				}
 				timeOfLastUpdateMs = timeNowMs;
 				gpsNew_flag = false;
