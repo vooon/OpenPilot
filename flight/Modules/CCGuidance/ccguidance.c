@@ -50,6 +50,7 @@
 #include "systemsettings.h"
 #include "attitudeactual.h"
 #include "hwsettings.h"
+#include "homelocation.h"
 
 // Private constants
 #define RAD2DEG (180.0/M_PI)
@@ -91,6 +92,8 @@ int32_t CCGuidanceStart()
  */
 int32_t CCGuidanceInitialize()
 {
+	HomeLocationInitialize();
+
 	bool CCGuidanceEnabled;
 	uint8_t optionalModules[HWSETTINGS_OPTIONALMODULES_NUMELEM];
 
@@ -131,8 +134,8 @@ static void ccguidanceTask(UAVObjEvent * ev)
 	portTickType thisTime;
 
 	static portTickType lastUpdateTime = 0;
-	static float positionDesiredNorth, positionDesiredEast, positionDesiredDown, diffHeadingYaw, DistanceToBaseOld, SpeedToRTB;
-	float positionActualNorth = 0, positionActualEast = 0, course = 0, DistanceToBase = 0;
+	static float positionDesiredLat, positionDesiredLon, positionDesiredAlt, diffHeadingYaw, DistanceToBaseOld, SpeedToRTB;
+	float positionActualLat = 0, positionActualLon = 0, course = 0, DistanceToBase = 0;
 	static uint32_t thisTimesPeriodCorrectBiasYaw, TimeEnableFailSafe;
 	static bool	firsRunSetCourse = TRUE, StateSaveCurrentPositionToRTB = FALSE, fixedHeading = TRUE, TacksAngleRight = FALSE, firstMeanDiffHeadingYaw = TRUE;
 	float TrottleStep = 0;
@@ -185,40 +188,43 @@ static void ccguidanceTask(UAVObjEvent * ev)
 		GPSPositionData positionActual;
 		GPSPositionGet(&positionActual);
 
-		if(positionHoldLast != 1 && (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_POSITIONHOLD ||
-		  (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_RETURNTOBASE && ccguidanceSettings.HomeLocationSet == FALSE) ||
+		HomeLocationData HomeLocation;
+		HomeLocationGet(&HomeLocation);
+
+		if(positionHoldLast != 1 && (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_POSITIONHOLD2 ||
+		  (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_RETURNTOBASE && HomeLocation.Set == FALSE) ||
 		  (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_FLIGHTTOTARGET && ccguidanceSettings.TargetLocationSet == FALSE)))
 		  {
 			/* When enter position hold mode save current position */
-			positionDesiredNorth = positionActual.Latitude * 1e-7;
-			positionDesiredEast = positionActual.Longitude * 1e-7;
-			positionDesiredDown = positionActual.Altitude + positionActual.GeoidSeparation + 1;
+			positionDesiredLat = positionActual.Latitude * 1e-7;
+			positionDesiredLon = positionActual.Longitude * 1e-7;
+			positionDesiredAlt = positionActual.Altitude + positionActual.GeoidSeparation + 1;
 			positionHoldLast = 1;
 			firsRunSetCourse = TRUE;
 #if defined(SIMPLE_COURSE_CALCULATION)
-			degreeLonLenght = degreeLatLenght * cos(positionDesiredNorth * DEG2RAD);
+			degreeLonLenght = degreeLatLenght * cos(positionDesiredLat * DEG2RAD);
 #endif
-		} else if (positionHoldLast != 2 && (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_RETURNTOBASE && ccguidanceSettings.HomeLocationSet == TRUE)) {
+		} else if (positionHoldLast != 2 && (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_RETURNTOBASE && HomeLocation.Set == TRUE)) {
 			/* When we RTB, safe home position */
-			positionDesiredNorth = ccguidanceSettings.HomeLocationLatitude * 1e-7;
-			positionDesiredEast = ccguidanceSettings.HomeLocationLongitude * 1e-7;
-			positionDesiredDown = ccguidanceSettings.HomeLocationAltitude + ccguidanceSettings.ReturnTobaseAltitudeOffset ;
+			positionDesiredLat = HomeLocation.Latitude * 1e-7;
+			positionDesiredLon = HomeLocation.Longitude * 1e-7;
+			positionDesiredAlt = HomeLocation.Altitude + ccguidanceSettings.ReturnTobaseAltitudeOffset ;
 			positionHoldLast = 2;
 			firsRunSetCourse = TRUE;
 #if defined(SIMPLE_COURSE_CALCULATION)
-			degreeLonLenght = degreeLatLenght * cos(positionDesiredNorth * DEG2RAD);
+			degreeLonLenght = degreeLatLenght * cos(positionDesiredLat * DEG2RAD);
 #endif
 			} else 	if (positionHoldLast != 3 &&
 						((flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_FLIGHTTOTARGET) &&
-						( ccguidanceSettings.HomeLocationSet == TRUE))) {
+						( HomeLocation.Set == TRUE))) {
 						/* Sets target position */
-						positionDesiredNorth = ccguidanceSettings.TargetLocationLatitude * 1e-7;
-						positionDesiredEast = ccguidanceSettings.TargetLocationLongitude * 1e-7;
-						positionDesiredDown = ccguidanceSettings.TargetLocationAltitude + ccguidanceSettings.ReturnTobaseAltitudeOffset ;
+						positionDesiredLat = ccguidanceSettings.TargetLocationLatitude * 1e-7;
+						positionDesiredLon = ccguidanceSettings.TargetLocationLongitude * 1e-7;
+						positionDesiredAlt = ccguidanceSettings.TargetLocationAltitude + ccguidanceSettings.ReturnTobaseAltitudeOffset ;
 						positionHoldLast = 3;
 						firsRunSetCourse = TRUE;
 #if defined(SIMPLE_COURSE_CALCULATION)
-						degreeLonLenght = degreeLatLenght * cos(positionDesiredNorth * DEG2RAD);
+						degreeLonLenght = degreeLatLenght * cos(positionDesiredLat * DEG2RAD);
 #endif
 					}
 
@@ -242,11 +248,11 @@ static void ccguidanceTask(UAVObjEvent * ev)
 					// Save current location to HomeLocation if flightStatus = DISARMED
 					if (flightStatus.Armed == FLIGHTSTATUS_ARMED_DISARMED &&
 						StateSaveCurrentPositionToRTB == FALSE) {
-						ccguidanceSettings.HomeLocationLatitude	= positionActual.Latitude;
-						ccguidanceSettings.HomeLocationLongitude = positionActual.Longitude;
-						ccguidanceSettings.HomeLocationAltitude = positionActual.Altitude;
-						ccguidanceSettings.HomeLocationSet = TRUE;
-						CCGuidanceSettingsSet(&ccguidanceSettings);
+						HomeLocation.Latitude = positionActual.Latitude;
+						HomeLocation.Longitude = positionActual.Longitude;
+						HomeLocation.Altitude = positionActual.Altitude;
+						HomeLocation.Set = TRUE;
+						HomeLocationSet(&HomeLocation);
 						positionHoldLast = 0;
 					}
 
@@ -267,27 +273,31 @@ static void ccguidanceTask(UAVObjEvent * ev)
 				// Calculation errors between the rate of the gyroscope and GPS at a speed not less than the minimum.
 				if ((thisTimesPeriodCorrectBiasYaw >= ccguidanceSettings.PeriodCorrectBiasYaw) &&
 					positionActual.Groundspeed >= ccguidanceSettings.GroundSpeedMinForCorrectBiasYaw) {
-					diffHeadingYaw = attitudeActual.Yaw - positionActual.Heading;
-					while (diffHeadingYaw<-180.) diffHeadingYaw+=360.;
-					while (diffHeadingYaw>180.)  diffHeadingYaw-=360.;
+
+					if (ccguidanceSettings.EnableCorrectBiasYaw == TRUE) {
+						diffHeadingYaw = attitudeActual.Yaw - positionActual.Heading;
+						while (diffHeadingYaw<-180.) diffHeadingYaw+=360.;
+						while (diffHeadingYaw>180.)  diffHeadingYaw-=360.;
+						diffHeadingYaw = meanDiffHeadingYaw(diffHeadingYaw, firstMeanDiffHeadingYaw);
+						firstMeanDiffHeadingYaw = FALSE;
+					} else
+						diffHeadingYaw = 0;
+
 					// Ends hold the current direction of flight
 					fixedHeading = FALSE;
-
-					diffHeadingYaw = meanDiffHeadingYaw(diffHeadingYaw, firstMeanDiffHeadingYaw);
-					firstMeanDiffHeadingYaw = FALSE;
 				}
 
 			} else {
 
 				/* 1. Calculate course */
-				positionActualNorth = positionActual.Latitude * 1e-7;
-				positionActualEast  = positionActual.Longitude * 1e-7;
+				positionActualLat = positionActual.Latitude * 1e-7;
+				positionActualLon  = positionActual.Longitude * 1e-7;
 				// calculate course to target
 #if defined(SIMPLE_COURSE_CALCULATION)
 				// calculation Simple method of the course
 				// calculation of rectangular coordinates
-				DistanceToBaseNorth = (positionDesiredNorth - positionActualNorth) * degreeLatLenght;
-				DistanceToBaseEast = (positionDesiredEast - positionActualEast) * degreeLonLenght;
+				DistanceToBaseNorth = (positionDesiredLat - positionActualLat) * degreeLatLenght;
+				DistanceToBaseEast = (positionDesiredLon - positionActualLon) * degreeLonLenght;
 				// square of the distance to the base
 				DistanceToBase = sqrt((DistanceToBaseNorth * DistanceToBaseNorth) + (DistanceToBaseEast * DistanceToBaseEast));
 				// true direction of the base
@@ -295,16 +305,16 @@ static void ccguidanceTask(UAVObjEvent * ev)
 #else
 				// calculation method of the shortest course
 				DistanceToBase = sphereDistance(
-					positionActualNorth,
-					positionActualEast,
-					positionDesiredNorth,
-					positionDesiredEast
+					positionActualLat,
+					positionActualLon,
+					positionDesiredLat,
+					positionDesiredLon
 				);
 				course = sphereCourse(
-					positionActualNorth,
-					positionActualEast,
-					positionDesiredNorth,
-					positionDesiredEast,
+					positionActualLat,
+					positionActualLon,
+					positionDesiredLat,
+					positionDesiredLon,
 					DistanceToBase
 				);
 				DistanceToBase = abs(DistanceToBase * degreeLatLenght);
@@ -359,7 +369,7 @@ static void ccguidanceTask(UAVObjEvent * ev)
 
 			/* 2. Altitude */
 			stabDesired.Pitch = bound(
-				((positionDesiredDown - positionActual.Altitude + positionActual.GeoidSeparation)
+				((positionDesiredAlt - positionActual.Altitude + positionActual.GeoidSeparation)
 					* ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_KP]) + ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_NEUTRAL],
 				ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_SINK],
 				// decrease in the maximum deflection of the elevator to climb,

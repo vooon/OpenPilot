@@ -406,7 +406,7 @@ static void manualControlTask(void *parameters)
 					case FLIGHTSTATUS_FLIGHTMODE_ALTITUDEHOLD:
 						altitudeHoldDesired(&cmd);
 						break;
-					case FLIGHTSTATUS_FLIGHTMODE_POSITIONHOLD:
+					case FLIGHTSTATUS_FLIGHTMODE_POSITIONHOLD2:
 						break;
 					case FLIGHTSTATUS_FLIGHTMODE_RETURNTOBASE:
 						break;
