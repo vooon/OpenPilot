@@ -54,8 +54,7 @@
 // Private constants
 #define RAD2DEG (180.0/M_PI)
 #define DEG2RAD (M_PI/180.0)
-// Delay time returning to base after the disappearance of the signal transmitter.
-#define DELAY_ENABLE_FAILSAFE			4000	// 4 seconds.
+#define DELAY_ENABLE_FAILSAFE			4000	// In the event of a transmitter signal loss, delay before returning, in[ms]
 #define SIMPLE_COURSE_CALCULATION				// A simplified calculation of the rate.
 #define SPEEDTOBASE_TRACK_ENABLE		1		// at a rate less than this, the flight enabled tacks.
 // The coefficient for the calculation of the maximum deviation range of the elevator to climb,
@@ -134,12 +133,12 @@ static void ccguidanceTask(UAVObjEvent * ev)
 	static float positionDesiredNorth, positionDesiredEast, positionDesiredDown, diffHeadingYaw, DistanceToBaseOld, SpeedToRTB;
 	float positionActualNorth = 0, positionActualEast = 0, course = 0, DistanceToBase = 0;
 	static uint32_t thisTimesPeriodCorrectBiasYaw, TimeEnableFailSafe;
-	static bool	firsRunSetCourse = TRUE, StateSaveCurrentPositionToRTB = FALSE, fixedHeading = TRUE, TacksAngleRight = FALSE, firstMeanDiffHeadingYaw = TRUE;
-	float TrottleStep = 0;
+	static bool	firstRunSetCourse = TRUE, StateSaveCurrentPositionToRTB = FALSE, fixedHeading = TRUE, TacksAngleRight = FALSE, firstMeanDiffHeadingYaw = TRUE;
+	float ThrottleStep = 0;
 	static uint8_t TacksNumsRemain;
 
 // length of one degree of latitude parallel to the current, meters
-	const float degreeLatLenght = 40000000/360;
+	const float degreeLatLength = 40000000.0f/360.0f;
 #if defined(SIMPLE_COURSE_CALCULATION)
 	// length of one degree of longitude, meters
 	static float degreeLonLenght;
@@ -159,7 +158,7 @@ static void ccguidanceTask(UAVObjEvent * ev)
 	FlightStatusGet(&flightStatus);
 	SystemSettingsGet(&systemSettings);
 
-	//Activate failsave mode, activate return to base
+	//Activate failsafe mode, activate return to base
 	if ((AlarmsGet(SYSTEMALARMS_ALARM_MANUALCONTROL) != SYSTEMALARMS_ALARM_OK) &&
 		(ccguidanceSettings.FailSafeRTB == TRUE))	{
 		TimeEnableFailSafe += (thisTime - lastUpdateTime) / portTICK_RATE_MS;
@@ -172,7 +171,7 @@ static void ccguidanceTask(UAVObjEvent * ev)
 
 	lastUpdateTime = thisTime;
 
-	//Checking mode is enabled Return to Base
+	//Check that Return to Base is enabled 
 	if ((PARSE_FLIGHT_MODE(flightStatus.FlightMode) == FLIGHTMODE_GUIDANCE) &&
 		((systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_FIXEDWING) ||
 		 (systemSettings.AirframeType == SYSTEMSETTINGS_AIRFRAMETYPE_FIXEDWINGELEVON) ||
@@ -189,38 +188,39 @@ static void ccguidanceTask(UAVObjEvent * ev)
 		  (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_RETURNTOBASE && ccguidanceSettings.HomeLocationSet == FALSE) ||
 		  (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_FLIGHTTOTARGET && ccguidanceSettings.TargetLocationSet == FALSE)))
 		  {
-			/* When enter position hold mode save current position */
+			/* When entering position hold mode, use current position as set point*/
 			positionDesiredNorth = positionActual.Latitude * 1e-7;
 			positionDesiredEast = positionActual.Longitude * 1e-7;
 			positionDesiredDown = positionActual.Altitude + positionActual.GeoidSeparation + 1;
 			positionHoldLast = 1;
-			firsRunSetCourse = TRUE;
+			firstRunSetCourse = TRUE;
 #if defined(SIMPLE_COURSE_CALCULATION)
-			degreeLonLenght = degreeLatLenght * cos(positionDesiredNorth * DEG2RAD);
+			degreeLonLenght = degreeLatLength * cos(positionDesiredNorth * DEG2RAD);
 #endif
 		} else if (positionHoldLast != 2 && (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_RETURNTOBASE && ccguidanceSettings.HomeLocationSet == TRUE)) {
-			/* When we RTB, safe home position */
+			/* When we RTB, use home position as setpoint */
 			positionDesiredNorth = ccguidanceSettings.HomeLocationLatitude * 1e-7;
 			positionDesiredEast = ccguidanceSettings.HomeLocationLongitude * 1e-7;
 			positionDesiredDown = ccguidanceSettings.HomeLocationAltitude + ccguidanceSettings.ReturnTobaseAltitudeOffset ;
 			positionHoldLast = 2;
-			firsRunSetCourse = TRUE;
+			firstRunSetCourse = TRUE;
 #if defined(SIMPLE_COURSE_CALCULATION)
-			degreeLonLenght = degreeLatLenght * cos(positionDesiredNorth * DEG2RAD);
+			degreeLonLenght = degreeLatLength * cos(positionDesiredNorth * DEG2RAD);
 #endif
-			} else 	if (positionHoldLast != 3 &&
-						((flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_FLIGHTTOTARGET) &&
-						( ccguidanceSettings.HomeLocationSet == TRUE))) {
-						/* Sets target position */
-						positionDesiredNorth = ccguidanceSettings.TargetLocationLatitude * 1e-7;
-						positionDesiredEast = ccguidanceSettings.TargetLocationLongitude * 1e-7;
-						positionDesiredDown = ccguidanceSettings.TargetLocationAltitude + ccguidanceSettings.ReturnTobaseAltitudeOffset ;
-						positionHoldLast = 3;
-						firsRunSetCourse = TRUE;
+		} else 	if (positionHoldLast != 3 &&
+		  ((flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_FLIGHTTOTARGET) &&
+		  ( ccguidanceSettings.HomeLocationSet == TRUE))) 
+		  {
+			/* Use target position as setpoint */
+			positionDesiredNorth = ccguidanceSettings.TargetLocationLatitude * 1e-7;
+			positionDesiredEast = ccguidanceSettings.TargetLocationLongitude * 1e-7;
+			positionDesiredDown = ccguidanceSettings.TargetLocationAltitude + ccguidanceSettings.ReturnTobaseAltitudeOffset ;
+			positionHoldLast = 3;
+			firstRunSetCourse = TRUE;
 #if defined(SIMPLE_COURSE_CALCULATION)
-						degreeLonLenght = degreeLatLenght * cos(positionDesiredNorth * DEG2RAD);
+			degreeLonLenght = degreeLatLength * cos(positionDesiredNorth * DEG2RAD);
 #endif
-					}
+		}
 
 		StabilizationDesiredData stabDesired;
 		StabilizationDesiredGet(&stabDesired);
@@ -234,11 +234,11 @@ static void ccguidanceTask(UAVObjEvent * ev)
 			/* main position hold loop */
 			// Calculation of the rate after the turn and the beginning of motion in a straight line.
 			// Hold the current direction of flight
-			if ((fixedHeading == TRUE) || (firsRunSetCourse == TRUE)) {
+			if ((fixedHeading == TRUE) || (firstRunSetCourse == TRUE)) {
 				AttitudeActualGet(&attitudeActual);
 				// First activate RTB
-				if (firsRunSetCourse == TRUE) {
-					firsRunSetCourse = FALSE;
+				if (firstRunSetCourse == TRUE) {
+					firstRunSetCourse = FALSE;
 					// Save current location to HomeLocation if flightStatus = DISARMED
 					if (flightStatus.Armed == FLIGHTSTATUS_ARMED_DISARMED &&
 						StateSaveCurrentPositionToRTB == FALSE) {
@@ -251,7 +251,7 @@ static void ccguidanceTask(UAVObjEvent * ev)
 					}
 
 					StateSaveCurrentPositionToRTB = !ccguidanceSettings.HomeLocationEnableRequestSet;
-					if (stabDesired.Throttle < ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_MIN]) stabDesired.Throttle = ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_MIN];
+					if (stabDesired.Throttle < ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_MIN]) stabDesired.Throttle = ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_MIN];
 					stabDesired.Yaw = attitudeActual.Yaw;
 
 					// reset globals variable
@@ -264,7 +264,7 @@ static void ccguidanceTask(UAVObjEvent * ev)
 					firstMeanDiffHeadingYaw = TRUE;
 				}
 
-				// Calculation errors between the rate of the gyroscope and GPS at a speed not less than the minimum.
+				// Calculate error between the gyroscope yaw and GPS heading. Only do this when speed is above the minimum threshold
 				if ((thisTimesPeriodCorrectBiasYaw >= ccguidanceSettings.PeriodCorrectBiasYaw) &&
 					positionActual.Groundspeed >= ccguidanceSettings.GroundSpeedMinForCorrectBiasYaw) {
 					diffHeadingYaw = attitudeActual.Yaw - positionActual.Heading;
@@ -286,7 +286,7 @@ static void ccguidanceTask(UAVObjEvent * ev)
 #if defined(SIMPLE_COURSE_CALCULATION)
 				// calculation Simple method of the course
 				// calculation of rectangular coordinates
-				DistanceToBaseNorth = (positionDesiredNorth - positionActualNorth) * degreeLatLenght;
+				DistanceToBaseNorth = (positionDesiredNorth - positionActualNorth) * degreeLatLength;
 				DistanceToBaseEast = (positionDesiredEast - positionActualEast) * degreeLonLenght;
 				// square of the distance to the base
 				DistanceToBase = sqrt((DistanceToBaseNorth * DistanceToBaseNorth) + (DistanceToBaseEast * DistanceToBaseEast));
@@ -307,7 +307,7 @@ static void ccguidanceTask(UAVObjEvent * ev)
 					positionDesiredEast,
 					DistanceToBase
 				);
-				DistanceToBase = abs(DistanceToBase * degreeLatLenght);
+				DistanceToBase = abs(DistanceToBase * degreeLatLength);
 #endif
 				if (isnan(course)) course=0;
 
@@ -370,21 +370,21 @@ static void ccguidanceTask(UAVObjEvent * ev)
 				);
 
 			/* 3. GroundSpeed */
-			if (ccguidanceSettings.TrottleControl == TRUE) {
-				if (ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_MAX] > 1) ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_MAX] = 1;
-				if (ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_MIN] < 0) ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_MIN] = 0;
+			if (ccguidanceSettings.ThrottleControl == TRUE) {
+				if (ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_MAX] > 1) ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_MAX] = 1;
+				if (ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_MIN] < 0) ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_MIN] = 0;
 				
-				TrottleStep = bound(
-					(ccguidanceSettings.GroundSpeedMax - (positionActual.Groundspeed + SpeedToRTB)*0.5) * ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_KP],
-					-ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_STEPMAX],
-					ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_STEPMAX]
+				ThrottleStep = bound(
+					(ccguidanceSettings.GroundSpeedMax - (positionActual.Groundspeed + SpeedToRTB)*0.5) * ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_KP],
+					-ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_STEPMAX],
+					ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_STEPMAX]
 					);
 				
-				stabDesired.Throttle += TrottleStep;
+				stabDesired.Throttle += ThrottleStep;
 				stabDesired.Throttle = bound(
 					stabDesired.Throttle,
-					ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_MIN],
-					ccguidanceSettings.Trottle[CCGUIDANCESETTINGS_TROTTLE_MAX]
+					ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_MIN],
+					ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_MAX]
 					);
 
 			} else {
