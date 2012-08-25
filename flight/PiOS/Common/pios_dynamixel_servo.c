@@ -203,11 +203,11 @@ bool PIOS_DYNAMIXEL_SetPosition (uint8_t address, uint16_t position)
 		DYNAMIXEL_WRITE_DATA, /* instruction */
 		0x1E,		      /* base register address */
 		/* Goal Position (0x1E) */
-		(position & 0xFF00) >> 8,
 		(position & 0x00FF) >> 0,
+		(position & 0xFF00) >> 8,
 		/* Moving Speed (0x20) */
-		(rpm & 0xFF00) >> 8,
 		(rpm & 0x00FF) >> 0,
+		(rpm & 0xFF00) >> 8,
 		/* Placeholder for checksum */
 		0,
 	};
