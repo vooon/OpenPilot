@@ -130,7 +130,6 @@ typedef struct {
 static void UAVTalkRecvTask(void *parameters);
 static void UAVTalkSendTask(void *parameters);
 static void transparentCommTask(void * parameters);
-static void ppmInputTask(void *parameters);
 static int32_t UAVTalkSendHandler(uint8_t * data, int32_t length);
 static int32_t GCSUAVTalkSendHandler(uint8_t * data, int32_t length);
 static void receiveData(uint8_t *buf, uint8_t len, int8_t rssi, int8_t afc);
@@ -163,29 +162,11 @@ static int32_t RadioComBridgeStart(void)
 		xTaskCreate(UAVTalkRecvTask, (signed char *)"GCSUAVTalkRecvTask", STACK_SIZE_BYTES, (void*)&(data->gcs_uavtalk_params), TASK_PRIORITY + 2, &(data->GCSUAVTalkRecvTaskHandle));
 		xTaskCreate(UAVTalkSendTask, (signed char *)"GCSUAVTalkSendTask", STACK_SIZE_BYTES, (void*)&(data->gcs_uavtalk_params), TASK_PRIORITY+ 2, &(data->UAVTalkSendTaskHandle));
 
-		// If a UAVTalk (non-GCS) com port is set it implies that the com port is connected on the flight side.
-		// In this case we want to start another com thread on the HID port to talk to the GCS when connected.
-		if (PIOS_COM_UAVTALK)
-		{
-			xTaskCreate(UAVTalkRecvTask, (signed char *)"UAVTalkRecvTask", STACK_SIZE_BYTES, (void*)&(data->uavtalk_params), TASK_PRIORITY + 2, &(data->UAVTalkRecvTaskHandle));
-			xTaskCreate(UAVTalkSendTask, (signed char *)"UAVTalkSendTask", STACK_SIZE_BYTES, (void*)&(data->uavtalk_params), TASK_PRIORITY+ 2, &(data->UAVTalkSendTaskHandle));
-		}
 
 		// Start the tasks
 		if(PIOS_COM_TRANS_COM)
 			xTaskCreate(transparentCommTask, (signed char *)"transparentComm", STACK_SIZE_BYTES, NULL, TASK_PRIORITY + 2, &(data->transparentCommTaskHandle));
-		if(PIOS_PPM_RECEIVER)
-			xTaskCreate(ppmInputTask, (signed char *)"PPMInputTask", STACK_SIZE_BYTES, NULL, TASK_PRIORITY + 2, &(data->ppmInputTaskHandle));
 
-#ifdef PIOS_INCLUDE_WDG
-		PIOS_WDG_RegisterFlag(PIOS_WDG_COMGCS);
-		if(PIOS_COM_UAVTALK)
-			PIOS_WDG_RegisterFlag(PIOS_WDG_COMUAVTALK);
-		if(PIOS_COM_TRANS_COM)
-			PIOS_WDG_RegisterFlag(PIOS_WDG_TRANSCOMM);
-		if(PIOS_PPM_RECEIVER)
-			PIOS_WDG_RegisterFlag(PIOS_WDG_PPMINPUT);
-#endif
 		return 0;
 	}
 
@@ -640,60 +621,6 @@ static void transparentCommTask(void * parameters)
 				packet_start_time = 0;
 			}
 		}
-	}
-}
-
-/**
- * The PPM input task.
- */
-static void ppmInputTask(void *parameters)
-{
-	PHPpmPacket ppm_packet;
-	PHPacketHandle pph = (PHPacketHandle)&ppm_packet;
-
-	while (1) {
-
-#ifdef PIOS_INCLUDE_WDG
-		// Update the watchdog timer.
-		PIOS_WDG_UpdateFlag(PIOS_WDG_PPMINPUT);
-#endif /* PIOS_INCLUDE_WDG */
-
-		// Read the receiver.
-		bool valid_input_detected = false;
-		for (uint8_t i = 1; i <= PIOS_PPM_NUM_INPUTS; ++i)
-		{
-			ppm_packet.channels[i - 1] = PIOS_RCVR_Read(PIOS_PPM_RECEIVER, i);
-			if(ppm_packet.channels[i - 1] != PIOS_RCVR_TIMEOUT)
-				valid_input_detected = true;
-		}
-
-		// Send the PPM packet if it's valid
-		if (valid_input_detected)
-		{
-			// Set the GCSReceiver UAVO if we're connected to the FC.
-			if (data->UAVTalkCon)
-			{
-				GCSReceiverData rcvr;
-
-				// Copy the receiver channels into the GCSReceiver object.
-				for (uint8_t i = 0; i < GCSRECEIVER_CHANNEL_NUMELEM; ++i)
-					rcvr.Channel[i] = ppm_packet.channels[i];
-
-				// Set the GCSReceiverData object.
-				GCSReceiverSet(&rcvr);
-			}
-			else
-			{
-				// Otherwise, send a PPM packet over the radio link.
-				ppm_packet.header.destination_id = data->destination_id;
-				ppm_packet.header.type = PACKET_TYPE_PPM;
-				ppm_packet.header.data_size = PH_PPM_DATA_SIZE(&ppm_packet);
-				PHTransmitPacket(PIOS_PACKET_HANDLER, pph);
-			}
-		}
-
-		// Delay until the next update period.
-		vTaskDelay(PIOS_PPM_PACKET_UPDATE_PERIOD_MS / portTICK_RATE_MS);
 	}
 }
 
