@@ -4,7 +4,7 @@
 		<field name="Yaw" units="deg" type="float" elementnames="1" defaultvalue="0"/>
 		<field name="Pitch" units="deg" type="float" elementnames="Kp,Climb,Sink,Neutral" defaultvalue="2,10,-10,0"/>
 		<field name="Roll" units="deg" type="float" elementnames="Max,Neutral" defaultvalue="35,0"/>
-		<field name="Trottle" units="" type="float" elementnames="Kp,StepMax,Max,Min" defaultvalue="0.02,0.2,1,0"/>
+		<field name="Throttle" units="" type="float" elementnames="Kp,StepMax,Max,Min" defaultvalue="0.02,0.2,1,0"/>
 		<field name="ReturnTobaseAltitudeOffset" units="meter" type="int16" elements="1" defaultvalue="75"/>
 		<field name="RadiusBase" units="meter" type="uint16" elementnames="1" defaultvalue="100"/>
 		<field name="CircleAroundBaseAngle" units="deg" type="int8" elements="1" defaultvalue="50"/>
@@ -16,7 +16,7 @@
 		<field name="GroundSpeedMinForCorrectBiasYaw" units="m/sec" type="uint8" elementnames="1" defaultvalue="2"/>
 		<field name="GroundSpeedMax" units="m/sec" type="uint8" elementnames="1" defaultvalue="15"/>
 		<field name="FailSafeRTB" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
-		<field name="TrottleControl" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
+		<field name="ThrottleControl" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
 		<field name="HomeLocationEnableRequestSet" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
 		<field name="TargetLocationSet" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
 		<field name="TargetLocationLatitude" units="deg * 10e6" type="int32" elements="1" defaultvalue="0"/>
