@@ -4,7 +4,7 @@
 		<field name="Yaw" units="deg" type="float" elementnames="1" defaultvalue="0"/>
 		<field name="Pitch" units="deg" type="float" elementnames="Kp,Climb,Sink,Neutral" defaultvalue="2,10,-10,0"/>
 		<field name="Roll" units="deg" type="float" elementnames="Max,Neutral" defaultvalue="35,0"/>
-		<field name="Throttle" units="" type="float" elementnames="Kp,StepMax,Max,Min" defaultvalue="0.02,0.2,1,0"/>
+		<field name="Throttle" units="" type="float" elementnames="Kp,Damper,Max,Min" defaultvalue="0.005,1.5,1,0"/>
 		<field name="ReturnTobaseAltitudeOffset" units="meter" type="int16" elements="1" defaultvalue="75"/>
 		<field name="RadiusBase" units="meter" type="uint16" elementnames="1" defaultvalue="100"/>
 		<field name="CircleAroundBaseAngle" units="deg" type="int8" elements="1" defaultvalue="50"/>
