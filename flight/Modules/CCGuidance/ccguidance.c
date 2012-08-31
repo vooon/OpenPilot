@@ -53,7 +53,7 @@
 #include "homelocation.h"
 
 // Private constants
-#define STACK_SIZE_BYTES 670
+#define STACK_SIZE_BYTES 720
 #define TASK_PRIORITY (tskIDLE_PRIORITY+1)
 #define RAD2DEG (180.0/M_PI)
 #define DEG2RAD (M_PI/180.0)
@@ -65,6 +65,13 @@
 // At a speed equal to ccguidanceSettings.GroundSpeedMinForCorrectBiasYaw,
 // the elevator is set to ccguidanceSettings.Pitch [CCGUIDANCESETTINGS_PITCH_NEUTRAL]
 #define SPEEDTOBASE_PITH_TO_NEUTRAL_KP	12
+
+// Private types
+static struct Integral {
+	float EnergyError;
+	float GroundSpeedError;
+	float AltitudeError;
+} *integral;
 
 // Private variables
 static uint8_t positionHoldLast;
@@ -137,6 +144,9 @@ int32_t CCGuidanceInitialize()
 		CCGuidanceSettingsInitialize();
 		GPSPositionInitialize();
 
+		integral = (struct Integral *) pvPortMalloc(sizeof(struct Integral));
+		memset(integral, 0, sizeof(struct Integral));
+
 		GPSPositionConnectCallback(&GPSPositionUpdatedCb);
 
 		return 0;
@@ -171,7 +181,13 @@ static void ccguidanceTask(void *parameters)
 	float course                = 0.0f;
 	float DistanceToBase        = 0.0f;
 	float ThrottleStep          = 0.0f;
+	float ThrottleJob           = 0.0f;
 	float dT                    = 0.0f;
+	float EnergyError           = 0.0f;
+	float GroundSpeedError      = 0.0f;
+	float GroundSpeedActual     = 0.0f;
+	float AltitudeError         = 0.0f;
+	float dT_gps                = 0.0f;
 
 	uint32_t thisTimesPeriodCorrectBiasYaw = 0;
 	uint32_t TimeEnableFailSafe            = 0;
@@ -202,6 +218,7 @@ static void ccguidanceTask(void *parameters)
 		vTaskDelayUntil(&lastUpdateTime, ccguidanceSettings.UpdatePeriod / portTICK_RATE_MS);
 
 		dT = (float)ccguidanceSettings.UpdatePeriod * 0.001f;				//change from milliseconds to seconds.
+		dT_gps += dT;
 		thisTimesPeriodCorrectBiasYaw += ccguidanceSettings.UpdatePeriod;
 
 		StabilizationDesiredGet(&stabDesired);
@@ -386,7 +403,10 @@ static void ccguidanceTask(void *parameters)
 						} else {
 							/* Circular motion in the area between RadiusBase */
 							if (ccguidanceSettings.CircleAroundBase == TRUE) {
-								course += ccguidanceSettings.CircleAroundBaseAngle;
+								if (ccguidanceSettings.CircleAroundBaseAngle == 0.0f) {
+									course += bound((180.0f-180.0f * (DistanceToBase / ccguidanceSettings.RadiusBase)), 0.0f, 100.0f);
+								} else course += ccguidanceSettings.CircleAroundBaseAngle;
+										//course += acos(DistanceToBase / ccguidanceSettings.RadiusBase) * RAD2DEG;
 								while (course<-180.) course+=360.;
 								while (course>180.)  course-=360.;
 								stabDesired.Yaw = course;	//Set new course
@@ -400,31 +420,72 @@ static void ccguidanceTask(void *parameters)
 						thisTimesPeriodCorrectBiasYaw = 0;
 					}
 
-					/* 2. Altitude */
-					stabDesired.Pitch = bound(
-						((positionDesiredAlt - positionActual.Altitude + positionActual.GeoidSeparation)
-							* ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_KP]) + ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_NEUTRAL],
-						ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_SINK],
-						// decrease in the maximum deflection of the elevator to climb,
-						// if the velocity of the target is less than ccguidanceSettings.GroundSpeedMinForCorrectBiasYaw
-						bound((SpeedToRTB - ccguidanceSettings.GroundSpeedMinForCorrectBiasYaw) * SPEEDTOBASE_PITH_TO_NEUTRAL_KP,
-								ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_NEUTRAL],
-								ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_CLIMB])
-						);
+					/* Compute AltitudeError, GroundSpeedActual, GroundSpeedError, EnergyError. */
+					AltitudeError = (positionDesiredAlt - positionActual.Altitude + positionActual.GeoidSeparation);
+					GroundSpeedActual = (SpeedToRTB > ccguidanceSettings.GroundSpeedMinForCorrectBiasYaw) ? positionActual.Groundspeed : 0;
+					GroundSpeedError = ccguidanceSettings.GroundSpeedCruise - GroundSpeedActual;
+					EnergyError = (ccguidanceSettings.GroundSpeedCruise * ccguidanceSettings.GroundSpeedCruise +
+								positionDesiredAlt * ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_GRAV2KP]) -
+								(GroundSpeedActual * GroundSpeedActual +
+								(positionActual.Altitude + positionActual.GeoidSeparation) * ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_GRAV2KP]);
 
-					/* 3. GroundSpeed */
+					/* 2. Pitch */
+					if (ccguidanceSettings.SpeedControlThePitch == TRUE) {
+						if (ccguidanceSettings.PitchPI[CCGUIDANCESETTINGS_PITCHPI_KI] > 0.0f){
+							//Integrate with saturation
+							integral->GroundSpeedError=bound(integral->GroundSpeedError + GroundSpeedError * dT_gps,
+														-ccguidanceSettings.PitchPI[CCGUIDANCESETTINGS_PITCHPI_ILIMIT] /
+														ccguidanceSettings.PitchPI[CCGUIDANCESETTINGS_PITCHPI_KI],
+														ccguidanceSettings.PitchPI[CCGUIDANCESETTINGS_PITCHPI_ILIMIT] /
+														ccguidanceSettings.PitchPI[CCGUIDANCESETTINGS_PITCHPI_KI]);
+						}
+						stabDesired.Pitch = bound(
+							-(GroundSpeedError * ccguidanceSettings.PitchPI[CCGUIDANCESETTINGS_PITCHPI_KP] +
+							integral->GroundSpeedError * ccguidanceSettings.PitchPI[CCGUIDANCESETTINGS_PITCHPI_KI]) +
+							ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_NEUTRAL],
+							ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_SINK],
+							ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_CLIMB]
+							);
+					} else {
+						if (ccguidanceSettings.PitchPI[CCGUIDANCESETTINGS_PITCHPI_KI] > 0.0f){
+							//Integrate with saturation
+							integral->AltitudeError=bound(integral->AltitudeError + AltitudeError * dT_gps,
+														-ccguidanceSettings.PitchPI[CCGUIDANCESETTINGS_PITCHPI_ILIMIT] /
+														ccguidanceSettings.PitchPI[CCGUIDANCESETTINGS_PITCHPI_KI],
+														ccguidanceSettings.PitchPI[CCGUIDANCESETTINGS_PITCHPI_ILIMIT] /
+														ccguidanceSettings.PitchPI[CCGUIDANCESETTINGS_PITCHPI_KI]);
+						}
+						stabDesired.Pitch = bound(
+							AltitudeError * ccguidanceSettings.PitchPI[CCGUIDANCESETTINGS_PITCHPI_KP] +
+							integral->AltitudeError * ccguidanceSettings.PitchPI[CCGUIDANCESETTINGS_PITCHPI_KI] +
+							ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_NEUTRAL],
+							ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_SINK],
+							// decrease in the maximum deflection of the elevator to climb,
+							// if the velocity of the target is less than ccguidanceSettings.GroundSpeedMinForCorrectBiasYaw
+							bound((SpeedToRTB - ccguidanceSettings.GroundSpeedMinForCorrectBiasYaw) *
+									SPEEDTOBASE_PITH_TO_NEUTRAL_KP,
+									ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_NEUTRAL],
+									ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_CLIMB])
+							);
+					}
+					/* 3. Throttle */
+					//Integrate with bound. Make integral leaky for better performance. Approximately 30s time constant.
 					if (ccguidanceSettings.ThrottleControl == TRUE) {
 						if (ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_MAX] > 1) ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_MAX] = 1;
 						if (ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_MIN] < 0) ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_MIN] = 0;
 
-						ThrottleStep = bound(
-							(ccguidanceSettings.GroundSpeedMax -
-							((SpeedToRTB > ccguidanceSettings.GroundSpeedMinForCorrectBiasYaw) ? positionActual.Groundspeed : 0)) * ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_KP],
-							-dT/ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_DAMPER],
-							dT/ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_DAMPER]
-							);
-						Throttle_manualControl = FALSE;
+						if (ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_KI] > 0.0f){
+							integral->EnergyError=bound(integral->EnergyError + EnergyError * dT_gps,
+														-ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_ILIMIT] /
+														ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_KI],
+														ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_ILIMIT] /
+														ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_KI]) *
+														(1.0f-1.0f/(1.0f+30.0f/dT_gps));
+						}
+						ThrottleJob = EnergyError * ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_KP] +
+										integral->EnergyError * ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_KI];
 
+						Throttle_manualControl = FALSE;
 					} else {
 						/* Throttle (manual) */
 						Throttle_manualControl = TRUE;
@@ -451,6 +512,7 @@ static void ccguidanceTask(void *parameters)
 			}
 
 			gpsNew_flag = false;
+			dT_gps = 0;
 		}
 
 		if (Guidance_Run == TRUE) {
@@ -458,7 +520,11 @@ static void ccguidanceTask(void *parameters)
 				ManualControlCommandGet(&manualControl);
 				stabDesired.Throttle = manualControl.Throttle;
 			} else {
-				stabDesired.Throttle += ThrottleStep;
+				ThrottleStep = dT/ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_DAMPER];
+				if (fabs(ThrottleJob - stabDesired.Throttle) > ThrottleStep)
+					stabDesired.Throttle += (ThrottleJob > stabDesired.Throttle) ? ThrottleStep : -ThrottleStep;
+				else stabDesired.Throttle = ThrottleJob;
+
 				stabDesired.Throttle = bound(
 					stabDesired.Throttle,
 					ccguidanceSettings.Throttle[CCGUIDANCESETTINGS_THROTTLE_MIN],

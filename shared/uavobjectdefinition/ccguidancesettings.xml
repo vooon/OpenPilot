@@ -2,19 +2,21 @@
 	<object name="CCGuidanceSettings" singleinstance="true" settings="true">
 		<description>Settings for the @ref CCGuidanceModule</description>
 		<field name="Yaw" units="deg" type="float" elementnames="1" defaultvalue="0"/>
-		<field name="Pitch" units="deg" type="float" elementnames="Kp,Climb,Sink,Neutral" defaultvalue="2,10,-10,0"/>
+		<field name="Pitch" units="deg" type="float" elementnames="Climb,Sink,Neutral" defaultvalue="20,-10,0"/>
+		<field name="PitchPI" units="1/(m/s)" type="float" elementnames="Kp,Ki,ILimit" defaultvalue="0.5,0.5,10"/>
+		<field name="SpeedControlThePitch" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
 		<field name="Roll" units="deg" type="float" elementnames="Max,Neutral" defaultvalue="35,0"/>
-		<field name="Throttle" units="" type="float" elementnames="Kp,Damper,Max,Min" defaultvalue="0.005,1.5,1,0"/>
+		<field name="Throttle" units="" type="float" elementnames="Kp,Ki,ILimit,Damper,Max,Min,Grav2Kp" defaultvalue="0.002,0.0001,0.5,1.5,1,0,19.62"/>
 		<field name="ReturnTobaseAltitudeOffset" units="meter" type="int16" elements="1" defaultvalue="75"/>
 		<field name="RadiusBase" units="meter" type="uint16" elementnames="1" defaultvalue="100"/>
-		<field name="CircleAroundBaseAngle" units="deg" type="int8" elements="1" defaultvalue="50"/>
+		<field name="CircleAroundBaseAngle" units="deg" type="int8" elements="1" defaultvalue="65"/>
 		<field name="CircleAroundBase" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
 		<field name="TacksAngle" units="deg" type="int8" elementnames="1" defaultvalue="20"/>
 		<field name="TacksNums" units="" type="uint8" elementnames="1" defaultvalue="0"/>
 		<field name="PeriodCorrectBiasYaw" units="msec" type="uint16" elements="1" defaultvalue="5000"/>
 		<field name="EnableCorrectBiasYaw" units="channel" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="TRUE"/>
 		<field name="GroundSpeedMinForCorrectBiasYaw" units="m/sec" type="uint8" elementnames="1" defaultvalue="2"/>
-		<field name="GroundSpeedMax" units="m/sec" type="uint8" elementnames="1" defaultvalue="15"/>
+		<field name="GroundSpeedCruise" units="m/sec" type="uint8" elementnames="1" defaultvalue="15"/>
 		<field name="FailSafeRTB" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
 		<field name="ThrottleControl" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
 		<field name="HomeLocationEnableRequestSet" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
