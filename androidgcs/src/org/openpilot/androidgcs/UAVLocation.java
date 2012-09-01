@@ -338,9 +338,11 @@ public class UAVLocation extends MapActivity
 	void onOPConnected() {
 		UAVObject obj = objMngr.getObject("HomeLocation");
 		registerObjectUpdates(obj);
+		objectUpdated(obj);
 
 		obj = objMngr.getObject("PositionActual");
 		registerObjectUpdates(obj);
+		objectUpdated(obj);
 	}
 
 	private GeoPoint getUavLocation() {

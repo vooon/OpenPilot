@@ -56,29 +56,64 @@ public class AttitudeView extends View {
 
 	}
 
-	@Override protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-		int measuredWidth = measure(widthMeasureSpec);
-		int measuredHeight = measure(heightMeasureSpec);
-		int d = Math.min(measuredWidth, measuredHeight);
-		setMeasuredDimension(d/2, d/2);
-	}
+    /**
+     * @see android.view.View#measure(int, int)
+     */
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        setMeasuredDimension(measureWidth(widthMeasureSpec),
+                measureHeight(heightMeasureSpec));
+    }
 
-	private int measure(int measureSpec) {
-		int result = 0;
-		// Decode the measurement specifications.
 
-		int specMode = MeasureSpec.getMode(measureSpec);
-		int specSize = MeasureSpec.getSize(measureSpec);
+    /**
+     * Determines the height of this view
+     * @param measureSpec A measureSpec packed into an int
+     * @return The height of the view, honoring constraints from measureSpec
+     */
+    private int measureHeight(int measureSpec) {
+        int result = 0;
+        int specMode = MeasureSpec.getMode(measureSpec);
+        int specSize = MeasureSpec.getSize(measureSpec);
 
-		if (specMode == MeasureSpec.UNSPECIFIED) { // Return a default size of 200 if no bounds are specified.
-			result = 200;
-		} else {
-			// As you want to fill the available space
-			// always return the full available bounds.
-			result = specSize;
-		}
-		return result;
-	}
+        if (specMode == MeasureSpec.EXACTLY) {
+            // We were told how big to be
+            result = specSize;
+        } else {
+            // Measure the text (beware: ascent is a negative number)
+            result = 1600;
+            if (specMode == MeasureSpec.AT_MOST) {
+                // Respect AT_MOST value if that was what is called for by measureSpec
+                result = Math.min(result, specSize);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Determines the width of this view
+     * @param measureSpec A measureSpec packed into an int
+     * @return The width of the view, honoring constraints from measureSpec
+     */
+    private int measureWidth(int measureSpec) {
+        int result = 0;
+        int specMode = MeasureSpec.getMode(measureSpec);
+        int specSize = MeasureSpec.getSize(measureSpec);
+
+        if (specMode == MeasureSpec.EXACTLY) {
+            // We were told how big to be
+            result = specSize;
+        } else {
+            // Measure the text
+            result = 800;
+            if (specMode == MeasureSpec.AT_MOST) {
+                // Respect AT_MOST value if that was what is called for by measureSpec
+                result = Math.min(result, specSize);
+            }
+        }
+
+        return result;
+    }
 
 	private float roll;
 	public void setRoll(double roll) {
@@ -93,25 +128,43 @@ public class AttitudeView extends View {
 	@Override
 	protected void onDraw(Canvas canvas) {
 
-		final int PX = getMeasuredWidth() / 2;
-		final int PY = getMeasuredHeight() / 2;
+		final int PX = getMeasuredWidth();
+		final int PY = getMeasuredHeight();
 
-		// TODO: Figure out why these magic numbers are needed to center it
-		final int WIDTH = 600;
-		final int HEIGHT = 600;
-		final int DEG_TO_PX = 10; // Magic number for how to scale pitch
+		// Want 60 deg to move the horizon all the way off the screen
+		final int DEG_TO_PX = (PY/2) / 60; // Magic number for how to scale pitch
 
-		canvas.save(0);
-		canvas.rotate(-roll, PX, PY);
+		canvas.save();
+		canvas.rotate(-roll, PX / 2, PY / 2);
+		canvas.save();
+
 		canvas.translate(0, pitch * DEG_TO_PX);
 		Drawable horizon = getContext().getResources().getDrawable(
 				R.drawable.im_pfd_horizon);
+		Drawable reticule = getContext().getResources().getDrawable(
+				R.drawable.im_pfd_reticule);
+		Drawable fixed = getContext().getResources().getDrawable(
+				R.drawable.im_pfd_fixed);
+
+		// Starting with a square image, want to size it equally
+		double margin = 0.2;
+		int screenSize = Math.min(PX, PY);
+		int imageHalfSize = (int) ((screenSize + screenSize * margin) / 2);
+
 		// This puts the image at the center of the PFD canvas (after it was
 		// translated)
-		horizon.setBounds(-(WIDTH - PX) / 2, -(HEIGHT - PY) / 2, WIDTH, HEIGHT);
+		horizon.setBounds( PX/2 - imageHalfSize, PY/2 - imageHalfSize, PX/2 + imageHalfSize, PY/2 + imageHalfSize);
 		horizon.draw(canvas);
 		canvas.restore();
 
-	}
+		// Draw the overlay that only rolls
+		reticule.setBounds( PX/2 - imageHalfSize, PY/2 - imageHalfSize, PX/2 + imageHalfSize, PY/2 + imageHalfSize);
+		reticule.draw(canvas);
+		canvas.restore();
+
+		// Draw the overlay that never moves
+		fixed.setBounds( PX/2 - imageHalfSize, PY/2 - imageHalfSize, PX/2 + imageHalfSize, PY/2 + imageHalfSize);
+		fixed.draw(canvas);
+}
 
 }
