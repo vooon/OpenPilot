@@ -119,7 +119,6 @@ static RadioData *data = 0;
 // ****************
 // Global variables
 uint32_t pios_rfm22b_id = 0;
-uint32_t pios_com_rfm22b_id = 0;
 uint32_t pios_packet_handler = 0;
 extern struct pios_rfm22b_cfg pios_rfm22b_cfg;
 
@@ -137,7 +136,7 @@ static int32_t RadioStart(void)
 	// Start the tasks.
 	xTaskCreate(radioReceiveTask, (signed char *)"RadioReceive", STACK_SIZE_BYTES, NULL, TASK_PRIORITY, &(data->radioReceiveTaskHandle));
 	xTaskCreate(radioStatusTask, (signed char *)"RadioStatus", STACK_SIZE_BYTES, NULL, TASK_PRIORITY, &(data->radioStatusTaskHandle));
-	xTaskCreate(sendPacketTask, (signed char *)"SendPacket", STACK_SIZE_BYTES, NULL, TASK_PRIORITY, &(data->sendPacketTaskHandle));
+	xTaskCreate(sendPacketTask, (signed char *)"SendPacket", STACK_SIZE_BYTES, NULL, TASK_PRIORITY + 2, &(data->sendPacketTaskHandle));
 
 	// Install the monitors
 	TaskMonitorAdd(TASKINFO_RUNNING_MODEMRX, data->radioReceiveTaskHandle);
@@ -232,30 +231,22 @@ static int32_t RadioInitialize(void)
 		break;
 	}
 
-	/* Initalize the RFM22B radio COM device. */
-	{
-		if (PIOS_RFM22B_Init(&pios_rfm22b_id, &pios_rfm22b_cfg)) {
-			return -1;
-		}
-		uint8_t * rx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_RFM22B_RF_RX_BUF_LEN);
-		uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_RFM22B_RF_TX_BUF_LEN);
-		PIOS_Assert(rx_buffer);
-		PIOS_Assert(tx_buffer);
-		if (PIOS_COM_Init(&pios_com_rfm22b_id, &pios_rfm22b_com_driver, pios_rfm22b_id,
-				  rx_buffer, PIOS_COM_RFM22B_RF_RX_BUF_LEN,
-				  tx_buffer, PIOS_COM_RFM22B_RF_TX_BUF_LEN)) {
-			PIOS_Assert(0);
-		}
-	}
-
 	// Initialize the packet handler
 	PacketHandlerConfig pios_ph_cfg = {
 		.default_destination_id = 0xffffffff, // Broadcast
-		.source_id = PIOS_RFM22B_DeviceID(pios_rfm22b_id),
 		.win_size = PIOS_PH_WIN_SIZE,
 		.max_connections = PIOS_PH_MAX_CONNECTIONS,
 	};
 	pios_packet_handler = PHInitialize(&pios_ph_cfg);
+
+	/* Initalize the RFM22B radio COM device. */
+	if (PIOS_RFM22B_Init(&pios_rfm22b_id, &pios_rfm22b_cfg)) {
+		pios_packet_handler = 0;
+		return -1;
+	}
+
+	// Register the radio ID with the packet handler.
+	PHSetSourceID(pios_packet_handler, PIOS_RFM22B_DeviceID(pios_rfm22b_id));
 
 	// allocate and initialize the static data storage only if module is enabled
 	data = (RadioData *)pvPortMalloc(sizeof(RadioData));
@@ -315,26 +306,15 @@ static void radioReceiveTask(void *parameters)
 		PIOS_WDG_UpdateFlag(PIOS_WDG_RADIORECEIVE);
 #endif /* PIOS_INCLUDE_WDG */
 
-		PIOS_RFM22_processPendingISR(5);
-
-		// Get a RX packet from the packet handler if required.
-		if (p == NULL)
-			p = PHGetRXPacket(pios_packet_handler);
-
-		if(p == NULL) {
-			// Wait a bit for a packet to come available.
-			vTaskDelay(5);
-			continue;
-		}
-
 		// Receive data from the radio port
-		rx_bytes = PIOS_COM_ReceiveBuffer(PIOS_COM_RADIO, (uint8_t*)p, PIOS_PH_MAX_PACKET, MAX_PORT_DELAY);
+		rx_bytes = PIOS_RFM22B_Receive_Packet(pios_rfm22b_id, &p, MAX_PORT_DELAY);
 		if(rx_bytes == 0)
 			continue;
 		data->rxBytes += rx_bytes;
 
 		// Verify that the packet is valid and pass it on.
-		bool rx_error = PHVerifyPacket(pios_packet_handler, p, rx_bytes) < 0;
+		int32_t ver_len = PHVerifyPacket(pios_packet_handler, p, rx_bytes);
+		bool rx_error = ver_len < 0;
 		if(rx_error)
 			data->packetErrors++;
 		PHReceivePacket(pios_packet_handler, p, rx_error);
@@ -357,7 +337,7 @@ static void sendPacketTask(void *parameters)
 #endif /* PIOS_INCLUDE_WDG */
 		// Wait for a packet on the queue.
 		if (xQueueReceive(data->radioPacketQueue, &p, MAX_PORT_DELAY) == pdTRUE) {
-			PIOS_COM_SendBuffer(PIOS_COM_RADIO, (uint8_t*)p, PH_PACKET_SIZE(p));
+			PIOS_RFM22B_Send_Packet(pios_rfm22b_id, p, MAX_PORT_DELAY);
 			PHReleaseTXPacket(pios_packet_handler, p);
 		}
 	}
@@ -524,8 +504,8 @@ static void radioStatusTask(void *parameters)
 			}
 		}
 
-		for(int i = 0; i < 20; i++)
-			PIOS_RFM22_processPendingISR(5);
+		// Delay until the next update period.
+		vTaskDelay(STATS_UPDATE_PERIOD_MS / portTICK_RATE_MS);
 	}
 }
 

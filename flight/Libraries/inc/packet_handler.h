@@ -91,7 +91,6 @@ typedef struct {
 
 typedef struct {
 	uint32_t default_destination_id;
-	uint32_t source_id;
 	uint16_t max_connections;
 	uint8_t win_size;
 } PacketHandlerConfig;
@@ -105,6 +104,7 @@ typedef uint32_t PHInstHandle;
 
 // Public functions
 PHInstHandle PHInitialize(PacketHandlerConfig *cfg);
+void PHSetSourceID(PHInstHandle h, uint32_t source_id);
 void PHRegisterOutputStream(PHInstHandle h, PHOutputStream f);
 void PHRegisterDataHandler(PHInstHandle h, PHDataHandler f);
 void PHRegisterStatusHandler(PHInstHandle h, PHStatusHandler f);

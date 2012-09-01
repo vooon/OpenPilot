@@ -50,14 +50,12 @@ extern const struct pios_com_driver pios_rfm22b_com_driver;
 
 // ************************************
 
-enum {	RX_SCAN_SPECTRUM = 0,
-		RX_WAIT_PREAMBLE_MODE,
-		RX_WAIT_SYNC_MODE,
-		RX_DATA_MODE,
-		TX_DATA_MODE,
-		TX_STREAM_MODE,
-		TX_CARRIER_MODE,
-		TX_PN_MODE};
+enum { RX_WAIT_PREAMBLE_MODE,
+       RX_WAIT_SYNC_MODE,
+       RX_DATA_MODE,
+       TX_DATA_MODE,
+       TX_ERROR_MODE,
+       TX_COMPLETE_MODE};
 
 // ************************************
 
@@ -609,17 +607,10 @@ uint32_t rfm22_freqHopSize(void);
 void rfm22_setDatarate(uint32_t datarate_bps, bool data_whitening);
 uint32_t rfm22_getDatarate(void);
 
-void rfm22_setRxMode(uint8_t mode, bool multi_packet_mode);
-
 int8_t rfm22_getRSSI(void);
 
 int8_t rfm22_receivedRSSI(void);
 int32_t rfm22_receivedAFCHz(void);
-uint16_t rfm22_receivedLength(void);
-uint8_t * rfm22_receivedPointer(void);
-void rfm22_receivedDone(void);
-
-int32_t rfm22_sendData(void *data, uint16_t length, bool send_immediately);
 
 void rfm22_setFreqCalibration(uint8_t value);
 uint8_t rfm22_getFreqCalibration(void);
@@ -627,27 +618,11 @@ uint8_t rfm22_getFreqCalibration(void);
 void rfm22_setTxPower(uint8_t tx_pwr);
 uint8_t rfm22_getTxPower(void);
 
-void rfm22_setTxStream(void);	// TEST ONLY
-
-void rfm22_setTxNormal(void);
-void rfm22_setTxCarrierMode(void);
-void rfm22_setTxPNMode(void);
-
 int8_t rfm22_currentMode(void);
 bool rfm22_transmitting(void);
 
 bool rfm22_channelIsClear(void);
 
-bool rfm22_txReady(void);
-
-void rfm22_1ms_tick(void);
-
-void rfm22_TxDataByte_SetCallback(t_rfm22_TxDataByteCallback new_function);
-void rfm22_RxData_SetCallback(t_rfm22_RxDataCallback new_function);
-
-int rfm22_init_scan_spectrum(uint32_t min_frequency_hz, uint32_t max_frequency_hz);
-int rfm22_init_tx_stream(uint32_t min_frequency_hz, uint32_t max_frequency_hz);
-int rfm22_init_rx_stream(uint32_t min_frequency_hz, uint32_t max_frequency_hz);
 int rfm22_init_normal(uint32_t id, uint32_t min_frequency_hz, uint32_t max_frequency_hz, uint32_t freq_hop_step_size);
 
 #endif /* PIOS_RFM22B_PRIV_H */

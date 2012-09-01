@@ -31,6 +31,8 @@
 #ifndef PIOS_RFM22B_H
 #define PIOS_RFM22B_H
 
+#include <packet_handler.h>
+
 /* Global Types */
 struct pios_rfm22b_cfg {
 	const struct pios_spi_cfg * spi_cfg; /* Pointer to SPI interface configuration */
@@ -48,7 +50,8 @@ extern int32_t PIOS_RFM22B_Init(uint32_t *rfb22b_id, const struct pios_rfm22b_cf
 extern uint32_t PIOS_RFM22B_DeviceID(uint32_t rfb22b_id);
 extern int8_t PIOS_RFM22B_RSSI(uint32_t rfm22b_id);
 extern int16_t PIOS_RFM22B_Resets(uint32_t rfm22b_id);
-extern void PIOS_RFM22_processPendingISR(uint32_t wait_ms);
+extern uint32_t PIOS_RFM22B_Send_Packet(uint32_t rfm22b_id, PHPacketHandle p, uint32_t max_delay);
+extern uint32_t PIOS_RFM22B_Receive_Packet(uint32_t rfm22b_id, PHPacketHandle *p, uint32_t max_delay);
 
 #endif /* PIOS_RFM22B_H */
 

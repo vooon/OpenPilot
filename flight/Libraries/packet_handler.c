@@ -37,6 +37,7 @@ extern char *debug_msg;
 // Private types and constants
 typedef struct {
 	PacketHandlerConfig cfg;
+	uint32_t source_id;
 	PHPacket *tx_packets;
 	uint8_t tx_win_start;
 	uint8_t tx_win_end;
@@ -100,6 +101,18 @@ PHInstHandle PHInitialize(PacketHandlerConfig *cfg)
 
 	// Return the structure.
 	return (PHInstHandle)data;
+}
+
+/**
+ * Set the source ID for all outgoing packets.
+ * \param[in] h The packet handler instance data pointer.
+ * \param[in] source_id The source ID
+ */
+void PHSetSourceID(PHInstHandle h, uint32_t source_id)
+{
+	PHPacketDataHandle data = (PHPacketDataHandle)h;
+
+	data->source_id = source_id;
 }
 
 /**
@@ -307,7 +320,7 @@ uint8_t PHTransmitData(PHInstHandle h, uint8_t *buf, uint16_t len)
 
 	// Initialize the packet.
 	p->header.destination_id = data->cfg.default_destination_id;
-	p->header.source_id = data->cfg.source_id;
+	p->header.source_id = data->source_id;
 	p->header.type = PACKET_TYPE_DATA;
 	p->header.data_size = len;
 
@@ -386,7 +399,6 @@ uint8_t PHReceivePacket(PHInstHandle h, PHPacketHandle p, bool rx_error)
 		// Send the ACK / NACK
 		if (rx_error)
 		{
-			DEBUG_PRINTF(1, "Sending NACK\n\r");
 			PHLSendNAck(data, p);
 		}
 		else
@@ -404,14 +416,9 @@ uint8_t PHReceivePacket(PHInstHandle h, PHPacketHandle p, bool rx_error)
 	case PACKET_TYPE_ACK:
 	{
 		// Find the packet ID in the TX buffer, and free it.
-		unsigned int i = 0;
 		for (unsigned int i = 0; i < data->cfg.win_size; ++i)
 			if (data->tx_packets[i].header.tx_seq == p->header.rx_seq)
 				PHReleaseTXPacket(h, data->tx_packets + i);
-#ifdef DEBUG_LEVEL
-		if (i == data->cfg.win_size)
-			DEBUG_PRINTF(1, "Error finding acked packet to release\n\r");
-#endif
 	}
 	break;
 
@@ -422,11 +429,6 @@ uint8_t PHReceivePacket(PHInstHandle h, PHPacketHandle p, bool rx_error)
 		for ( ; i < data->cfg.win_size; ++i)
 			if (data->tx_packets[i].header.tx_seq == p->header.rx_seq)
 				PHLTransmitPacket(data, data->tx_packets + i);
-#ifdef DEBUG_LEVEL
-		if (i == data->cfg.win_size)
-			DEBUG_PRINTF(1, "Error finding acked packet to NACK\n\r");
-		DEBUG_PRINTF(1, "Resending after NACK\n\r");
-#endif
 	}
 	break;
 
@@ -480,7 +482,7 @@ static uint8_t PHLTransmitPacket(PHPacketDataHandle data, PHPacketHandle p)
 	encode_data((unsigned char*)p, PHPacketSize(p), (unsigned char*)p);
 
 	// Transmit the packet using the output stream.
-	p->header.source_id = data->cfg.source_id;
+	p->header.source_id = data->source_id;
 	if(data->output_stream(p) == -1)
 		return 0;
 
