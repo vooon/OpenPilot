@@ -75,13 +75,18 @@ $(DATAFIELDS)
 // Field information
 $(DATAFIELDINFO)
 
+extern UAVObjHandle $(NAME)_handle;
+
 // Generic interface functions
 int32_t $(NAME)Initialize();
-UAVObjHandle $(NAME)Handle();
+inline UAVObjHandle $(NAME)Handle()
+{
+  return $(NAME)_handle;
+}
 void $(NAME)SetDefaults(UAVObjHandle obj, uint16_t instId);
 
 // set/Get functions
-$(SETGETFIELDSEXTERN)
+$(SETGETFIELDS)
 
 #endif // $(NAMEUC)_H
 

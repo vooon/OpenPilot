@@ -40,7 +40,7 @@
 #include "$(NAMELC).h"
 
 // Private variables
-static UAVObjHandle handle = NULL;
+UAVObjHandle $(NAME)_handle = NULL;
 
 /**
  * Initialize object.
@@ -54,11 +54,11 @@ int32_t $(NAME)Initialize(void)
 		return -2;
 	
 	// Register object with the object manager
-	handle = UAVObjRegister($(NAMEUC)_OBJID,
+	$(NAME)_handle = UAVObjRegister($(NAMEUC)_OBJID,
 			$(NAMEUC)_ISSINGLEINST, $(NAMEUC)_ISSETTINGS, $(NAMEUC)_NUMBYTES, &$(NAME)SetDefaults);
 
 	// Done
-	if (handle != 0)
+	if ($(NAME)_handle != 0)
 	{
 		return 0;
 	}
@@ -97,19 +97,6 @@ $(INITFIELDS)
 	metadata.loggingUpdatePeriod = $(LOGGING_UPDATEPERIOD);
 	UAVObjSetMetadata(obj, &metadata);
 }
-
-/**
- * Get object handle
- */
-UAVObjHandle $(NAME)Handle()
-{
-	return handle;
-}
-
-/**
- * Get/Set object Functions
- */
-$(SETGETFIELDS)
 
 /**
  * @}

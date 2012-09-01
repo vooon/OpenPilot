@@ -263,7 +263,7 @@ bool UAVObjectGeneratorFlight::process_object(ObjectInfo* info)
             {
 
             	/* Set */
-                setgetfields.append( QString("void %2%3Set( %1 *New%3 )\r\n")
+                setgetfields.append( QString("inline void %2%3Set( %1 *New%3 )\r\n")
 							.arg( fieldTypeStrC[info->fields[n]->type] )
 							.arg( info->name )
 							.arg( info->fields[n]->name ) );
@@ -275,7 +275,7 @@ bool UAVObjectGeneratorFlight::process_object(ObjectInfo* info)
 				setgetfields.append( QString("}\r\n") );
 
 				/* GET */
-				setgetfields.append( QString("void %2%3Get( %1 *New%3 )\r\n")
+				setgetfields.append( QString("inline void %2%3Get( %1 *New%3 )\r\n")
 							.arg( fieldTypeStrC[info->fields[n]->type] )
 							.arg( info->name )
 							.arg( info->fields[n]->name ));
@@ -291,7 +291,7 @@ bool UAVObjectGeneratorFlight::process_object(ObjectInfo* info)
             {
 
             	/* SET */
-				setgetfields.append( QString("void %2%3Set( %1 *New%3 )\r\n")
+				setgetfields.append( QString("inline void %2%3Set( %1 *New%3 )\r\n")
 								.arg( fieldTypeStrC[info->fields[n]->type] )
 								.arg( info->name )
 								.arg( info->fields[n]->name ) );
@@ -304,7 +304,7 @@ bool UAVObjectGeneratorFlight::process_object(ObjectInfo* info)
 				setgetfields.append( QString("}\r\n") );
 
 				/* GET */
-				setgetfields.append( QString("void %2%3Get( %1 *New%3 )\r\n")
+				setgetfields.append( QString("inline void %2%3Get( %1 *New%3 )\r\n")
 								.arg( fieldTypeStrC[info->fields[n]->type] )
 								.arg( info->name )
 								.arg( info->fields[n]->name ) );
@@ -318,29 +318,7 @@ bool UAVObjectGeneratorFlight::process_object(ObjectInfo* info)
             }
         }
     }
-    outCode.replace(QString("$(SETGETFIELDS)"), setgetfields);
-
-    // Replace the $(SETGETFIELDSEXTERN) tag
-     QString setgetfieldsextern;
-     for (int n = 0; n < info->fields.length(); ++n)
-     {
-         //if (!info->fields[n]->defaultValues.isEmpty() )
-         {
-
-			/* SET */
-			setgetfieldsextern.append( QString("extern void %2%3Set( %1 *New%3 );\r\n")
-					.arg( fieldTypeStrC[info->fields[n]->type] )
-					.arg( info->name )
-					.arg( info->fields[n]->name ) );
-
-			/* GET */
-			setgetfieldsextern.append( QString("extern void %2%3Get( %1 *New%3 );\r\n")
-					.arg( fieldTypeStrC[info->fields[n]->type] )
-					.arg( info->name )
-					.arg( info->fields[n]->name ) );
-         }
-     }
-     outInclude.replace(QString("$(SETGETFIELDSEXTERN)"), setgetfieldsextern);
+    outInclude.replace(QString("$(SETGETFIELDS)"), setgetfields);
 
     // Write the flight code
     bool res = writeFileIfDiffrent( flightOutputPath.absolutePath() + "/" + info->namelc + ".c", outCode );
