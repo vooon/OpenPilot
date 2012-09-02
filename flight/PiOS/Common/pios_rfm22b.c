@@ -95,18 +95,6 @@
 #define SYNC_BYTE_4						0x59    //
 
 // ************************************
-// the default TX power level
-
-#define RFM22_DEFAULT_RF_POWER			RFM22_tx_pwr_txpow_0    // +1dBm ... 1.25mW
-//#define RFM22_DEFAULT_RF_POWER		RFM22_tx_pwr_txpow_1    // +2dBm ... 1.6mW
-//#define RFM22_DEFAULT_RF_POWER		RFM22_tx_pwr_txpow_2    // +5dBm ... 3.16mW
-//#define RFM22_DEFAULT_RF_POWER		RFM22_tx_pwr_txpow_3    // +8dBm ... 6.3mW
-//#define RFM22_DEFAULT_RF_POWER		RFM22_tx_pwr_txpow_4    // +11dBm .. 12.6mW
-//#define RFM22_DEFAULT_RF_POWER		RFM22_tx_pwr_txpow_5    // +14dBm .. 25mW
-//#define RFM22_DEFAULT_RF_POWER		RFM22_tx_pwr_txpow_6    // +17dBm .. 50mW
-//#define RFM22_DEFAULT_RF_POWER		RFM22_tx_pwr_txpow_7    // +20dBm .. 100mW
-
-// ************************************
 // the default RF datarate
 
 //#define RFM22_DEFAULT_RF_DATARATE       500          // 500 bits per sec
@@ -1379,9 +1367,6 @@ int rfm22_resetModule(uint8_t mode, uint32_t min_frequency_hz, uint32_t max_freq
 
 	temperature_reg = 0;
 
-	// set the TX power
-	tx_power = RFM22_DEFAULT_RF_POWER;
-
 	// ****************
 	// read the RF chip ID bytes
 
@@ -1568,8 +1553,6 @@ int rfm22_init_normal(uint32_t id, uint32_t min_frequency_hz, uint32_t max_frequ
 
 	// RX FIFO Almost Full Threshold (0 - 63)
 	rfm22_write(RFM22_rx_fifo_control, RX_FIFO_HI_WATERMARK);
-
-	rfm22_setRxMode(RX_WAIT_PREAMBLE_MODE);
 
 	initialized = true;
 
