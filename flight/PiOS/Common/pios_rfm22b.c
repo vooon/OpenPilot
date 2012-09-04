@@ -74,8 +74,6 @@
 
 #define TX_TEST_MODE_TIMELIMIT_MS		30000	// TX test modes time limit (in ms)
 
-//#define TX_PREAMBLE_NIBBLES				8		// 7 to 511 (number of nibbles)
-//#define RX_PREAMBLE_NIBBLES				5		// 5 to 31 (number of nibbles)
 #define TX_PREAMBLE_NIBBLES				12		// 7 to 511 (number of nibbles)
 #define RX_PREAMBLE_NIBBLES				6		// 5 to 31 (number of nibbles)
 
@@ -186,30 +184,6 @@ static bool rfm22_processRxInt(void);
 static bool rfm22_processTxInt(void);
 static uint8_t rfm22_txStart(struct pios_rfm22b_dev *);
 static void rfm22_setRxMode(uint8_t mode);
-
-// SPI read/write functions
-static void rfm22_claimBus();
-static void rfm22_releaseBus();
-static void rfm22_startBurstWrite(uint8_t addr);
-inline static void rfm22_burstWrite(uint8_t data)
-{
-	PIOS_SPI_TransferByte(PIOS_RFM22_SPI_PORT, data);
-}
-inline static void rfm22_endBurstWrite(void)
-{
-	rfm22_releaseBus();
-}
-static void rfm22_write(uint8_t addr, uint8_t data);
-static void rfm22_startBurstRead(uint8_t addr);
-inline static uint8_t rfm22_burstRead(void)
-{
-	return PIOS_SPI_TransferByte(PIOS_RFM22_SPI_PORT, 0xff);
-}
-inline static void rfm22_endBurstRead(void)
-{
-	rfm22_releaseBus();
-}
-static uint8_t rfm22_read(uint8_t addr);
 
 // A pointer to the device structure.
 static struct pios_rfm22b_dev * g_rfm22b_dev;
@@ -353,6 +327,157 @@ bool power_on_reset;
 uint16_t timeout_data_ms = 20;
 
 struct pios_rfm22b_dev * rfm22b_dev_g;
+
+
+// ************************************
+// SPI read/write
+
+inline static void rfm22_claimBus()
+{
+	// chip select line LOW
+	while (PIOS_SPI_ClaimBus(PIOS_RFM22_SPI_PORT) < 0)
+		;
+}
+
+inline static void rfm22_claimBusISR()
+{
+	// chip select line LOW
+	while (PIOS_SPI_ClaimBusISR(PIOS_RFM22_SPI_PORT) < 0)
+		;
+}
+
+inline static void rfm22_releaseBus()
+{
+	// chip select line HIGH
+	PIOS_SPI_ReleaseBus(PIOS_RFM22_SPI_PORT);
+}
+
+inline static void rfm22_startBurstWrite(uint8_t addr, bool inISR)
+{
+	// wait 1us .. so we don't toggle the CS line to quickly
+	PIOS_DELAY_WaituS(1);
+
+	if (inISR)
+		rfm22_claimBusISR();
+	else
+		rfm22_claimBus();
+
+	PIOS_SPI_RC_PinSet(PIOS_RFM22_SPI_PORT, 0, 0);
+	PIOS_SPI_TransferByte(PIOS_RFM22_SPI_PORT, 0x80 | addr);
+}
+
+inline static void rfm22_burstWrite(uint8_t data)
+{
+	PIOS_SPI_TransferByte(PIOS_RFM22_SPI_PORT, data);
+}
+
+inline static void rfm22_endBurstWrite(void)
+{
+	PIOS_SPI_RC_PinSet(PIOS_RFM22_SPI_PORT, 0, 1);
+	rfm22_releaseBus();
+}
+
+inline static void rfm22_write(uint8_t addr, uint8_t data)
+{
+	// wait 1us .. so we don't toggle the CS line to quickly
+	PIOS_DELAY_WaituS(1);
+
+	rfm22_claimBus();
+
+	PIOS_SPI_RC_PinSet(PIOS_RFM22_SPI_PORT, 0, 0);
+	PIOS_SPI_TransferByte(PIOS_RFM22_SPI_PORT, 0x80 | addr);
+	PIOS_SPI_TransferByte(PIOS_RFM22_SPI_PORT, data);
+	PIOS_SPI_RC_PinSet(PIOS_RFM22_SPI_PORT, 0, 1);
+
+	rfm22_releaseBus();
+}
+
+/**
+ * Write a byte to a register without claiming the bus.  Also
+ * toggle the NSS line
+ */
+inline static void rfm22_write_noclaim(uint8_t addr, uint8_t data)
+{
+	uint8_t buf[2] = {addr | 0x80, data};
+	PIOS_SPI_RC_PinSet(PIOS_RFM22_SPI_PORT, 0, 0);
+	PIOS_SPI_TransferBlock(PIOS_RFM22_SPI_PORT, buf, NULL, 2, NULL);
+	PIOS_SPI_RC_PinSet(PIOS_RFM22_SPI_PORT, 0, 1);
+}
+
+inline static void rfm22_startBurstRead(uint8_t addr, bool inISR)
+{
+	// wait 1us .. so we don't toggle the CS line to quickly
+	PIOS_DELAY_WaituS(1);
+
+	if (inISR)
+		rfm22_claimBusISR();
+	else
+		rfm22_claimBus();
+
+	PIOS_SPI_RC_PinSet(PIOS_RFM22_SPI_PORT, 0, 0);
+	PIOS_SPI_TransferByte(PIOS_RFM22_SPI_PORT, addr & 0x7f);
+}
+
+inline static uint8_t rfm22_burstRead(void)
+{
+	return PIOS_SPI_TransferByte(PIOS_RFM22_SPI_PORT, 0xff);
+}
+
+inline static void rfm22_endBurstRead(void)
+{
+	PIOS_SPI_RC_PinSet(PIOS_RFM22_SPI_PORT, 0, 1);
+	rfm22_releaseBus();
+}
+
+inline static uint8_t rfm22_read(uint8_t addr)
+{
+	uint8_t rdata;
+
+	// wait 1us .. so we don't toggle the CS line to quickly
+	PIOS_DELAY_WaituS(1);
+
+	rfm22_claimBus();
+
+	PIOS_SPI_RC_PinSet(PIOS_RFM22_SPI_PORT, 0, 0);
+	PIOS_SPI_TransferByte(PIOS_RFM22_SPI_PORT, addr & 0x7f);
+	rdata = PIOS_SPI_TransferByte(PIOS_RFM22_SPI_PORT, 0xff);
+	PIOS_SPI_RC_PinSet(PIOS_RFM22_SPI_PORT, 0, 1);
+
+	rfm22_releaseBus();
+
+	return rdata;
+}
+
+/**
+ * Read a byte from a register without claiming the bus.  Also
+ * toggle the NSS line
+ */
+inline static uint8_t rfm22_read_noclaim(uint8_t addr)
+{
+	uint8_t rdata;
+
+	PIOS_SPI_RC_PinSet(PIOS_RFM22_SPI_PORT, 0, 0);
+	PIOS_SPI_TransferByte(PIOS_RFM22_SPI_PORT, addr & 0x7f);
+	rdata = PIOS_SPI_TransferByte(PIOS_RFM22_SPI_PORT, 0xff);
+	PIOS_SPI_RC_PinSet(PIOS_RFM22_SPI_PORT, 0, 1);
+
+	return rdata;
+}
+
+inline static void rfm22_return_from_ISR(xSemaphoreHandle sem)
+{
+	// Wake up the Tx task
+	portBASE_TYPE pxHigherPriorityTaskWoken;
+	if (xSemaphoreGiveFromISR(sem, &pxHigherPriorityTaskWoken) == pdTRUE)
+	{
+		portEND_SWITCHING_ISR(pxHigherPriorityTaskWoken);
+	}
+	else
+	{
+		// Something went fairly seriously wrong
+		g_rfm22b_dev->errors++;
+	}
+}
 
 
 static bool PIOS_RFM22B_validate(struct pios_rfm22b_dev * rfm22b_dev)
@@ -587,88 +712,6 @@ uint32_t PIOS_RFM22B_Receive_Packet(uint32_t rfm22b_id, PHPacketHandle *p, uint3
 }
 
 // ************************************
-// SPI read/write
-
-static void rfm22_claimBus()
-{
-	// chip select line LOW
-	PIOS_SPI_ClaimBus(PIOS_RFM22_SPI_PORT);
-	PIOS_SPI_RC_PinSet(PIOS_RFM22_SPI_PORT, 0, 0);
-}
-
-static void rfm22_releaseBus()
-{
-	// chip select line HIGH
-	PIOS_SPI_RC_PinSet(PIOS_RFM22_SPI_PORT, 0, 1);
-	PIOS_SPI_ReleaseBus(PIOS_RFM22_SPI_PORT);
-}
-
-void rfm22_startBurstWrite(uint8_t addr)
-{
-	// wait 1us .. so we don't toggle the CS line to quickly
-	PIOS_DELAY_WaituS(1);
-
-	rfm22_claimBus();
-
-	PIOS_SPI_TransferByte(PIOS_RFM22_SPI_PORT, 0x80 | addr);
-}
-
-void rfm22_write(uint8_t addr, uint8_t data)
-{
-	// wait 1us .. so we don't toggle the CS line to quickly
-	PIOS_DELAY_WaituS(1);
-
-	rfm22_claimBus();
-
-	PIOS_SPI_TransferByte(PIOS_RFM22_SPI_PORT, 0x80 | addr);
-	PIOS_SPI_TransferByte(PIOS_RFM22_SPI_PORT, data);
-
-	rfm22_releaseBus();
-}
-
-void rfm22_startBurstRead(uint8_t addr)
-{
-	// wait 1us .. so we don't toggle the CS line to quickly
-	PIOS_DELAY_WaituS(1);
-
-	rfm22_claimBus();
-
-	PIOS_SPI_TransferByte(PIOS_RFM22_SPI_PORT, addr & 0x7f);
-}
-
-uint8_t rfm22_read(uint8_t addr)
-{
-	uint8_t rdata;
-
-	// wait 1us .. so we don't toggle the CS line to quickly
-	PIOS_DELAY_WaituS(1);
-
-	rfm22_claimBus();
-
-	PIOS_SPI_TransferByte(PIOS_RFM22_SPI_PORT, addr & 0x7f);
-	rdata = PIOS_SPI_TransferByte(PIOS_RFM22_SPI_PORT, 0xff);
-
-	rfm22_releaseBus();
-
-	return rdata;
-}
-
-static void rfm22_return_from_ISR(xSemaphoreHandle sem)
-{
-	// Wake up the Tx task
-	portBASE_TYPE pxHigherPriorityTaskWoken;
-	if (xSemaphoreGiveFromISR(sem, &pxHigherPriorityTaskWoken) == pdTRUE)
-	{
-		portEND_SWITCHING_ISR(pxHigherPriorityTaskWoken);
-	}
-	else
-	{
-		// Something went fairly seriously wrong
-		g_rfm22b_dev->errors++;
-	}
-}
-
-// ************************************
 // external interrupt
 
 void PIOS_RFM22_EXT_Int(void)
@@ -682,21 +725,28 @@ void PIOS_RFM22_EXT_Int(void)
 	// Reset the supervisor timer.
 	rfm22b_dev_g->supv_timer = PIOS_RFM22B_SUPERVISOR_TIMEOUT;
 
-	// read interrupt status registers - clears the interrupt line
-	int_status1 = rfm22_read(RFM22_interrupt_status1);
-	int_status2 = rfm22_read(RFM22_interrupt_status2);
+	// 1. Read the interrupt statuses with burst read
+	rfm22_claimBusISR();
+	uint8_t write_buf[3] = {RFM22_interrupt_status1 & 0x7f, 0xFF, 0xFF};
+	uint8_t read_buf[3];
+	PIOS_SPI_RC_PinSet(PIOS_RFM22_SPI_PORT, 0, 0);
+	PIOS_SPI_TransferBlock(PIOS_RFM22_SPI_PORT, write_buf, read_buf, sizeof(write_buf), NULL);
+	PIOS_SPI_RC_PinSet(PIOS_RFM22_SPI_PORT, 0, 1);
+	int_status1 = read_buf[1];
+	int_status2 = read_buf[2];
 
 	// read device status register
-	device_status = rfm22_read(RFM22_device_status);
+	device_status = rfm22_read_noclaim(RFM22_device_status);
 
 	// Read the RSSI if we're in RX mode
 	if (rf_mode != TX_DATA_MODE)
 	{
 		// read rx signal strength .. 45 = -100dBm, 205 = -20dBm
-		rssi = rfm22_read(RFM22_rssi);
+		rssi = rfm22_read_noclaim(RFM22_rssi);
 		// convert to dBm
 		rssi_dBm = (int8_t)(rssi >> 1) - 122;
 	}
+	rfm22_releaseBus();
 
 	// the RF module has gone and done a reset - we need to re-initialize the rf module
 	if (int_status2 & RFM22_is2_ipor)
@@ -794,14 +844,14 @@ static bool rfm22_processRxInt(void)
 			}
 
 			// Fetch the data from the RX FIFO
-			rfm22_startBurstRead(RFM22_fifo_access);
+			rfm22_startBurstRead(RFM22_fifo_access, true);
 			for (uint8_t i = 0; i < RX_FIFO_HI_WATERMARK; ++i)
 				((uint8_t*)(g_rfm22b_dev->rx_packet))[g_rfm22b_dev->rx_packet_wr++] = rfm22_burstRead();
 			rfm22_endBurstRead();
 		}
 		else
 		{	// just clear the RX FIFO
-			rfm22_startBurstRead(RFM22_fifo_access);
+			rfm22_startBurstRead(RFM22_fifo_access, true);
 			for (register uint16_t i = RX_FIFO_HI_WATERMARK; i > 0; i--)
 				// read a byte from the rf modules RX FIFO buffer
 				rfm22_burstRead();
@@ -827,7 +877,7 @@ static bool rfm22_processRxInt(void)
 		if (g_rfm22b_dev->rx_packet_wr < len)
 		{
 			// Fetch the data from the RX FIFO
-			rfm22_startBurstRead(RFM22_fifo_access);
+			rfm22_startBurstRead(RFM22_fifo_access, true);
 			while (g_rfm22b_dev->rx_packet_wr < len)
 				((uint8_t*)(g_rfm22b_dev->rx_packet))[g_rfm22b_dev->rx_packet_wr++] = rfm22_burstRead();
 			rfm22_endBurstRead();
@@ -883,7 +933,7 @@ static bool rfm22_processTxInt(void)
 	{
 		// top-up the rf chips TX FIFO buffer
 		uint16_t max_bytes = FIFO_SIZE - TX_FIFO_LO_WATERMARK - 1;
-		rfm22_startBurstWrite(RFM22_fifo_access);
+		rfm22_startBurstWrite(RFM22_fifo_access, true);
 		for (uint16_t i = 0; (g_rfm22b_dev->tx_data_rd < g_rfm22b_dev->tx_data_wr) && (i < max_bytes); ++i, ++g_rfm22b_dev->tx_data_rd)
 			rfm22_burstWrite(((uint8_t*)(g_rfm22b_dev->tx_packet))[g_rfm22b_dev->tx_data_rd]);
 		rfm22_endBurstWrite();
@@ -1132,34 +1182,21 @@ static void rfm22_setRxMode(uint8_t mode)
 
 // ************************************
 
-uint16_t rfm22_addHeader()
-{
-	uint16_t i = 0;
-
-	for (uint16_t j = (TX_PREAMBLE_NIBBLES + 1) / 2; j > 0; j--)
-	{
-		rfm22_burstWrite(PREAMBLE_BYTE);
-		i++;
-	}
-	rfm22_burstWrite(SYNC_BYTE_1); i++;
-	rfm22_burstWrite(SYNC_BYTE_2); i++;
-
-	return i;
-}
-
-// ************************************
-
 uint8_t rfm22_txStart(struct pios_rfm22b_dev *rfm22b_dev)
 {
-	// Disable interrrupts.
-	PIOS_IRQ_Disable();
 
 	// Initialize the supervisor timer.
 	rfm22b_dev_g->supv_timer = PIOS_RFM22B_SUPERVISOR_TIMEOUT;
 
+	// Disable interrrupts.
+	PIOS_IRQ_Disable();
+
 	// disable interrupts
 	rfm22_write(RFM22_interrupt_enable1, 0x00);
 	rfm22_write(RFM22_interrupt_enable2, 0x00);
+
+	// Re-ensable interrrupts.
+	PIOS_IRQ_Enable();
 
 	// TUNE mode
 	rfm22_write(RFM22_op_and_func_ctrl1, RFM22_opfc1_pllon);
@@ -1197,10 +1234,15 @@ uint8_t rfm22_txStart(struct pios_rfm22b_dev *rfm22b_dev)
 	rfm22_write(RFM22_transmit_packet_length, rfm22b_dev->tx_data_wr);
 
 	// add some data
-	rfm22_startBurstWrite(RFM22_fifo_access);
-	for (uint16_t i = 0; (rfm22b_dev->tx_data_rd < rfm22b_dev->tx_data_wr) && (i < FIFO_SIZE); ++rfm22b_dev->tx_data_rd, ++i)
-		rfm22_burstWrite(((uint8_t*)(rfm22b_dev->tx_packet))[rfm22b_dev->tx_data_rd]);
-	rfm22_endBurstWrite();
+	rfm22_claimBus();
+	PIOS_SPI_RC_PinSet(PIOS_RFM22_SPI_PORT, 0, 0);
+	PIOS_SPI_TransferByte(PIOS_RFM22_SPI_PORT, RFM22_fifo_access | 0x80);
+	int bytes_to_write = (rfm22b_dev->tx_data_wr - rfm22b_dev->tx_data_rd);
+	bytes_to_write = (bytes_to_write > FIFO_SIZE) ? FIFO_SIZE:  bytes_to_write;
+	PIOS_SPI_TransferBlock(PIOS_RFM22_SPI_PORT, (uint8_t*)(rfm22b_dev->tx_packet) + rfm22b_dev->tx_data_rd, NULL, bytes_to_write, NULL);
+	rfm22b_dev->tx_data_rd += bytes_to_write;
+	PIOS_SPI_RC_PinSet(PIOS_RFM22_SPI_PORT, 0, 1);
+	rfm22_releaseBus();
 
 	// *******************
 
@@ -1212,8 +1254,6 @@ uint8_t rfm22_txStart(struct pios_rfm22b_dev *rfm22b_dev)
 	// enable the transmitter
 	rfm22_write(RFM22_op_and_func_ctrl1, RFM22_opfc1_pllon | RFM22_opfc1_txon);
 
-	// Re-ensable interrrupts.
-	PIOS_IRQ_Enable();
 
 	TX_LED_ON;
 
