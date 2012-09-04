@@ -65,7 +65,7 @@
 #define TASK_PRIORITY (tskIDLE_PRIORITY+4)
 #define FAILSAFE_TIMEOUT_MS 30
 
-enum {PID_RATE_ROLL, PID_RATE_PITCH, PID_RATE_YAW, PID_ROLL, PID_PITCH, PID_YAW, PID_MAX};
+enum {PID_RATE_ROLL, PID_RATE_PITCH, PID_RATE_YAW, PID_ATTI_RATE_ROLL, PID_ATTI_RATE_PITCH, PID_RATE_ATTI_YAW, PID_ROLL, PID_PITCH, PID_YAW, PID_MAX};
 
 // Private variables
 static xTaskHandle taskHandle;
@@ -253,7 +253,7 @@ static void stabilizationTask(void* parameters)
 
 				case STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE:
 					if(reinit) {
-						pids[PID_ROLL + i].iAccumulator = 0;
+						pids[PID_ATTI_RATE_ROLL + i].iAccumulator = 0;
 						pids[PID_RATE_ROLL + i].iAccumulator = 0;
 					}
 
@@ -262,7 +262,7 @@ static void stabilizationTask(void* parameters)
 					rateDesiredAxis[i] = bound(rateDesiredAxis[i], settings.MaximumRate[i]);
 
 					// Compute the inner loop
-					actuatorDesiredAxis[i] = pid_apply(&pids[PID_RATE_ROLL + i],  rateDesiredAxis[i] - gyro_filtered[i], dT);
+					actuatorDesiredAxis[i] = pid_apply(&pids[PID_ATTI_RATE_ROLL + i],  rateDesiredAxis[i] - gyro_filtered[i], dT);
 					actuatorDesiredAxis[i] = bound(actuatorDesiredAxis[i],1.0f);
 
 					break;
@@ -431,6 +431,24 @@ static void SettingsUpdatedCb(UAVObjEvent * ev)
 		settings.YawRatePID[STABILIZATIONSETTINGS_YAWRATEPID_KD],
 		settings.YawRatePID[STABILIZATIONSETTINGS_YAWRATEPID_ILIMIT]);
 	
+	// Set the roll rate attitude PI constants
+	pid_configure(&pids[PID_ATTI_RATE_ROLL], settings.RollRatePID[STABILIZATIONSETTINGS_ATTIROLLRATEPID_KP], 
+		settings.RollRatePID[STABILIZATIONSETTINGS_ATTIROLLRATEPID_KI],
+		settings.RollRatePID[STABILIZATIONSETTINGS_ATTIROLLRATEPID_KD],
+		settings.RollRatePID[STABILIZATIONSETTINGS_ATTIROLLRATEPID_ILIMIT]);
+	
+	// Set the pitch rate PID constants
+	pid_configure(&pids[PID_ATTI_RATE_PITCH], settings.PitchRatePID[STABILIZATIONSETTINGS_ATTIPITCHRATEPID_KP], 
+		settings.PitchRatePID[STABILIZATIONSETTINGS_ATTIPITCHRATEPID_KI],
+		settings.PitchRatePID[STABILIZATIONSETTINGS_ATTIPITCHRATEPID_KD],
+		settings.PitchRatePID[STABILIZATIONSETTINGS_ATTIPITCHRATEPID_ILIMIT]);
+	
+	// Set the yaw rate PID constants
+	pid_configure(&pids[PID_RATE_ATTI_YAW], settings.YawRatePID[STABILIZATIONSETTINGS_ATTIYAWRATEPID_KP],
+		settings.YawRatePID[STABILIZATIONSETTINGS_ATTIYAWRATEPID_KI],
+		settings.YawRatePID[STABILIZATIONSETTINGS_ATTIYAWRATEPID_KD],
+		settings.YawRatePID[STABILIZATIONSETTINGS_ATTIYAWRATEPID_ILIMIT]);
+
 	// Set the roll attitude PI constants
 	pid_configure(&pids[PID_ROLL], settings.RollPI[STABILIZATIONSETTINGS_ROLLPI_KP],
 		settings.RollPI[STABILIZATIONSETTINGS_ROLLPI_KI], 0,
