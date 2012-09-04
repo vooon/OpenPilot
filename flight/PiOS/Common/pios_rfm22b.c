@@ -158,6 +158,7 @@ struct pios_rfm22b_dev {
 	uint16_t tx_data_rd;
 	// the tx data write index
 	uint16_t tx_data_wr;
+	bool tx_success;
 
 	// The Rx packets
 	PHPacketHandle rx_packet;
@@ -181,9 +182,8 @@ struct pios_rfm22b_dev {
 };
 
 /* Local function forwared declarations */
-static void PIOS_RFM22B_Supervisor(uint32_t ppm_id);
-static void rfm22_processRxInt(void);
-static void rfm22_processTxInt(void);
+static bool rfm22_processRxInt(void);
+static bool rfm22_processTxInt(void);
 static uint8_t rfm22_txStart(struct pios_rfm22b_dev *);
 static void rfm22_setRxMode(uint8_t mode);
 
@@ -469,11 +469,6 @@ int32_t PIOS_RFM22B_Init(uint32_t *rfm22b_id, const struct pios_rfm22b_cfg *cfg)
 	DEBUG_PRINTF(2, "RF frequency: %dHz\n\r", rfm22_getNominalCarrierFrequency());
 	DEBUG_PRINTF(2, "RF TX power: %d\n\r", rfm22_getTxPower());
 
-	// Setup a real-time clock callback to kickstart the radio if a transfer lock sup.
-	if (!PIOS_RTC_RegisterTickCallback(PIOS_RFM22B_Supervisor, *rfm22b_id)) {
-		PIOS_DEBUG_Assert(0);
-	}
-
 	return 0;
 }
 
@@ -502,38 +497,23 @@ uint32_t PIOS_RFM22B_Send_Packet(uint32_t rfm22b_id, PHPacketHandle p, uint32_t 
 	bool valid = PIOS_RFM22B_validate(rfm22b_dev);
 	PIOS_Assert(valid);
 
-	// Wait until the channel is clear to transmit on.
-	uint32_t cur_delay = 0;
-	for ( ; !rfm22_channelIsClear(); cur_delay += 2)
-		// Wait a bit for the channel to clear.
-		vTaskDelay(2);
-
-	// If the channel is still not clear, return an error.
-	if (!rfm22_channelIsClear())
-		return 0;
-
 	// Store the packet handle.
 	rfm22b_dev->tx_packet = p;
 
-	// Start transmitting the packet.
-	if (!rfm22_txStart(rfm22b_dev))
-	{
-		rfm22b_dev->tx_packet = 0;
-		return 0;
-	}
+	// Signal the Rx thread to start the packet transfer.
+	xSemaphoreGive(rfm22b_dev->rxsem);
 
 	// Block on the semephone until the transmit is finished.
-	if (xSemaphoreTake(rfm22b_dev->txsem,  (max_delay - cur_delay) / portTICK_RATE_MS) != pdTRUE)
-	{
-		rfm22b_dev->tx_packet = 0;
-		return 0;
-	}
+	if (xSemaphoreTake(rfm22b_dev->txsem,  max_delay / portTICK_RATE_MS) != pdTRUE)
+		rf_mode = RX_ERROR_MODE;
 
-	// Did we get a transmit error.
+	// Did we get send the packet?
+	uint32_t ret = 0;
+	if (rfm22b_dev->tx_success)
+		ret = PH_PACKET_SIZE(p);
 
 	// Success
-	rfm22b_dev->tx_packet = 0;
-	return PH_PACKET_SIZE(p);
+	return ret;
 }
 
 uint32_t PIOS_RFM22B_Receive_Packet(uint32_t rfm22b_id, PHPacketHandle *p, uint32_t max_delay)
@@ -550,49 +530,60 @@ uint32_t PIOS_RFM22B_Receive_Packet(uint32_t rfm22b_id, PHPacketHandle *p, uint3
 	if (xSemaphoreTake(rfm22b_dev->rxsem,  max_delay / portTICK_RATE_MS) != pdTRUE)
 		return 0;
 
-	// Has a packet been received?
-	*p = rfm22b_dev->rx_packet_prev;
 	uint32_t rx_len = 0;
-	if(*p)
+	switch (rf_mode)
 	{
-		rx_len = rfm22b_dev->rx_packet_len;
-		rfm22b_dev->rx_packet_len = 0;
-		rfm22b_dev->rx_packet_prev = 0;
+	case TX_COMPLETE_MODE:
+
+		// Wake up the Tx thread.
+		rfm22b_dev->tx_success = true;
+		rfm22b_dev->tx_packet = 0;
+		xSemaphoreGive(rfm22b_dev->txsem);
+		break;
+
+	case TX_ERROR_MODE:
+
+		// Wake up the Tx thread.
+		rfm22b_dev->tx_success = false;
+		rfm22b_dev->tx_packet = 0;
+		xSemaphoreGive(rfm22b_dev->txsem);
+		break;
+
+	case RX_ERROR_MODE:
+
+		// Error receiving packet.
+		*p = 0;
+		break;
+
+	case RX_COMPLETE_MODE:
+
+		// Return the received packet.
+		*p = rfm22b_dev->rx_packet_prev;
+		if(*p)
+		{
+			rx_len = rfm22b_dev->rx_packet_len;
+			rfm22b_dev->rx_packet_len = 0;
+			rfm22b_dev->rx_packet_prev = 0;
+		}
+		break;
+
+	default:
+		break;
 	}
+
+	// Is there a Tx packet to send?
+	if (rfm22b_dev->tx_packet)
+	{
+		// Start transmitting the packet.
+		if (rfm22_txStart(rfm22b_dev))
+			return 0;
+		rfm22b_dev->tx_packet = 0;
+	}
+
+	// Switch to receive mode.
+	rfm22_setRxMode(RX_WAIT_PREAMBLE_MODE);
 
 	return rx_len;
-}
-
-static void PIOS_RFM22B_Supervisor(uint32_t rfm22b_id)
-{
-	/* Recover our device context */
-	struct pios_rfm22b_dev * rfm22b_dev = (struct pios_rfm22b_dev *)rfm22b_id;
-
-	if (!PIOS_RFM22B_validate(rfm22b_dev)) {
-		/* Invalid device specified */
-		return;
-	}
-
-	/* The radio must be locked up if the timer reaches 0 */
-	if(--(rfm22b_dev->supv_timer) != 0)
-		return;
-	++(rfm22b_dev->resets);
-
-	TX_LED_OFF;
-	TX_LED_OFF;
-
-	/* Clear the TX buffer in case we locked up in a transmit */
-	rfm22b_dev->tx_data_wr = 0;
-
-	rfm22_init_normal(rfm22b_dev->deviceID, rfm22b_dev->cfg.minFrequencyHz, rfm22b_dev->cfg.maxFrequencyHz, 50000);
-
-	/* Start a packet transfer if one is available. */
-	rf_mode = RX_WAIT_PREAMBLE_MODE;
-	if(rf_mode == RX_WAIT_PREAMBLE_MODE)
-	{
-		/* Switch to RX mode */
-		rfm22_setRxMode(RX_WAIT_PREAMBLE_MODE);
-	}
 }
 
 // ************************************
@@ -662,6 +653,21 @@ uint8_t rfm22_read(uint8_t addr)
 	return rdata;
 }
 
+static void rfm22_return_from_ISR(xSemaphoreHandle sem)
+{
+	// Wake up the Tx task
+	portBASE_TYPE pxHigherPriorityTaskWoken;
+	if (xSemaphoreGiveFromISR(sem, &pxHigherPriorityTaskWoken) == pdTRUE)
+	{
+		portEND_SWITCHING_ISR(pxHigherPriorityTaskWoken);
+	}
+	else
+	{
+		// Something went fairly seriously wrong
+		g_rfm22b_dev->errors++;
+	}
+}
+
 // ************************************
 // external interrupt
 
@@ -707,12 +713,16 @@ void PIOS_RFM22_EXT_Int(void)
 	case RX_WAIT_SYNC_MODE:
 	case RX_DATA_MODE:
 
-		rfm22_processRxInt();
+		if(rfm22_processRxInt())
+			// Wake up the Rx task
+			rfm22_return_from_ISR(g_rfm22b_dev->rxsem);
 		break;
 
 	case TX_DATA_MODE:
 
-		rfm22_processTxInt();
+		if(rfm22_processTxInt())
+			// Wake up the Tx task
+			rfm22_return_from_ISR(g_rfm22b_dev->rxsem);
 		break;
 
 	default:
@@ -722,29 +732,14 @@ void PIOS_RFM22_EXT_Int(void)
 	}
 }
 
-static void rfm22_return_from_ISR(xSemaphoreHandle sem)
-{
-	// Wake up the Tx task
-	portBASE_TYPE pxHigherPriorityTaskWoken;
-	if (xSemaphoreGiveFromISR(sem, &pxHigherPriorityTaskWoken) == pdTRUE)
-	{
-		portEND_SWITCHING_ISR(pxHigherPriorityTaskWoken);
-	}
-	else
-	{
-		// Something went fairly seriously wrong
-		g_rfm22b_dev->errors++;
-	}
-}
-
-static void rfm22_processRxInt(void)
+static bool rfm22_processRxInt(void)
 {
 
 	// FIFO under/over flow error.  Restart RX mode.
 	if (device_status & (RFM22_ds_ffunfl | RFM22_ds_ffovfl))
 	{
-		rfm22_setRxMode(RX_WAIT_PREAMBLE_MODE);
-		return;
+		rf_mode = RX_ERROR_MODE;
+		return true;
 	}
 
 	// Valid preamble detected
@@ -787,15 +782,15 @@ static void rfm22_processRxInt(void)
 			// The received packet is going to be larger than the specified length
 			if ((g_rfm22b_dev->rx_packet_wr + RX_FIFO_HI_WATERMARK) > len)
 			{
-				rfm22_setRxMode(RX_WAIT_PREAMBLE_MODE);
-				return;
+				rf_mode = RX_ERROR_MODE;
+				return true;
 			}
 
 			// Another packet length error.
 			if (((g_rfm22b_dev->rx_packet_wr + RX_FIFO_HI_WATERMARK) >= len) && !(int_status1 & RFM22_is1_ipkvalid))
 			{
-				rfm22_setRxMode(RX_WAIT_PREAMBLE_MODE);
-				return;
+				rf_mode = RX_ERROR_MODE;
+				return true;
 			}
 
 			// Fetch the data from the RX FIFO
@@ -817,8 +812,8 @@ static void rfm22_processRxInt(void)
 	// CRC error .. discard the received data
 	if (int_status1 & RFM22_is1_icrerror)
 	{
-		rfm22_setRxMode(RX_WAIT_PREAMBLE_MODE);
-		return;
+		rf_mode = RX_ERROR_MODE;
+		return true;
 	}
 
 	// Valid packet received
@@ -841,8 +836,8 @@ static void rfm22_processRxInt(void)
 		// we have a packet length error .. discard the packet
 		if (g_rfm22b_dev->rx_packet_wr != len)
 		{
-			rfm22_setRxMode(RX_WAIT_PREAMBLE_MODE);
-			return;
+			rf_mode = RX_ERROR_MODE;
+			return true;
 		}
 
 		// remember the rssi for this packet
@@ -854,6 +849,7 @@ static void rfm22_processRxInt(void)
 		((uint8_t*)(g_rfm22b_dev->rx_packet))[g_rfm22b_dev->rx_packet_wr++] = rx_packet_start_afc_Hz;
 
 		// Copy the receive buffer into the receive packet.
+		rf_mode = RX_COMPLETE_MODE;
 		if ((g_rfm22b_dev->rx_packet_prev == 0) && (g_rfm22b_dev->rx_packet_next != 0))
 		{
 			g_rfm22b_dev->rx_packet_prev = g_rfm22b_dev->rx_packet;
@@ -862,25 +858,24 @@ static void rfm22_processRxInt(void)
 			g_rfm22b_dev->rx_packet_next = 0;				
 			g_rfm22b_dev->rx_packet_wr = 0;
 
-			// Wake up the Rx task
-			rfm22_return_from_ISR(g_rfm22b_dev->rxsem);
+			return true;
 		}
 		g_rfm22b_dev->rx_packet_wr = 0;
 
-		// Switch to RX mode
-		rfm22_setRxMode(RX_WAIT_PREAMBLE_MODE);
+		return true;
 	}
 
+	return false;
 }
 
-static void rfm22_processTxInt(void)
+static bool rfm22_processTxInt(void)
 {
 
 	// FIFO under/over flow error.  Back to RX mode.
 	if (device_status & (RFM22_ds_ffunfl | RFM22_ds_ffovfl))
 	{
 		rf_mode = TX_ERROR_MODE;
-		return;
+		return true;
 	}
 
 	// TX FIFO almost empty, it needs filling up
@@ -897,13 +892,11 @@ static void rfm22_processTxInt(void)
 	// Packet has been sent
 	if (int_status1 & RFM22_is1_ipksent)
 	{
-		// Switch to RX mode
-		rfm22_setRxMode(RX_WAIT_PREAMBLE_MODE);
-
-		// Wake up the Tx task
-		rfm22_return_from_ISR(g_rfm22b_dev->txsem);
+		rf_mode = TX_COMPLETE_MODE;
+		return true;
 	}
 
+	return false;
 }
 
 

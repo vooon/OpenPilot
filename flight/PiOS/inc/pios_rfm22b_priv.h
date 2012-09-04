@@ -53,6 +53,8 @@ extern const struct pios_com_driver pios_rfm22b_com_driver;
 enum { RX_WAIT_PREAMBLE_MODE,
        RX_WAIT_SYNC_MODE,
        RX_DATA_MODE,
+       RX_ERROR_MODE,
+       RX_COMPLETE_MODE,
        TX_DATA_MODE,
        TX_ERROR_MODE,
        TX_COMPLETE_MODE};

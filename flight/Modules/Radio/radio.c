@@ -41,7 +41,7 @@
 // ****************
 // Private constants
 
-#define STACK_SIZE_BYTES 150
+#define STACK_SIZE_BYTES 200
 #define TASK_PRIORITY (tskIDLE_PRIORITY + 2)
 #define PACKET_QUEUE_SIZE PIOS_PH_WIN_SIZE
 #define MAX_PORT_DELAY 200
@@ -145,7 +145,7 @@ static int32_t RadioStart(void)
 
 	// Register the watchdog timers.
 #ifdef PIOS_WDG_RADIORECEIVE
-	PIOS_WDG_RegisterFlag(PIOS_WDG_RADIORECEIVE);
+	//PIOS_WDG_RegisterFlag(PIOS_WDG_RADIORECEIVE);
 #endif /* PIOS_WDG_RADIORECEIVE */
 
 	return 0;
@@ -303,7 +303,7 @@ static void radioReceiveTask(void *parameters)
 
 #ifdef PIOS_WDG_RADIORECEIVE
 		// Update the watchdog timer.
-		PIOS_WDG_UpdateFlag(PIOS_WDG_RADIORECEIVE);
+		//PIOS_WDG_UpdateFlag(PIOS_WDG_RADIORECEIVE);
 #endif /* PIOS_INCLUDE_WDG */
 
 		// Receive data from the radio port
@@ -327,7 +327,7 @@ static void radioReceiveTask(void *parameters)
  */
 static void sendPacketTask(void *parameters)
 {
-	PHPacketHandle p;
+	PHPacketHandle p = NULL;
 
 	// Loop forever
 	while (1) {
@@ -335,10 +335,21 @@ static void sendPacketTask(void *parameters)
 		// Update the watchdog timer.
 		//PIOS_WDG_UpdateFlag(PIOS_WDG_SENDPACKET);
 #endif /* PIOS_INCLUDE_WDG */
-		// Wait for a packet on the queue.
-		if (xQueueReceive(data->radioPacketQueue, &p, MAX_PORT_DELAY) == pdTRUE) {
-			PIOS_RFM22B_Send_Packet(pios_rfm22b_id, p, MAX_PORT_DELAY);
-			PHReleaseTXPacket(pios_packet_handler, p);
+		// Wait for a packet on the queue if we don't have an old one that needs sent.
+		if (p == NULL)
+		{
+			if (xQueueReceive(data->radioPacketQueue, &p, MAX_PORT_DELAY) != pdTRUE)
+				p = NULL;
+		}
+		// Send a packet if we have one to send.
+		if (p != 0)
+		{
+			if (PIOS_RFM22B_Send_Packet(pios_rfm22b_id, p, MAX_PORT_DELAY))
+			{
+				// Release the packet on success.
+				PHReleaseTXPacket(pios_packet_handler, p);
+				p = NULL;
+			}
 		}
 	}
 }
