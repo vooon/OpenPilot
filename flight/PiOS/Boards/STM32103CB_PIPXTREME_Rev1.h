@@ -277,6 +277,7 @@ extern uint32_t pios_spi_rfm22b_id;
 #define PIOS_RFM22_SPI_PORT             (pios_spi_rfm22b_id)
 #define RFM22_EXT_INT_USE
 extern uint32_t pios_rfm22b_id;
+#define RFM22_TXANT_GPIO0
 #endif /* PIOS_INCLUDE_RFM22B */
 
 //-------------------------
