@@ -65,10 +65,11 @@
 #include "gpsvelocity.h"
 #include "hwsettings.h"
 #include "homelocation.h"
+#include "nedaccel.h"
 
  
 // Private constants
-#define STACK_SIZE_BYTES 600
+#define STACK_SIZE_BYTES 670
 #define TASK_PRIORITY (tskIDLE_PRIORITY+3)
 
 #define SENSOR_PERIOD 4
@@ -85,7 +86,6 @@ static xTaskHandle taskHandle;
 static bool gpsNew_flag;
 static HomeLocationData homeLocation;
 
-
 // Private functions
 static void AttitudeTask(void *parameters);
 
@@ -101,7 +101,7 @@ static void settingsUpdatedCb(UAVObjEvent * objEv);
 static int32_t LLA2NED(int32_t LL[2], float altitude, float geoidSeparation, float * NED);
 static void HomeLocationUpdatedCb(UAVObjEvent * objEv);
 static void GPSPositionUpdatedCb(UAVObjEvent * objEv);
-
+static bool NEDAccels(AccelsData *, float * accels_ned, int16_t NEDAccelsUpdatePeriod);
 
 static float accelKi = 0;
 static float accelKp = 0;
@@ -155,6 +155,7 @@ int32_t AttitudeInitialize(void)
 	GPSPositionInitialize();
 	GPSVelocityInitialize();
 	HomeLocationInitialize();
+	NedAccelInitialize();
 
 	gpsNew_flag=false;
 
@@ -186,7 +187,6 @@ int32_t AttitudeInitialize(void)
 	
 	HomeLocationConnectCallback(&HomeLocationUpdatedCb);
 	GPSPositionConnectCallback(&GPSPositionUpdatedCb);
-
 
 	return 0;
 }
@@ -235,7 +235,7 @@ static void AttitudeTask(void *parameters)
 	// Force settings update to make sure rotation loaded
 	settingsUpdatedCb(AttitudeSettingsHandle());
 	HomeLocationUpdatedCb(HomeLocationHandle());
-	
+
 	// Main task loop
 	while (1) {
 		
@@ -284,8 +284,42 @@ static void AttitudeTask(void *parameters)
 			AlarmsClear(SYSTEMALARMS_ALARM_ATTITUDE);
 		}
 
-
 		/*=========================*/
+		float accels_ned[3];
+		int16_t NEDAccelsUpdatePeriod = 100;		//In ms.
+		PositionActualData positionActualData;
+		VelocityActualData velocityActualData;
+		static bool firstSetHeading = TRUE;
+
+		if (NEDAccels(&accels, accels_ned, NEDAccelsUpdatePeriod)) {
+
+			//PositionActualData positionActualData;
+			//VelocityActualData velocityActualData;
+/*
+			PositionActualGet(&positionActualData);
+			VelocityActualGet(&velocityActualData);
+
+			float dT=(float)NEDAccelsUpdatePeriod * 0.001f;
+
+			if (flightStatus.Armed == FLIGHTSTATUS_ARMED_ARMED) {
+				float accelsVelocityDataDiff[3] =  {accels_ned[0]*dT, accels_ned[1]*dT, -accels_ned[2]*dT};
+
+				//positionActualData.North	= positionActualData.North + velocityActualData.North*dT + accelsVelocityDataDiff[0]*dT*0.5f;
+				//positionActualData.East	= positionActualData.East  + velocityActualData.East *dT + accelsVelocityDataDiff[1]*dT*0.5f;
+				//positionActualData.Down	= positionActualData.Down  + velocityActualData.Down *dT + accelsVelocityDataDiff[2]*dT*0.5f;
+
+				velocityActualData.North	+= accelsVelocityDataDiff[0];
+				velocityActualData.East		+= accelsVelocityDataDiff[1];
+				velocityActualData.Down		+= accelsVelocityDataDiff[2];
+			} else {
+				velocityActualData.North	= 0;
+				velocityActualData.East		= 0;
+				velocityActualData.Down		= 0;
+			}
+			PositionActualSet(&positionActualData);
+			VelocityActualSet(&velocityActualData);
+*/
+		}
 
 		if( gpsNew_flag == true){
 
@@ -296,11 +330,18 @@ static void AttitudeTask(void *parameters)
 				GPSVelocityData gpsVelocityData;
 				GPSVelocityGet(&gpsVelocityData);
 
-				PositionActualData positionActualData;
-				VelocityActualData velocityActualData;
+				//PositionActualData positionActualData;
+				//VelocityActualData velocityActualData;
 
 				PositionActualGet(&positionActualData);
 				VelocityActualGet(&velocityActualData);
+
+				float dT;
+				portTickType thisSysTime = xTaskGetTickCount();
+				static portTickType lastSysTime = 0;
+
+				dT = (thisSysTime - lastSysTime) * portTICK_RATE_MS * 0.001f;
+				lastSysTime = thisSysTime;
 
 				//Get NED coordinates
 				float NED[3];
@@ -321,15 +362,16 @@ static void AttitudeTask(void *parameters)
 				LLA2NED(LL_int, altitude, geoidSeparation, NED);
 
 				//Calculate filter coefficients
-				float dT=.100;
 				float tauPosNorthEast=0.3;
 				float tauPosDown=0.5;
 				float tauVelNorthEast=0.3;
 				float tauVelDown=0.5;
+				float tauYaw=30.0f;
 				float alphaPosNorthEast=dT/(dT + tauPosNorthEast);
 				float alphaPosDown=dT/(dT + tauPosDown);
 				float alphaVelNorthEast=dT/(dT + tauVelNorthEast);
 				float alphaVelDown=dT/(dT + tauVelDown);
+				float alphaYaw=dT/(dT + tauYaw);
 
 				//Low pass filter for velocity
 				velocityActualData.North=(1-alphaVelNorthEast)*velocityActualData.North + alphaVelNorthEast*gpsVelocityData.North;
@@ -342,7 +384,7 @@ static void AttitudeTask(void *parameters)
 				positionActualData.Down= (1-alphaPosDown)*(positionActualData.Down+(velocityActualData.Down*dT)) + alphaPosDown*NED[2];
 
 				//Very slowly use GPS heading data to converge. This is a poor way of doing things, but will work in the short term for testing.
-				if (fabs(velocityActualData.North) > 4 || fabs(velocityActualData.East) > 4){
+				if (fabs(velocityActualData.North) > 3 || fabs(velocityActualData.East) > 3){
 					float heading;
 
 					GPSPositionHeadingGet(&heading);
@@ -359,7 +401,14 @@ static void AttitudeTask(void *parameters)
 						heading-=360.0f;
 					}
 
-					attitudeActual.Yaw=.997f*attitudeActual.Yaw+0.003f*heading;
+					if ((firstSetHeading == TRUE) && (flightStatus.Armed == FLIGHTSTATUS_ARMED_ARMED)) {
+						attitudeActual.Yaw = heading;
+						firstSetHeading = FALSE;
+					} else
+						attitudeActual.Yaw =(1-alphaYaw)*attitudeActual.Yaw + alphaYaw*heading;
+
+					if (attitudeActual.Yaw > 180.0f) attitudeActual.Yaw -= 360.0f;
+					if (attitudeActual.Yaw < -180.0f) attitudeActual.Yaw += 360.0f;
 
 					// Convert into quaternions degrees (makes assumptions about RPY order)
 					RPY2Quaternion(&attitudeActual.Roll, &attitudeActual.q1);
@@ -369,8 +418,7 @@ static void AttitudeTask(void *parameters)
 					if (!AttitudeActualReadOnly()){
 						AttitudeActualSet(&attitudeActual);
 					}
-				}
-
+				} else	if (flightStatus.Armed == FLIGHTSTATUS_ARMED_DISARMED) firstSetHeading = TRUE;
 
 				// Do not update position and velocity estimates when in simulation mode
 				if (!PositionActualReadOnly()){
@@ -752,7 +800,56 @@ static void HomeLocationUpdatedCb(UAVObjEvent * objEv)
 	T[2] = -1.0f;
 }
 
+static bool NEDAccels(AccelsData * accels, float * accels_ned, int16_t UpdatePeriod )
+{
+	portTickType thisTime = xTaskGetTickCount();
+	static portTickType lastUpdateTime = 0;
+	static float accel[3] = {0,0,0};
+	static uint16_t accel_accum = 0;
+	float q[4];
+	float Rbe[3][3];
 
+	// Collect downsampled attitude data
+	AccelsGet(accels);
+	accel[0] += accels->x;
+	accel[1] += accels->y;
+	accel[2] += accels->z;
+	accel_accum++;
+
+	// Continue collecting data if not enough time
+	if( (thisTime - lastUpdateTime) < (UpdatePeriod / portTICK_RATE_MS) )	return FALSE;
+	lastUpdateTime = xTaskGetTickCount();
+
+	accel[0] /= accel_accum;
+	accel[1] /= accel_accum;
+	accel[2] /= accel_accum;
+	accel_accum = 0;
+
+	//rotate avg accels into earth frame and store it
+	AttitudeActualData attitudeActual;
+	AttitudeActualGet(&attitudeActual);
+	q[0]=attitudeActual.q1;
+	q[1]=attitudeActual.q2;
+	q[2]=attitudeActual.q3;
+	q[3]=attitudeActual.q4;
+	Quaternion2R(q, Rbe);
+	for (uint8_t i=0; i<3; i++){
+		accels_ned[i]=0;
+		for (uint8_t j=0; j<3; j++)
+			accels_ned[i] += Rbe[j][i]*accel[j];
+	}
+	accels_ned[2] += GRAV;
+
+	NedAccelData accelData;
+	NedAccelGet(&accelData);
+
+	accelData.North = accels_ned[0];
+	accelData.East = accels_ned[1];
+	accelData.Down = accels_ned[2];
+	NedAccelSet(&accelData);
+
+	return TRUE;
+}
 /**
  * @}
  * @}
