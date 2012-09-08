@@ -82,7 +82,7 @@ public class UAVLocation extends MapActivity
 	private static boolean DEBUG = LOGLEVEL > 0;
 
 	//private MapView mapView;
-	private MyCustomMapView mapView;
+	private CustomMapView mapView;
 	private MapController mapController;
 	private GeoPoint mContextMenuGeoPoint = null;
 	
@@ -106,8 +106,8 @@ public class UAVLocation extends MapActivity
     
     @Override public void onCreate(Bundle icicle) {
     	super.onCreate(icicle);
-        setContentView(R.layout.mycustommapview);
-        mapView = (MyCustomMapView)findViewById(R.id.mapview);
+        setContentView(R.layout.custommapview);
+        mapView = (CustomMapView)findViewById(R.id.mapview);
 		mapController = mapView.getController();
 	    registerForContextMenu(mapView);
 
@@ -153,7 +153,7 @@ public class UAVLocation extends MapActivity
 			   CenterLocation(initGeoPoint,(last.getAltitude()));
 			}
 		}
-		mapView.setOnLongpressListener(new MyCustomMapView.OnLongpressListener() {
+		mapView.setOnLongpressListener(new CustomMapView.OnLongpressListener() {
         public void onLongpress(final MapView view, final GeoPoint longpressLocation) {
         	mContextMenuGeoPoint = longpressLocation;
             runOnUiThread(new Runnable() {

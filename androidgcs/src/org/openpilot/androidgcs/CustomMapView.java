@@ -10,7 +10,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 
-public class MyCustomMapView extends MapView {
+public class CustomMapView extends MapView {
     
     // Define the interface we will interact with from our Map
 public interface OnLongpressListener {
@@ -29,22 +29,22 @@ static final int LONGPRESS_THRESHOLD = 500;
 private GeoPoint lastMapCenter;
  
 private Timer longpressTimer = new Timer();
-private MyCustomMapView.OnLongpressListener longpressListener;
+private CustomMapView.OnLongpressListener longpressListener;
 
  
-public MyCustomMapView(Context context, String apiKey) {
+public CustomMapView(Context context, String apiKey) {
     super(context, apiKey);
 }
 
-public MyCustomMapView(Context context, AttributeSet attrs) {
+public CustomMapView(Context context, AttributeSet attrs) {
     super(context, attrs);
 }
 
-public MyCustomMapView(Context context, AttributeSet attrs, int defStyle) {
+public CustomMapView(Context context, AttributeSet attrs, int defStyle) {
     super(context, attrs, defStyle);
 }
 
-public void setOnLongpressListener(MyCustomMapView.OnLongpressListener listener) {
+public void setOnLongpressListener(CustomMapView.OnLongpressListener listener) {
     longpressListener = listener;
 }
 
@@ -90,7 +90,7 @@ private void handleLongpress(final MotionEvent event) {
                  * of the longpress as well, in case it is needed
                  * by the caller.
                  */
-                longpressListener.onLongpress(MyCustomMapView.this, longpressLocation);
+                longpressListener.onLongpress(CustomMapView.this, longpressLocation);
             }
              
         }, LONGPRESS_THRESHOLD);
