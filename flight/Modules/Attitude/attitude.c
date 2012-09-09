@@ -58,9 +58,10 @@
 #include "manualcontrolcommand.h"
 #include "CoordinateConversions.h"
 #include <pios_board_info.h>
- 
+#include "nedaccel.h"
+
 // Private constants
-#define STACK_SIZE_BYTES 540
+#define STACK_SIZE_BYTES 590
 #define TASK_PRIORITY (tskIDLE_PRIORITY+3)
 
 #define SENSOR_PERIOD 4
@@ -83,6 +84,8 @@ static int32_t updateSensors(AccelsData *, GyrosData *);
 static int32_t updateSensorsCC3D(AccelsData * accelsData, GyrosData * gyrosData);
 static void updateAttitude(AccelsData *, GyrosData *);
 static void settingsUpdatedCb(UAVObjEvent * objEv);
+
+static bool NEDAccels(AccelsData *, float * accels_ned, int16_t NEDAccelsUpdatePeriod);
 
 static float accelKi = 0;
 static float accelKp = 0;
@@ -131,6 +134,8 @@ int32_t AttitudeInitialize(void)
 	AccelsInitialize();
 	GyrosInitialize();
 	
+	NedAccelInitialize();
+
 	// Initialize quaternion
 	AttitudeActualData attitude;
 	AttitudeActualGet(&attitude);
@@ -251,6 +256,13 @@ static void AttitudeTask(void *parameters)
 
 			AlarmsClear(SYSTEMALARMS_ALARM_ATTITUDE);
 		}
+
+		// Compute NEDAccel
+		float accels_ned[3];
+		int16_t NEDAccelsUpdatePeriod = 100;		//In ms.
+
+		if (NEDAccels(&accels, accels_ned, NEDAccelsUpdatePeriod)) {
+		} // end compute NEDAccel
 	}
 }
 
@@ -577,6 +589,63 @@ static void settingsUpdatedCb(UAVObjEvent * objEv) {
 		AttitudeSettingsSet(&attitudeSettings);
 	} else
 		trim_requested = false;
+}
+
+/* Compute NEDAccel
+*  Input: Accels
+*  Output: uavobject nedaccel
+*  Output: variable accels_ned[3]
+*  Output: return(true,else) end compute
+*/
+static bool NEDAccels(AccelsData * accels, float * accels_ned, int16_t UpdatePeriod )
+{
+	portTickType thisTime = xTaskGetTickCount();
+	static portTickType lastUpdateTime = 0;
+	static float accel[3] = {0,0,0};
+	static uint16_t accel_accum = 0;
+	float q[4];
+	float Rbe[3][3];
+
+	// Collect downsampled attitude data
+	AccelsGet(accels);
+	accel[0] += accels->x;
+	accel[1] += accels->y;
+	accel[2] += accels->z;
+	accel_accum++;
+
+	// Continue collecting data if not enough time
+	if( (thisTime - lastUpdateTime) < (UpdatePeriod / portTICK_RATE_MS) )	return FALSE;
+	lastUpdateTime = xTaskGetTickCount();
+
+	accel[0] /= accel_accum;
+	accel[1] /= accel_accum;
+	accel[2] /= accel_accum;
+	accel_accum = 0;
+
+	//rotate avg accels into earth frame and store it
+	AttitudeActualData attitudeActual;
+	AttitudeActualGet(&attitudeActual);
+	q[0]=attitudeActual.q1;
+	q[1]=attitudeActual.q2;
+	q[2]=attitudeActual.q3;
+	q[3]=attitudeActual.q4;
+	Quaternion2R(q, Rbe);
+	for (uint8_t i=0; i<3; i++){
+		accels_ned[i]=0;
+		for (uint8_t j=0; j<3; j++)
+			accels_ned[i] += Rbe[j][i]*accel[j];
+	}
+	accels_ned[2] += GRAV;
+
+	NedAccelData accelData;
+	NedAccelGet(&accelData);
+
+	accelData.North = accels_ned[0];
+	accelData.East = accels_ned[1];
+	accelData.Down = accels_ned[2];
+	NedAccelSet(&accelData);
+
+	return TRUE;
 }
 /**
  * @}
