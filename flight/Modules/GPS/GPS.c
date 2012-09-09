@@ -55,7 +55,9 @@ static void updateSettings();
 
 #ifdef PIOS_GPS_SETS_HOMELOCATION
 static void setHomeLocation(GPSPositionData * gpsData);
+#if !defined(PIOS_GPS_MINIMAL)
 static float GravityAccel(float latitude, float longitude, float altitude);
+#endif
 #endif
 
 // ****************
@@ -66,7 +68,12 @@ static float GravityAccel(float latitude, float longitude, float altitude);
 
 #ifdef PIOS_GPS_SETS_HOMELOCATION
 // Unfortunately need a good size stack for the WMM calculation
-	#define STACK_SIZE_BYTES            784
+	#if defined(PIOS_GPS_MINIMAL)
+	// Only saving coordinate base
+		#define STACK_SIZE_BYTES            500
+	#else
+		#define STACK_SIZE_BYTES            784
+	#endif // PIOS_GPS_MINIMAL
 #else
 #if defined(PIOS_GPS_MINIMAL)
 	#define STACK_SIZE_BYTES            500
@@ -241,10 +248,10 @@ static void gpsTask(void *parameters)
 					(gpsposition.Status == GPSPOSITION_STATUS_FIX3D)) {
 				AlarmsClear(SYSTEMALARMS_ALARM_GPS);
 #ifdef PIOS_GPS_SETS_HOMELOCATION
-				HomeLocationData home;
-				HomeLocationGet(&home);
+				uint8_t homeSet;
+				HomeLocationSetGet(&homeSet);
 
-				if (home.Set == HOMELOCATION_SET_FALSE)
+				if (homeSet == HOMELOCATION_SET_FALSE)
 					setHomeLocation(&gpsposition);
 #endif
 			} else if (gpsposition.Status == GPSPOSITION_STATUS_FIX3D)
@@ -257,6 +264,7 @@ static void gpsTask(void *parameters)
 }
 
 #ifdef PIOS_GPS_SETS_HOMELOCATION
+#if !defined(PIOS_GPS_MINIMAL)
 /*
  * Estimate the acceleration due to gravity for a particular location in LLA
  */
@@ -304,6 +312,26 @@ static void setHomeLocation(GPSPositionData * gpsData)
 		}
 	}
 }
+#else
+static void setHomeLocation(GPSPositionData * gpsData)
+{
+	// Store LLA
+	int32_t homeTemp;
+
+	homeTemp = gpsData->Latitude;
+	HomeLocationLatitudeSet(&homeTemp);
+
+	homeTemp = gpsData->Longitude;
+	HomeLocationLongitudeSet(&homeTemp);
+
+	float homeAlt = gpsData->Altitude + gpsData->GeoidSeparation;
+	HomeLocationAltitudeSet(&homeAlt);
+
+	uint8_t homeSet = HOMELOCATION_SET_TRUE;
+	HomeLocationSetSet(&homeSet);
+
+}
+#endif //!defined(PIOS_GPS_MINIMAL)
 #endif
 
 /**
