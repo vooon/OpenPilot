@@ -66,6 +66,7 @@ USE_CAMERASTAB ?= YES
 USE_COMUSBBRIDGE ?= YES
 USE_GPS ?= YES
 USE_TXPID ?= YES
+USE_GUIDANCE ?= YES
 USE_I2C ?= NO
 USE_ALTITUDE ?= NO
 TEST_FAULTS ?= NO
@@ -83,6 +84,9 @@ OPTMODULES += GPS
 endif
 ifeq ($(USE_TXPID), YES)
 OPTMODULES += TxPID
+endif
+ifeq ($(USE_GUIDANCE), YES)
+OPTMODULES += CCGuidance
 endif
 ifeq ($(USE_ALTITUDE), YES)
 ifeq ($(USE_I2C), YES)
@@ -212,6 +216,7 @@ SRC += $(OPUAVSYNTHDIR)/txpidsettings.c
 SRC += $(OPUAVSYNTHDIR)/homelocation.c
 SRC += $(OPUAVSYNTHDIR)/positionactual.c
 SRC += $(OPUAVSYNTHDIR)/velocityactual.c
+SRC += $(OPUAVSYNTHDIR)/ccguidancesettings.c
 
 endif
 
