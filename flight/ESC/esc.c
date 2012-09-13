@@ -129,7 +129,6 @@ int main()
 		uint8_t c;
 		if(PIOS_COM_ReceiveBuffer(pios_com_softusart_id, &c, 1, 0) == 1) {
 			PIOS_COM_SendBuffer(pios_com_softusart_id, &c, 1);
-			bytes_received++;
 		}
 	}
 
