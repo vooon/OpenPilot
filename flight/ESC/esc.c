@@ -189,7 +189,7 @@ int main()
 		}
 
 		esc_process_static_fsm_rxn();
-
+#ifdef FALSE
 		// Serial interface: Process any incoming characters, and then process
 		// any ongoing messages
 		uint8_t c;
@@ -214,6 +214,14 @@ int main()
 		uint8_t a = 'a';
 		if ((ms_count & 0x00000fff) == 0x400)
 			PIOS_COM_SendBuffer(pios_com_softusart_id, &a, 1);
+#else
+		// Echo any bytes in/out between the full and soft usart
+		uint8_t c;
+		if(PIOS_COM_ReceiveBuffer(PIOS_COM_DEBUG, &c, 1, 0) == 1)
+			PIOS_COM_SendBuffer(pios_com_softusart_id, &c, 1);
+		if(PIOS_COM_ReceiveBuffer(pios_com_softusart_id, &c, 1, 0) == 1)
+			PIOS_COM_SendBuffer(PIOS_COM_DEBUG, &c, 1);
+#endif
 	}
 	return 0;
 }

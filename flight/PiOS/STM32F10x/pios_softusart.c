@@ -224,6 +224,9 @@ int32_t PIOS_SOFTUSART_Init(uint32_t *softusart_id, const struct pios_softusart_
 	// Set default baud rate
 	PIOS_SOFTUSART_ChangeBaud((uint32_t)softusart_dev, 9600);
 	
+	// Configure the IO pin
+	GPIO_Init(softusart_dev->cfg->tx.pin.gpio, &softusart_dev->cfg->tx.pin.init);
+
 	PIOS_SOFTUSART_EnableCaptureMode(softusart_dev);
 	*softusart_id = (uint32_t)softusart_dev;
 	
