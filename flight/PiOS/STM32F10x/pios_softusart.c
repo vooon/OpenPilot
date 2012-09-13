@@ -365,7 +365,6 @@ static void PIOS_SOFTUSART_RxStart(uint32_t usart_id, uint16_t rx_bytes_avail)
 	struct pios_softusart_dev *softusart_dev = (struct pios_softusart_dev *) usart_id;
 	bool valid = PIOS_SOFTUSART_validate(softusart_dev);
 	PIOS_Assert(valid);
-	PIOS_SOFTUSART_EnableCaptureMode(softusart_dev);
 }
 
 #define SET_TX GPIO_SetBits(softusart_dev->cfg->tx.pin.gpio,softusart_dev->cfg->tx.pin.init.GPIO_Pin)
