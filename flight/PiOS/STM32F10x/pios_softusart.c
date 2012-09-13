@@ -106,7 +106,7 @@ static bool PIOS_SOFTUSART_TestStatus(struct pios_softusart_dev *dev, uint16_t f
 static void PIOS_SOFTUSART_SetStatus(struct pios_softusart_dev *dev, uint16_t flag);
 static void PIOS_SOFTUSART_SetStatus(struct pios_softusart_dev *dev, uint16_t flag);
 static void PIOS_SOFTUSART_EnableCaptureMode(struct pios_softusart_dev *softusart_dev);
-static void PIOS_SOFTUSART_EnableCompareMode(struct pios_softusart_dev *softusart_dev);
+static void PIOS_SOFTUSART_EnableCompareMode(struct pios_softusart_dev *softusart_dev, int16_t count);
 
 static bool PIOS_SOFTUSART_validate(struct pios_softusart_dev * pwm_dev)
 {
@@ -507,7 +507,7 @@ static void PIOS_SOFTUSART_SetCCE(struct pios_softusart_dev *softusart_dev, bool
  * @brief Disable output capture and enable compare mode
  * Now the interrupt should occurr periodically at 2x baud rate for sampling line
  */
-static void PIOS_SOFTUSART_EnableCompareMode(struct pios_softusart_dev *softusart_dev)
+static void PIOS_SOFTUSART_EnableCompareMode(struct pios_softusart_dev *softusart_dev, int16_t count)
 {
 	//disable_IC_system;			    // IC interrupt - begin of start bit detected
 	PIOS_SOFTUSART_SetIrqCC(softusart_dev, false);
@@ -527,22 +527,22 @@ static void PIOS_SOFTUSART_EnableCompareMode(struct pios_softusart_dev *softusar
 		case TIM_Channel_1:
 			softusart_dev->cfg->rx.timer->CCMR1 &= ~0x00ff;
 			TIM_OC1Init(softusart_dev->cfg->rx.timer, &tim_oc_init);
-			TIM_SetCompare1(softusart_dev->cfg->rx.timer, softusart_dev->cfg->rx.timer->CNT);
+			TIM_SetCompare1(softusart_dev->cfg->rx.timer, count);
 			break;
 		case TIM_Channel_2:
 			softusart_dev->cfg->rx.timer->CCMR1 &= ~0xff00;
 			TIM_OC2Init(softusart_dev->cfg->rx.timer, &tim_oc_init);
-			TIM_SetCompare2(softusart_dev->cfg->rx.timer, softusart_dev->cfg->rx.timer->CNT);
+			TIM_SetCompare2(softusart_dev->cfg->rx.timer, count);
 			break;
 		case TIM_Channel_3:
 			softusart_dev->cfg->rx.timer->CCMR2 &= ~0x00ff;
 			TIM_OC3Init(softusart_dev->cfg->rx.timer, &tim_oc_init);
-			TIM_SetCompare3(softusart_dev->cfg->rx.timer, softusart_dev->cfg->rx.timer->CNT);
+			TIM_SetCompare3(softusart_dev->cfg->rx.timer, count);
 			break;
 		case TIM_Channel_4:
 			softusart_dev->cfg->rx.timer->CCMR2 &= ~0xff00;
 			TIM_OC4Init(softusart_dev->cfg->rx.timer, &tim_oc_init);
-			TIM_SetCompare4(softusart_dev->cfg->rx.timer, softusart_dev->cfg->rx.timer->CNT);
+			TIM_SetCompare4(softusart_dev->cfg->rx.timer, count);
 			break;	
 	}
 	
