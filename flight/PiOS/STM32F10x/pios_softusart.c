@@ -517,7 +517,7 @@ static void PIOS_SOFTUSART_EnableCompareMode(struct pios_softusart_dev *softusar
 		.TIM_OCMode = TIM_OCMode_PWM1,
 		.TIM_OutputState = TIM_OutputState_Enable,
 		.TIM_OutputNState = TIM_OutputNState_Disable,
-		.TIM_Pulse = 0,
+		.TIM_Pulse = count,
 		.TIM_OCPolarity = TIM_OCPolarity_High,
 		.TIM_OCNPolarity = TIM_OCPolarity_High,
 		.TIM_OCIdleState = TIM_OCIdleState_Reset,
@@ -527,22 +527,18 @@ static void PIOS_SOFTUSART_EnableCompareMode(struct pios_softusart_dev *softusar
 		case TIM_Channel_1:
 			softusart_dev->cfg->rx.timer->CCMR1 &= ~0x00ff;
 			TIM_OC1Init(softusart_dev->cfg->rx.timer, &tim_oc_init);
-			TIM_SetCompare1(softusart_dev->cfg->rx.timer, count);
 			break;
 		case TIM_Channel_2:
 			softusart_dev->cfg->rx.timer->CCMR1 &= ~0xff00;
 			TIM_OC2Init(softusart_dev->cfg->rx.timer, &tim_oc_init);
-			TIM_SetCompare2(softusart_dev->cfg->rx.timer, count);
 			break;
 		case TIM_Channel_3:
 			softusart_dev->cfg->rx.timer->CCMR2 &= ~0x00ff;
 			TIM_OC3Init(softusart_dev->cfg->rx.timer, &tim_oc_init);
-			TIM_SetCompare3(softusart_dev->cfg->rx.timer, count);
 			break;
 		case TIM_Channel_4:
 			softusart_dev->cfg->rx.timer->CCMR2 &= ~0xff00;
 			TIM_OC4Init(softusart_dev->cfg->rx.timer, &tim_oc_init);
-			TIM_SetCompare4(softusart_dev->cfg->rx.timer, count);
 			break;	
 	}
 	
