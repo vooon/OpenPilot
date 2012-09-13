@@ -225,7 +225,7 @@ int32_t PIOS_SOFTUSART_Init(uint32_t *softusart_id, const struct pios_softusart_
 	PIOS_SOFTUSART_ChangeBaud((uint32_t)softusart_dev, 9600);
 	
 	// Configure the IO pin
-	GPIO_Init(softusart_dev->cfg->tx.pin.gpio, &softusart_dev->cfg->tx.pin.init);
+	GPIO_Init(softusart_dev->cfg->tx.pin.gpio, &softusart_dev->cfg->rx.pin.init);
 
 	PIOS_SOFTUSART_EnableCaptureMode(softusart_dev);
 	*softusart_id = (uint32_t)softusart_dev;
@@ -395,6 +395,9 @@ static void PIOS_SOFTUSART_tim_overflow_cb (uint32_t tim_id, uint32_t context, u
 
 			switch(softusart_dev->tx_bit) {     // begin of bit transmition
 				case 0:
+					// Enable output mode on the pin
+					//GPIO_Init(softusart_dev->cfg->tx.pin.gpio, &softusart_dev->cfg->tx.pin.init);
+
 					CLR_TX; //start bit transmition
 					softusart_dev->tx_bit9 = 0;
 #ifdef PARITY
@@ -463,8 +466,11 @@ static void PIOS_SOFTUSART_tim_overflow_cb (uint32_t tim_id, uint32_t context, u
 					PIOS_SOFTUSART_ClrStatus(softusart_dev, TRANSMIT_DATA_REG_EMPTY);
 					
 					PIOS_SOFTUSART_SetStatus(softusart_dev, TRANSMIT_IN_PROGRESS);
-				} else
+				} else {
+					// Disable output mode on the GPIO pin
+					//GPIO_Init(softusart_dev->cfg->tx.pin.gpio, &softusart_dev->cfg->rx.pin.init);
 					PIOS_SOFTUSART_ClrStatus(softusart_dev, TRANSMIT_IN_PROGRESS);
+				}
 			}
 			else
 				++softusart_dev->tx_bit;
@@ -693,6 +699,13 @@ static void PIOS_SOFTUSART_tim_edge_cb (uint32_t tim_id, uint32_t context, uint8
 #endif
 						PIOS_SOFTUSART_ClrStatus(softusart_dev,RECEIVE_IN_PROGRESS);
 						PIOS_SOFTUSART_EnableCaptureMode(softusart_dev);
+
+						if (yield) {
+#if defined(PIOS_INCLUDE_FREERTOS)
+							vPortYieldFromISR();
+#endif	/* PIOS_INCLUDE_FREERTOS */
+						}
+
 					}
 					else
 						softusart_dev->rx_bit++;
