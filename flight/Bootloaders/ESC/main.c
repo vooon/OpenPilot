@@ -47,6 +47,9 @@ uint32_t JumpAddress;
 DFUStates DeviceState;
 /* Private function prototypes -----------------------------------------------*/
 void jump_to_app();
+uint32_t LedPWM(uint32_t pwm_period, uint32_t pwm_sweep_steps, uint32_t count);
+
+extern int pios_com_softusart_id;
 
 #define BLUE LED1
 #define RED	LED4
@@ -65,6 +68,81 @@ int main() {
 	PIOS_LED_Off(1);
 	
 	PIOS_DELAY_WaitmS(150);
+
+	bool timeout = false;
+	uint32_t period1, period2, sweep_steps1, sweep_steps2;
+	uint32_t stopwatch = 0;
+	uint32_t prev_ticks = PIOS_DELAY_GetuS();
+
+	while (!timeout) {
+		uint8_t c;
+		if(PIOS_COM_ReceiveBuffer(pios_com_softusart_id, &c, 1, 0) == 1) {
+			PIOS_LED_Toggle(1);
+			if (c == 'a')
+				timeout = true;
+			c++;
+			PIOS_COM_SendBuffer(pios_com_softusart_id, &c, 1);
+		}
+
+		/* Update the stopwatch */
+		uint32_t elapsed_ticks = PIOS_DELAY_GetuSSince(prev_ticks);
+		prev_ticks += elapsed_ticks;
+		stopwatch += elapsed_ticks;
+
+		switch (DeviceState) {
+		case Last_operation_Success:
+		case uploadingStarting:
+		case DFUidle:
+			period1 = 5000;
+			sweep_steps1 = 100;
+			PIOS_LED_Off(1);
+			period2 = 0;
+			break;
+		case uploading:
+			period1 = 5000;
+			sweep_steps1 = 100;
+			period2 = 2500;
+			sweep_steps2 = 50;
+			break;
+		case downloading:
+			period1 = 2500;
+			sweep_steps1 = 50;
+			PIOS_LED_Off(1);
+			period2 = 0;
+			break;
+		case BLidle:
+			period1 = 0;
+			PIOS_LED_On(1);
+			period2 = 0;
+			break;
+		default://error
+			period1 = 5000;
+			sweep_steps1 = 100;
+			period2 = 5000;
+			sweep_steps2 = 100;
+		}
+
+		if (period1 != 0) {
+			if (LedPWM(period1, sweep_steps1, stopwatch))
+				PIOS_LED_On(1);
+			else
+				PIOS_LED_Off(1);
+		} else
+			PIOS_LED_On(1);
+
+		if (period2 != 0) {
+			if (LedPWM(period2, sweep_steps2, stopwatch))
+				PIOS_LED_On(1);
+			else
+				PIOS_LED_Off(1);
+		} else
+			PIOS_LED_Off(1);
+
+		if (stopwatch > 50 * 1000 * 1000)
+			stopwatch = 0;
+		if ((stopwatch > 6 * 1000 * 1000) && (DeviceState == BLidle))
+			timeout = true;
+	}
 	
 	jump_to_app();
 	
@@ -103,4 +181,14 @@ void jump_to_app() {
 }
 
 
+uint32_t LedPWM(uint32_t pwm_period, uint32_t pwm_sweep_steps, uint32_t count) {
+	uint32_t curr_step = (count / pwm_period) % pwm_sweep_steps; /* 0 - pwm_sweep_steps */
+	uint32_t pwm_duty = pwm_period * curr_step / pwm_sweep_steps; /* fraction of pwm_period */
+
+	uint32_t curr_sweep = (count / (pwm_period * pwm_sweep_steps)); /* ticks once per full sweep */
+	if (curr_sweep & 1) {
+		pwm_duty = pwm_period - pwm_duty; /* reverse direction in odd sweeps */
+	}
+	return ((count % pwm_period) > pwm_duty) ? 1 : 0;
+}
 

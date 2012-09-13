@@ -53,5 +53,24 @@ void PIOS_Board_Init(void) {
 
 	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_CRC, ENABLE);//TODO Tirar
 
+	// Initialize the components required for the softusart
+
+	PIOS_TIM_InitClock(&tim_4_cfg);
+	/* Install the callbacks for hardware timing */
+
+#if defined(PIOS_INCLUDE_SOFTUSART)
+	uint32_t pios_softusart_id;
+	if (PIOS_SOFTUSART_Init(&pios_softusart_id, &pios_softusart_cfg)) {
+		PIOS_Assert(0);
+	}
+	
+	if (PIOS_COM_Init(&pios_com_softusart_id, &pios_softusart_com_driver, pios_softusart_id,
+					  uart_softusart_rx_buffer, sizeof(uart_softusart_rx_buffer),
+					  uart_softusart_tx_buffer, sizeof(uart_softusart_tx_buffer))) {
+		PIOS_Assert(0);
+	}
+#endif
+
+
 	board_init_complete = true;
 }
