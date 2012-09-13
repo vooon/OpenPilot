@@ -5,6 +5,11 @@ define connect
 end
 #monitor reset halt
 
+define connect2
+	target extended-remote localhost:4242
+	file ./build/fw_esc/fw_esc.elf
+end
+
 define hook-step
 	monitor cortex_m3 maskisr on
 end
