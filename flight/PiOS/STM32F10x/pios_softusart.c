@@ -500,7 +500,7 @@ static void PIOS_SOFTUSART_SetCCE(struct pios_softusart_dev *softusart_dev, bool
 	if (enable)
 		softusart_dev->cfg->rx.timer->CCER |= softusart_dev->cce;
 	else 
-		softusart_dev->cfg->rx.timer->CCER &= softusart_dev->cce;
+		softusart_dev->cfg->rx.timer->CCER &= ~softusart_dev->cce;
 }
 
 /**
@@ -577,14 +577,6 @@ static void PIOS_SOFTUSART_EnableCaptureMode(struct pios_softusart_dev *softusar
 			break;  
 	}
 	softusart_dev->cfg->rx.timer->CCER |= softusart_dev->ccp;
-	TIM_ICInitTypeDef tim_ic_init = {
-		.TIM_Channel = softusart_dev->cfg->rx.timer_chan,
-		.TIM_ICPolarity = TIM_ICPolarity_Falling,
-		.TIM_ICSelection = TIM_ICSelection_DirectTI,
-		.TIM_ICPrescaler = TIM_ICPSC_DIV1,
-		.TIM_ICFilter = 0x4,
-	};
-	TIM_ICInit(softusart_dev->cfg->rx.timer, &tim_ic_init);
 	
 	//Reenable interrupt
 	PIOS_SOFTUSART_SetCCE(softusart_dev, true);
@@ -713,7 +705,7 @@ static void PIOS_SOFTUSART_tim_edge_cb (uint32_t tim_id, uint32_t context, uint8
 		softusart_dev->rx_phase = !softusart_dev->rx_phase;
 	} else {
 		// receive is not in progres yet
-		PIOS_SOFTUSART_EnableCompareMode(softusart_dev);
+		PIOS_SOFTUSART_EnableCompareMode(softusart_dev, count);
 		PIOS_SOFTUSART_SetStatus(softusart_dev,RECEIVE_IN_PROGRESS);	// receive byte initialization
 		softusart_dev->rx_bit = 0;
 		softusart_dev->rx_phase = 0;
