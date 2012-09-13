@@ -42,6 +42,7 @@ typedef void (*pFunction)(void);
 /* Private variables ---------------------------------------------------------*/
 pFunction Jump_To_Application;
 uint32_t JumpAddress;
+static uint8_t mReceive_Buffer[63];
 
 /* Extern variables ----------------------------------------------------------*/
 DFUStates DeviceState;
@@ -59,11 +60,15 @@ int main() {
 
 	/* Brings up System using CMSIS functions, enables the LEDs. */
 	PIOS_SYS_Init();
-	PIOS_IAP_Init();
 	PIOS_Board_Init();
+/*
+	DeviceState = BLidle;
+	if (PIOS_IAP_CheckRequest() == TRUE) {
+		DeviceState = DFUidle;
+		PIOS_IAP_ClearRequest();
+	}
+	*/
 
-	PIOS_DELAY_Init();
-	
 	PIOS_LED_On(0);
 	PIOS_LED_Off(1);
 	
@@ -75,13 +80,9 @@ int main() {
 	uint32_t prev_ticks = PIOS_DELAY_GetuS();
 
 	while (!timeout) {
-		uint8_t c;
-		if(PIOS_COM_ReceiveBuffer(pios_com_softusart_id, &c, 1, 0) == 1) {
+		if(PIOS_COM_ReceiveBuffer(pios_com_softusart_id, mReceive_Buffer, sizeof(mReceive_Buffer), 0) == 1) {
 			PIOS_LED_Toggle(1);
-			if (c == 'a')
-				timeout = true;
-			c++;
-			PIOS_COM_SendBuffer(pios_com_softusart_id, &c, 1);
+			processComand(mReceive_Buffer);
 		}
 
 		/* Update the stopwatch */

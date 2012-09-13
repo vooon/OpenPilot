@@ -15,14 +15,14 @@ int main(int argc, char *argv[])
 
     port * info;
     PortSettings settings;
-    settings.BaudRate=BAUD57600;
+    settings.BaudRate=BAUD9600;
     settings.DataBits=DATA_8;
     settings.FlowControl=FLOW_OFF;
     settings.Parity=PAR_NONE;
     settings.StopBits=STOP_1;
     settings.Timeout_Millisec=5000;
 
-    info=new port(settings,"COM3");
+    info=new port(settings,"/dev/tty.usbserial-0010111DB");
     info->rxBuf 		= sspRxBuf;
     info->rxBufSize 	= MAX_PACKET_DATA_LEN;
     info->txBuf 		= sspTxBuf;
@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     info->max_retry	= 3;
     info->timeoutLen	= 5000;
     //qssp b(info);
-    qsspt bb(info);
+    qsspt bb(info,true);
     uint8_t buf[1000];
     QCoreApplication a(argc, argv);
     while(!bb.ssp_Synchronise())

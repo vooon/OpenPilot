@@ -94,7 +94,7 @@ HWDEFSINC = ../../board_hw_defs/$(BOARD_NAME)
 ## OPENPILOT_BL CORE:
 SRC += $(OPSYSTEM)/main.c
 SRC += $(OPSYSTEM)/pios_board.c
-#SRC += $(OPSYSTEM)/op_dfu.c
+SRC += $(OPSYSTEM)/op_dfu.c
 
 ## PIOS Hardware (STM32F10x)
 SRC += $(PIOSSTM32F10X)/pios_adc.c

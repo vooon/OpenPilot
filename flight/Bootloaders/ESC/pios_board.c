@@ -37,6 +37,8 @@ void PIOS_Board_Init(void) {
 		return;
 	}
 
+	PIOS_IAP_Init();
+
 	PIOS_LED_Init(&pios_led_cfg);
 
 	/* Enable Prefetch Buffer */

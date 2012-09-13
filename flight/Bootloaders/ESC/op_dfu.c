@@ -72,7 +72,8 @@ uint32_t downPacketCurrent = 0;
 DFUTransfer downType = 0;
 /* Extern variables ----------------------------------------------------------*/
 extern DFUStates DeviceState;
-extern uint8_t JumpToApp;
+extern void jump_to_app();
+extern int pios_com_softusart_id;
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 void sendData(uint8_t * buf, uint16_t size);
@@ -141,7 +142,7 @@ void processComand(uint8_t *xReceive_Buffer) {
 #ifdef DEBUG_SSP
 	char str[63]= {0};
 	sprintf(str,"Received COMMAND:%d|",Command);
-	PIOS_COM_SendString(PIOS_COM_TELEM_USB,str);
+	PIOS_COM_SendString(pios_com_softusart_id,str);
 #endif
 	EchoReqFlag = (Command >> 7);
 	EchoAnsFlag = (Command >> 6) & 0x01;
@@ -322,11 +323,10 @@ void processComand(uint8_t *xReceive_Buffer) {
 			Buffer[15] = devicesTable[Data0 - 1].devID;
 		}
 		sendData(Buffer + 1, 63);
-		//PIOS_COM_SendBuffer(PIOS_COM_TELEM_USB, Buffer + 1, 63);//FIX+1
 		break;
 	case JumpFW:
 		FLASH_Lock();
-		JumpToApp = 1;
+		jump_to_app();
 		break;
 	case Reset:
 		PIOS_SYS_Reset();
@@ -356,11 +356,11 @@ void processComand(uint8_t *xReceive_Buffer) {
 	case Download_Req:
 #ifdef DEBUG_SSP
 		sprintf(str,"COMMAND:DOWNLOAD_REQ 1 Status=%d|",DeviceState);
-		PIOS_COM_SendString(PIOS_COM_TELEM_USB,str);
+		PIOS_COM_SendString(pios_com_softusart_id,str);
 #endif
 		if (DeviceState == DFUidle) {
 #ifdef DEBUG_SSP
-			PIOS_COM_SendString(PIOS_COM_TELEM_USB,"COMMAND:DOWNLOAD_REQ 1|");
+			PIOS_COM_SendString(pios_com_softusart_id,"COMMAND:DOWNLOAD_REQ 1|");
 #endif
 			downType = Data0;
 			downPacketTotal = Count;
@@ -474,7 +474,7 @@ uint32_t CalcFirmCRC() {
 
 }
 void sendData(uint8_t * buf, uint16_t size) {
-	PIOS_COM_SendBuffer(PIOS_COM_TELEM_USB, buf, size);
+	PIOS_COM_SendBuffer(pios_com_softusart_id, buf, size);
 	if (DeviceState == downloading)
 		PIOS_DELAY_WaitmS(10);
 }
