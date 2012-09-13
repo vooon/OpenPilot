@@ -62,7 +62,7 @@ bool PIOS_DYNAMIXEL_ReadInfo (uint8_t address, uint16_t * model, uint16_t * fw_v
 		DYNAMIXEL_SYNC,
 		DYNAMIXEL_SYNC,
 		address,	      /* servo bus address */
-		5 + 2,		      /* length */
+		4,		      /* length */
 		DYNAMIXEL_READ_DATA,  /* instruction */
 		0x00,		      /* base register address */
 		0x04,		      /* length to read */
@@ -70,7 +70,7 @@ bool PIOS_DYNAMIXEL_ReadInfo (uint8_t address, uint16_t * model, uint16_t * fw_v
 	};
 
 	/* Fill in the checksum */
-	message[sizeof(message) - 1] = PIOS_DYNAMIXEL_checksum (message + 2, sizeof(message) - 1);
+	message[sizeof(message) - 1] = PIOS_DYNAMIXEL_checksum (message + 2, sizeof(message) - 1 - 2);
 
 	int32_t rc = PIOS_COM_SendBuffer(PIOS_COM_DYNAMIXEL, message, sizeof(message));
 	if (rc != sizeof(message)) {
@@ -199,7 +199,7 @@ bool PIOS_DYNAMIXEL_SetPosition (uint8_t address, uint16_t position)
 		DYNAMIXEL_SYNC,
 		DYNAMIXEL_SYNC,
 		address,	      /* servo bus address */
-		5 + 2,		      /* length */
+		7,		      /* length */
 		DYNAMIXEL_WRITE_DATA, /* instruction */
 		0x1E,		      /* base register address */
 		/* Goal Position (0x1E) */
@@ -213,7 +213,7 @@ bool PIOS_DYNAMIXEL_SetPosition (uint8_t address, uint16_t position)
 	};
 
 	/* Fill in the checksum */
-	message[sizeof(message) - 1] = PIOS_DYNAMIXEL_checksum (message + 2, sizeof(message) - 1);
+	message[sizeof(message) - 1] = PIOS_DYNAMIXEL_checksum (message + 2, sizeof(message) - 1 - 2);
 
 	int32_t rc = PIOS_COM_SendBuffer(PIOS_COM_DYNAMIXEL, message, sizeof(message));
 	
