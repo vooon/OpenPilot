@@ -36,7 +36,8 @@ enum esc_fsm_state {
 	ESC_STATE_INIT,                        /* Perform self test, load settings */
 	ESC_STATE_WAIT_FOR_ARM,                /* Cannot be used until throttle < threshold */
 	ESC_STATE_ARMED_SOUND,                 /* Play the sound to indicate got throttle */
-	
+	ESC_STATE_BEEP,                        /* Play a simple beep */
+
 	ESC_STATE_IDLE,                        /* Waiting for throttle command */
 	ESC_STATE_STOPPING,                    /* Safely shut down motor then wait for throttle */
 	ESC_STATE_STOPPED,                     /* Motor shut down */
@@ -66,6 +67,7 @@ enum esc_event {
 	ESC_EVENT_OVERCURRENT,
 	ESC_EVENT_LATE_COMMUTATION,
 	ESC_EVENT_TIMEOUT,
+	ESC_EVENT_BEEP,
 	ESC_EVENT_AUTO,
 	ESC_EVENT_NUM_EVENTS	/* Must be last */
 };

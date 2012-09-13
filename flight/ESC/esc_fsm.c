@@ -42,6 +42,7 @@ static void go_esc_stopped(uint16_t);
 
 // Play sound on initially getting armed
 static void go_esc_armed_sound(uint16_t);
+static void go_esc_beep(uint16_t);
 
 // Startup states
 static void go_esc_startup_enable(uint16_t);
@@ -83,6 +84,7 @@ const static struct esc_transition esc_transition[ESC_FSM_NUM_STATES] = {
 		.entry_fn = go_esc_nothing,
 		.next_state = {
 			[ESC_EVENT_ARM] = ESC_STATE_ARMED_SOUND,
+			[ESC_EVENT_AUTO] = ESC_STATE_IDLE,
 		},
 	},
 	[ESC_STATE_ARMED_SOUND] = {
@@ -91,10 +93,17 @@ const static struct esc_transition esc_transition[ESC_FSM_NUM_STATES] = {
 			[ESC_EVENT_AUTO] = ESC_STATE_IDLE,
 		},
 	},
+	[ESC_STATE_BEEP] = {
+		.entry_fn = go_esc_beep,
+		.next_state = {
+			[ESC_EVENT_AUTO] = ESC_STATE_IDLE,
+		},
+	},	
 	[ESC_STATE_IDLE] = {
 		.entry_fn = go_esc_nothing,
 		.next_state = {
 			[ESC_EVENT_START] = ESC_STATE_STARTUP_ENABLE,
+			[ESC_EVENT_BEEP] = ESC_STATE_BEEP,
 		},
 	},
 	[ESC_STATE_STOPPING] = {
@@ -350,6 +359,12 @@ static void go_esc_armed_sound(uint16_t time)
 	esc_tone(350, NOTES_C);
 	PIOS_DELAY_WaitmS(50);
 	esc_tone(600, NOTES_F0);
+}
+
+static void go_esc_beep(uint16_t time)
+{
+	esc_tone(150, NOTES_AS);
+	PIOS_DELAY_WaitmS(50);
 }
 
 /**
