@@ -395,7 +395,7 @@ static void PIOS_SOFTUSART_tim_overflow_cb (uint32_t tim_id, uint32_t context, u
 			switch(softusart_dev->tx_bit) {     // begin of bit transmition
 				case 0:
 					// Enable output mode on the pin
-					//GPIO_Init(softusart_dev->cfg->tx.pin.gpio, &softusart_dev->cfg->tx.pin.init);
+					GPIO_Init(softusart_dev->cfg->tx.pin.gpio, &softusart_dev->cfg->tx.pin.init);
 
 					CLR_TX; //start bit transmition
 					softusart_dev->tx_bit9 = 0;
@@ -467,7 +467,7 @@ static void PIOS_SOFTUSART_tim_overflow_cb (uint32_t tim_id, uint32_t context, u
 					PIOS_SOFTUSART_SetStatus(softusart_dev, TRANSMIT_IN_PROGRESS);
 				} else {
 					// Disable output mode on the GPIO pin
-					//GPIO_Init(softusart_dev->cfg->tx.pin.gpio, &softusart_dev->cfg->rx.pin.init);
+					GPIO_Init(softusart_dev->cfg->tx.pin.gpio, &softusart_dev->cfg->rx.pin.init);
 					PIOS_SOFTUSART_ClrStatus(softusart_dev, TRANSMIT_IN_PROGRESS);
 				}
 			}
@@ -606,7 +606,7 @@ static void PIOS_SOFTUSART_tim_edge_cb (uint32_t tim_id, uint32_t context, uint8
 	
 	bool yield = false;
 	
-	if(PIOS_SOFTUSART_TestStatus(softusart_dev, RECEIVE_IN_PROGRESS)) {
+	if(PIOS_SOFTUSART_TestStatus(softusart_dev, RECEIVE_IN_PROGRESS) && !PIOS_SOFTUSART_TestStatus(softusart_dev, TRANSMIT_IN_PROGRESS)) {
 
 		if(!softusart_dev->rx_phase) {
 		    // Only process every other interrupt to get out of phase measurement
