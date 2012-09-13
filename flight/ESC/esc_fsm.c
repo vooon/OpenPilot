@@ -277,13 +277,9 @@ void esc_process_static_fsm_rxn() {
 		case ESC_STATE_CL_NOZCD:
 		case ESC_STATE_CL_ZCD:
 		{
-			static uint16_t last_timer;
-			uint16_t cur_timer = PIOS_DELAY_GetuS();
-
 			if(esc_data.current_ma > config.SoftCurrentLimit) {
 				update_duty_cycle(esc_data.duty_cycle - 1);
 			}
-			last_timer = cur_timer;
 
 			// Check off signal AND adequate time to exclude glitch
 			if( ((config.Mode == ESCSETTINGS_MODE_CLOSED && esc_data.speed_setpoint <= 0) || 
@@ -322,6 +318,7 @@ static void go_esc_fault(uint16_t time)
 //	PIOS_ADC_StopDma();
 	if(status.Error == ESCSTATUS_ERROR_NONE) {
 		status.Error = ESCSTATUS_ERROR_FAULT;
+		status.TotalCurrent = esc_data.pre_fault_state;
 	}
 	PIOS_ESC_Off();
 	esc_data.faults ++;
@@ -490,7 +487,7 @@ static void go_esc_cl_commutated(uint16_t time)
 {
 	uint32_t timeval = PIOS_DELAY_GetRaw();
 	commutate();
-	esc_fsm_schedule_event(ESC_EVENT_TIMEOUT, esc_data.swap_interval_smoothed << 1);
+	esc_fsm_schedule_event(ESC_EVENT_TIMEOUT, esc_data.swap_interval_smoothed << 2);
 	// Hardcoding 12V battery here
 	status.Kv += (esc_data.current_speed * PIOS_ESC_MAX_DUTYCYCLE/ (12 * esc_data.duty_cycle) - status.Kv) * 0.001;
 	commutation_time = PIOS_DELAY_DiffuS(timeval);
@@ -509,10 +506,13 @@ static void go_esc_cl_zcd(uint16_t time)
 	esc_data.consecutive_missed = 0;
 
 	zcd(time);
+	
+	int32_t zcd_delay = esc_data.swap_interval_smoothed * (30 - config.CommutationPhase) / 60 - config.CommutationOffset;
+	if (zcd_delay > 1)
+		esc_fsm_schedule_event(ESC_EVENT_COMMUTATED, zcd_delay);
+	else
+		esc_fsm_inject_event(ESC_EVENT_COMMUTATED, PIOS_DELAY_GetuS());
 
-	uint32_t zcd_delay = esc_data.swap_interval_smoothed * (30 - config.CommutationPhase) / 60 - config.CommutationOffset;
-	esc_fsm_schedule_event(ESC_EVENT_COMMUTATED, zcd_delay);
-		
 	if(esc_data.current_ma > config.SoftCurrentLimit) {
 		update_duty_cycle(esc_data.duty_cycle - config.MaxDcChange);
 	} else {
