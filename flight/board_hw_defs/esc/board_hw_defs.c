@@ -109,10 +109,6 @@ const struct pios_esc_cfg pios_esc_cfg = {
 //Using TIM4 CH3 for PWM input and TIM4 for delay.  Settings are
 //compatiblefor both
 
-#if defined(PIOS_INCLUDE_PWM)
-#include <pios_pwm_priv.h>
-#include <pios_tim_priv.h>
-
 static const TIM_TimeBaseInitTypeDef tim_4_time_base = {
 	.TIM_Prescaler = (PIOS_MASTER_CLOCK / 1000000) - 1,
 	.TIM_ClockDivision = TIM_CKD_DIV1,
@@ -133,6 +129,9 @@ static const struct pios_tim_clock_cfg tim_4_cfg = {
 		},
 	},
 };
+#if defined(PIOS_INCLUDE_PWM)
+#include <pios_pwm_priv.h>
+#include <pios_tim_priv.h>
 
 static const struct pios_tim_channel pios_tim_rcvrport_all_channels[] = {
 	{
