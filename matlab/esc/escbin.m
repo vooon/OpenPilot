@@ -1,4 +1,4 @@
-bl_size = hex2dec('2000');
+bl_size = hex2dec('3000');
 fid = fopen('build/bl_esc/bl_esc.bin');
 dat = uint8(fread(fid,'uchar'));
 fclose(fid);

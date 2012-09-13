@@ -1,8 +1,8 @@
 MEMORY
 {
-    BL_FLASH (rx) : ORIGIN = 0x08000000,        LENGTH = 0x02000 - 0x00080
-    BD_INFO (r)   : ORIGIN = 0x08002000 - 0x80, LENGTH = 0x00080
-    FLASH (rx)    : ORIGIN = 0x08002000,        LENGTH = 0x10000 - 0x2000 - 0x400
+    BL_FLASH (rx) : ORIGIN = 0x08000000,        LENGTH = 0x03000 - 0x00080
+    BD_INFO (r)   : ORIGIN = 0x08003000 - 0x80, LENGTH =           0x00080
+    FLASH (rx)    : ORIGIN = 0x08003000,        LENGTH = 0x10000 - 0x03000 - 0x00400
     EE_FLASH (rw) : ORIGIN = 0x0800FC00,        LENGTH = 0x00400
     SRAM (rwx)    : ORIGIN = 0x20000000,        LENGTH = 0x04000
 }
