@@ -116,6 +116,12 @@ QString UploaderGadgetWidget::getPortDevice(const QString &friendName)
         }
     return "";
 }
+
+void UploaderGadgetWidget::connectSignalSlot(QWidget *widget)
+{
+    connect(qobject_cast<deviceWidget *>(widget),SIGNAL(uploadStarted()),this,SLOT(uploadStarted()));
+    connect(qobject_cast<deviceWidget *>(widget),SIGNAL(uploadEnded(bool)),this,SLOT(uploadEnded(bool)));
+}
 void UploaderGadgetWidget::onPhisicalHWConnect()
 {
     m_config->bootButton->setEnabled(false);
@@ -207,7 +213,8 @@ void UploaderGadgetWidget::goToBootloader(UAVObject* callerObj, bool success)
             m_config->haltButton->setEnabled(true);
             break;
         }
-        delay::msleep(600);
+        QTimer::singleShot(600, &m_eventloop, SLOT(quit()));
+        m_eventloop.exec();
         fwIAP->getField("Command")->setValue("2233");
         currentStep = IAP_STATE_STEP_2;
         log(QString("IAP Step 2"));
@@ -222,7 +229,8 @@ void UploaderGadgetWidget::goToBootloader(UAVObject* callerObj, bool success)
             m_config->haltButton->setEnabled(true);
             break;
         }
-        delay::msleep(600);
+        QTimer::singleShot(600, &m_eventloop, SLOT(quit()));
+        m_eventloop.exec();
         fwIAP->getField("Command")->setValue("3344");
         currentStep = IAP_STEP_RESET;
         log(QString("IAP Step 3"));
@@ -241,11 +249,15 @@ void UploaderGadgetWidget::goToBootloader(UAVObject* callerObj, bool success)
 
         // The board is now reset: we have to disconnect telemetry
         Core::ConnectionManager *cm = Core::ICore::instance()->connectionManager();
-        QString dli = cm->getCurrentDevice().Name;
-        QString dlj = cm->getCurrentDevice().devName;
+        QString dli = cm->getCurrentDevice().getConName();
+        QString dlj = cm->getCurrentDevice().getConName();
         cm->disconnectDevice();
+        QTimer::singleShot(200, &m_eventloop, SLOT(quit()));
+        m_eventloop.exec();
         // Tell connections to stop their polling threads: otherwise it will mess up DFU
         cm->suspendPolling();
+        QTimer::singleShot(200, &m_eventloop, SLOT(quit()));
+        m_eventloop.exec();
         log("Board Halt");
         m_config->boardStatus->setText("Bootloader");
         if (dlj.startsWith("USB"))
@@ -305,6 +317,7 @@ void UploaderGadgetWidget::goToBootloader(UAVObject* callerObj, bool success)
         }
         for(int i=0;i<dfu->numberOfDevices;i++) {
             deviceWidget* dw = new deviceWidget(this);
+            connectSignalSlot(dw);
             dw->setDeviceID(i);
             dw->setDfu(dfu);
             dw->populate();
@@ -365,7 +378,8 @@ void UploaderGadgetWidget::systemSafeBoot()
 }
 
 /**
-  Tells the system to boot (from Bootloader state)
+  * Tells the system to boot (from Bootloader state)
+  * @param[in] safeboot Indicates whether the firmware should use the stock HWSettings
   */
 void UploaderGadgetWidget::commonSystemBoot(bool safeboot)
 {
@@ -443,7 +457,7 @@ void UploaderGadgetWidget::systemRescue()
         delete dfu;
         dfu = NULL;
     }
-    // Avoid dumb users pressing Rescue twice. It can happen.
+    // Avoid users pressing Rescue twice.
     m_config->rescueButton->setEnabled(false);
 
     // Now we're good to go:
@@ -510,25 +524,6 @@ void UploaderGadgetWidget::systemRescue()
         m_config->rescueButton->setEnabled(true);
         return;
     }
-    if ((eBoardCC != dfu->GetBoardType(0)) && (QMessageBox::question(this,tr("OpenPilot Uploader"),tr("If you want to search for other boards connect power now and press Yes"),QMessageBox::Yes,QMessageBox::No)==QMessageBox::Yes))
-    {
-        log("\nWaiting...");
-        QTimer::singleShot(3000, &m_eventloop, SLOT(quit()));
-        m_eventloop.exec();
-        log("Detecting second board...");
-        repaint();
-        if(!dfu->findDevices())
-        {
-            // We will only end up here in case somehow all the boards
-            // disappeared, including the one we detected earlier.
-            log("Could not detect any board, aborting!");
-            delete dfu;
-            dfu = NULL;
-            cm->resumePolling();
-            m_config->rescueButton->setEnabled(true);
-            return;
-        }
-    }
     log(QString("Found ") + QString::number(dfu->numberOfDevices) + QString(" device(s)."));
     if (dfu->numberOfDevices > 5) {
         log("Inconsistent number of devices, aborting!");
@@ -540,6 +535,7 @@ void UploaderGadgetWidget::systemRescue()
     }
     for(int i=0;i<dfu->numberOfDevices;i++) {
         deviceWidget* dw = new deviceWidget(this);
+        connectSignalSlot(dw);
         dw->setDeviceID(i);
         dw->setDfu(dfu);
         dw->populate();
@@ -552,6 +548,7 @@ void UploaderGadgetWidget::systemRescue()
     m_config->rescueButton->setEnabled(false);
     currentStep = IAP_STATE_BOOTLOADER; // So that we can boot from the GUI afterwards.
 }
+
 void UploaderGadgetWidget::perform()
 {
     if(m_progress->value()==19)
@@ -565,6 +562,19 @@ void UploaderGadgetWidget::cancel()
 {
     m_timer->stop();
     m_eventloop.exit();
+}
+
+void UploaderGadgetWidget::uploadStarted()
+{
+    m_config->bootButton->setEnabled(false);
+    m_config->safeBootButton->setEnabled(false);
+}
+
+void UploaderGadgetWidget::uploadEnded(bool succeed)
+{
+    Q_UNUSED(succeed);
+    m_config->bootButton->setEnabled(true);
+    m_config->safeBootButton->setEnabled(true);
 }
 
 /**
@@ -643,8 +653,8 @@ void UploaderGadgetWidget::versionMatchCheck()
 
     QString gcsDescription = QString::fromLatin1(Core::Constants::GCS_REVISION_STR);
     QString gcsGitHash = gcsDescription.mid(gcsDescription.indexOf(":")+1, 8);
+    gcsGitHash.remove( QRegExp("^[0]*") );
     QString gcsGitDate = gcsDescription.mid(gcsDescription.indexOf(" ")+1, 14);
-
     QString gcsVersion = gcsGitDate + " (" + gcsGitHash + ")";
     QString fwVersion = boardDescription.gitDate + " (" + boardDescription.gitHash + ")";
 

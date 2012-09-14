@@ -86,6 +86,10 @@ void UAVObjectField::constructorInitialize(const QString& name, const QString& u
     case ENUM:
         numBytesPerElement = sizeof(quint8);
         break;
+    case BITFIELD:
+        numBytesPerElement = sizeof(quint8);
+        this->options = QStringList()<<tr("0")<<tr("1");
+        break;
     case STRING:
         numBytesPerElement = sizeof(quint8);
         break;
@@ -108,321 +112,370 @@ void UAVObjectField::limitsInitialize(const QString &limits)
     QStringList stringPerElement=limits.split(",");
     quint32 index=0;
     foreach (QString str, stringPerElement) {
-        QString _str=str.trimmed();
-        QStringList valuesPerElement=_str.split(":");
-        LimitStruct lstruc;
-        bool b1=valuesPerElement.at(0).startsWith("%");
-        bool b2=(int)(index)<(int)numElements;
-        if(b1 && b2)
+        QStringList ruleList=str.split(";");
+        QList<LimitStruct> limitList;
+        foreach(QString rule,ruleList)
         {
-            if(valuesPerElement.at(0).right(2)=="EQ")
-                lstruc.type=EQUAL;
-            else if(valuesPerElement.at(0).right(2)=="NE")
-                lstruc.type=NOT_EQUAL;
-            else if(valuesPerElement.at(0).right(2)=="BE")
-                lstruc.type=BETWEEN;
-            else if(valuesPerElement.at(0).right(2)=="BI")
-                lstruc.type=BIGGER;
-            else if(valuesPerElement.at(0).right(2)=="SM")
-                lstruc.type=SMALLER;
-            else
-                qDebug()<<"limits parsing failed (invalid property) on UAVObjectField"<<name;
-            valuesPerElement.removeAt(0);
-            foreach(QString _value,valuesPerElement)
+            QString _str=rule.trimmed();
+            if(_str.isEmpty())
+                continue;
+            QStringList valuesPerElement=_str.split(":");
+            LimitStruct lstruc;
+            bool b1=valuesPerElement.at(0).startsWith("%");
+            bool b2=(int)(index)<(int)numElements;
+            bool b3=valuesPerElement.at(0).size()==3;
+            bool auxb;
+            valuesPerElement.at(0).mid(1,4).toInt(&auxb,16);
+            bool b4=((valuesPerElement.at(0).size())==7 && auxb);
+            if(b1 && b2 && (b3 || b4))
             {
-                QString value=_value.trimmed();
-                switch (type)
+                if(b4)
+                    lstruc.board=valuesPerElement.at(0).mid(1,4).toInt(&auxb,16);
+                else
+                    lstruc.board=0;
+                if(valuesPerElement.at(0).right(2)=="EQ")
+                    lstruc.type=EQUAL;
+                else if(valuesPerElement.at(0).right(2)=="NE")
+                    lstruc.type=NOT_EQUAL;
+                else if(valuesPerElement.at(0).right(2)=="BE")
+                    lstruc.type=BETWEEN;
+                else if(valuesPerElement.at(0).right(2)=="BI")
+                    lstruc.type=BIGGER;
+                else if(valuesPerElement.at(0).right(2)=="SM")
+                    lstruc.type=SMALLER;
+                else
+                    qDebug()<<"limits parsing failed (invalid property) on UAVObjectField"<<name;
+                valuesPerElement.removeAt(0);
+                foreach(QString _value,valuesPerElement)
                 {
-                case INT8:
-                case INT16:
-                case INT32:
-                case UINT8:
-                    lstruc.values.append((quint32)value.toULong());
-                    break;
-                case UINT16:
-                case UINT32:
-                    lstruc.values.append((qint32)value.toLong());
-                    break;
-                case FLOAT32:
-                    lstruc.values.append((float)value.toFloat());
-                    break;
-                case ENUM:
-                    lstruc.values.append((QString)value);
-                    break;
-                case STRING:
-                    lstruc.values.append((QString)value);
-                    break;
-                default:
-                    lstruc.values.append(QVariant());
+                    QString value=_value.trimmed();
+                    switch (type)
+                    {
+                    case UINT8:
+                    case UINT16:
+                    case UINT32:
+                    case BITFIELD:
+                        lstruc.values.append((quint32)value.toULong());
+                        break;
+                    case INT8:
+                    case INT16:
+                    case INT32:
+                        lstruc.values.append((qint32)value.toLong());
+                        break;
+                    case FLOAT32:
+                        lstruc.values.append((float)value.toFloat());
+                        break;
+                    case ENUM:
+                        lstruc.values.append((QString)value);
+                        break;
+                    case STRING:
+                        lstruc.values.append((QString)value);
+                        break;
+                    default:
+                        lstruc.values.append(QVariant());
+                    }
                 }
+                limitList.append(lstruc);
             }
-            elementLimits.insert(index,lstruc);
-            ++index;
+            else
+            {
+                if(!valuesPerElement.at(0).isEmpty() && !b1)
+                    qDebug()<<"limits parsing failed (property doesn't start with %) on UAVObjectField"<<name;
+                else if(!b2)
+                    qDebug()<<"limits parsing failed (index>numelements) on UAVObjectField"<<name<<"index"<<index<<"numElements"<<numElements;
+                else if(!b3 || !b4 )
+                    qDebug()<<"limits parsing failed limit not starting with %XX or %YYYYXX where XX is the limit type and YYYY is the board type on UAVObjectField"<<name;
+            }
         }
-        else
+        elementLimits.insert(index,limitList);
+        ++index;
+
+    }
+    foreach(QList<LimitStruct> limitList,elementLimits)
+    {
+        foreach(LimitStruct limit,limitList)
         {
-            if(!valuesPerElement.at(0).isEmpty() && !b1)
-                qDebug()<<"limits parsing failed (property doesn't start with %) on UAVObjectField"<<name;
-            else if(!b2)
-                qDebug()<<"limits parsing failed (index>numelements) on UAVObjectField"<<name<<"index"<<index<<"numElements"<<numElements;
+            qDebug()<<"Limit type"<<limit.type<<"for board"<<limit.board<<"for field"<<getName();
+            foreach(QVariant var,limit.values)
+            {
+                qDebug()<<"value"<<var;
+            }
         }
     }
 }
-bool UAVObjectField::isWithinLimits(QVariant var,quint32 index)
+bool UAVObjectField::isWithinLimits(QVariant var,quint32 index, int board)
 {
     if(!elementLimits.keys().contains(index))
         return true;
-    LimitStruct struc=elementLimits.value(index);
-    switch(struc.type)
+
+    foreach(LimitStruct struc,elementLimits.value(index))
     {
-    case EQUAL:
-        switch (type)
+        if((struc.board!=board) && board!=0 && struc.board!=0)
+            continue;
+        switch(struc.type)
         {
-        case INT8:
-        case INT16:
-        case INT32:
-            foreach (QVariant vars, struc.values) {
-                if(var.toInt()==vars.toInt())
-                    return true;
+        case EQUAL:
+            switch (type)
+            {
+            case INT8:
+            case INT16:
+            case INT32:
+                foreach (QVariant vars, struc.values) {
+                    if(var.toInt()==vars.toInt())
+                        return true;
+                }
+                return false;
+                break;
+            case UINT8:
+            case UINT16:
+            case UINT32:
+            case BITFIELD:
+                foreach (QVariant vars, struc.values) {
+                    if(var.toUInt()==vars.toUInt())
+                        return true;
+                }
+                return false;
+                break;
+            case ENUM:
+            case STRING:
+                foreach (QVariant vars, struc.values) {
+                    if(var.toString()==vars.toString())
+                        return true;
+                }
+                return false;
+                break;
+            case FLOAT32:
+                foreach (QVariant vars, struc.values) {
+                    if(var.toFloat()==vars.toFloat())
+                        return true;
+                }
+                return false;
+                break;
+            default:
+                return true;
             }
-            return false;
             break;
-        case UINT8:
-        case UINT16:
-        case UINT32:
-            foreach (QVariant vars, struc.values) {
-                if(var.toUInt()==vars.toUInt())
-                    return true;
+        case NOT_EQUAL:
+            switch (type)
+            {
+            case INT8:
+            case INT16:
+            case INT32:
+                foreach (QVariant vars, struc.values) {
+                    if(var.toInt()==vars.toInt())
+                        return false;
+                }
+                return true;
+                break;
+            case UINT8:
+            case UINT16:
+            case UINT32:
+            case BITFIELD:
+                foreach (QVariant vars, struc.values) {
+                    if(var.toUInt()==vars.toUInt())
+                        return false;
+                }
+                return true;
+                break;
+            case ENUM:
+            case STRING:
+                foreach (QVariant vars, struc.values) {
+                    if(var.toString()==vars.toString())
+                        return false;
+                }
+                return true;
+                break;
+            case FLOAT32:
+                foreach (QVariant vars, struc.values) {
+                    if(var.toFloat()==vars.toFloat())
+                        return false;
+                }
+                return true;
+                break;
+            default:
+                return true;
             }
-            return false;
             break;
-        case ENUM:
-        case STRING:
-            foreach (QVariant vars, struc.values) {
-                if(var.toString()==vars.toString())
-                    return true;
+        case BETWEEN:
+            if(struc.values.length()<2)
+            {
+                qDebug()<<__FUNCTION__<<"between limit with less than 1 pair, aborting; field:"<<name;
+                return true;
             }
-            return false;
-            break;
-        case FLOAT32:
-            foreach (QVariant vars, struc.values) {
-                if(var.toFloat()==vars.toFloat())
-                    return true;
+            if(struc.values.length()>2)
+                qDebug()<<__FUNCTION__<<"between limit with more than 1 pair, using first; field"<<name;
+            switch (type)
+            {
+            case INT8:
+            case INT16:
+            case INT32:
+                    if(!(var.toInt()>=struc.values.at(0).toInt() && var.toInt()<=struc.values.at(1).toInt()))
+                        return false;
+                return true;
+                break;
+            case UINT8:
+            case UINT16:
+            case UINT32:
+            case BITFIELD:
+                    if(!(var.toUInt()>=struc.values.at(0).toUInt() && var.toUInt()<=struc.values.at(1).toUInt()))
+                        return false;
+                return true;
+                break;
+            case ENUM:
+                    if(!(options.indexOf(var.toString())>=options.indexOf(struc.values.at(0).toString()) && options.indexOf(var.toString())<=options.indexOf(struc.values.at(1).toString())))
+                        return false;
+                return true;
+                break;
+            case STRING:
+                return true;
+                break;
+            case FLOAT32:
+                    if(!(var.toFloat()>=struc.values.at(0).toFloat() && var.toFloat()<=struc.values.at(1).toFloat()))
+                        return false;
+                return true;
+                break;
+            default:
+                return true;
             }
-            return false;
             break;
-        default:
-            return true;
-        }
-        break;
-    case NOT_EQUAL:
-        switch (type)
-        {
-        case INT8:
-        case INT16:
-        case INT32:
-            foreach (QVariant vars, struc.values) {
-                if(var.toInt()==vars.toInt())
-                    return false;
+        case BIGGER:
+            if(struc.values.length()<1)
+            {
+                qDebug()<<__FUNCTION__<<"BIGGER limit with less than 1 value, aborting; field:"<<name;
+                return true;
             }
-            return true;
-            break;
-        case UINT8:
-        case UINT16:
-        case UINT32:
-            foreach (QVariant vars, struc.values) {
-                if(var.toUInt()==vars.toUInt())
-                    return false;
+            if(struc.values.length()>1)
+                qDebug()<<__FUNCTION__<<"BIGGER limit with more than 1 value, using first; field"<<name;
+            switch (type)
+            {
+            case INT8:
+            case INT16:
+            case INT32:
+                    if(!(var.toInt()>=struc.values.at(0).toInt()))
+                        return false;
+                return true;
+                break;
+            case UINT8:
+            case UINT16:
+            case UINT32:
+            case BITFIELD:
+                    if(!(var.toUInt()>=struc.values.at(0).toUInt()))
+                        return false;
+                return true;
+                break;
+            case ENUM:
+                    if(!(options.indexOf(var.toString())>=options.indexOf(struc.values.at(0).toString())))
+                        return false;
+                return true;
+                break;
+            case STRING:
+                return true;
+                break;
+            case FLOAT32:
+                    if(!(var.toFloat()>=struc.values.at(0).toFloat()))
+                        return false;
+                return true;
+                break;
+            default:
+                return true;
             }
-            return true;
             break;
-        case ENUM:
-        case STRING:
-            foreach (QVariant vars, struc.values) {
-                if(var.toString()==vars.toString())
-                    return false;
+        case SMALLER:
+            switch (type)
+            {
+            case INT8:
+            case INT16:
+            case INT32:
+                    if(!(var.toInt()<=struc.values.at(0).toInt()))
+                        return false;
+                return true;
+                break;
+            case UINT8:
+            case UINT16:
+            case UINT32:
+            case BITFIELD:
+                    if(!(var.toUInt()<=struc.values.at(0).toUInt()))
+                        return false;
+                return true;
+                break;
+            case ENUM:
+                    if(!(options.indexOf(var.toString())<=options.indexOf(struc.values.at(0).toString())))
+                        return false;
+                return true;
+                break;
+            case STRING:
+                return true;
+                break;
+            case FLOAT32:
+                    if(!(var.toFloat()<=struc.values.at(0).toFloat()))
+                        return false;
+                return true;
+                break;
+            default:
+                return true;
             }
-            return true;
-            break;
-        case FLOAT32:
-            foreach (QVariant vars, struc.values) {
-                if(var.toFloat()==vars.toFloat())
-                    return false;
-            }
-            return true;
-            break;
-        default:
-            return true;
-        }
-        break;
-    case BETWEEN:
-        if(struc.values.length()<2)
-        {
-            qDebug()<<__FUNCTION__<<"between limit with less than 1 pair, aborting; field:"<<name;
-            return true;
-        }
-        if(struc.values.length()>2)
-            qDebug()<<__FUNCTION__<<"between limit with more than 1 pair, using first; field"<<name;
-        switch (type)
-        {
-        case INT8:
-        case INT16:
-        case INT32:
-                if(!(var.toInt()>=struc.values.at(0).toInt() && var.toInt()<=struc.values.at(1).toInt()))
-                    return false;
-            return true;
-            break;
-        case UINT8:
-        case UINT16:
-        case UINT32:
-                if(!(var.toUInt()>=struc.values.at(0).toUInt() && var.toUInt()<=struc.values.at(1).toUInt()))
-                    return false;
-            return true;
-            break;
-        case ENUM:
-                if(!(options.indexOf(var.toString())>=options.indexOf(struc.values.at(0).toString()) && options.indexOf(var.toString())<=options.indexOf(struc.values.at(1).toString())))
-                    return false;
-            return true;
-            break;
-        case STRING:
-            return true;
-            break;
-        case FLOAT32:
-                if(!(var.toFloat()>=struc.values.at(0).toFloat() && var.toFloat()<=struc.values.at(1).toFloat()))
-                    return false;
-            return true;
-            break;
-        default:
-            return true;
-        }
-        break;
-    case BIGGER:
-        if(struc.values.length()<1)
-        {
-            qDebug()<<__FUNCTION__<<"BIGGER limit with less than 1 value, aborting; field:"<<name;
-            return true;
-        }
-        if(struc.values.length()>1)
-            qDebug()<<__FUNCTION__<<"BIGGER limit with more than 1 value, using first; field"<<name;
-        switch (type)
-        {
-        case INT8:
-        case INT16:
-        case INT32:
-                if(!(var.toInt()>=struc.values.at(0).toInt()))
-                    return false;
-            return true;
-            break;
-        case UINT8:
-        case UINT16:
-        case UINT32:
-                if(!(var.toUInt()>=struc.values.at(0).toUInt()))
-                    return false;
-            return true;
-            break;
-        case ENUM:
-                if(!(options.indexOf(var.toString())>=options.indexOf(struc.values.at(0).toString())))
-                    return false;
-            return true;
-            break;
-        case STRING:
-            return true;
-            break;
-        case FLOAT32:
-                if(!(var.toFloat()>=struc.values.at(0).toFloat()))
-                    return false;
-            return true;
-            break;
-        default:
-            return true;
-        }
-        break;
-    case SMALLER:
-        switch (type)
-        {
-        case INT8:
-        case INT16:
-        case INT32:
-                if(!(var.toInt()<=struc.values.at(0).toInt()))
-                    return false;
-            return true;
-            break;
-        case UINT8:
-        case UINT16:
-        case UINT32:
-                if(!(var.toUInt()<=struc.values.at(0).toUInt()))
-                    return false;
-            return true;
-            break;
-        case ENUM:
-                if(!(options.indexOf(var.toString())<=options.indexOf(struc.values.at(0).toString())))
-                    return false;
-            return true;
-            break;
-        case STRING:
-            return true;
-            break;
-        case FLOAT32:
-                if(!(var.toFloat()<=struc.values.at(0).toFloat()))
-                    return false;
-            return true;
-            break;
-        default:
-            return true;
         }
     }
     return true;
 }
 
-QVariant UAVObjectField::getMaxLimit(quint32 index)
+QVariant UAVObjectField::getMaxLimit(quint32 index,int board)
 {
     if(!elementLimits.keys().contains(index))
         return QVariant();
-    LimitStruct struc=elementLimits.value(index);
-    switch(struc.type)
+    foreach(LimitStruct struc,elementLimits.value(index))
     {
-    case EQUAL:
-    case NOT_EQUAL:
-    case BIGGER:
-        return QVariant();
-        break;
-        break;
-    case BETWEEN:
-        return struc.values.at(1);
-        break;
-    case SMALLER:
-        return struc.values.at(0);
-        break;
-    default:
-        return QVariant();
-        break;
+        if((struc.board!=board) && board!=0 && struc.board!=0)
+            continue;
+        switch(struc.type)
+        {
+        case EQUAL:
+        case NOT_EQUAL:
+        case BIGGER:
+            return QVariant();
+            break;
+            break;
+        case BETWEEN:
+            return struc.values.at(1);
+            break;
+        case SMALLER:
+            return struc.values.at(0);
+            break;
+        default:
+            return QVariant();
+            break;
+        }
     }
-     return QVariant();
+    return QVariant();
 }
-QVariant UAVObjectField::getMinLimit(quint32 index)
+QVariant UAVObjectField::getMinLimit(quint32 index, int board)
 {
     if(!elementLimits.keys().contains(index))
         return QVariant();
-    LimitStruct struc=elementLimits.value(index);
-    switch(struc.type)
+    foreach(LimitStruct struc,elementLimits.value(index))
     {
-    case EQUAL:
-    case NOT_EQUAL:
-    case SMALLER:
-        return QVariant();
-        break;
-        break;
-    case BETWEEN:
-        return struc.values.at(0);
-        break;
-    case BIGGER:
-        return struc.values.at(0);
-        break;
-    default:
-        return QVariant();
-        break;
+        if((struc.board!=board) && board!=0 && struc.board!=0)
+            return QVariant();
+        switch(struc.type)
+        {
+        case EQUAL:
+        case NOT_EQUAL:
+        case SMALLER:
+            return QVariant();
+            break;
+            break;
+        case BETWEEN:
+            return struc.values.at(0);
+            break;
+        case BIGGER:
+            return struc.values.at(0);
+            break;
+        default:
+            return QVariant();
+            break;
+        }
     }
-     return QVariant();
+    return QVariant();
 }
 void UAVObjectField::initialize(quint8* data, quint32 dataOffset, UAVObject* obj)
 {
@@ -457,6 +510,8 @@ QString UAVObjectField::getTypeAsString()
         return "float32";
     case UAVObjectField::ENUM:
         return "enum";
+    case UAVObjectField::BITFIELD:
+        return "bitfield";
     case UAVObjectField::STRING:
         return "string";
     default:
@@ -477,7 +532,15 @@ UAVObject* UAVObjectField::getObject()
 void UAVObjectField::clear()
 {
     QMutexLocker locker(obj->getMutex());
-    memset(&data[offset], 0, numBytesPerElement*numElements);
+    switch (type)
+    {
+    case BITFIELD:
+        memset(&data[offset], 0, numBytesPerElement*((quint32)(1+(numElements-1)/8)));
+        break;
+    default:
+        memset(&data[offset], 0, numBytesPerElement*numElements);
+        break;
+    }
 }
 
 QString UAVObjectField::getName()
@@ -507,7 +570,15 @@ quint32 UAVObjectField::getDataOffset()
 
 quint32 UAVObjectField::getNumBytes()
 {
-    return numBytesPerElement * numElements;
+    switch (type)
+    {
+    case BITFIELD:
+        return numBytesPerElement * ((quint32) (1+(numElements-1)/8));
+        break;
+    default:
+        return numBytesPerElement * numElements;
+        break;
+    }
 }
 
 QString UAVObjectField::toString()
@@ -584,6 +655,12 @@ qint32 UAVObjectField::pack(quint8* dataOut)
             dataOut[numBytesPerElement*index] = data[offset + numBytesPerElement*index];
         }
         break;
+    case BITFIELD:
+        for (quint32 index = 0; index < (quint32)(1+(numElements-1)/8); ++index)
+        {
+            dataOut[numBytesPerElement*index] = data[offset + numBytesPerElement*index];
+        }
+        break;
     case STRING:
         memcpy(dataOut, &data[offset], numElements);
         break;
@@ -653,17 +730,18 @@ qint32 UAVObjectField::unpack(const quint8* dataIn)
             data[offset + numBytesPerElement*index] = dataIn[numBytesPerElement*index];
         }
         break;
+    case BITFIELD:
+        for (quint32 index = 0; index < (quint32)(1+(numElements-1)/8); ++index)
+        {
+            data[offset + numBytesPerElement*index] = dataIn[numBytesPerElement*index];
+        }
+        break;
     case STRING:
         memcpy(&data[offset], dataIn, numElements);
         break;
     }
     // Done
     return getNumBytes();
-}
-
-quint32 UAVObjectField::getNumBytesElement()
-{
-    return numBytesPerElement;
 }
 
 bool UAVObjectField::isNumeric()
@@ -693,6 +771,9 @@ bool UAVObjectField::isNumeric()
         break;
     case ENUM:
         return false;
+        break;
+    case BITFIELD:
+        return true;
         break;
     case STRING:
         return false;
@@ -729,6 +810,9 @@ bool UAVObjectField::isText()
         break;
     case ENUM:
         return true;
+        break;
+    case BITFIELD:
+        return false;
         break;
     case STRING:
         return true;
@@ -810,6 +894,14 @@ QVariant UAVObjectField::getValue(quint32 index)
         return QVariant( options[tmpenum] );
         break;
     }
+    case BITFIELD:
+    {
+        quint8 tmpbitfield;
+        memcpy(&tmpbitfield, &data[offset + numBytesPerElement*((quint32)(index/8))], numBytesPerElement);
+        tmpbitfield = (tmpbitfield >> (index % 8)) & 1;
+        return QVariant( tmpbitfield );
+        break;
+    }
     case STRING:
     {
         data[offset + numElements - 1] = '\0';
@@ -833,7 +925,7 @@ bool UAVObjectField::checkValue(const QVariant& value, quint32 index)
     // Get metadata
     UAVObject::Metadata mdata = obj->getMetadata();
     // Update value if the access mode permits
-    if ( mdata.gcsAccess == UAVObject::ACCESS_READWRITE )
+    if ( UAVObject::GetFlightAccess(mdata) == UAVObject::ACCESS_READWRITE )
     {
         switch (type)
         {
@@ -845,6 +937,7 @@ bool UAVObjectField::checkValue(const QVariant& value, quint32 index)
         case UINT32:
         case FLOAT32:
         case STRING:
+        case BITFIELD:
             return true;
             break;
         case ENUM:
@@ -873,7 +966,7 @@ void UAVObjectField::setValue(const QVariant& value, quint32 index)
     // Get metadata
     UAVObject::Metadata mdata = obj->getMetadata();
     // Update value if the access mode permits
-    if ( mdata.gcsAccess == UAVObject::ACCESS_READWRITE )
+    if ( UAVObject::GetGcsAccess(mdata) == UAVObject::ACCESS_READWRITE )
     {
         switch (type)
         {
@@ -924,6 +1017,14 @@ void UAVObjectField::setValue(const QVariant& value, quint32 index)
             qint8 tmpenum = options.indexOf( value.toString() );
             Q_ASSERT(tmpenum >= 0); // To catch any programming errors where we set invalid values
             memcpy(&data[offset + numBytesPerElement*index], &tmpenum, numBytesPerElement);
+            break;
+        }
+        case BITFIELD:
+        {
+            quint8 tmpbitfield;
+            memcpy(&tmpbitfield, &data[offset + numBytesPerElement*((quint32)(index/8))], numBytesPerElement);
+            tmpbitfield = (tmpbitfield & ~(1 << (index % 8))) | ( (value.toUInt()!=0?1:0) << (index % 8) );
+            memcpy(&data[offset + numBytesPerElement*((quint32)(index/8))], &tmpbitfield, numBytesPerElement);
             break;
         }
         case STRING:

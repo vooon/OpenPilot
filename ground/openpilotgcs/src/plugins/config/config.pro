@@ -4,7 +4,9 @@ DEFINES += CONFIG_LIBRARY
 QT += svg
 include(config_dependencies.pri)
 INCLUDEPATH += ../../libs/eigen
+
 OTHER_FILES += Config.pluginspec
+
 HEADERS += configplugin.h \
     configgadgetconfiguration.h \
     configgadgetwidget.h \
@@ -14,12 +16,12 @@ HEADERS += configplugin.h \
     fancytabwidget.h \
     configinputwidget.h \
     configoutputwidget.h \
-    configairframewidget.h \
+    configvehicletypewidget.h \
     config_pro_hw_widget.h \
     config_cc_hw_widget.h \
-    configahrswidget.h \
     configccattitudewidget.h \
-    configccpmwidget.h \
+    configpipxtremewidget.h \
+    cfg_vehicletypes/configccpmwidget.h \
     configstabilizationwidget.h \
     assertions.h \
     calibration.h \
@@ -28,8 +30,14 @@ HEADERS += configplugin.h \
     inputchannelform.h \
     configcamerastabilizationwidget.h \
     configtxpidwidget.h \
-    outputchannelform.h \
-    config_global.h
+    outputchannelform.h \    
+    cfg_vehicletypes/configmultirotorwidget.h \
+    cfg_vehicletypes/configgroundvehiclewidget.h \
+    cfg_vehicletypes/configfixedwingwidget.h \
+    cfg_vehicletypes/vehicleconfig.h \
+    configrevowidget.h \
+    config_global.h \
+    configautotunewidget.h
 SOURCES += configplugin.cpp \
     configgadgetconfiguration.cpp \
     configgadgetwidget.cpp \
@@ -39,13 +47,12 @@ SOURCES += configplugin.cpp \
     fancytabwidget.cpp \
     configinputwidget.cpp \
     configoutputwidget.cpp \
-    configairframewidget.cpp \
+    configvehicletypewidget.cpp \
     config_pro_hw_widget.cpp \
     config_cc_hw_widget.cpp \
-    configahrswidget.cpp \
     configccattitudewidget.cpp \
-    configccpmwidget.cpp \
     configstabilizationwidget.cpp \
+    configpipxtremewidget.cpp \
     twostep.cpp \
     legacy-calibration.cpp \
     gyro-calibration.cpp \
@@ -54,12 +61,18 @@ SOURCES += configplugin.cpp \
     defaulthwsettingswidget.cpp \
     inputchannelform.cpp \
     configcamerastabilizationwidget.cpp \
+    configrevowidget.cpp \
     configtxpidwidget.cpp \
-    outputchannelform.cpp
+    cfg_vehicletypes/configmultirotorwidget.cpp \
+    cfg_vehicletypes/configgroundvehiclewidget.cpp \
+    cfg_vehicletypes/configfixedwingwidget.cpp \
+    cfg_vehicletypes/configccpmwidget.cpp \
+    outputchannelform.cpp \
+    cfg_vehicletypes/vehicleconfig.cpp \
+    configautotunewidget.cpp
 FORMS += airframe.ui \
     cc_hw_settings.ui \
     pro_hw_settings.ui \
-    ahrs.ui \
     ccpm.ui \
     stabilization.ui \
     input.ui \
@@ -70,5 +83,15 @@ FORMS += airframe.ui \
     inputchannelform.ui \
     camerastabilization.ui \
     outputchannelform.ui \
-    txpid.ui 
+    revosensors.ui \
+    txpid.ui \
+    pipxtreme.ui \
+    autotune.ui
 RESOURCES += configgadget.qrc
+
+
+
+
+
+
+

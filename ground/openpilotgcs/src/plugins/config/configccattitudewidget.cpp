@@ -33,6 +33,8 @@
 #include <QDebug>
 #include <QDesktopServices>
 #include <QUrl>
+#include "accels.h"
+#include "gyros.h"
 
 ConfigCCAttitudeWidget::ConfigCCAttitudeWidget(QWidget *parent) :
         ConfigTaskWidget(parent),
@@ -40,7 +42,6 @@ ConfigCCAttitudeWidget::ConfigCCAttitudeWidget(QWidget *parent) :
 {
     ui->setupUi(this);
     connect(ui->zeroBias,SIGNAL(clicked()),this,SLOT(startAccelCalibration()));
-
 
     addApplySaveButtons(ui->applyButton,ui->saveButton);
     addUAVObject("AttitudeSettings");
@@ -53,6 +54,7 @@ ConfigCCAttitudeWidget::ConfigCCAttitudeWidget(QWidget *parent) :
     addUAVObjectToWidgetRelation("AttitudeSettings","BoardRotation",ui->pitchBias,AttitudeSettings::BOARDROTATION_PITCH);
     addUAVObjectToWidgetRelation("AttitudeSettings","BoardRotation",ui->yawBias,AttitudeSettings::BOARDROTATION_YAW);
     addWidget(ui->zeroBias);
+    refreshWidgetsValues();
 }
 
 ConfigCCAttitudeWidget::~ConfigCCAttitudeWidget()
@@ -60,25 +62,42 @@ ConfigCCAttitudeWidget::~ConfigCCAttitudeWidget()
     delete ui;
 }
 
-void ConfigCCAttitudeWidget::attitudeRawUpdated(UAVObject * obj) {
-    QMutexLocker locker(&startStop);
+void ConfigCCAttitudeWidget::sensorsUpdated(UAVObject * obj) {
 
-    ui->zeroBiasProgress->setValue((float) updates / NUM_ACCEL_UPDATES * 100);
+    if (!timer.isActive()) { 
+	// ignore updates that come in after the timer has expired	
+	return; 
+    }
 
-    if(updates < NUM_ACCEL_UPDATES) {
-        updates++;
-        UAVObjectField * field = obj->getField(QString("accels"));
-        x_accum.append(field->getDouble(0));
-        y_accum.append(field->getDouble(1));
-        z_accum.append(field->getDouble(2));
-        field = obj->getField(QString("gyros"));
-        x_gyro_accum.append(field->getDouble(0));
-        y_gyro_accum.append(field->getDouble(1));
-        z_gyro_accum.append(field->getDouble(2));;
-    } else if ( updates == NUM_ACCEL_UPDATES ) {
-	updates++;
+    Accels * accels = Accels::GetInstance(getObjectManager());
+    Gyros * gyros = Gyros::GetInstance(getObjectManager());
+
+    // Accumulate samples until we have _at least_ NUM_SENSOR_UPDATES samples
+    // for both gyros and accels.
+    // Note that, at present, we stash the samples and then compute the bias
+    // at the end, even though the mean could be accumulated as we go.
+    // In future, a better algorithm could be used. 
+    if(obj->getObjID() == Accels::OBJID) {
+        accelUpdates++;
+        Accels::DataFields accelsData = accels->getData();
+        x_accum.append(accelsData.x);
+        y_accum.append(accelsData.y);
+        z_accum.append(accelsData.z);
+    } else if (obj->getObjID() == Gyros::OBJID) {
+        gyroUpdates++;
+        Gyros::DataFields gyrosData = gyros->getData();
+        x_gyro_accum.append(gyrosData.x);
+        y_gyro_accum.append(gyrosData.y);
+        z_gyro_accum.append(gyrosData.z);
+    } 
+
+    // update the progress indicator
+    ui->zeroBiasProgress->setValue((float) qMin(accelUpdates, gyroUpdates) / NUM_SENSOR_UPDATES * 100);
+
+    // If we have enough samples, then stop sampling and compute the biases
+    if (accelUpdates >= NUM_SENSOR_UPDATES && gyroUpdates >= NUM_SENSOR_UPDATES) {
         timer.stop();
-        disconnect(obj,SIGNAL(objectUpdated(UAVObject*)),this,SLOT(attitudeRawUpdated(UAVObject*)));
+        disconnect(obj,SIGNAL(objectUpdated(UAVObject*)),this,SLOT(sensorsUpdated(UAVObject*)));
         disconnect(&timer,SIGNAL(timeout()),this,SLOT(timeout()));
 
         float x_bias = listMean(x_accum) / ACCEL_SCALE;
@@ -88,7 +107,8 @@ void ConfigCCAttitudeWidget::attitudeRawUpdated(UAVObject * obj) {
         float x_gyro_bias = listMean(x_gyro_accum) * 100.0f;
         float y_gyro_bias = listMean(y_gyro_accum) * 100.0f;
         float z_gyro_bias = listMean(z_gyro_accum) * 100.0f;
-        obj->setMetadata(initialMdata);
+        accels->setMetadata(initialAccelsMdata);
+        gyros->setMetadata(initialGyrosMdata);
 
         AttitudeSettings::DataFields attitudeSettingsData = AttitudeSettings::GetInstance(getObjectManager())->getData();
         // We offset the gyro bias by current bias to help precision
@@ -101,17 +121,20 @@ void ConfigCCAttitudeWidget::attitudeRawUpdated(UAVObject * obj) {
         attitudeSettingsData.BiasCorrectGyro = AttitudeSettings::BIASCORRECTGYRO_TRUE;
         AttitudeSettings::GetInstance(getObjectManager())->setData(attitudeSettingsData);
 
-    } else {
-	// Possible to get here if weird threading stuff happens.  Just ignore updates.
-	qDebug("Unexpected accel update received.");
+        // reenable controls
+        enableControls(true);
     }
 }
 
 void ConfigCCAttitudeWidget::timeout() {
-    QMutexLocker locker(&startStop);
-    UAVDataObject * obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("AttitudeRaw")));
-    disconnect(obj,SIGNAL(objectUpdated(UAVObject*)),this,SLOT(attitudeRawUpdated(UAVObject*)));
+    UAVDataObject * obj = Accels::GetInstance(getObjectManager());
+    disconnect(obj,SIGNAL(objectUpdated(UAVObject*)),this,SLOT(sensorsUpdated(UAVObject*)));
     disconnect(&timer,SIGNAL(timeout()),this,SLOT(timeout()));
+
+    Accels * accels = Accels::GetInstance(getObjectManager());
+    Gyros * gyros = Gyros::GetInstance(getObjectManager());
+    accels->setMetadata(initialAccelsMdata);
+    gyros->setMetadata(initialGyrosMdata);
 
     QMessageBox msgBox;
     msgBox.setText(tr("Calibration timed out before receiving required updates."));
@@ -119,12 +142,18 @@ void ConfigCCAttitudeWidget::timeout() {
     msgBox.setDefaultButton(QMessageBox::Ok);
     msgBox.exec();
 
+    // reset progress indicator
+    ui->zeroBiasProgress->setValue(0); 
+    // reenable controls
+    enableControls(true);
 }
 
 void ConfigCCAttitudeWidget::startAccelCalibration() {
-    QMutexLocker locker(&startStop);
+    // disable controls during sampling
+    enableControls(false);
 
-    updates = 0;
+    accelUpdates = 0;
+    gyroUpdates = 0;
     x_accum.clear();
     y_accum.clear();
     z_accum.clear();
@@ -138,25 +167,33 @@ void ConfigCCAttitudeWidget::startAccelCalibration() {
     AttitudeSettings::GetInstance(getObjectManager())->setData(attitudeSettingsData);
 
     // Set up to receive updates
-    UAVDataObject * obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("AttitudeRaw")));
-    connect(obj,SIGNAL(objectUpdated(UAVObject*)),this,SLOT(attitudeRawUpdated(UAVObject*)));
-
-    // Set up timeout timer
-    timer.start(10000);
-    connect(&timer,SIGNAL(timeout()),this,SLOT(timeout()));
+    UAVDataObject * accels = Accels::GetInstance(getObjectManager());
+    UAVDataObject * gyros = Gyros::GetInstance(getObjectManager());
+    connect(accels,SIGNAL(objectUpdated(UAVObject*)),this,SLOT(sensorsUpdated(UAVObject*)));
+    connect(gyros,SIGNAL(objectUpdated(UAVObject*)),this,SLOT(sensorsUpdated(UAVObject*)));
 
     // Speed up updates
-    initialMdata = obj->getMetadata();
-    UAVObject::Metadata mdata = initialMdata;
-    mdata.flightTelemetryUpdateMode = UAVObject::UPDATEMODE_PERIODIC;
-    mdata.flightTelemetryUpdatePeriod = 100;
-    obj->setMetadata(mdata);
+    initialAccelsMdata = accels->getMetadata();
+    UAVObject::Metadata accelsMdata = initialAccelsMdata;
+    UAVObject::SetFlightTelemetryUpdateMode(accelsMdata, UAVObject::UPDATEMODE_PERIODIC);
+    accelsMdata.flightTelemetryUpdatePeriod = 30; // ms
+    accels->setMetadata(accelsMdata);
 
+    initialGyrosMdata = gyros->getMetadata();
+    UAVObject::Metadata gyrosMdata = initialGyrosMdata;
+    UAVObject::SetFlightTelemetryUpdateMode(gyrosMdata, UAVObject::UPDATEMODE_PERIODIC);
+    gyrosMdata.flightTelemetryUpdatePeriod = 30; // ms
+    gyros->setMetadata(gyrosMdata);
+
+    // Set up timeout timer
+    timer.setSingleShot(true);
+    timer.start(5000 + (NUM_SENSOR_UPDATES * qMax(accelsMdata.flightTelemetryUpdatePeriod,
+                                                  gyrosMdata.flightTelemetryUpdatePeriod)));
+    connect(&timer,SIGNAL(timeout()),this,SLOT(timeout()));
 }
 
 void ConfigCCAttitudeWidget::openHelp()
 {
-
     QDesktopServices::openUrl( QUrl("http://wiki.openpilot.org/display/Doc/CopterControl+Attitude+Configuration", QUrl::StrictMode) );
 }
 
@@ -165,5 +202,11 @@ void ConfigCCAttitudeWidget::enableControls(bool enable)
     if(ui->zeroBias)
         ui->zeroBias->setEnabled(enable);
     ConfigTaskWidget::enableControls(enable);
+}
 
+void ConfigCCAttitudeWidget::updateObjectsFromWidgets()
+{
+    ConfigTaskWidget::updateObjectsFromWidgets();
+
+    ui->zeroBiasProgress->setValue(0);
 }

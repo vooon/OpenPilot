@@ -210,9 +210,9 @@ void XplaneSimulator::processUpdate(const QByteArray& dataBuf)
         float accX = 0;
         float accY = 0;
         float accZ = 0;
-        float rollRate=0;
-        float pitchRate=0;
-        float yawRate=0;
+        float rollRate_rad=0;
+        float pitchRate_rad=0;
+        float yawRate_rad=0;
 
 	QString str;
 	QByteArray& buf = const_cast<QByteArray&>(dataBuf);
@@ -269,10 +269,10 @@ void XplaneSimulator::processUpdate(const QByteArray& dataBuf)
                             velZ = *((float*)(buf.data()+4*5));
                             break;
 
-                        case XplaneSimulator::AngularVelocities:
-                            pitchRate = *((float*)(buf.data()+4*1));
-                            rollRate = *((float*)(buf.data()+4*2));
-                            yawRate = *((float*)(buf.data()+4*3));
+                        case XplaneSimulator::AngularVelocities: //In [rad/s]
+                            pitchRate_rad = *((float*)(buf.data()+4*1));
+                            rollRate_rad = *((float*)(buf.data()+4*2));
+                            yawRate_rad = *((float*)(buf.data()+4*3));
                             break;
 
                         case XplaneSimulator::Gload:
@@ -306,13 +306,7 @@ void XplaneSimulator::processUpdate(const QByteArray& dataBuf)
                     double ECEF[3];
                     double RNE[9];
                     Utils::CoordinateConversions().RneFromLLA(LLA,(double (*)[3])RNE);
-                    for (int t=0;t<9;t++) {
-                            homeData.RNE[t]=RNE[t];
-                    }
                     Utils::CoordinateConversions().LLA2ECEF(LLA,ECEF);
-                    homeData.ECEF[0]=ECEF[0]*100;
-                    homeData.ECEF[1]=ECEF[1]*100;
-                    homeData.ECEF[2]=ECEF[2]*100;
                     homeData.Be[0]=0;
                     homeData.Be[1]=0;
                     homeData.Be[2]=0;
@@ -368,33 +362,46 @@ void XplaneSimulator::processUpdate(const QByteArray& dataBuf)
                 // Update VelocityActual.{Nort,East,Down}
                 VelocityActual::DataFields velocityActualData;
                 memset(&velocityActualData, 0, sizeof(VelocityActual::DataFields));
-                velocityActualData.North = velY*100;
-                velocityActualData.East = velX*100;
-                velocityActualData.Down = -velZ*100;
+                velocityActualData.North = velY;
+                velocityActualData.East = velX;
+                velocityActualData.Down = -velZ;
                 velActual->setData(velocityActualData);
 
                 // Update PositionActual.{Nort,East,Down}
                 PositionActual::DataFields positionActualData;
                 memset(&positionActualData, 0, sizeof(PositionActual::DataFields));
-                positionActualData.North = (dstY-initY)*100;
-                positionActualData.East = (dstX-initX)*100;
-                positionActualData.Down = -(dstZ-initZ)*100;
+                positionActualData.North = (dstY-initY);
+                positionActualData.East = (dstX-initX);
+                positionActualData.Down = -(dstZ-initZ);
                 posActual->setData(positionActualData);
 
                 // Update AttitudeRaw object (filtered gyros only for now)
-                AttitudeRaw::DataFields rawData;
-                memset(&rawData, 0, sizeof(AttitudeRaw::DataFields));
-                rawData = attRaw->getData();
-                rawData.gyros[0] = rollRate;
-                //rawData.gyros_filtered[1] = cos(DEG2RAD * roll) * pitchRate + sin(DEG2RAD * roll) * yawRate;
-                //rawData.gyros_filtered[2] = cos(DEG2RAD * roll) * yawRate - sin(DEG2RAD * roll) * pitchRate;
-                rawData.gyros[1] = pitchRate;
-                rawData.gyros[2] = yawRate;
-                rawData.accels[0] = accX;
-                rawData.accels[1] = accY;
-                rawData.accels[2] = -accZ;
-                attRaw->setData(rawData);
+                //AttitudeRaw::DataFields rawData;
+                //memset(&rawData, 0, sizeof(AttitudeRaw::DataFields));
+                //rawData = attRaw->getData();
+                //rawData.gyros[0] = rollRate;
+                //rawData.gyros_filtered[1] = cos(DEG2RAD * roll) * pitchRate_rad + sin(DEG2RAD * roll) * yawRate_rad;
+                //rawData.gyros_filtered[2] = cos(DEG2RAD * roll) * yawRate_rad - sin(DEG2RAD * roll) * pitchRate_rad;
+                //rawData.gyros[1] = pitchRate;
+                //rawData.gyros[2] = yawRate;
+                //rawData.accels[0] = accX;
+                //rawData.accels[1] = accY;
+                //rawData.accels[2] = -accZ;
+                //attRaw->setData(rawData);
+		Gyros::DataFields gyroData;
+                memset(&gyroData, 0, sizeof(Gyros::DataFields));
+#define Pi 3.141529654
+        gyroData.x = rollRate_rad*180/Pi;
+        gyroData.y = pitchRate_rad*180/Pi;
+        gyroData.z = yawRate_rad*180/Pi;
+		gyros->setData(gyroData);
 
+		Accels::DataFields accelData;
+                memset(&accelData, 0, sizeof(Accels::DataFields));
+		accelData.x = accX;
+		accelData.y = accY;
+		accelData.z = -accZ;
+		accels->setData(accelData);
 
 	}
 	// issue manual update
@@ -414,7 +421,7 @@ void TraceBuf(const char* buf,int len)
 		{
 			if(i>0)
 			{
-				qDebug() << str;
+//				qDebug() << str;
 				str.clear();
 				reminder=false;
 			}
@@ -423,6 +430,7 @@ void TraceBuf(const char* buf,int len)
 		str+=QString(" 0x%1").arg((quint8)buf[i],2,16,QLatin1Char('0'));
 	}
 
-	if(reminder)
-		qDebug() << str;
+    if(reminder){
+//		qDebug() << str;
+    }
 }

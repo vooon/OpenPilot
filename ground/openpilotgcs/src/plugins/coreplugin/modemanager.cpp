@@ -84,6 +84,8 @@ void ModeManager::init()
 
 void ModeManager::addWidget(QWidget *widget)
 {
+    Q_UNUSED(widget);
+
     // We want the actionbar to stay on the bottom
     // so m_modeStack->cornerWidgetCount() -1 inserts it at the position immediately above
     // the actionbar
@@ -122,6 +124,17 @@ void ModeManager::activateMode(const QString &id)
     const int index = indexOf(id);
     if (index >= 0)
         m_modeStack->setCurrentIndex(index);
+}
+
+void ModeManager::activateModeByWorkspaceName(const QString &id)
+{
+    for (int i = 0; i < m_modes.count(); ++i) {
+        if (m_modes.at(i)->name() == id)
+        {
+            m_modeStack->setCurrentIndex(i);
+            return;
+        }
+    }
 }
 
 void ModeManager::objectAdded(QObject *obj)
@@ -209,6 +222,8 @@ void ModeManager::aboutToRemoveObject(QObject *obj)
 
 void ModeManager::addAction(Command *command, int priority, QMenu *menu)
 {
+    Q_UNUSED(menu);
+
     m_actions.insert(command, priority);
 
     // Count the number of commands with a higher priority

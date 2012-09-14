@@ -65,7 +65,7 @@
 #define STACK_SIZE_BYTES 924
 #endif
 
-#define TASK_PRIORITY (tskIDLE_PRIORITY+2)
+#define TASK_PRIORITY (tskIDLE_PRIORITY+1)
 
 // Private types
 
@@ -73,6 +73,7 @@
 static uint32_t idleCounter;
 static uint32_t idleCounterClear;
 static xTaskHandle systemTaskHandle;
+static xQueueHandle objectPersistenceQueue;
 static bool stackOverflow;
 static bool mallocFailed;
 
@@ -122,6 +123,10 @@ int32_t SystemModInitialize(void)
 	WatchdogStatusInitialize();
 #endif
 
+	objectPersistenceQueue = xQueueCreate(1, sizeof(UAVObjEvent));
+	if (objectPersistenceQueue == NULL)
+		return -1;
+
 	SystemModStart();
 
 	return 0;
@@ -133,8 +138,6 @@ MODULE_INITCALL(SystemModInitialize, 0)
  */
 static void systemTask(void *parameters)
 {
-	portTickType lastSysTime;
-
 	/* create all modules thread */
 	MODULE_TASKCREATE_ALL;
 
@@ -154,10 +157,9 @@ static void systemTask(void *parameters)
 	// Initialize vars
 	idleCounter = 0;
 	idleCounterClear = 0;
-	lastSysTime = xTaskGetTickCount();
 
 	// Listen for SettingPersistance object updates, connect a callback function
-	ObjectPersistenceConnectCallback(&objectUpdatedCb);
+	ObjectPersistenceConnectQueue(objectPersistenceQueue);
 
 	// Main system loop
 	while (1) {
@@ -193,11 +195,14 @@ static void systemTask(void *parameters)
 		FlightStatusData flightStatus;
 		FlightStatusGet(&flightStatus);
 
-		// Wait until next period
-		if(flightStatus.Armed == FLIGHTSTATUS_ARMED_ARMED) {
-			vTaskDelayUntil(&lastSysTime, SYSTEM_UPDATE_PERIOD_MS / portTICK_RATE_MS / (LED_BLINK_RATE_HZ * 2) );
-		} else {
-			vTaskDelayUntil(&lastSysTime, SYSTEM_UPDATE_PERIOD_MS / portTICK_RATE_MS);
+		UAVObjEvent ev;
+		int delayTime = flightStatus.Armed == FLIGHTSTATUS_ARMED_ARMED ?
+			SYSTEM_UPDATE_PERIOD_MS / portTICK_RATE_MS / (LED_BLINK_RATE_HZ * 2) :
+			SYSTEM_UPDATE_PERIOD_MS / portTICK_RATE_MS;
+
+		if(xQueueReceive(objectPersistenceQueue, &ev, delayTime) == pdTRUE) {
+			// If object persistence is updated call the callback
+			objectUpdatedCb(&ev);
 		}
 	}
 }
@@ -215,7 +220,7 @@ static void objectUpdatedCb(UAVObjEvent * ev)
 		// Get object data
 		ObjectPersistenceGet(&objper);
 
-		int retval = -1;
+		int retval = 1;
 		// Execute action
 		if (objper.Operation == OBJECTPERSISTENCE_OPERATION_LOAD) {
 			if (objper.Selection == OBJECTPERSISTENCE_SELECTION_SINGLEOBJECT) {
@@ -242,6 +247,13 @@ static void objectUpdatedCb(UAVObjEvent * ev)
 				}
 				// Save selected instance
 				retval = UAVObjSave(obj, objper.InstanceID);
+
+				// Not sure why this is needed
+				vTaskDelay(10);
+
+				// Verify saving worked
+				if (retval == 0)
+					retval = UAVObjLoad(obj, objper.InstanceID);
 			} else if (objper.Selection == OBJECTPERSISTENCE_SELECTION_ALLSETTINGS
 				   || objper.Selection == OBJECTPERSISTENCE_SELECTION_ALLOBJECTS) {
 				retval = UAVObjSaveSettings();
@@ -271,9 +283,17 @@ static void objectUpdatedCb(UAVObjEvent * ev)
 			retval = PIOS_FLASHFS_Format();
 #endif
 		}
-		if(retval == 0) { 
-			objper.Operation = OBJECTPERSISTENCE_OPERATION_COMPLETED;
-			ObjectPersistenceSet(&objper);
+		switch(retval) {
+			case 0:
+				objper.Operation = OBJECTPERSISTENCE_OPERATION_COMPLETED;
+				ObjectPersistenceSet(&objper);
+				break;
+			case -1:
+				objper.Operation = OBJECTPERSISTENCE_OPERATION_ERROR;
+				ObjectPersistenceSet(&objper);
+				break;
+			default:
+				break;
 		}
 	}
 }
@@ -384,7 +404,7 @@ static void updateStats()
 	if (now > lastTickCount) {
 		uint32_t dT = (xTaskGetTickCount() - lastTickCount) * portTICK_RATE_MS;	// in ms
 		stats.CPULoad =
-			100 - (uint8_t) round(100.0 * ((float)idleCounter / ((float)dT / 1000.0)) / (float)IDLE_COUNTS_PER_SEC_AT_NO_LOAD);
+			100 - (uint8_t) roundf(100.0f * ((float)idleCounter / ((float)dT / 1000.0f)) / (float)IDLE_COUNTS_PER_SEC_AT_NO_LOAD);
 	} //else: TickCount has wrapped, do not calc now
 	lastTickCount = now;
 	idleCounterClear = 1;
@@ -443,25 +463,26 @@ static void updateSystemAlarms()
 		AlarmsClear(SYSTEMALARMS_ALARM_STACKOVERFLOW);
 	}
 
-#if defined(PIOS_INCLUDE_SDCARD)
-	// Check for SD card
-	if (PIOS_SDCARD_IsMounted() == 0) {
-		AlarmsSet(SYSTEMALARMS_ALARM_SDCARD, SYSTEMALARMS_ALARM_ERROR);
-	} else {
-		AlarmsClear(SYSTEMALARMS_ALARM_SDCARD);
-	}
-#endif
-
 	// Check for event errors
 	UAVObjGetStats(&objStats);
 	EventGetStats(&evStats);
 	UAVObjClearStats();
 	EventClearStats();
-	if (objStats.eventErrors > 0 || evStats.eventErrors > 0) {
+	if (objStats.eventCallbackErrors > 0 || objStats.eventQueueErrors > 0  || evStats.eventErrors > 0) {
 		AlarmsSet(SYSTEMALARMS_ALARM_EVENTSYSTEM, SYSTEMALARMS_ALARM_WARNING);
 	} else {
 		AlarmsClear(SYSTEMALARMS_ALARM_EVENTSYSTEM);
 	}
+	
+	if (objStats.lastCallbackErrorID || objStats.lastQueueErrorID || evStats.lastErrorID) {
+		SystemStatsData sysStats;
+		SystemStatsGet(&sysStats);
+		sysStats.EventSystemWarningID = evStats.lastErrorID;
+		sysStats.ObjectManagerCallbackID = objStats.lastCallbackErrorID;
+		sysStats.ObjectManagerQueueID = objStats.lastQueueErrorID;
+		SystemStatsSet(&sysStats);
+	}
+		
 }
 
 /**

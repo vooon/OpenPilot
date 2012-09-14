@@ -69,15 +69,13 @@ plugin_uavobjectbrowser.depends = plugin_coreplugin
 plugin_uavobjectbrowser.depends += plugin_uavobjects
 SUBDIRS += plugin_uavobjectbrowser
 
-!contains(QT_VERSION, ^4\\.8\\..*) {
-# Disable ModelView on 64-bit linux too
-!linux-g++-64 {
 # ModelView UAVGadget
 plugin_modelview.subdir = modelview
 plugin_modelview.depends = plugin_coreplugin
 plugin_modelview.depends += plugin_uavobjects
 SUBDIRS += plugin_modelview
-}
+
+!contains(QT_VERSION, ^4\\.8\\..*) {
 #Notify gadget
 plugin_notify.subdir = notify
 plugin_notify.depends = plugin_coreplugin
@@ -148,6 +146,13 @@ plugin_hitlnew.depends = plugin_coreplugin
 plugin_hitlnew.depends += plugin_uavobjects
 plugin_hitlnew.depends += plugin_uavtalk
 SUBDIRS += plugin_hitlnew
+
+#HITLNEW Simulation gadget v2
+plugin_hitl_v2.subdir = hitlv2
+plugin_hitl_v2.depends = plugin_coreplugin
+plugin_hitl_v2.depends += plugin_uavobjects
+plugin_hitl_v2.depends += plugin_uavtalk
+SUBDIRS += plugin_hitl_v2
 
 # Export and Import GCS Configuration
 plugin_importexport.subdir = importexport

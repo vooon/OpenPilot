@@ -36,10 +36,10 @@
 /* Enable/Disable PiOS Modules */
 #define PIOS_INCLUDE_ADC
 #define PIOS_INCLUDE_DELAY
-#if defined(USE_I2C)
-#define PIOS_INCLUDE_I2C
-#define PIOS_INCLUDE_I2C_ESC
-#endif
+//#if defined(USE_I2C)
+//#define PIOS_INCLUDE_I2C
+//#define PIOS_INCLUDE_I2C_ESC
+//#endif
 #define PIOS_INCLUDE_IRQ
 #define PIOS_INCLUDE_LED
 #define PIOS_INCLUDE_IAP
@@ -58,13 +58,15 @@
 #define PIOS_INCLUDE_TELEMETRY_RF
 #define PIOS_INCLUDE_GPS
 #define PIOS_GPS_MINIMAL
-
+#define PIOS_INCLUDE_GPS_NMEA_PARSER /* Include the NMEA protocol parser */
+#define PIOS_INCLUDE_GPS_UBX_PARSER  /* Include the UBX protocol parser */
 #define PIOS_INCLUDE_SERVO
 #define PIOS_INCLUDE_SPI
 #define PIOS_INCLUDE_SYS
 #define PIOS_INCLUDE_USART
 #define PIOS_INCLUDE_USB
 #define PIOS_INCLUDE_USB_HID
+#define PIOS_INCLUDE_USB_RCTX
 #define PIOS_INCLUDE_USB_CDC
 #define PIOS_INCLUDE_COM
 #define PIOS_INCLUDE_SETTINGS
@@ -78,8 +80,8 @@
 
 #define PIOS_INCLUDE_ADXL345
 #define PIOS_INCLUDE_FLASH
-
-#define PIOS_INCLUDE_BMP085
+#define PIOS_INCLUDE_MPU6000
+#define PIOS_MPU6000_ACCEL
 
 /* Supported ESC interface */
 #define PIOS_INCLUDE_ESC_SERIAL
@@ -97,8 +99,8 @@
 
 /* Task stack sizes */
 #define PIOS_ACTUATOR_STACK_SIZE       1020
-#define PIOS_MANUAL_STACK_SIZE          724
-#define PIOS_SYSTEM_STACK_SIZE          460
+#define PIOS_MANUAL_STACK_SIZE          800
+#define PIOS_SYSTEM_STACK_SIZE          660
 #define PIOS_STABILIZATION_STACK_SIZE   524
 #define PIOS_TELEM_STACK_SIZE           500
 #define PIOS_EVENTDISPATCHER_STACK_SIZE 130

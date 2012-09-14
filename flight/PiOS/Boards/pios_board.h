@@ -13,6 +13,10 @@
 #include "STM3210E_INS.h"
 #elif USE_STM32F103CB_ESC_Rev1
 #include "STM32F103CB_ESC_Rev1.h"
+#elif USE_STM32F2xx_INS
+#include "STM32F2xx_INS.h"
+#elif USE_STM32F4xx_OP
+#include "STM32F4xx_Revolution.h"
 #else
 #error Undefined board type
 #endif

@@ -34,7 +34,7 @@ UAVObjectParser::UAVObjectParser()
     fieldTypeStrXML << "int8" << "int16" << "int32" << "uint8"
         << "uint16" << "uint32" <<"float" << "enum";
 
-    updateModeStrXML << "periodic" << "onchange" << "manual" << "never";
+    updateModeStrXML << "manual" << "periodic" << "onchange" << "throttled";
 
     accessModeStr << "ACCESS_READWRITE" << "ACCESS_READONLY";
 
@@ -207,6 +207,9 @@ QString UAVObjectParser::parseXML(QString& xml, QString& filename)
         }
 		
 		// Sort all fields according to size
+        qStableSort(info->fields.begin(), info->fields.end(), fieldTypeLessThan);
+
+        // Sort all fields according to size
         qStableSort(info->fields.begin(), info->fields.end(), fieldTypeLessThan);
 
         // Make sure that required elements were found
@@ -495,6 +498,13 @@ QString UAVObjectParser::processObjectAttributes(QDomNode& node, ObjectInfo* inf
 
     info->name = attr.nodeValue();
     info->namelc = attr.nodeValue().toLower();
+
+    // Get category attribute if present
+    attr = attributes.namedItem("category");
+    if ( !attr.isNull() )
+    {
+        info->category = attr.nodeValue();
+    }
 
     // Get singleinstance attribute
     attr = attributes.namedItem("singleinstance");
