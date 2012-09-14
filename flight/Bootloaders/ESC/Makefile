@@ -98,7 +98,6 @@ SRC += $(OPSYSTEM)/op_dfu.c
 SRC += $(OPSYSTEM)/ssp.c
 
 ## PIOS Hardware (STM32F10x)
-SRC += $(PIOSSTM32F10X)/pios_adc.c
 SRC += $(PIOSSTM32F10X)/pios_sys.c
 SRC += $(PIOSSTM32F10X)/pios_led.c
 SRC += $(PIOSSTM32F10X)/pios_esc.c
@@ -113,13 +112,12 @@ SRC += $(PIOSSTM32F10X)/pios_exti.c
 SRC += $(PIOSSTM32F10X)/pios_pwm.c
 SRC += $(PIOSSTM32F10X)/pios_tim.c
 SRC += $(PIOSSTM32F10X)/pios_wdg.c
-#SRC += $(PIOSSTM32F10X)/pios_softusart.c
+SRC += $(PIOSSTM32F10X)/pios_bl_helper.c
+SRC += $(PIOSSTM32F10X)/pios_iap.c
 
 ## PIOS Hardware (Common)
 SRC += $(PIOSCOMMON)/pios_board_info.c
 SRC += $(PIOSCOMMON)/pios_com.c
-SRC += $(PIOSCOMMON)/pios_bl_helper.c
-SRC += $(PIOSCOMMON)/pios_iap.c
 SRC += $(PIOSCOMMON)/printf-stdarg.c
 
 ## Libraries for flight calculations

@@ -102,9 +102,19 @@ int main() {
 	PIOS_DELAY_WaitmS(150);
 
 	bool timeout = false;
-	uint32_t period1, period2, sweep_steps1, sweep_steps2;
+	uint32_t period1, sweep_steps1;
 	uint32_t stopwatch = 0;
 	uint32_t prev_ticks = PIOS_DELAY_GetuS();
+
+	// while (1) {
+	// 	uint8_t c;
+	// 	if (PIOS_COM_ReceiveBuffer(pios_com_softusart_id, &c, 1, 0) == 1) {
+	// 		PIOS_LED_Toggle(0);
+	// 		PIOS_LED_Toggle(1);
+	// 		PIOS_DELAY_WaitmS(51);
+	// 		PIOS_COM_SendChar(pios_com_softusart_id, c+1);
+	// 	}
+	// }
 
 	fifoBuf_init(&ssp_buffer, rx_buffer, UART_BUFFER_SIZE);
 	ssp_Init(&ssp_port, &SSP_PortConfig);
@@ -138,31 +148,24 @@ int main() {
 			period1 = 5000;
 			sweep_steps1 = 100;
 			PIOS_LED_Off(1);
-			period2 = 0;
 			break;
 		case uploading:
 			period1 = 5000;
 			sweep_steps1 = 100;
-			period2 = 2500;
-			sweep_steps2 = 50;
 			break;
 		case downloading:
 			period1 = 2500;
 			sweep_steps1 = 50;
 			PIOS_LED_Off(1);
-			period2 = 0;
 			break;
 		case BLidle:
 			period1 = 0;
 			PIOS_LED_On(1);
-			period2 = 0;
 			break;
 		default://error
 			period1 = 5000;
 			sweep_steps1 = 100;
-			period2 = 5000;
-			sweep_steps2 = 100;
-		}
+			}
 
 		if (period1 != 0) {
 			if (LedPWM(period1, sweep_steps1, stopwatch))
@@ -171,14 +174,6 @@ int main() {
 				PIOS_LED_Off(1);
 		} else
 			PIOS_LED_On(1);
-
-		if (period2 != 0) {
-			if (LedPWM(period2, sweep_steps2, stopwatch))
-				PIOS_LED_On(1);
-			else
-				PIOS_LED_Off(1);
-		} else
-			PIOS_LED_Off(1);
 		
 		if (stopwatch > 50 * 1000 * 1000)
 			stopwatch = 0;
@@ -245,10 +240,15 @@ void SSP_CallBack(uint8_t *buf, uint16_t len) {
 
 int query_count;
 int byte_count;
+uint8_t byte_record[8];
+int brp = 0;
 int16_t SSP_SerialRead(void) {
 	query_count++;
 	uint8_t byte;
 	if (PIOS_COM_ReceiveBuffer(pios_com_softusart_id, &byte, 1, 0) == 1) {
+		byte_record[(brp++) % 8] = byte; 
+		PIOS_LED_Toggle(1);
+		PIOS_DELAY_WaitmS(5);
 		byte_count++;
 		return byte;
 	} else {
@@ -257,8 +257,11 @@ int16_t SSP_SerialRead(void) {
 }
 
 int written_bytes = 0;
+uint8_t w_byte_record[8];
+int w_brp = 0;
 void SSP_SerialWrite(uint8_t value) {
 	written_bytes++;
+	w_byte_record[(w_brp++) % 8] = value; 
 	PIOS_COM_SendChar(pios_com_softusart_id, value);
 }
 uint32_t SSP_GetTime(void) {

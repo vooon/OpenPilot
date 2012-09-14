@@ -7,8 +7,7 @@
  * @{
  *
  * @file       pios_adc.h  
- * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2010.
- * 	       Parts by Thorsten Klose (tk@midibox.org)
+ * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2012.
  * @brief      ADC functions header.
  * @see        The GNU Public License (GPL) Version 3
  *
@@ -38,12 +37,8 @@
 typedef void (*ADCCallback) (float * data);
 
 /* Public Functions */
-void PIOS_ADC_Init();
 void PIOS_ADC_Config(uint32_t oversampling);
-void PIOS_ADC_StopDma();
-void PIOS_ADC_StartDma();
 int32_t PIOS_ADC_PinGet(uint32_t pin);
-float * PIOS_ADC_GetBuffer();
 int16_t * PIOS_ADC_GetRawBuffer(void);
 uint8_t PIOS_ADC_GetOverSampling(void);
 void PIOS_ADC_SetCallback(ADCCallback new_function);

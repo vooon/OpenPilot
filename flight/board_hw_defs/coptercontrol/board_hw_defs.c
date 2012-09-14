@@ -738,7 +738,6 @@ static const struct pios_tim_channel pios_tim_servoport_rcvrport_pins[] = {
 			},
 		},
 	},
-	
 	// Receiver port pins
 	// S3-S6 inputs are used as outputs in this case
 	{
@@ -791,8 +790,6 @@ static const struct pios_tim_channel pios_tim_servoport_rcvrport_pins[] = {
 	},
 #endif /* PIOS_INCLUDE_SOFTUSART */
 };
-
-#endif	/* PIOS_INCLUDE_TIM */
 
 #if defined(PIOS_INCLUDE_SOFTUSART)
 

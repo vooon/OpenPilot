@@ -179,13 +179,6 @@ SUBDIRS += plugin_gcscontrol
 #plugin_antennatrack.depends += plugin_uavtalk
 #SUBDIRS += plugin_antennatrack
 
-#PipXtreme gadget
-plugin_pipxtreme.subdir = pipxtreme
-plugin_pipxtreme.depends = plugin_coreplugin
-plugin_pipxtreme.depends += plugin_uavobjects
-plugin_pipxtreme.depends += plugin_rawhid
-SUBDIRS += plugin_pipxtreme
-
 #ESC gadget
 plugin_esc.subdir = esc
 plugin_esc.depends = plugin_coreplugin

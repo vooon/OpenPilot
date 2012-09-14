@@ -84,8 +84,6 @@ HEADERS += $$UAVOBJECT_SYNTHETICS/accessorydesired.h \
     $$UAVOBJECT_SYNTHETICS/txpidsettings.h \
     $$UAVOBJECT_SYNTHETICS/cameradesired.h \
     $$UAVOBJECT_SYNTHETICS/faultsettings.h \
-    $$UAVOBJECT_SYNTHETICS/escsettings.h \
-    $$UAVOBJECT_SYNTHETICS/escstatus.h
     $$UAVOBJECT_SYNTHETICS/pipxsettings.h \
     $$UAVOBJECT_SYNTHETICS/pipxstatus.h \
     $$UAVOBJECT_SYNTHETICS/waypoint.h \
@@ -154,8 +152,6 @@ SOURCES += $$UAVOBJECT_SYNTHETICS/accessorydesired.cpp \
     $$UAVOBJECT_SYNTHETICS/txpidsettings.cpp \
     $$UAVOBJECT_SYNTHETICS/cameradesired.cpp \
     $$UAVOBJECT_SYNTHETICS/faultsettings.cpp \
-    $$UAVOBJECT_SYNTHETICS/escsettings.cpp \
-    $$UAVOBJECT_SYNTHETICS/escstatus.cpp
     $$UAVOBJECT_SYNTHETICS/pipxsettings.cpp \
     $$UAVOBJECT_SYNTHETICS/pipxstatus.cpp \
     $$UAVOBJECT_SYNTHETICS/waypoint.cpp \
