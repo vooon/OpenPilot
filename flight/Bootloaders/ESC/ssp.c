@@ -220,11 +220,6 @@ int16_t ssp_SendProcess(Port_t *thisport) {
 				value = SSP_TX_WAITING;
 			} else {
 				// Give up, # of trys has exceded the limit
-#ifdef DEBUG_SSP
-				char str[63]= {0};
-				sprintf(str,"Send Timeout|");
-				PIOS_COM_SendString(PIOS_COM_TELEM_USB,str);
-#endif
 				value = SSP_TX_TIMEOUT;
 				CLEARBIT( thisport->flags, ACK_RECEIVED);
 				thisport->SendState = SSP_IDLE;
@@ -373,18 +368,8 @@ int16_t ssp_SendData(Port_t *thisport, const uint8_t *data,
 		sf_MakePacket(thisport->txBuf, data, length, thisport->txSeqNo);
 		sf_SendPacket(thisport); // punch out the packet to the serial port
 		sf_SetSendTimeout(thisport); // do the timeout values
-#ifdef DEBUG_SSP
-		char str[63]= {0};
-		sprintf(str,"Sent DATA PACKET:%d|",thisport->txSeqNo);
-		PIOS_COM_SendString(PIOS_COM_TELEM_USB,str);
-#endif
 	} else {
 		// error we are already sending a packet. Need to wait for the current packet to be acked or timeout.
-#ifdef DEBUG_SSP
-		char str[63]= {0};
-		sprintf(str,"Error sending TX was busy|");
-		PIOS_COM_SendString(PIOS_COM_TELEM_USB,str);
-#endif
 		value = SSP_TX_BUSY;
 	}
 	return value;

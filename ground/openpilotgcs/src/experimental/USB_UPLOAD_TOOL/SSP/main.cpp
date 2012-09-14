@@ -29,32 +29,32 @@ int main(int argc, char *argv[])
     info->txBufSize 	= 255;
     info->max_retry	= 3;
     info->timeoutLen	= 5000;
-    //qssp b(info);
-    qsspt bb(info,true);
+    qsspt bb(info,false);
     uint8_t buf[1000];
+
     QCoreApplication a(argc, argv);
+
     while(!bb.ssp_Synchronise())
     {
         qDebug()<<"trying sync";
     }
-     bb.start();
-     qDebug()<<"sync complete";
-     buf[0]=0;
-     buf[1]=1;
-     buf[2]=2;
-     while(true)
-     {
-     if(bb.sendData(buf,63))
-         qDebug()<<"send OK";
-//     else
-//         qDebug()<<"send NOK";
-//     //bb.ssp_SendData(buf,63);
- }
-     while(true)
+
+    bb.start();
+    qDebug()<<"sync complete";
+
+    buf[0]=0;
+    buf[1]=1;
+    buf[2]=2;
+    while(true)
     {
-
-
-
+        if(bb.sendData(buf,63))
+            qDebug()<<"send OK";
+        //     else
+        //         qDebug()<<"send NOK";
+        //     //bb.ssp_SendData(buf,63);
+    }
+    while(true)
+    {
         if(bb.packets_Available()>0)
         {
 

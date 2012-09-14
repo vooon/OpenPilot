@@ -4,6 +4,7 @@
 #include "../../../libs/qextserialport/src/qextserialport.h"
 #include <QTime>
 #include <QDebug>
+#include <QMutex>
 #include "common.h"
 
 class port
@@ -41,8 +42,11 @@ public:
     portstatus status();
 private:
     portstatus mstatus;
+    QMutex *portMutex;
     QTime timer;
     QextSerialPort *sport;
+
+    QByteArray inputBuffer;
 };
 
 #endif // PORT_H

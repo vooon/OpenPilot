@@ -29,6 +29,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "pios.h"
 #include "op_dfu.h"
+ #include "ssp.h"
 #include "pios_bl_helper.h"
 #include <pios_board_info.h>
 /* Private typedef -----------------------------------------------------------*/
@@ -37,7 +38,7 @@
 /* Private variables ---------------------------------------------------------*/
 //programmable devices
 Device devicesTable[10];
-uint8_t numberOfDevices = 0;
+uint8_t numberOfDevices = 1;
 
 DFUProgType currentProgrammingDestination; //flash, flash_trough spi
 uint8_t currentDeviceCanRead;
@@ -74,6 +75,8 @@ DFUTransfer downType = 0;
 extern DFUStates DeviceState;
 extern void jump_to_app();
 extern int pios_com_softusart_id;
+extern Port_t ssp_port;
+
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 void sendData(uint8_t * buf, uint16_t size);
@@ -136,14 +139,10 @@ void DataDownload(DownloadAction action) {
 		sendData(SendBuffer + 1, 63);
 	}
 }
+int a_count = 0, b_count = 0, c_count = 0,d_count = 0,e_count = 0;
 void processComand(uint8_t *xReceive_Buffer) {
 
 	Command = xReceive_Buffer[COMMAND];
-#ifdef DEBUG_SSP
-	char str[63]= {0};
-	sprintf(str,"Received COMMAND:%d|",Command);
-	PIOS_COM_SendString(pios_com_softusart_id,str);
-#endif
 	EchoReqFlag = (Command >> 7);
 	EchoAnsFlag = (Command >> 6) & 0x01;
 	StartFlag = (Command >> 5) & 0x01;
@@ -354,14 +353,7 @@ void processComand(uint8_t *xReceive_Buffer) {
 
 		break;
 	case Download_Req:
-#ifdef DEBUG_SSP
-		sprintf(str,"COMMAND:DOWNLOAD_REQ 1 Status=%d|",DeviceState);
-		PIOS_COM_SendString(pios_com_softusart_id,str);
-#endif
 		if (DeviceState == DFUidle) {
-#ifdef DEBUG_SSP
-			PIOS_COM_SendString(pios_com_softusart_id,"COMMAND:DOWNLOAD_REQ 1|");
-#endif
 			downType = Data0;
 			downPacketTotal = Count;
 			downSizeOfLastPacket = Data1;
@@ -474,9 +466,7 @@ uint32_t CalcFirmCRC() {
 
 }
 void sendData(uint8_t * buf, uint16_t size) {
-	PIOS_COM_SendBuffer(pios_com_softusart_id, buf, size);
-	if (DeviceState == downloading)
-		PIOS_DELAY_WaitmS(10);
+	ssp_SendData(&ssp_port, buf, size);
 }
 
 bool flash_read(uint8_t * buffer, uint32_t adr, DFUProgType type) {

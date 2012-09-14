@@ -20,15 +20,15 @@ int main(int argc, char *argv[])
 //    argv[3]="COM3";
     if(argc>1||!PRIVATE)
     {
-        bool use_serial=false;
+        bool use_serial=true;
         bool verify;
         bool debug=false;
         bool umodereset=false;
         OP_DFU::Actions action;
         QString file;
-        QString serialport;
+        QString serialport = "/dev/tty.usbserial-0010111DB";
         QString description;
-        int device=-1;
+        int device=0;
         QStringList args;
         for(int i=0;i<argc;++i)
         {
@@ -228,19 +228,23 @@ int main(int argc, char *argv[])
                 cout<<"Found "<<dfu.numberOfDevices<<"\n";
                 for(int x=0;x<dfu.numberOfDevices;++x)
                 {
-                    cout<<"Device #"<<x<<"\n";
-                    cout<<"Device ID="<<dfu.devices[x].ID<<"\n";
-                    cout<<"Device Readable="<<dfu.devices[x].Readable<<"\n";
-                    cout<<"Device Writable="<<dfu.devices[x].Writable<<"\n";
-                    cout<<"Device SizeOfCode="<<dfu.devices[x].SizeOfCode<<"\n";
-                    cout<<"BL Version="<<dfu.devices[x].BL_Version<<"\n";
-                    cout<<"Device SizeOfDesc="<<dfu.devices[x].SizeOfDesc<<"\n";
-                    cout<<"FW CRC="<<dfu.devices[x].FW_CRC<<"\n";
+                    if (dfu.devices.count() < x) {
+                        cout << "Information unavailable for device";
+                    } else {
+                        cout<<"Device #"<<x<<"\n";
+                        cout<<"Device ID="<<dfu.devices[x].ID<<"\n";
+                        cout<<"Device Readable="<<dfu.devices[x].Readable<<"\n";
+                        cout<<"Device Writable="<<dfu.devices[x].Writable<<"\n";
+                        cout<<"Device SizeOfCode="<<dfu.devices[x].SizeOfCode<<"\n";
+                        cout<<"BL Version="<<dfu.devices[x].BL_Version<<"\n";
+                        cout<<"Device SizeOfDesc="<<dfu.devices[x].SizeOfDesc<<"\n";
+                        cout<<"FW CRC="<<dfu.devices[x].FW_CRC<<"\n";
 
-                    int size=((OP_DFU::device)dfu.devices[x]).SizeOfDesc;
-                    dfu.enterDFU(x);
-                    cout<<"Description:"<<dfu.DownloadDescription(size).toLatin1().data()<<"\n";
-                    cout<<"\n";
+                        int size=((OP_DFU::device)dfu.devices[x]).SizeOfDesc;
+                        dfu.enterDFU(x);
+                        cout<<"Description:"<<dfu.DownloadDescription(size).toLatin1().data()<<"\n";
+                        cout<<"\n";
+                    }
                 }
                 return 0;
             }

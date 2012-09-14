@@ -666,6 +666,7 @@ int16_t qssp::sf_DecodeState( uint8_t c )
             sf_ReceivePacket();
             retval = SSP_RX_COMPLETE;
         } else {
+            qDebug() << "Bad crc";
             thisport->RxError++;
             retval = SSP_RX_IDLE;
         }

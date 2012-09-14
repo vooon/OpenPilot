@@ -11,18 +11,18 @@ OP_DFU::OP_DFU(bool _debug,bool _use_serial,QString portname,bool umodereset): d
         //  getch();
         // delay::msleep(2000);
         PortSettings settings;
-        settings.BaudRate=BAUD57600;
+        settings.BaudRate=BAUD9600;
         settings.DataBits=DATA_8;
         settings.FlowControl=FLOW_OFF;
         settings.Parity=PAR_NONE;
-        settings.StopBits=STOP_1;
+        settings.StopBits=STOP_2;
         settings.Timeout_Millisec=1000;
         info=new port(settings,portname);
         info->rxBuf 		= sspRxBuf;
         info->rxBufSize 	= MAX_PACKET_DATA_LEN;
         info->txBuf 		= sspTxBuf;
         info->txBufSize 	= MAX_PACKET_DATA_LEN;
-        info->max_retry	= 10;
+        info->max_retry     = 10;
         info->timeoutLen	= 1000;
         if(info->status()!=port::open)
         {
@@ -37,8 +37,8 @@ OP_DFU::OP_DFU(bool _debug,bool _use_serial,QString portname,bool umodereset): d
 
         while(serialhandle->ssp_Synchronise()==false)
         {
-             if (debug)
-                 qDebug()<<"SYNC failed, resending";
+            if (debug)
+                qDebug()<<"SYNC failed, resending";
         }
         qDebug()<<"SYNC Succeded";
         serialhandle->start();
@@ -77,7 +77,7 @@ OP_DFU::OP_DFU(bool _debug,bool _use_serial,QString portname,bool umodereset): d
             delay::msleep(5000);
             qDebug()<<"after delay";
             if(hidHandle.open(1,0x20a0,0x4117,0,0)==0)
-                 mready=false;
+                mready=false;
         }
     }
 }
@@ -93,17 +93,17 @@ void OP_DFU::sendReset(void)
     //125
     if(!use_serial)
     {
-    hidHandle.send(0,aa, 64, 5000);
-    hidHandle.send(0,ab, 64, 5000);
-    delay::msleep(600);
-    hidHandle.send(0,ba, 64, 5000);
-    hidHandle.send(0,bb, 64, 5000);
-    delay::msleep(600);
-    hidHandle.send(0,ca, 64, 5000);
-    hidHandle.send(0,cb, 64, 5000);
-    delay::msleep(100);
-    hidHandle.close(1);
-}
+        hidHandle.send(0,aa, 64, 5000);
+        hidHandle.send(0,ab, 64, 5000);
+        delay::msleep(600);
+        hidHandle.send(0,ba, 64, 5000);
+        hidHandle.send(0,bb, 64, 5000);
+        delay::msleep(600);
+        hidHandle.send(0,ca, 64, 5000);
+        hidHandle.send(0,cb, 64, 5000);
+        delay::msleep(100);
+        hidHandle.close(1);
+    }
     else
     {
         char a[255];
@@ -251,7 +251,7 @@ bool OP_DFU::UploadData(qint32 const & numberOfBytes, QByteArray  & data)
         //        }
         // qDebug()<<" Data0="<<(int)data[0]<<" Data0="<<(int)data[1]<<" Data0="<<(int)data[2]<<" Data0="<<(int)data[3]<<" buf6="<<(int)buf[6]<<" buf7="<<(int)buf[7]<<" buf8="<<(int)buf[8]<<" buf9="<<(int)buf[9];
         //delay::msleep(send_delay);
-       // if(int ret=StatusRequest()!=OP_DFU::uploading) return false;
+        // if(int ret=StatusRequest()!=OP_DFU::uploading) return false;
         int result = sendData(buf, BUF_LEN);
         //   qDebug()<<"sent:"<<result;
         if(result<1)
@@ -270,7 +270,7 @@ OP_DFU::Status OP_DFU::UploadDescription(QString  & description)
 {
     cout<<"Starting uploading description\n";
     if(description.length()%4!=0)
-    {      
+    {
         int pad=description.length()/4;
         pad=(pad+1)*4;
         pad=pad-description.length();
@@ -456,6 +456,7 @@ OP_DFU::Status OP_DFU::StatusRequest()
 }
 bool OP_DFU::findDevices()
 {
+    qDebug() << "OP_DFU::findDevices()";
     devices.clear();
     char buf[BUF_LEN];
     buf[0] =0x02;//reportID
@@ -471,27 +472,32 @@ bool OP_DFU::findDevices()
     int result = sendData(buf, BUF_LEN);
     if(result<1)
     {
+        qDebug() << "Failed to send data";
         return false;
     }
     result = receiveData(buf,BUF_LEN);
     if(result<1)
     {
+        qDebug() << "Failed to receive data";
         return false;
     }
+    qDebug() << "Received " << result << " bytes";
     numberOfDevices=buf[7];
     RWFlags=buf[8];
     RWFlags=RWFlags<<8 | buf[9];
-
+    qDebug() << "Number of devices: " << numberOfDevices;
 
     if(buf[1]==OP_DFU::Rep_Capabilities)
     {
+        qDebug() << "Rep_Capabilities: " << numberOfDevices;
         for(int x=0;x<numberOfDevices;++x)
         {
             device dev;
             dev.Readable=(bool)(RWFlags>>(x*2) & 1);
             dev.Writable=(bool)(RWFlags>>(x*2+1) & 1);
             devices.append(dev);
-            buf[0] =0x02;//reportID
+            qDebug() << "Appended device";
+            buf[0] = 0x02;//reportID
             buf[1] = OP_DFU::Req_Capabilities;//DFU Command
             buf[2] = 0;
             buf[3] = 0;
@@ -503,7 +509,7 @@ bool OP_DFU::findDevices()
             buf[9] = 0;
             int result = sendData(buf, BUF_LEN);
             result = receiveData(buf,BUF_LEN);
-          //  devices[x].ID=buf[9];
+            //  devices[x].ID=buf[9];
             devices[x].ID=buf[14];
             devices[x].ID=devices[x].ID<<8 | (quint8)buf[15];
             devices[x].BL_Version=buf[7];
@@ -786,8 +792,8 @@ quint32 OP_DFU::CRC32WideFast(quint32 Crc, quint32 Size, quint32 *Buffer)
     while(Size--)
     {
         static const quint32 CrcTable[16] = { // Nibble lookup table for 0x04C11DB7 polynomial
-            0x00000000,0x04C11DB7,0x09823B6E,0x0D4326D9,0x130476DC,0x17C56B6B,0x1A864DB2,0x1E475005,
-            0x2608EDB8,0x22C9F00F,0x2F8AD6D6,0x2B4BCB61,0x350C9B64,0x31CD86D3,0x3C8EA00A,0x384FBDBD };
+                                              0x00000000,0x04C11DB7,0x09823B6E,0x0D4326D9,0x130476DC,0x17C56B6B,0x1A864DB2,0x1E475005,
+                                              0x2608EDB8,0x22C9F00F,0x2F8AD6D6,0x2B4BCB61,0x350C9B64,0x31CD86D3,0x3C8EA00A,0x384FBDBD };
 
         Crc = Crc ^ *((quint32 *)Buffer); // Apply all 32-bits
 
@@ -836,7 +842,7 @@ int OP_DFU::sendData(void * data,int size)
     {
         if(serialhandle->sendData((uint8_t*)data+1,size-1))
         {
-             if (debug)
+            if (debug)
                 qDebug()<<"packet sent"<<"data0"<<((uint8_t*)data+1)[0];
             return size;
         }

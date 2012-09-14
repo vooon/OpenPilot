@@ -96,7 +96,6 @@ SRC += $(OPSYSTEM)/main.c
 SRC += $(OPSYSTEM)/pios_board.c
 SRC += $(OPSYSTEM)/op_dfu.c
 SRC += $(OPSYSTEM)/ssp.c
-SRC += $(OPSYSTEM)/ssp_timer.c
 
 ## PIOS Hardware (STM32F10x)
 SRC += $(PIOSSTM32F10X)/pios_adc.c
