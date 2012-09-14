@@ -810,7 +810,7 @@ static const struct pios_softusart_cfg pios_softusart_cfg = {
 			.gpio = GPIOA,
 			.init = {
 				.GPIO_Pin   = GPIO_Pin_2,
-				.GPIO_Mode  = GPIO_Mode_Out_PP,
+				.GPIO_Mode  = GPIO_Mode_IPU,
 				.GPIO_Speed = GPIO_Speed_2MHz,
 			},
 		},
@@ -822,7 +822,7 @@ static const struct pios_softusart_cfg pios_softusart_cfg = {
 			.gpio = GPIOA,
 			.init = {
 				.GPIO_Pin   = GPIO_Pin_2,
-				.GPIO_Mode  = GPIO_Mode_Out_PP,
+				.GPIO_Mode  = GPIO_Mode_Out_OD,
 				.GPIO_Speed = GPIO_Speed_2MHz,
 			},
 		},

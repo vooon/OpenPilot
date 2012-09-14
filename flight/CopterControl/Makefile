@@ -104,7 +104,7 @@ OPTMODULES += Autotune
 endif
 
 # List of mandatory modules to include
-MODULES = Attitude Stabilization Actuator ManualControl FirmwareIAP
+# MODULES = Attitude Stabilization Actuator ManualControl FirmwareIAP
 # Telemetry must be last to grab the optional modules (why?)
 MODULES += Telemetry
 

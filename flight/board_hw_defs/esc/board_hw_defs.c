@@ -161,6 +161,7 @@ const struct pios_pwm_cfg pios_pwm_cfg = {
 #endif
 
 
+#if defined(PIOS_INCLUDE_ADC)
 /*
  * ADC system
  */
@@ -206,7 +207,7 @@ struct pios_adc_dev pios_adc_devs[] = {
 };
 
 uint8_t pios_adc_num_devices = NELEMENTS(pios_adc_devs);
-
+#endif
 
 #if defined(PIOS_INCLUDE_USART)
 #include <pios_usart_priv.h>
@@ -289,7 +290,7 @@ static const struct pios_softusart_cfg pios_softusart_cfg = {
 			.gpio = GPIOB,
 			.init = {
 				.GPIO_Pin   = GPIO_Pin_8,
-				.GPIO_Mode  = GPIO_Mode_Out_OD,
+				.GPIO_Mode  = GPIO_Mode_Out_PP,
 				.GPIO_Speed = GPIO_Speed_2MHz,
 			},
 		},

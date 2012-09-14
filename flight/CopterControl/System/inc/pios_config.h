@@ -48,12 +48,12 @@
 #define PIOS_INCLUDE_RCVR
 
 /* Supported receiver interfaces */
-#define PIOS_INCLUDE_DSM
+/*#define PIOS_INCLUDE_DSM
 #define PIOS_INCLUDE_SBUS
 #define PIOS_INCLUDE_PPM
 #define PIOS_INCLUDE_PWM
 #define PIOS_INCLUDE_GCSRCVR
-
+*/
 /* Supported USART-based PIOS modules */
 #define PIOS_INCLUDE_TELEMETRY_RF
 #define PIOS_INCLUDE_GPS
@@ -74,7 +74,7 @@
 #define PIOS_INCLUDE_GPIO
 #define PIOS_INCLUDE_EXTI
 #define PIOS_INCLUDE_RTC
-#define PIOS_INCLUDE_WDG
+//#define PIOS_INCLUDE_WDG
 #define PIOS_INCLUDE_BL_HELPER
 #define PIOS_INCLUDE_SOFTUSART
 

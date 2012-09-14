@@ -222,7 +222,7 @@ int32_t PIOS_SOFTUSART_Init(uint32_t *softusart_id, const struct pios_softusart_
 	TIM_ITConfig(chan->timer, TIM_IT_Update, ENABLE);
 	
 	// Set default baud rate
-	PIOS_SOFTUSART_ChangeBaud((uint32_t)softusart_dev, 9600);
+	PIOS_SOFTUSART_ChangeBaud((uint32_t)softusart_dev, 4800);
 	
 	// Configure the IO pin
 	GPIO_Init(softusart_dev->cfg->tx.pin.gpio, &softusart_dev->cfg->rx.pin.init);
@@ -334,8 +334,7 @@ static void PIOS_SOFTUSART_TxStart(uint32_t usart_id, uint16_t tx_bytes_avail)
 	bool valid = PIOS_SOFTUSART_validate(softusart_dev);
 	PIOS_Assert(valid);
 
-	if(!PIOS_SOFTUSART_TestStatus(softusart_dev, TRANSMIT_IN_PROGRESS) &&
-	   PIOS_SOFTUSART_TestStatus(softusart_dev, TRANSMIT_DATA_REG_EMPTY)) {
+	if(PIOS_SOFTUSART_TestStatus(softusart_dev, TRANSMIT_DATA_REG_EMPTY)) {
 		//YES - initiate sending procedure
 		
 		if (softusart_dev->tx_out_cb) {
@@ -625,7 +624,7 @@ static void PIOS_SOFTUSART_tim_edge_cb (uint32_t tim_id, uint32_t context, uint8
 			if(RX_TEST)	softusart_dev->rx_samp++; // sampling in the middle of current bit
 			if(RX_TEST)	softusart_dev->rx_samp++;
 			if(RX_TEST) softusart_dev->rx_samp++;
-			
+
 			if(softusart_dev->rx_bit == 0) {
 				if(softusart_dev->rx_samp == 0) {  // start bit!
 					softusart_dev->rx_bit = 1;     // correctly received, continue
@@ -645,7 +644,6 @@ static void PIOS_SOFTUSART_tim_edge_cb (uint32_t tim_id, uint32_t context, uint8
 					case 2: 	
 						PIOS_SOFTUSART_SetStatus(softusart_dev, RECEIVE_NOISE_ERROR);
 						// noise in middle samples, "1" received
-						break;
 #ifdef PARITY
 					case 3:	
 						if(softusart_dev->rx_bit < DATA_LENGTH)
@@ -713,8 +711,9 @@ static void PIOS_SOFTUSART_tim_edge_cb (uint32_t tim_id, uint32_t context, uint8
 			}
 		}
 		softusart_dev->rx_phase = !softusart_dev->rx_phase;
-	} else {
+	} else if (!PIOS_SOFTUSART_TestStatus(softusart_dev, TRANSMIT_IN_PROGRESS)) {
 		// receive is not in progres yet
+		count = (count - 10) % TIM4->ARR;
 		PIOS_SOFTUSART_EnableCompareMode(softusart_dev, count);
 		PIOS_SOFTUSART_SetStatus(softusart_dev,RECEIVE_IN_PROGRESS);	// receive byte initialization
 		softusart_dev->rx_bit = 0;
