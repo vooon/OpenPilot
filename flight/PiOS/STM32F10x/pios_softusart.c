@@ -107,6 +107,7 @@ static void PIOS_SOFTUSART_SetStatus(struct pios_softusart_dev *dev, uint16_t fl
 static void PIOS_SOFTUSART_SetStatus(struct pios_softusart_dev *dev, uint16_t flag);
 static void PIOS_SOFTUSART_EnableCaptureMode(struct pios_softusart_dev *softusart_dev);
 static void PIOS_SOFTUSART_EnableCompareMode(struct pios_softusart_dev *softusart_dev, int16_t count);
+static void PIOS_SOFTUSART_SetCCE(struct pios_softusart_dev *softusart_dev, bool enable);
 
 static bool PIOS_SOFTUSART_validate(struct pios_softusart_dev * pwm_dev)
 {
@@ -350,13 +351,6 @@ static void PIOS_SOFTUSART_TxStart(uint32_t usart_id, uint16_t tx_bytes_avail)
 				
 				// Clear the empty flag
 				PIOS_SOFTUSART_ClrStatus(softusart_dev, TRANSMIT_DATA_REG_EMPTY);
-				
-				// If nothing in progress mark it started
-				if(!PIOS_SOFTUSART_TestStatus(softusart_dev, TRANSMIT_IN_PROGRESS)) {
-					softusart_dev->tx_phase = 0;
-					softusart_dev->tx_bit = 0;
-					PIOS_SOFTUSART_SetStatus(softusart_dev, TRANSMIT_IN_PROGRESS);
-				};
 			}
 
 #if defined(PIOS_INCLUDE_FREERTOS)
@@ -367,6 +361,16 @@ static void PIOS_SOFTUSART_TxStart(uint32_t usart_id, uint16_t tx_bytes_avail)
 
 		}
 	}
+
+	// If data is loaded (this call or another) then start transmittion
+	/*if(!PIOS_SOFTUSART_TestStatus(softusart_dev, TRANSMIT_DATA_REG_EMPTY) && 
+		!PIOS_SOFTUSART_TestStatus(softusart_dev, TRANSMIT_IN_PROGRESS) && 
+		!PIOS_SOFTUSART_TestStatus(softusart_dev, RECEIVE_IN_PROGRESS)) {
+		softusart_dev->tx_phase = 0;
+		softusart_dev->tx_bit = 0;
+		PIOS_SOFTUSART_SetStatus(softusart_dev, TRANSMIT_IN_PROGRESS);
+	};*/
+
 }
 
 static void PIOS_SOFTUSART_RxStart(uint32_t usart_id, uint16_t rx_bytes_avail)
@@ -404,6 +408,7 @@ static void PIOS_SOFTUSART_tim_overflow_cb (uint32_t tim_id, uint32_t context, u
 			switch(softusart_dev->tx_bit) {     // begin of bit transmition
 				case 0:
 					// Enable output mode on the pin
+					PIOS_SOFTUSART_SetCCE(softusart_dev, false);
 					GPIO_Init(softusart_dev->cfg->tx.pin.gpio, &softusart_dev->cfg->tx.pin.init);
 
 					CLR_TX; //start bit transmition
@@ -477,12 +482,19 @@ static void PIOS_SOFTUSART_tim_overflow_cb (uint32_t tim_id, uint32_t context, u
 				} else {
 					// Disable output mode on the GPIO pin
 					GPIO_Init(softusart_dev->cfg->tx.pin.gpio, &softusart_dev->cfg->rx.pin.init);
+					PIOS_SOFTUSART_SetCCE(softusart_dev, true);
 					PIOS_SOFTUSART_ClrStatus(softusart_dev, TRANSMIT_IN_PROGRESS);
 				}
 			}
 			else
 				++softusart_dev->tx_bit;
-		};
+		} else if(!PIOS_SOFTUSART_TestStatus(softusart_dev, TRANSMIT_DATA_REG_EMPTY) && 
+			!PIOS_SOFTUSART_TestStatus(softusart_dev, RECEIVE_IN_PROGRESS)) {
+				softusart_dev->tx_phase = 0;
+				softusart_dev->tx_bit = 0;
+				PIOS_SOFTUSART_SetStatus(softusart_dev, TRANSMIT_IN_PROGRESS);
+				PIOS_LED_Toggle(0);
+		}
 	};
 	softusart_dev->tx_phase = !softusart_dev->tx_phase;
 #if defined(PIOS_INCLUDE_FREERTOS)
@@ -585,8 +597,16 @@ static void PIOS_SOFTUSART_EnableCaptureMode(struct pios_softusart_dev *softusar
 			softusart_dev->cfg->rx.timer->CCMR2 |=  0x1100;
 			break;  
 	}
-	softusart_dev->cfg->rx.timer->CCER |= softusart_dev->ccp;
-	
+	//softusart_dev->cfg->rx.timer->CCER |= softusart_dev->ccp;
+	TIM_ICInitTypeDef tim_ic_init = {
+		.TIM_Channel = softusart_dev->cfg->rx.timer_chan,
+		.TIM_ICPolarity = TIM_ICPolarity_Falling,
+		.TIM_ICSelection = TIM_ICSelection_DirectTI,
+		.TIM_ICPrescaler = TIM_ICPSC_DIV1,
+		.TIM_ICFilter = 0x4,
+	};
+	TIM_ICInit(softusart_dev->cfg->rx.timer, &tim_ic_init);
+
 	//Reenable interrupt
 	PIOS_SOFTUSART_SetCCE(softusart_dev, true);
 	PIOS_SOFTUSART_SetIrqCC(softusart_dev, true);
@@ -695,12 +715,6 @@ static void PIOS_SOFTUSART_tim_edge_cb (uint32_t tim_id, uint32_t context, uint8
 						PIOS_SOFTUSART_ClrStatus(softusart_dev,RECEIVE_IN_PROGRESS);
 						PIOS_SOFTUSART_EnableCaptureMode(softusart_dev);
 
-						if (yield) {
-#if defined(PIOS_INCLUDE_FREERTOS)
-							vPortYieldFromISR();
-#endif	/* PIOS_INCLUDE_FREERTOS */
-						}
-
 					}
 					else
 						softusart_dev->rx_bit++;
@@ -713,7 +727,6 @@ static void PIOS_SOFTUSART_tim_edge_cb (uint32_t tim_id, uint32_t context, uint8
 		softusart_dev->rx_phase = !softusart_dev->rx_phase;
 	} else if (!PIOS_SOFTUSART_TestStatus(softusart_dev, TRANSMIT_IN_PROGRESS)) {
 		// receive is not in progres yet
-		count = (count - 10) % TIM4->ARR;
 		PIOS_SOFTUSART_EnableCompareMode(softusart_dev, count);
 		PIOS_SOFTUSART_SetStatus(softusart_dev,RECEIVE_IN_PROGRESS);	// receive byte initialization
 		softusart_dev->rx_bit = 0;

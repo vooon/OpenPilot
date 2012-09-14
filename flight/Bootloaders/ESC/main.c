@@ -106,7 +106,15 @@ int main() {
 	uint32_t stopwatch = 0;
 	uint32_t prev_ticks = PIOS_DELAY_GetuS();
 
+	PIOS_LED_Toggle(1);
+	PIOS_DELAY_WaitmS(100);
+	PIOS_LED_Toggle(1);
+	PIOS_DELAY_WaitmS(100);
+	PIOS_LED_Toggle(1);
+
+
 	// while (1) {
+	// 	count++;
 	// 	uint8_t c;
 	// 	if (PIOS_COM_ReceiveBuffer(pios_com_softusart_id, &c, 1, 0) == 1) {
 	// 		PIOS_LED_Toggle(0);
@@ -263,6 +271,7 @@ void SSP_SerialWrite(uint8_t value) {
 	written_bytes++;
 	w_byte_record[(w_brp++) % 8] = value; 
 	PIOS_COM_SendChar(pios_com_softusart_id, value);
+	PIOS_DELAY_WaitmS(5);
 }
 uint32_t SSP_GetTime(void) {
 	return sspTimeSource();

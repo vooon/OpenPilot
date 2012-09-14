@@ -7,7 +7,7 @@ end
 
 define connect2
 	target extended-remote localhost:4242
-	file ./build/fw_esc/fw_esc.elf
+	file ./build/bl_esc/bl_esc.elf
 end
 
 define hook-step
