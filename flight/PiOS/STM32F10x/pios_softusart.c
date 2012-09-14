@@ -227,6 +227,9 @@ int32_t PIOS_SOFTUSART_Init(uint32_t *softusart_id, const struct pios_softusart_
 	// Configure the IO pin
 	GPIO_Init(softusart_dev->cfg->tx.pin.gpio, &softusart_dev->cfg->rx.pin.init);
 
+	// No data initially in the outgoing buffer
+	PIOS_SOFTUSART_SetStatus(softusart_dev, TRANSMIT_DATA_REG_EMPTY);
+
 	PIOS_SOFTUSART_EnableCaptureMode(softusart_dev);
 	*softusart_id = (uint32_t)softusart_dev;
 	
@@ -331,7 +334,7 @@ static void PIOS_SOFTUSART_TxStart(uint32_t usart_id, uint16_t tx_bytes_avail)
 	bool valid = PIOS_SOFTUSART_validate(softusart_dev);
 	PIOS_Assert(valid);
 
-	if(!PIOS_SOFTUSART_TestStatus(softusart_dev, TRANSMIT_IN_PROGRESS) ||
+	if(!PIOS_SOFTUSART_TestStatus(softusart_dev, TRANSMIT_IN_PROGRESS) &&
 	   PIOS_SOFTUSART_TestStatus(softusart_dev, TRANSMIT_DATA_REG_EMPTY)) {
 		//YES - initiate sending procedure
 		
@@ -356,6 +359,13 @@ static void PIOS_SOFTUSART_TxStart(uint32_t usart_id, uint16_t tx_bytes_avail)
 					PIOS_SOFTUSART_SetStatus(softusart_dev, TRANSMIT_IN_PROGRESS);
 				};
 			}
+
+#if defined(PIOS_INCLUDE_FREERTOS)
+			if (yield) {
+				vPortYieldFromISR();
+			}
+#endif	/* PIOS_INCLUDE_FREERTOS */
+
 		}
 	}
 }
