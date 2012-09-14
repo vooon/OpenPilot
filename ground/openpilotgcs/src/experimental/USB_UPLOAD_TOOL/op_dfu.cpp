@@ -233,37 +233,20 @@ bool OP_DFU::UploadData(qint32 const & numberOfBytes, QByteArray  & data)
             packetsize=lastPacketCount;
         else
             packetsize=14;
-        // qDebug()<<packetcount;
-        buf[2] = packetcount>>24;//DFU Count
-        buf[3] = packetcount>>16;//DFU Count
-        buf[4] = packetcount>>8;//DFU Count
-        buf[5] = packetcount;//DFU Count
+        buf[2] = packetcount>>24; //DFU Count
+        buf[3] = packetcount>>16; //DFU Count
+        buf[4] = packetcount>>8;  //DFU Count
+        buf[5] = packetcount;     //DFU Count
         char *pointer=data.data();
         pointer=pointer+4*14*packetcount;
-        //  qDebug()<<"Packet Number="<<packetcount<<"Data0="<<(int)data[0]<<" Data1="<<(int)data[1]<<" Data0="<<(int)data[2]<<" Data0="<<(int)data[3]<<" buf6="<<(int)buf[6]<<" buf7="<<(int)buf[7]<<" buf8="<<(int)buf[8]<<" buf9="<<(int)buf[9];
         CopyWords(pointer,buf+6,packetsize*4);
-        //        for (int y=0;y<packetsize*4;++y)
-        //        {
-
-        //                qDebug()<<y<<":"<<(int)data[packetcount*14*4+y]<<"---"<<(int)buf[6+y];
-
-
-        //        }
-        // qDebug()<<" Data0="<<(int)data[0]<<" Data0="<<(int)data[1]<<" Data0="<<(int)data[2]<<" Data0="<<(int)data[3]<<" buf6="<<(int)buf[6]<<" buf7="<<(int)buf[7]<<" buf8="<<(int)buf[8]<<" buf9="<<(int)buf[9];
-        //delay::msleep(send_delay);
-        // if(int ret=StatusRequest()!=OP_DFU::uploading) return false;
         int result = sendData(buf, BUF_LEN);
-        //   qDebug()<<"sent:"<<result;
         if(result<1)
         {
             return false;
         }
-
-        //  qDebug() << "UPLOAD:"<<"Data="<<(int)buf[6]<<(int)buf[7]<<(int)buf[8]<<(int)buf[9]<<";"<<result << " bytes sent";
-
     }
     cout<<"\n";
-    // while(true){}
     return true;
 }
 OP_DFU::Status OP_DFU::UploadDescription(QString  & description)

@@ -23,8 +23,10 @@ int16_t port::pfSerialRead(void)
     QMutexLocker lock(portMutex);
 
     if (inputBuffer.length() > 0) {
+        int16_t c = inputBuffer.at(0);
+        inputBuffer = inputBuffer.mid(1,inputBuffer.length() - 1);
         qDebug() << "returning a buffer byte";
-        return inputBuffer.remove(0,1).at(0);
+        return c;
     }
 
     char c[1];
@@ -38,7 +40,7 @@ int16_t port::pfSerialRead(void)
 
 void port::pfSerialWrite(uint8_t c)
 {
-    QMutexLocker lock(portMutex);
+    //QMutexLocker lock(portMutex);
 
     usleep(100);
     while(sport->bytesAvailable()) {
