@@ -433,7 +433,7 @@ void qssp::sf_MakePacket( uint8_t *txBuf, const uint8_t * pdata, uint16_t length
     for (int i = 0 ; i < bufPos + 1; i++) {
             out.append(QString(" 0x%1").arg(txBuf[i],1,16));
     }
-    qDebug() << "Send seqNo" << seqNo << " " << out;
+    //qDebug() << "Send seqNo" << seqNo << " " << out;
 
 }
 

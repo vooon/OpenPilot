@@ -32,7 +32,7 @@ int16_t port::pfSerialRead(void)
     char c[1];
     if(sport->bytesAvailable()) {
         sport->read(c,1);
-        qDebug() << QString("Read %1").arg((uint8_t)c[0],1,16);
+        //qDebug() << QString("Read %1").arg((uint8_t)c[0],1,16);
     }
     else
         return -1;
