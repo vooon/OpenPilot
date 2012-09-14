@@ -106,14 +106,13 @@ SRC += $(PIOSSTM32F10X)/pios_pwm.c
 SRC += $(PIOSSTM32F10X)/pios_tim.c
 SRC += $(PIOSSTM32F10X)/pios_wdg.c
 SRC += $(PIOSSTM32F10X)/pios_softusart.c
+SRC += $(PIOSSTM32F10X)/pios_iap.c
+SRC += $(PIOSSTM32F10X)/pios_bl_helper.c
 
 ## PIOS Hardware (Common)
 SRC += $(PIOSCOMMON)/pios_com.c
 SRC += $(PIOSCOMMON)/pios_rcvr.c
 SRC += $(PIOSCOMMON)/pios_hmc5843.c
-SRC += $(PIOSCOMMON)/printf-stdarg.c
-SRC += $(PIOSCOMMON)/pios_iap.c
-SRC += $(PIOSCOMMON)/pios_bl_helper.c
 
 ## CMSIS for STM32
 SRC += $(CMSISDIR)/core_cm3.c
@@ -269,6 +268,7 @@ endif
 
 CFLAGS += -Wall
 CFLAGS += -Werror
+CFLAGS += -ffunction-sections -fdata-sections
 CFLAGS += -Wa,-adhlns=$(addprefix $(OUTDIR)/, $(notdir $(addsuffix .lst, $(basename $<))))
 # Compiler flags to generate dependency files:
 CFLAGS += -MD -MP -MF $(OUTDIR)/dep/$(@F).d
