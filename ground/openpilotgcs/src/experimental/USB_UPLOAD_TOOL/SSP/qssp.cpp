@@ -343,6 +343,7 @@ uint16_t qssp::ssp_Synchronise( )
     sf_MakePacket( thisport->txBuf, NULL, 0, thisport->txSeqNo );    // construct the packet
     sf_SendPacket(  );
     sf_SetSendTimeout(  );
+    qDebug() << "Send sync";
     thisport->SendState = SSP_AWAITING_ACK;
     packet_status = SSP_TX_WAITING;
 #else
@@ -427,6 +428,12 @@ void qssp::sf_MakePacket( uint8_t *txBuf, const uint8_t * pdata, uint16_t length
     }
     txBuf[bufPos++] = LOWERBYTE(crc);
     txBuf[bufPos]   = UPPERBYTE(crc);
+
+    QString out = "";
+    for (int i = 0 ; i < bufPos + 1; i++) {
+            out.append(QString(" 0x%1").arg(txBuf[i],1,16));
+    }
+    qDebug() << "Send seqNo" << seqNo << " " << out;
 
 }
 

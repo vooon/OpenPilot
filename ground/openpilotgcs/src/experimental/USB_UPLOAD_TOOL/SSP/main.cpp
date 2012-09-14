@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 
     port * info;
     PortSettings settings;
-    settings.BaudRate=BAUD9600;
+    settings.BaudRate=BAUD4800;
     settings.DataBits=DATA_8;
     settings.FlowControl=FLOW_OFF;
     settings.Parity=PAR_NONE;

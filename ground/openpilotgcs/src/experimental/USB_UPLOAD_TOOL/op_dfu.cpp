@@ -11,19 +11,19 @@ OP_DFU::OP_DFU(bool _debug,bool _use_serial,QString portname,bool umodereset): d
         //  getch();
         // delay::msleep(2000);
         PortSettings settings;
-        settings.BaudRate=BAUD9600;
+        settings.BaudRate=BAUD4800;
         settings.DataBits=DATA_8;
         settings.FlowControl=FLOW_OFF;
         settings.Parity=PAR_NONE;
-        settings.StopBits=STOP_2;
-        settings.Timeout_Millisec=1000;
+        settings.StopBits=STOP_1;
+        settings.Timeout_Millisec=5000;
         info=new port(settings,portname);
         info->rxBuf 		= sspRxBuf;
         info->rxBufSize 	= MAX_PACKET_DATA_LEN;
         info->txBuf 		= sspTxBuf;
         info->txBufSize 	= MAX_PACKET_DATA_LEN;
         info->max_retry     = 10;
-        info->timeoutLen	= 1000;
+        info->timeoutLen	= 10000;
         if(info->status()!=port::open)
         {
             cout<<"Could not open serial port\n";
