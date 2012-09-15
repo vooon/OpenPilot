@@ -7,9 +7,6 @@ OP_DFU::OP_DFU(bool _debug,bool _use_serial,QString portname,bool umodereset): d
 {
     if(use_serial)
     {
-        cout<<"Connect hw now and press any key";
-        //  getch();
-        // delay::msleep(2000);
         PortSettings settings;
         settings.BaudRate=BAUD4800;
         settings.DataBits=DATA_8;
@@ -23,7 +20,7 @@ OP_DFU::OP_DFU(bool _debug,bool _use_serial,QString portname,bool umodereset): d
         info->txBuf 		= sspTxBuf;
         info->txBufSize 	= MAX_PACKET_DATA_LEN;
         info->max_retry     = 10;
-        info->timeoutLen	= 1000;
+        info->timeoutLen	= 500;
         if(info->status()!=port::open)
         {
             cout<<"Could not open serial port\n";
@@ -32,7 +29,7 @@ OP_DFU::OP_DFU(bool _debug,bool _use_serial,QString portname,bool umodereset): d
         }
         if(umodereset)
             sendReset();
-        delay::msleep(5000);
+        delay::msleep(500);
         serialhandle=new qsspt(info,debug);
 
         while(serialhandle->ssp_Synchronise()==false)
