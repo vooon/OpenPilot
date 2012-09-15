@@ -451,20 +451,41 @@ uint8_t isBiggerThanAvailable(DFUTransfer type, uint32_t size) {
 	}
 }
 
+/**
+ * Calculate the CRC of the uploaded firmware
+ * @returns the Computed CRC
+ */
 uint32_t CalcFirmCRC() {
-	switch (currentProgrammingDestination) {
-	case Self_flash:
-		return PIOS_BL_HELPER_CRC_Memory_Calc();
-		break;
-	case Remote_flash_via_spi:
-		return 0;
-		break;
-	default:
-		return 0;
-		break;
-	}
-
+	return PIOS_BL_HELPER_CRC_Memory_Calc();
 }
+
+/**
+ * Check the CRC of the uploaded firmware against the
+ * value stored that is expected
+ * @returns True if they match
+ */
+bool CheckCRC()
+{
+	uint32_t real_crc = CalcFirmCRC();
+	// TODO: Get the expected CRC out of the description field
+	uint32_t expected_crc = 0;
+
+	return expected_crc == real_crc;
+}
+
+/**
+ * Check for a flag in the uploaded firmware that indicates
+ * not to wait for an attempted DFU connection used for heavily 
+ * validated firmwares or where it is better to reboot quickly than
+ * make a mistake
+ * @returns True if the firmware should boot immediately
+ */
+bool QuickBoot()
+{
+	//TODO: Get this value from the firmware description
+	return false;
+}
+
 void sendData(uint8_t * buf, uint16_t size) {
 	ssp_SendData(&ssp_port, buf, size);
 }

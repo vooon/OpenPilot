@@ -91,6 +91,8 @@ int main() {
 	PIOS_SYS_Init();
 	PIOS_Board_Init();
 
+	// TODO: Know enough about ESC hardware to shut it down in case of reboot
+
 	// Bootup logic:
 	// Check for DFU request.  If there is one stay here.
 	// Check the firmware.  If there is a correct CRC _AND_ a quick boot flag go to code
@@ -100,6 +102,12 @@ int main() {
 	if (PIOS_IAP_CheckRequest() == TRUE) {
 		DeviceState = DFUidle;
 		PIOS_IAP_ClearRequest();
+	} else if (CheckCRC()) {
+		if (QuickBoot())
+			goto jump;
+	} else {
+		// When the CRC is bad we should stay here regardless
+		DeviceState = DFUidle;
 	}
 
 	PIOS_LED_On(0);
@@ -186,6 +194,7 @@ int main() {
 			timeout = true;
 	}
 	
+jump:
 	jump_to_app();
 	
 	// No valid app found
