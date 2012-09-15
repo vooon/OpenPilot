@@ -30,6 +30,8 @@ else
 	MSG_BOARD :=
 endif
 
+QUICK_BOOT ?= 0
+
 # Define Messages
 # English
 MSG_FORMATERROR      = ${quote} Can not handle output-format${quote}
@@ -133,7 +135,8 @@ $(1).firmwareinfo.c: $(1) $(TOP)/make/templates/firmwareinfotemplate.c FORCE
 		--type=$(2) \
 		--fw_size=$(FW_BANK_SIZE) \
 		--desc_size=$(FW_DESC_SIZE) \
-		--revision=$(3)
+		--revision=$(3) \
+		--quick_boot=${QUICK_BOOT}
 
 $(eval $(call COMPILE_C_TEMPLATE, $(1).firmwareinfo.c))
 

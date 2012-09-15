@@ -351,6 +351,8 @@ dependent targets.
                       help='Size of the firmware (used to compute CRC)');
     parser.add_option('--desc_size', default='0',
                       help='Size of the description (used to compute CRC)');
+    parser.add_option('--quick_boot', default='0',
+                      help='For DFU that support it, whether to go straight to firmware');
 
     (args, positional_args) = parser.parse_args()
     if len(positional_args) != 0:
@@ -377,7 +379,8 @@ dependent targets.
         BOARD_TYPE = args.type,
         BOARD_REVISION = args.revision,
         SHA1 = sha1(args.image),
-        FWCRC = crc(args.image,int(args.fw_size,0) - int(args.desc_size,0))
+        FWCRC = crc(args.image,int(args.fw_size,0) - int(args.desc_size,0)),
+        QUICK_BOOT = args.quick_boot
     )
 
     if args.info:

@@ -67,7 +67,7 @@ const struct fw_version_info fw_version_blob __attribute__((used)) __attribute__
 	.commit_tag_name = "${FWTAG}",
 	.sha1sum = { ${SHA1} },
 	.firmware_crc = ${FWCRC},
-	.quick_boot = 1,
+	.quick_boot = ${QUICK_BOOT},
 }; 
 
 /**
