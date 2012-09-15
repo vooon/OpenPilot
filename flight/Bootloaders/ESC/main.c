@@ -90,13 +90,17 @@ int main() {
 	/* Brings up System using CMSIS functions, enables the LEDs. */
 	PIOS_SYS_Init();
 	PIOS_Board_Init();
-/*
+
+	// Bootup logic:
+	// Check for DFU request.  If there is one stay here.
+	// Check the firmware.  If there is a correct CRC _AND_ a quick boot flag go to code
+	// If the firmware is not OK stay here
+	// Otherwise wait 2 seconds for a serial command
 	DeviceState = BLidle;
 	if (PIOS_IAP_CheckRequest() == TRUE) {
 		DeviceState = DFUidle;
 		PIOS_IAP_ClearRequest();
 	}
-	*/
 
 	PIOS_LED_On(0);
 	PIOS_LED_Off(1);
@@ -108,24 +112,14 @@ int main() {
 	uint32_t stopwatch = 0;
 	uint32_t prev_ticks = PIOS_DELAY_GetuS();
 
+	// Sign of life
 	PIOS_LED_Toggle(1);
 	PIOS_DELAY_WaitmS(100);
 	PIOS_LED_Toggle(1);
 	PIOS_DELAY_WaitmS(100);
 	PIOS_LED_Toggle(1);
 
-
-	// while (1) {
-	// 	count++;
-	// 	uint8_t c;
-	// 	if (PIOS_COM_ReceiveBuffer(pios_com_softusart_id, &c, 1, 0) == 1) {
-	// 		PIOS_LED_Toggle(0);
-	// 		PIOS_LED_Toggle(1);
-	// 		PIOS_DELAY_WaitmS(51);
-	// 		PIOS_COM_SendChar(pios_com_softusart_id, c+1);
-	// 	}
-	// }
-
+	// Initialize the SSP layer between serial port and DFU
 	fifoBuf_init(&ssp_buffer, rx_buffer, UART_BUFFER_SIZE);
 	ssp_Init(&ssp_port, &SSP_PortConfig);
 
@@ -169,7 +163,8 @@ int main() {
 			PIOS_LED_Off(1);
 			break;
 		case BLidle:
-			period1 = 0;
+			period1 = 1000;
+			sweep_steps1 = 100;
 			PIOS_LED_On(1);
 			break;
 		default://error
@@ -187,7 +182,7 @@ int main() {
 		
 		if (stopwatch > 50 * 1000 * 1000)
 			stopwatch = 0;
-		if ((stopwatch > 6 * 1000 * 1000) && (DeviceState == BLidle))
+		if ((stopwatch > 3 * 1000 * 1000) && (DeviceState == BLidle))
 			timeout = true;
 	}
 	

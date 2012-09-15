@@ -168,6 +168,27 @@ int main()
 		
 		// 1 based indexing on channels
 		uint16_t capture_value = PIOS_RCVR_Read(pios_rcvr_group_map[0],1);
+
+		// Small state machine to check for DFU command
+		static int dfu_count = 0;
+		if ((capture_value > 90) & (capture_value < 200)) { 
+			static bool pulse_100 = false;
+			if (pulse_100 && (abs(capture_value - 100) < 10)) {
+				pulse_100 = false;
+				dfu_count++;
+			} else if (!pulse_100 && (abs(capture_value - 150) < 10)) {
+				pulse_100 = true;
+				dfu_count++;
+			}
+			if (dfu_count > 1) {
+				PIOS_ESC_Off();
+				PIOS_IAP_SetRequest1();
+				PIOS_IAP_SetRequest2();
+				PIOS_SYS_Reset();
+			}
+		} else
+			dfu_count = 0;
+
 		esc_control.pwm_input = capture_value;
 		if(esc_control.control_method == ESC_CONTROL_PWM) {
 			if (capture_value == (uint16_t) PIOS_RCVR_INVALID || capture_value == (uint16_t) PIOS_RCVR_NODRIVER || (uint16_t)	capture_value == PIOS_RCVR_TIMEOUT) {
