@@ -80,7 +80,7 @@ uint32_t PIOS_BL_HELPER_CRC_Memory_Calc()
 
 	PIOS_BL_HELPER_CRC_Ini();
 	CRC_ResetDR();
-	CRC_CalcBlockCRC((uint32_t *) bdinfo->fw_base, (bdinfo->fw_size) >> 2);
+	CRC_CalcBlockCRC((uint32_t *) bdinfo->fw_base, (bdinfo->fw_size - bdinfo->desc_size) >> 2);
 	return CRC_GetCRC();
 }
 
