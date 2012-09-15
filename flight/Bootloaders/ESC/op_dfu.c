@@ -452,6 +452,25 @@ uint8_t isBiggerThanAvailable(DFUTransfer type, uint32_t size) {
 }
 
 /**
+ * Checks there is a valid firmware description at the appropriate
+ * location and if so returns it
+ */
+struct fw_version_info * GetDescription()
+{
+	const struct pios_board_info * bdinfo = &pios_board_info_blob;
+	if (bdinfo->magic != 0xBDBDBDBD)
+		return NULL;
+
+	struct fw_version_info *fw_info = (struct fw_version_info *) 
+		bdinfo->fw_base + bdinfo->fw_size - bdinfo->desc_size;
+
+	if (fw_info->magic[0] != 'O' || fw_info->magic[1] != 'p' || fw_info->magic[2] != 'F' || fw_info->magic[3] != 'w')
+		return NULL;
+
+	return fw_info;
+}
+
+/**
  * Calculate the CRC of the uploaded firmware
  * @returns the Computed CRC
  */
@@ -466,11 +485,12 @@ uint32_t CalcFirmCRC() {
  */
 bool CheckCRC()
 {
-	uint32_t real_crc = CalcFirmCRC();
-	// TODO: Get the expected CRC out of the description field
-	uint32_t expected_crc = 0;
+	struct fw_version_info * fw_info = GetDescription();
+	if (fw_info == NULL)
+		return false;
 
-	return expected_crc == real_crc;
+	uint32_t real_crc = CalcFirmCRC();
+	return (real_crc) == fw_info->firmware_crc;
 }
 
 /**
@@ -482,8 +502,10 @@ bool CheckCRC()
  */
 bool QuickBoot()
 {
-	//TODO: Get this value from the firmware description
-	return false;
+	struct fw_version_info * fw_info = GetDescription();
+	if (fw_info == NULL)
+		return false;
+	return fw_info->quick_boot != 0;
 }
 
 void sendData(uint8_t * buf, uint16_t size) {

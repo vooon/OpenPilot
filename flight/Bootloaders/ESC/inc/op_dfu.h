@@ -41,6 +41,19 @@ typedef struct {
 	uint32_t FW_Crc;
 } Device;
 
+struct __attribute__((packed)) fw_version_info {
+        uint8_t magic[4];
+        uint32_t commit_hash_prefix;
+        uint32_t timestamp;
+        uint8_t board_type;
+        uint8_t board_revision;
+        uint8_t commit_tag_name[26];
+        uint8_t sha1sum[20];
+        uint32_t firmware_crc;
+        uint8_t quick_boot;
+        uint8_t pad[35];
+};
+
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 /* Exported define -----------------------------------------------------------*/
