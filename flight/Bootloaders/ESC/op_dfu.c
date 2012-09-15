@@ -467,8 +467,7 @@ struct fw_version_info * GetDescription()
 	if (bdinfo->magic != 0xBDBDBDBD)
 		return NULL;
 
-	struct fw_version_info *fw_info = (struct fw_version_info *) 
-		bdinfo->fw_base + bdinfo->fw_size - bdinfo->desc_size;
+	struct fw_version_info *fw_info = (struct fw_version_info *)  bdinfo->desc_base;
 
 	if (fw_info->magic[0] != 'O' || fw_info->magic[1] != 'p' || fw_info->magic[2] != 'F' || fw_info->magic[3] != 'w')
 		return NULL;
