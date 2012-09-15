@@ -13,6 +13,7 @@ from datetime import datetime
 from string import Template
 import optparse
 import hashlib
+import struct
 import sys
 
 class Repo:
@@ -235,6 +236,50 @@ def sha1(file):
         hex_stream = lambda s:",".join(['0x'+hex(ord(c))[2:].zfill(2) for c in s])
         return hex_stream(sha1.digest())
 
+def crc(file, firmware_size):
+    """Provides C source representation of sha1 sum of file"""
+    if file == None:
+        return ""
+    else:
+        total_words = (firmware_size / 4)
+        words = 0
+        crc = 0xFFFFFFFF
+        crcTable = [
+            0x00000000,0x04C11DB7,0x09823B6E,0x0D4326D9,0x130476DC,0x17C56B6B,0x1A864DB2,0x1E475005,
+            0x2608EDB8,0x22C9F00F,0x2F8AD6D6,0x2B4BCB61,0x350C9B64,0x31CD86D3,0x3C8EA00A,0x384FBDBD ];
+        with open(file, 'rb') as f:
+            word = f.read(4)
+            while word != "":
+                words = words + 1
+                int_value = struct.unpack("I", word)
+
+                crc = crc ^int_value[0]
+
+                crc = ((crc << 4) ^ crcTable[crc >> 28]) & 0xFFFFFFFF
+                crc = ((crc << 4) ^ crcTable[crc >> 28]) & 0xFFFFFFFF
+                crc = ((crc << 4) ^ crcTable[crc >> 28]) & 0xFFFFFFFF
+                crc = ((crc << 4) ^ crcTable[crc >> 28]) & 0xFFFFFFFF
+                crc = ((crc << 4) ^ crcTable[crc >> 28]) & 0xFFFFFFFF
+                crc = ((crc << 4) ^ crcTable[crc >> 28]) & 0xFFFFFFFF
+                crc = ((crc << 4) ^ crcTable[crc >> 28]) & 0xFFFFFFFF
+                crc = ((crc << 4) ^ crcTable[crc >> 28]) & 0xFFFFFFFF
+                word = f.read(4)
+
+            while words < total_words:
+                words = words + 1
+                crc = crc ^ 0xFFFFFFFF
+
+                crc = ((crc << 4) ^ crcTable[crc >> 28]) & 0xFFFFFFFF
+                crc = ((crc << 4) ^ crcTable[crc >> 28]) & 0xFFFFFFFF
+                crc = ((crc << 4) ^ crcTable[crc >> 28]) & 0xFFFFFFFF
+                crc = ((crc << 4) ^ crcTable[crc >> 28]) & 0xFFFFFFFF
+                crc = ((crc << 4) ^ crcTable[crc >> 28]) & 0xFFFFFFFF
+                crc = ((crc << 4) ^ crcTable[crc >> 28]) & 0xFFFFFFFF
+                crc = ((crc << 4) ^ crcTable[crc >> 28]) & 0xFFFFFFFF
+                crc = ((crc << 4) ^ crcTable[crc >> 28]) & 0xFFFFFFFF
+
+        return crc
+
 def xtrim(string, suffix, length):
     """Return string+suffix concatenated and trimmed up to length characters
 
@@ -302,6 +347,10 @@ dependent targets.
                         help='board type, for example, 0x04 for CopterControl');
     parser.add_option('--revision', default = "",
                         help='board revision, for example, 0x01');
+    parser.add_option('--fw_size', default='0',
+                      help='Size of the firmware (used to compute CRC)');
+    parser.add_option('--desc_size', default='0',
+                      help='Size of the description (used to compute CRC)');
 
     (args, positional_args) = parser.parse_args()
     if len(positional_args) != 0:
@@ -328,6 +377,7 @@ dependent targets.
         BOARD_TYPE = args.type,
         BOARD_REVISION = args.revision,
         SHA1 = sha1(args.image),
+        FWCRC = crc(args.image,int(args.fw_size,0) - int(args.desc_size,0))
     )
 
     if args.info:

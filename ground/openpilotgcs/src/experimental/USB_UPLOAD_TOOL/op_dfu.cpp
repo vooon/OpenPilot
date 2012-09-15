@@ -253,7 +253,7 @@ bool OP_DFU::UploadData(qint32 const & numberOfBytes, QByteArray  & data)
  */
 OP_DFU::Status OP_DFU::UploadDescription(QByteArray  & description)
 {
-    cout<<"Starting uploading description\n";
+    cout<<"Starting uploading description of length:" << description.length()  << "\n";
     if(description.length()%4!=0)
     {
         int pad=description.length()/4;
@@ -597,8 +597,13 @@ OP_DFU::Status OP_DFU::UploadFirmware(const QString &sfile, const bool &verify,i
         return OP_DFU::abort;
     }
     QByteArray arr=file.readAll();
-    const int DESC_LEN = 100;
-    QByteArray description = arr.remove(arr.size() - DESC_LEN - 1, DESC_LEN);
+    const int DESC_LEN = devices[device].SizeOfDesc;
+    QByteArray description = arr.mid(arr.size() - DESC_LEN, DESC_LEN);
+    arr.remove(arr.size() - DESC_LEN, DESC_LEN);
+    if (description[0] != 'O' || description[1] != 'p' || description[2] != 'F' || description[3] != 'w') {
+        cout << "The description in the file doesnt have an OpFw header";
+        return OP_DFU::abort;
+    }
 
     if(debug)
         qDebug()<<"Bytes Loaded="<<arr.length();
@@ -668,6 +673,11 @@ OP_DFU::Status OP_DFU::UploadFirmware(const QString &sfile, const bool &verify,i
     {
         return ret;
     }
+    ret = UploadDescription(description);
+    if (ret != OP_DFU::Last_operation_Success) {
+        cout << "Failed to upload description";
+        return ret;
+    }
     if(verify)
     {
         cout<<"Starting code verification\n";
@@ -686,7 +696,6 @@ OP_DFU::Status OP_DFU::UploadFirmware(const QString &sfile, const bool &verify,i
     if(debug)
         qDebug()<<"Status="<<ret;
     cout<<"Firmware Uploading succeeded\n";
-    ret = UploadDescription(description);
     return ret;
 }
 OP_DFU::Status OP_DFU::CompareFirmware(const QString &sfile, const CompareType &type,int device)
@@ -805,13 +814,12 @@ void OP_DFU::printProgBar( int const & percent,QString const& label){
 quint32 OP_DFU::CRC32WideFast(quint32 Crc, quint32 Size, quint32 *Buffer)
 {
     //Size = Size >> 2; // /4  Size passed in as a byte count, assumed to be a multiple of 4
-
     while(Size--)
     {
         static const quint32 CrcTable[16] = { // Nibble lookup table for 0x04C11DB7 polynomial
                                               0x00000000,0x04C11DB7,0x09823B6E,0x0D4326D9,0x130476DC,0x17C56B6B,0x1A864DB2,0x1E475005,
                                               0x2608EDB8,0x22C9F00F,0x2F8AD6D6,0x2B4BCB61,0x350C9B64,0x31CD86D3,0x3C8EA00A,0x384FBDBD };
-
+        i++;
         Crc = Crc ^ *((quint32 *)Buffer); // Apply all 32-bits
 
         Buffer += 1;
