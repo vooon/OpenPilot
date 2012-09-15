@@ -405,6 +405,10 @@ void PIOS_SPI_flash_accel_irq_handler(void)
  * ADC system
  */
 #if defined(PIOS_INCLUDE_ADC)
+/*
+ * ADC system
+ */
+
 #include "pios_adc_priv.h"
 extern void PIOS_ADC_handler(void);
 void DMA1_Channel1_IRQHandler() __attribute__ ((alias("PIOS_ADC_handler")));
@@ -438,8 +442,17 @@ static const struct pios_adc_cfg pios_adc_cfg = {
 	}, 
 	.half_flag = DMA1_IT_HT1,
 	.full_flag = DMA1_IT_TC1,
+	.compute_downsample = true
 };
 
+struct pios_adc_dev pios_adc_devs[] = {
+	{
+		.cfg = &pios_adc_cfg,
+		.callback_function = NULL,
+	},
+};
+
+uint8_t pios_adc_num_devices = NELEMENTS(pios_adc_devs);
 void PIOS_ADC_handler() {
 	PIOS_ADC_DMA_Handler();
 }
