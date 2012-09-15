@@ -37,7 +37,7 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 //programmable devices
-Device devicesTable[10];
+Device devicesTable[1];
 uint8_t numberOfDevices = 1;
 
 DFUProgType currentProgrammingDestination; //flash, flash_trough spi
@@ -406,8 +406,17 @@ void processComand(uint8_t *xReceive_Buffer) {
 	}
 	return;
 }
+
+/**
+ * Populate the information about this board
+ */
 void OPDfuIni(uint8_t discover) {
 	const struct pios_board_info * bdinfo = &pios_board_info_blob;
+
+	// Only populate if the board information is valid
+	if(bdinfo->magic != 0xBDBDBDBD)
+		return;
+
 	Device dev;
 
 	dev.programmingType = Self_flash;
@@ -419,12 +428,9 @@ void OPDfuIni(uint8_t discover) {
 	dev.FW_Crc = CalcFirmCRC();
 	dev.devID = (bdinfo->board_type << 8) | (bdinfo->board_rev);
 	dev.devType = bdinfo->hw_type;
-	numberOfDevices = 1;
 	devicesTable[0] = dev;
-	if (discover) {
-		//TODO check other devices trough spi or whatever
-	}
 }
+
 uint32_t baseOfAdressType(DFUTransfer type) {
 	switch (type) {
 	case FW:
