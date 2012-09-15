@@ -233,9 +233,9 @@ OOCD_JTAG_SETUP += -f $(4) -f $(5)
 
 # initialize
 OOCD_BOARD_RESET = -c init
-# show the targets
-#OOCD_BOARD_RESET += -c targets
 # commands to prepare flash-write
+OOCD_BOARD_RESET += -c "reset_config none" 
+OOCD_BOARD_RESET += -c "soft_reset_halt"
 OOCD_BOARD_RESET += -c "reset halt"
 
 .PHONY: program
