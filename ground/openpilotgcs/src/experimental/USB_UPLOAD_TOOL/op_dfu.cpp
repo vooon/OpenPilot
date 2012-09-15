@@ -246,6 +246,40 @@ bool OP_DFU::UploadData(qint32 const & numberOfBytes, QByteArray  & data)
     cout<<"\n";
     return true;
 }
+
+/**
+ * @brief OP_DFU::UploadDescription Upload a byte array to description section
+ * @return Success or failure
+ */
+OP_DFU::Status OP_DFU::UploadDescription(QByteArray  & description)
+{
+    cout<<"Starting uploading description\n";
+    if(description.length()%4!=0)
+    {
+        int pad=description.length()/4;
+        pad=(pad+1)*4;
+        pad=pad-description.length();
+        QString padding;
+        padding.fill(' ',pad);
+        description.append(padding);
+    }
+    if(!StartUpload(description.length(),OP_DFU::Descript,0))
+        return OP_DFU::abort;
+    if(!UploadData(description.length(),description))
+    {
+        return OP_DFU::abort;
+    }
+    if(!EndOperation())
+    {
+        return OP_DFU::abort;
+    }
+    int ret=StatusRequest();
+
+    if(debug)
+        qDebug()<<"Upload description Status="<<ret;
+    return (OP_DFU::Status)ret;
+}
+
 OP_DFU::Status OP_DFU::UploadDescription(QString  & description)
 {
     cout<<"Starting uploading description\n";
@@ -563,6 +597,8 @@ OP_DFU::Status OP_DFU::UploadFirmware(const QString &sfile, const bool &verify,i
         return OP_DFU::abort;
     }
     QByteArray arr=file.readAll();
+    const int DESC_LEN = 100;
+    QByteArray description = arr.remove(arr.size() - DESC_LEN - 1, DESC_LEN);
 
     if(debug)
         qDebug()<<"Bytes Loaded="<<arr.length();
@@ -650,6 +686,7 @@ OP_DFU::Status OP_DFU::UploadFirmware(const QString &sfile, const bool &verify,i
     if(debug)
         qDebug()<<"Status="<<ret;
     cout<<"Firmware Uploading succeeded\n";
+    ret = UploadDescription(description);
     return ret;
 }
 OP_DFU::Status OP_DFU::CompareFirmware(const QString &sfile, const CompareType &type,int device)

@@ -114,6 +114,7 @@ public:
     bool StartUpload(qint32  const &numberOfBytes, TransferTypes const & type,quint32 crc);
     bool UploadData(qint32 const & numberOfPackets,QByteArray  & data);
     Status UploadDescription(QString  & description);
+    Status UploadDescription(QByteArray & description);
     Status UploadFirmware(const QString &sfile, const bool &verify,int device);
     Status StatusRequest();
     bool EndOperation();
