@@ -35,6 +35,8 @@
 
 #if defined(PIOS_INCLUDE_SOFTUSART)
 
+#define SLOW_STREAM
+ 
 #include "pios_softusart_priv.h"
 #include <pios_usart_priv.h>
 
@@ -479,6 +481,13 @@ static void PIOS_SOFTUSART_tim_overflow_cb (uint32_t tim_id, uint32_t context, u
 					PIOS_SOFTUSART_ClrStatus(softusart_dev, TRANSMIT_DATA_REG_EMPTY);
 					
 					PIOS_SOFTUSART_SetStatus(softusart_dev, TRANSMIT_IN_PROGRESS);
+
+#if defined(SLOW_STREAM)
+					// Now don't start the next transmission but let it be pickedu p
+					GPIO_Init(softusart_dev->cfg->tx.pin.gpio, &softusart_dev->cfg->rx.pin.init);
+					PIOS_SOFTUSART_SetCCE(softusart_dev, true);
+					PIOS_SOFTUSART_ClrStatus(softusart_dev, TRANSMIT_IN_PROGRESS);
+#endif
 				} else {
 					// Disable output mode on the GPIO pin
 					GPIO_Init(softusart_dev->cfg->tx.pin.gpio, &softusart_dev->cfg->rx.pin.init);

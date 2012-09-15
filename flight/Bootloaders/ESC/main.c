@@ -53,7 +53,7 @@ void SSP_SerialWrite( uint8_t);
 uint32_t SSP_GetTime(void);
 PortConfig_t SSP_PortConfig = { .rxBuf = SSP_RxBuf,
 		.rxBufSize = MAX_PACKET_DATA_LEN, .txBuf = SSP_TxBuf,
-		.txBufSize = MAX_PACKET_DATA_LEN, .max_retry = 10, .timeoutLen = 10000000,
+		.txBufSize = MAX_PACKET_DATA_LEN, .max_retry = 10, .timeoutLen = 1000000,
 		.pfCallBack = SSP_CallBack, .pfSerialRead = SSP_SerialRead,
 		.pfSerialWrite = SSP_SerialWrite, .pfGetTime = SSP_GetTime, };
 Port_t ssp_port;
@@ -256,7 +256,7 @@ int16_t SSP_SerialRead(void) {
 	if (PIOS_COM_ReceiveBuffer(pios_com_softusart_id, &byte, 1, 0) == 1) {
 		byte_record[(brp++) % 8] = byte; 
 		PIOS_LED_Toggle(1);
-		PIOS_DELAY_WaitmS(5);
+		PIOS_DELAY_WaituS(500);
 		byte_count++;
 		return byte;
 	} else {
@@ -271,7 +271,7 @@ void SSP_SerialWrite(uint8_t value) {
 	written_bytes++;
 	w_byte_record[(w_brp++) % 8] = value; 
 	PIOS_COM_SendChar(pios_com_softusart_id, value);
-	PIOS_DELAY_WaitmS(5);
+	PIOS_DELAY_WaituS(500);
 }
 uint32_t SSP_GetTime(void) {
 	return sspTimeSource();

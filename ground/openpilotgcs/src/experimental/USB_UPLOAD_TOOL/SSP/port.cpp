@@ -51,7 +51,7 @@ void port::pfSerialWrite(uint8_t c)
     }
 #endif
 
-    usleep(5000);
+    usleep(100);
     sport->write((char *) &c,1);
 
 #if defined(FLUSH_ECHO)

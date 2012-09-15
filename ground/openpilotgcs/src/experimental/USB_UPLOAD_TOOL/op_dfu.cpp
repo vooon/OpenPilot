@@ -23,7 +23,7 @@ OP_DFU::OP_DFU(bool _debug,bool _use_serial,QString portname,bool umodereset): d
         info->txBuf 		= sspTxBuf;
         info->txBufSize 	= MAX_PACKET_DATA_LEN;
         info->max_retry     = 10;
-        info->timeoutLen	= 10000;
+        info->timeoutLen	= 1000;
         if(info->status()!=port::open)
         {
             cout<<"Could not open serial port\n";

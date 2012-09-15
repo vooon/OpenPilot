@@ -125,13 +125,6 @@ int main()
 	PIOS_ESC_Off();
 	PIOS_ESC_SetDirection(config.Direction == ESCSETTINGS_DIRECTION_FORWARD ? ESC_FORWARD : ESC_BACKWARD);
 
-	while(1) {
-		uint8_t c;
-		if(PIOS_COM_ReceiveBuffer(pios_com_softusart_id, &c, 1, 0) == 1) {
-			PIOS_COM_SendBuffer(pios_com_softusart_id, &c, 1);
-		}
-	}
-
 	esc_serial_init();
 	
 	if (0) test_esc();
