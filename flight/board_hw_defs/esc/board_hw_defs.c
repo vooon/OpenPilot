@@ -141,7 +141,7 @@ static const struct pios_tim_channel pios_tim_rcvrport_all_channels[] = {
 			.gpio = GPIOB,
 			.init = {
 				.GPIO_Pin   = GPIO_Pin_8,
-				.GPIO_Mode  = GPIO_Mode_Out_PP,
+				.GPIO_Mode  = GPIO_Mode_IPD,
 				.GPIO_Speed = GPIO_Speed_2MHz,
 			},
 		},

@@ -1,6 +1,11 @@
 define connect
 	target remote localhost:3333
+	monitor reset_config none
 	monitor cortex_m3 vector_catch all
+	monitor poll
+	set mem inaccessible-by-default off
+	monitor flash probe 0
+	monitor reset halt
 	file ./build/fw_esc/fw_esc.elf
 end
 #monitor reset halt

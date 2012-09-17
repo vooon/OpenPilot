@@ -87,6 +87,7 @@ uint32_t offs = 0;
 struct esc_control esc_control;
 extern EscSettingsData config;
 extern uint32_t pios_rcvr_group_map[1];
+int last_capture_value;
 int main()
 {
 	esc_data = 0;
@@ -157,7 +158,7 @@ int main()
 			timeval = PIOS_DELAY_GetRaw();
 			// Flash LED every 1024 ms
 			if((ms_count & 0x000007ff) == 0x400) {
-				PIOS_LED_Toggle(0);
+				PIOS_LED_Toggle(1);
 			}
 
 			if (esc_control.serial_logging_enabled) {
@@ -167,7 +168,11 @@ int main()
 		}
 		
 		// 1 based indexing on channels
-		uint16_t capture_value = PIOS_RCVR_Read(pios_rcvr_group_map[0],1);
+		int16_t capture_value = PIOS_RCVR_Read(pios_rcvr_group_map[0],1);
+		if (capture_value > 1000) {
+			PIOS_LED_Toggle(0);
+			PIOS_LED_Toggle(1);
+		}
 
 		// Small state machine to check for DFU command
 		static int dfu_count = 0;
@@ -210,7 +215,7 @@ int main()
 		}
 
 		esc_process_static_fsm_rxn();
-#ifdef FALSE
+
 		// Serial interface: Process any incoming characters, and then process
 		// any ongoing messages
 		uint8_t c;
@@ -232,17 +237,6 @@ int main()
 				esc_data->duty_cycle_setpoint = PIOS_ESC_MAX_DUTYCYCLE * esc_control.serial_input / 10000;
 		}
 
-		uint8_t a = 'a';
-		if ((ms_count & 0x00000fff) == 0x400)
-			PIOS_COM_SendBuffer(pios_com_softusart_id, &a, 1);
-#else
-		// Echo any bytes in/out between the full and soft usart
-		uint8_t c;
-		if(PIOS_COM_ReceiveBuffer(PIOS_COM_DEBUG, &c, 1, 0) == 1)
-			PIOS_COM_SendBuffer(pios_com_softusart_id, &c, 1);
-		if(PIOS_COM_ReceiveBuffer(pios_com_softusart_id, &c, 1, 0) == 1)
-			PIOS_COM_SendBuffer(PIOS_COM_DEBUG, &c, 1);
-#endif
 	}
 	return 0;
 }
