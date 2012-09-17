@@ -177,15 +177,10 @@ int main()
 		// Small state machine to check for DFU command
 		static int dfu_count = 0;
 		if ((capture_value > 90) & (capture_value < 200)) { 
-			static bool pulse_100 = false;
-			if (pulse_100 && (abs(capture_value - 100) < 10)) {
-				pulse_100 = false;
+			if (abs(capture_value - 100) < 10) {
 				dfu_count++;
-			} else if (!pulse_100 && (abs(capture_value - 150) < 10)) {
-				pulse_100 = true;
-				dfu_count++;
-			}
-			if (dfu_count > 1) {
+			} 
+			if (dfu_count > 10) {
 				PIOS_ESC_Off();
 				PIOS_IAP_SetRequest1();
 				PIOS_IAP_SetRequest2();
