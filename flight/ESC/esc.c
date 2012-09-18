@@ -176,18 +176,26 @@ int main()
 
 		// Small state machine to check for DFU command
 		static int dfu_count = 0;
+		static bool pulse_100 = true;
 		if ((capture_value > 90) & (capture_value < 200)) { 
-			if (abs(capture_value - 100) < 10) {
+			if (pulse_100 && (abs(capture_value - 100) < 10)) {
+				pulse_100 = false;
 				dfu_count++;
-			} 
-			if (dfu_count > 10) {
+			} else if (!pulse_100 && (abs(capture_value - 150) < 10)) {
+				pulse_100 = true;
+				dfu_count++;
+			}
+
+			if (dfu_count >= 4) {
 				PIOS_ESC_Off();
 				PIOS_IAP_SetRequest1();
 				PIOS_IAP_SetRequest2();
 				PIOS_SYS_Reset();
 			}
-		} else
+		} else {
 			dfu_count = 0;
+			pulse_100 = true;
+		}
 
 		esc_control.pwm_input = capture_value;
 		if(esc_control.control_method == ESC_CONTROL_PWM) {

@@ -30,6 +30,12 @@
  */
 
 /**
+ * This module is responsible for shifting the ESC into programming mode
+ * over the PWM line and after that the VCP passthrough can be used on
+ * the softusart to download new firmware.
+ */
+
+/**
  * Input objects: @ref EscSettings
  * Output objects: @ref EscStatus, multiple instances
  *
@@ -50,6 +56,7 @@
 
 #include "pios.h"
 #include "esc.h"
+#include "escmodulecontrol.h"
 #include "escsettings.h"
 #include "escstatus.h"
 #include "hwsettings.h"
@@ -118,6 +125,7 @@ int32_t EscInitialize(void)
 
 		EscSettingsInitialize();
 		EscStatusInitialize();
+		EscModuleControlInitialize();
 
 		EscSettingsConnectCallback(&settingsUpdatedCb);
 		
@@ -154,9 +162,50 @@ static void EscTask(void *parameters)
 	// Main task loop
 	while (1) {
 		//escGetStatus(0);
-		uint8_t message[3] = {(uint8_t) 'a', (uint8_t) 'b', (uint8_t) 'f'};
-		PIOS_COM_SendBuffer(pios_com_esc_id, message, sizeof(message));
-		vTaskDelay(100);
+		static enum esc_control_state {EC_IDLE, EC_ENTER_DFU0, EC_ENTER_DFU1, EC_ENTER_DFU2, EC_ENTER_DFU3, EC_DFU} esc_control_state = EC_IDLE;
+		EscModuleControlData controlModule;
+		switch (esc_control_state) {
+			case EC_IDLE:
+				EscModuleControlGet(&controlModule);
+				if (controlModule.Command == ESCMODULECONTROL_COMMAND_ENTERDFU) {
+					esc_control_state = EC_ENTER_DFU0;
+					controlModule.Command = ESCMODULECONTROL_COMMAND_NOP;
+					EscModuleControlSet(&controlModule);
+				}
+				vTaskDelay(100);
+				break;
+			case EC_ENTER_DFU0:
+				// TODO: Make sure that the Actuator module cannot
+				// control the servo output here
+				PIOS_Servo_Set(0, 100);
+				vTaskDelay(20);
+				esc_control_state = EC_ENTER_DFU1;
+				break;
+			case EC_ENTER_DFU1:
+				PIOS_Servo_Set(0, 150);
+				vTaskDelay(20);
+				esc_control_state = EC_ENTER_DFU2;
+				break;
+			case EC_ENTER_DFU2:
+				PIOS_Servo_Set(0, 100);
+				vTaskDelay(20);
+				esc_control_state = EC_ENTER_DFU3;
+				break;
+			case EC_ENTER_DFU3:
+				PIOS_Servo_Set(0, 150);
+				vTaskDelay(20);
+				esc_control_state = EC_DFU;
+				controlModule.Command = ESCMODULECONTROL_COMMAND_DFU;
+				EscModuleControlSet(&controlModule);
+				break;
+			case EC_DFU:
+				EscModuleControlGet(&controlModule);
+				if (controlModule.Command != ESCMODULECONTROL_COMMAND_DFU)
+					esc_control_state = EC_IDLE;
+				vTaskDelay(100);
+				break;
+		}
+		
 	}
 }
 

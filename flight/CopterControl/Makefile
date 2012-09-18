@@ -106,6 +106,7 @@ endif
 # List of mandatory modules to include
 # MODULES = Attitude Stabilization Actuator ManualControl FirmwareIAP
 # Telemetry must be last to grab the optional modules (why?)
+MODULES += FirmwareIAP
 MODULES += Telemetry
 
 # Paths
@@ -221,6 +222,7 @@ SRC += $(OPUAVSYNTHDIR)/mixerstatus.c
 SRC += $(OPUAVSYNTHDIR)/ratedesired.c
 SRC += $(OPUAVSYNTHDIR)/baroaltitude.c
 SRC += $(OPUAVSYNTHDIR)/txpidsettings.c
+SRC += $(OPUAVSYNTHDIR)/escmodulecontrol.c
 SRC += $(OPUAVSYNTHDIR)/escstatus.c
 SRC += $(OPUAVSYNTHDIR)/escsettings.c
 

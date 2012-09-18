@@ -1,0 +1,11 @@
+<xml>
+    <object name="EscModuleControl" singleinstance="true" settings="false">
+        <description>Control the interface to OP-ESC</description>
+        <field name="Command" units="" type="enum" elements="1" options="NOP,EnterDFU,DFU"/>
+        <field name="SelectedEsc" units="" type="uint8" elements="1"/>
+        <access gcs="readwrite" flight="readwrite"/>
+        <telemetrygcs acked="false" updatemode="onchange" period="0"/>
+        <telemetryflight acked="false" updatemode="onchange" period="0"/>
+        <logging updatemode="manual" period="0"/>
+    </object>
+</xml>

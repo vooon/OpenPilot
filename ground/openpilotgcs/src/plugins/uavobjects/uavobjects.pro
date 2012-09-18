@@ -30,6 +30,7 @@ HEADERS += $$UAVOBJECT_SYNTHETICS/accessorydesired.h \
     $$UAVOBJECT_SYNTHETICS/altitudeholddesired.h \
     $$UAVOBJECT_SYNTHETICS/altitudeholdsettings.h \
     $$UAVOBJECT_SYNTHETICS/revocalibration.h \
+    $$UAVOBJECT_SYNTHETICS/escmodulecontrol.h \
     $$UAVOBJECT_SYNTHETICS/escstatus.h \
     $$UAVOBJECT_SYNTHETICS/escsettings.h \
     $$UAVOBJECT_SYNTHETICS/gcstelemetrystats.h \
@@ -99,6 +100,7 @@ SOURCES += $$UAVOBJECT_SYNTHETICS/accessorydesired.cpp \
     $$UAVOBJECT_SYNTHETICS/altitudeholddesired.cpp \
     $$UAVOBJECT_SYNTHETICS/altitudeholdsettings.cpp \
     $$UAVOBJECT_SYNTHETICS/revocalibration.cpp \
+    $$UAVOBJECT_SYNTHETICS/escmodulecontrol.cpp \
     $$UAVOBJECT_SYNTHETICS/escstatus.cpp \
     $$UAVOBJECT_SYNTHETICS/escsettings.cpp \
     $$UAVOBJECT_SYNTHETICS/gcstelemetrystats.cpp \
