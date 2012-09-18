@@ -85,7 +85,7 @@ plugin_notify.subdir = notify
 plugin_notify.depends = plugin_coreplugin
 plugin_notify.depends += plugin_uavobjects
 SUBDIRS += plugin_notify
-#}
+}
 
 #Uploader gadget
 plugin_uploader.subdir = uploader

@@ -45,8 +45,7 @@ static const QString VERSION = "1.0.0";
 //#define DEBUG_NOTIFIES
 
 
-SoundNotifyPlugin::SoundNotifyPlugin() :
-   _mutex(QMutex::Recursive)
+SoundNotifyPlugin::SoundNotifyPlugin()
 {
     phonon.mo = NULL;
 }
