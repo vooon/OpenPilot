@@ -483,14 +483,13 @@ static uint8_t updateFixedDesiredAttitude(FixedWingPathFollowerSettingsData fixe
 		
 	//GET RID OF THE RAD2DEG. IT CAN BE FACTORED INTO HeadingPI
 #define HEADINGPI_KP fixedwingpathfollowerSettings.HeadingPI[FIXEDWINGPATHFOLLOWERSETTINGS_HEADINGPI_KP]
-	rollCommand = (/*rollFF*/ + headingError_R * HEADINGPI_KP)* RAD2DEG;
+	rollCommand = (rollFF*0.0f + headingError_R * HEADINGPI_KP)* RAD2DEG; //<-- Take out the 0.0f once the feedforward problem is correctly solved
 
 #ifdef SIM_OSX
 	fprintf(stderr, " headingError_R: %f, rollCommand: %f\n", headingError_R, rollCommand);
 #endif		
 	
-	//Turn heading 
-
+	//Turn to desired heading 
 #define ROLLLIMIT_NEUTRAL  fixedwingpathfollowerSettings.RollLimit[FIXEDWINGPATHFOLLOWERSETTINGS_ROLLLIMIT_NEUTRAL]
 #define ROLLLIMIT_MIN      fixedwingpathfollowerSettings.RollLimit[FIXEDWINGPATHFOLLOWERSETTINGS_ROLLLIMIT_MIN]
 #define ROLLLIMIT_MAX      fixedwingpathfollowerSettings.RollLimit[FIXEDWINGPATHFOLLOWERSETTINGS_ROLLLIMIT_MAX]
