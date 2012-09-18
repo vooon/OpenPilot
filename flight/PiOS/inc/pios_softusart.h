@@ -36,6 +36,12 @@
 /* Global Types */
 /* Public Functions */
 
+//! Disable the softusart function on this port
+int32_t PIOS_SOFTUSART_Disable(uint32_t dev_id);
+
+//! Enable the softusart function on this port
+int32_t PIOS_SOFTUSART_Enable(uint32_t dev_id);
+
 #endif /* PIOS_SOFTUSART_H */
 
 /**

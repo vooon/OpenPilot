@@ -240,6 +240,24 @@ static uint16_t PIOS_COM_TxOutCallback(uint32_t context, uint8_t * buf, uint16_t
 }
 
 /**
+ * Helper function for lower drivers that need to make a public API
+ * @param[in] com_id The COM port
+ * @returns The inner driver handle
+ * 
+ * @note This method is only for lower level drivers to use in order
+ * to map from the general com handle to the internal one.  Any non
+ * zero handles should be properly checked as an expected device type.
+ */
+uint32_t PIOS_COM_GetLower(uint32_t com_id)
+{
+	struct pios_com_dev * com_dev = (struct pios_com_dev *)com_id;
+	if (!PIOS_COM_validate(com_dev))
+		return 0;
+
+	return com_dev->lower_id;
+}
+
+/**
 * Change the port speed without re-initializing
 * \param[in] port COM port
 * \param[in] baud Requested baud rate

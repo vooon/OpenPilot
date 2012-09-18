@@ -32,6 +32,7 @@
 
 /* Project Includes */
 #include "pios.h"
+#include "pios_com_priv.h"
 
 #if defined(PIOS_INCLUDE_SOFTUSART)
 
@@ -74,6 +75,8 @@ struct pios_softusart_dev {
 	uint32_t rx_in_context;
 	pios_com_callback tx_out_cb;
 	uint32_t tx_out_context;
+
+	bool active;       // Allow rx and tx from this port
 	
 	// Communication variables
 	bool rx_phase;     // phase of received bit [0-1] (edge, middle)
@@ -166,6 +169,9 @@ int32_t PIOS_SOFTUSART_Init(uint32_t *softusart_id, const struct pios_softusart_
 	
 	/* Bind the configuration to the device instance */
 	softusart_dev->cfg = cfg;
+
+	/* Default to enabled */
+	softusart_dev->active = true;
 	
 	// Either half duplex or separate timers
 #if 0  // This doesn't work because the channels* needs to persist
@@ -240,6 +246,44 @@ int32_t PIOS_SOFTUSART_Init(uint32_t *softusart_id, const struct pios_softusart_
 	
 out_fail:
 	return (-1);
+}
+
+/**
+ * @brief Disable the softusart function on this port
+ * @param[in] usart_id The COM port
+ * @return 0 if success, -1 if failure
+ */
+int32_t PIOS_SOFTUSART_Disable(uint32_t usart_id)
+{
+	uint32_t softusart_id = PIOS_COM_GetLower(usart_id);
+	if (softusart_id == 0)
+		return -1;
+
+	struct pios_softusart_dev *softusart_dev = (struct pios_softusart_dev *) softusart_id;
+	if(!PIOS_SOFTUSART_validate(softusart_dev))
+		return -1;
+
+	softusart_dev->active = false;
+	return 0;
+}
+
+/**
+ * @brief Enable the softusart function on this port
+ * @param[in] usart_id The COM port
+ * @return 0 if success, -1 if failure
+ */
+int32_t PIOS_SOFTUSART_Enable(uint32_t usart_id)
+{
+	uint32_t softusart_id = PIOS_COM_GetLower(usart_id);
+	if (softusart_id == 0)
+		return -1;
+
+	struct pios_softusart_dev *softusart_dev = (struct pios_softusart_dev *) softusart_id;
+	if(!PIOS_SOFTUSART_validate(softusart_dev))
+		return -1;
+
+	softusart_dev->active = true;
+	return 0;
 }
 
 /**
@@ -392,6 +436,12 @@ static void PIOS_SOFTUSART_RxStart(uint32_t usart_id, uint16_t rx_bytes_avail)
 static void PIOS_SOFTUSART_tim_overflow_cb (uint32_t tim_id, uint32_t context, uint8_t channel, uint16_t count)
 {
 	struct pios_softusart_dev *softusart_dev = (struct pios_softusart_dev *) context;
+	bool valid = PIOS_SOFTUSART_validate(softusart_dev);
+	PIOS_Assert(valid);
+
+	if (softusart_dev->active == false)
+		return;
+
 	bool yield = false;
 	
 	if (!PIOS_SOFTUSART_validate(softusart_dev)) {
@@ -636,7 +686,10 @@ static void PIOS_SOFTUSART_tim_edge_cb (uint32_t tim_id, uint32_t context, uint8
 		/* Invalid device specified */
 		return;
 	}
-	
+
+	if (softusart_dev->active == false)
+		return;
+
 	if (chan_idx >= (softusart_dev->cfg->half_duplex ? 1 : 2) ) {
 		/* Channel out of range */
 		return;

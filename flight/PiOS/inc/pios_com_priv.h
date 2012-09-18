@@ -33,6 +33,9 @@
 
 extern int32_t PIOS_COM_Init(uint32_t * com_id, const struct pios_com_driver * driver, uint32_t lower_id, uint8_t * rx_buffer, uint16_t rx_buffer_len, uint8_t * tx_buffer, uint16_t tx_buffer_len);
 
+//! Helper function for lower drivers that need to make a public API
+extern uint32_t PIOS_COM_GetLower(uint32_t com_id);
+
 #endif /* PIOS_COM_PRIV_H */
 
 /**

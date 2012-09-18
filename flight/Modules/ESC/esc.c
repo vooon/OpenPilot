@@ -55,6 +55,7 @@
  */
 
 #include "pios.h"
+#include "pios_softusart.h"
 #include "esc.h"
 #include "escmodulecontrol.h"
 #include "escsettings.h"
@@ -177,6 +178,14 @@ static void EscTask(void *parameters)
 			case EC_ENTER_DFU0:
 				// TODO: Make sure that the Actuator module cannot
 				// control the servo output here
+
+				// TODO: Release SOFTUSART mode
+				// 1. Remove the TIM IRQ handler (or flag to ignore)
+				// 2. Make sure that nothing is sent
+				PIOS_SOFTUSART_Disable(pios_com_softusart_id);
+
+				// TODO: Restart PWM mode
+
 				PIOS_Servo_Set(0, 100);
 				vTaskDelay(20);
 				esc_control_state = EC_ENTER_DFU1;
@@ -199,6 +208,11 @@ static void EscTask(void *parameters)
 				EscModuleControlSet(&controlModule);
 				break;
 			case EC_DFU:
+
+				// TODO: Release PWM mode
+				// TODO: Restart SOFTUSART mode
+				PIOS_SOFTUSART_Enable(pios_com_softusart_id);
+
 				EscModuleControlGet(&controlModule);
 				if (controlModule.Command != ESCMODULECONTROL_COMMAND_DFU)
 					esc_control_state = EC_IDLE;
