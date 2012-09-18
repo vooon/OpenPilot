@@ -27,6 +27,8 @@
 
 /* OpenPilot Includes */
 #include "pios.h"
+#include "pios_softusart.h"
+#include "pios_pwm.h"
 #include "esc.h"
 
 #include "fifo_buffer.h"
@@ -146,6 +148,19 @@ int main()
 	esc_data->duty_cycle_setpoint = -1;
 
 	PIOS_ADC_StartDma();
+
+	PIOS_SOFTUSART_Disable(pios_com_softusart_id);
+
+	TIM4->CCER  &= ~TIM_CCER_CC3E;
+	TIM4->CCMR2 &= ~0x00ff;
+	TIM4->CR1   =   0;
+	TIM4->CR1  =   TIM_CR1_CEN;
+	TIM4->PSC  =   (PIOS_MASTER_CLOCK / 1000000) - 1;
+	TIM4->ARR  =   0xFFFF;
+	PIOS_PWM_Enable(pios_rcvr_group_map[0]);
+	TIM4->EGR  |=  TIM_EGR_UG;
+	TIM4->CCER &= ~TIM_CCER_CC3P;
+	TIM4->CCER |=  TIM_CCER_CC3E;
 	
 	counter = 0;
 	uint32_t timeval = PIOS_DELAY_GetRaw();
@@ -187,10 +202,17 @@ int main()
 			}
 
 			if (dfu_count >= 4) {
+				/*
 				PIOS_ESC_Off();
 				PIOS_IAP_SetRequest1();
 				PIOS_IAP_SetRequest2();
 				PIOS_SYS_Reset();
+				*/
+				PIOS_PWM_Disable(pios_rcvr_group_map[0]);
+				PIOS_SOFTUSART_Enable(pios_com_softusart_id);
+				PIOS_COM_ChangeBaud(pios_com_softusart_id, 4800);
+				while(1)
+					PIOS_COM_SendChar(pios_com_softusart_id,'a');
 			}
 		} else {
 			dfu_count = 0;
