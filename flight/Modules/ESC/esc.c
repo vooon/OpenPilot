@@ -183,6 +183,11 @@ static void EscTask(void *parameters)
 				// 1. Remove the TIM IRQ handler (or flag to ignore)
 				// 2. Make sure that nothing is sent
 				PIOS_SOFTUSART_Disable(pios_com_softusart_id);
+				
+				// Must disable timer to reconfigure
+				TIM2->CCER  &= ~TIM_CCER_CC3E;
+				TIM2->CCMR2 &= ~0x00ff;
+				TIM2->CR1   =   0;
 
 				// TODO: Restart PWM mode
 				PIOS_Servo_Reconfigure();
@@ -196,6 +201,17 @@ static void EscTask(void *parameters)
 					.GPIO_Speed = GPIO_Speed_2MHz,
 				};
 				GPIO_Init(GPIOA, &init);
+
+				// Enable output, normal polarity
+				if(1) {
+				TIM2->CCMR2 =  0x0060;
+				TIM2->CR1  =   TIM_CR1_CEN;
+//				TIM2->PSC  =   72-1;
+//				TIM2->ARR  =   500;
+				TIM2->EGR  |=  TIM_EGR_UG;
+				TIM2->CCER &= ~TIM_CCER_CC3P;
+				TIM2->CCER |=  TIM_CCER_CC3E;
+				}
 
 				PIOS_Servo_Set(5, 100);
 				vTaskDelay(20);
@@ -221,10 +237,12 @@ static void EscTask(void *parameters)
 			case EC_DFU:
 				// TODO: Release PWM mode
 				// TODO: Restart SOFTUSART mode
+				// TODO: Really in this mode should look for ACK from ESC about DFU
+
 				vTaskDelay(250);
 				PIOS_Servo_Set(5,0);
 				PIOS_SOFTUSART_Enable(pios_com_softusart_id);
-				//PIOS_COM_ChangeBaud(pios_com_softusart_id, 4800);
+				PIOS_COM_ChangeBaud(pios_com_softusart_id, 4800);
 
 				EscModuleControlGet(&controlModule);
 				if (controlModule.Command != ESCMODULECONTROL_COMMAND_DFU)
