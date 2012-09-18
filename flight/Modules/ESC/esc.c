@@ -185,33 +185,46 @@ static void EscTask(void *parameters)
 				PIOS_SOFTUSART_Disable(pios_com_softusart_id);
 
 				// TODO: Restart PWM mode
+				PIOS_Servo_Reconfigure();
+				uint16_t hz[4] = {400,400,400,400};
+				PIOS_Servo_SetHz(hz,4);
 
-				PIOS_Servo_Set(0, 100);
+				// Hard code output configuration for channel 6
+				GPIO_InitTypeDef init = {
+					.GPIO_Pin   = GPIO_Pin_2,
+					.GPIO_Mode  = GPIO_Mode_AF_PP,
+					.GPIO_Speed = GPIO_Speed_2MHz,
+				};
+				GPIO_Init(GPIOA, &init);
+
+				PIOS_Servo_Set(5, 100);
 				vTaskDelay(20);
 				esc_control_state = EC_ENTER_DFU1;
 				break;
 			case EC_ENTER_DFU1:
-				PIOS_Servo_Set(0, 150);
+				PIOS_Servo_Set(5, 150);
 				vTaskDelay(20);
 				esc_control_state = EC_ENTER_DFU2;
 				break;
 			case EC_ENTER_DFU2:
-				PIOS_Servo_Set(0, 100);
+				PIOS_Servo_Set(5, 100);
 				vTaskDelay(20);
 				esc_control_state = EC_ENTER_DFU3;
 				break;
 			case EC_ENTER_DFU3:
-				PIOS_Servo_Set(0, 150);
-				vTaskDelay(20);
+				PIOS_Servo_Set(5, 150);
+				vTaskDelay(50);
 				esc_control_state = EC_DFU;
 				controlModule.Command = ESCMODULECONTROL_COMMAND_DFU;
 				EscModuleControlSet(&controlModule);
 				break;
 			case EC_DFU:
-
 				// TODO: Release PWM mode
 				// TODO: Restart SOFTUSART mode
+				vTaskDelay(250);
+				PIOS_Servo_Set(5,0);
 				PIOS_SOFTUSART_Enable(pios_com_softusart_id);
+				//PIOS_COM_ChangeBaud(pios_com_softusart_id, 4800);
 
 				EscModuleControlGet(&controlModule);
 				if (controlModule.Command != ESCMODULECONTROL_COMMAND_DFU)

@@ -658,7 +658,6 @@ static const struct pios_tim_channel pios_tim_servoport_all_pins[] = {
 		},
 		.remap = GPIO_PartialRemap_TIM3,
 	},  	
-#if !defined(PIOS_INCLUDE_SOFTUSART)
 	{
 		.timer = TIM2,
 		.timer_chan = TIM_Channel_3,
@@ -671,7 +670,6 @@ static const struct pios_tim_channel pios_tim_servoport_all_pins[] = {
 			},
 		},
 	},
-#endif
 };
 
 
@@ -737,7 +735,6 @@ static const struct pios_tim_channel pios_tim_servoport_rcvrport_pins[] = {
 		},
 		.remap = GPIO_PartialRemap_TIM3,
 	},
-#if !defined(PIOS_INCLUDE_SOFTUSART)
 	// For now keep things simple by either using PWM or SOFTUSART
 	{
 		.timer = TIM2,
@@ -801,7 +798,6 @@ static const struct pios_tim_channel pios_tim_servoport_rcvrport_pins[] = {
 			},
 		},
 	},
-#endif /* PIOS_INCLUDE_SOFTUSART */
 };
 
 #if defined(PIOS_INCLUDE_SOFTUSART)

@@ -171,7 +171,7 @@ int32_t PIOS_SOFTUSART_Init(uint32_t *softusart_id, const struct pios_softusart_
 	softusart_dev->cfg = cfg;
 
 	/* Default to enabled */
-	softusart_dev->active = true;
+	softusart_dev->active = false;
 	
 	// Either half duplex or separate timers
 #if 0  // This doesn't work because the channels* needs to persist
@@ -234,7 +234,7 @@ int32_t PIOS_SOFTUSART_Init(uint32_t *softusart_id, const struct pios_softusart_
 	PIOS_SOFTUSART_ChangeBaud((uint32_t)softusart_dev, 4800);
 	
 	// Configure the IO pin
-	GPIO_Init(softusart_dev->cfg->tx.pin.gpio, &softusart_dev->cfg->rx.pin.init);
+	GPIO_Init(softusart_dev->cfg->tx.pin.gpio, &softusart_dev->cfg->tx.pin.init);
 
 	// No data initially in the outgoing buffer
 	PIOS_SOFTUSART_SetStatus(softusart_dev, TRANSMIT_DATA_REG_EMPTY);
@@ -264,6 +264,15 @@ int32_t PIOS_SOFTUSART_Disable(uint32_t usart_id)
 		return -1;
 
 	softusart_dev->active = false;
+
+	// For now enable compare mode when doing this - hardcoding pwm output
+	GPIO_Init(softusart_dev->cfg->tx.pin.gpio, &softusart_dev->cfg->tx.pin.init);
+	//PIOS_SOFTUSART_EnableCompareMode(softusart_dev, 0);
+	//PIOS_SOFTUSART_SetCCE(softusart_dev, false);          // Definitely don't want this for input
+
+	// PWM input and output use normal polarity
+	softusart_dev->cfg->rx.timer->CCER &= ~softusart_dev->ccp;
+
 	return 0;
 }
 
@@ -282,7 +291,10 @@ int32_t PIOS_SOFTUSART_Enable(uint32_t usart_id)
 	if(!PIOS_SOFTUSART_validate(softusart_dev))
 		return -1;
 
-	softusart_dev->active = true;
+	GPIO_Init(softusart_dev->cfg->tx.pin.gpio, &softusart_dev->cfg->rx.pin.init);
+	//PIOS_SOFTUSART_SetCCE(softusart_dev, true);       // Reenable the capture IRQ
+
+	softusart_dev->active = false;
 	return 0;
 }
 

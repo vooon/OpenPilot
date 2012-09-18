@@ -83,6 +83,14 @@ int32_t PIOS_Servo_Init(const struct pios_servo_cfg * cfg)
 }
 
 /**
+ * Reconfigure the outputs
+ */
+void PIOS_Servo_Reconfigure()
+{
+	PIOS_Servo_Init(servo_cfg);
+}
+
+/**
 * Set the servo update rate (Max 500Hz)
 * \param[in] array of rates in Hz
 * \param[in] maximum number of banks
