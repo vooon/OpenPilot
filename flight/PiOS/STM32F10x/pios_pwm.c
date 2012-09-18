@@ -31,6 +31,7 @@
 /* Project Includes */
 #include "pios.h"
 #include "pios_pwm_priv.h"
+#include "pios_rcvr_priv.h"
 
 #if defined(PIOS_INCLUDE_PWM)
 
@@ -52,6 +53,8 @@ enum pios_pwm_dev_magic {
 struct pios_pwm_dev {
 	enum pios_pwm_dev_magic     magic;
 	const struct pios_pwm_cfg * cfg;
+
+	bool enabled;
 
 	uint8_t CaptureState[PIOS_PWM_NUM_INPUTS];
 	uint16_t RiseValue[PIOS_PWM_NUM_INPUTS];
@@ -161,6 +164,7 @@ int32_t PIOS_PWM_Init(uint32_t * pwm_id, const struct pios_pwm_cfg * cfg)
 
 	}
 
+	pwm_dev->enabled = true;
 	*pwm_id = (uint32_t) pwm_dev;
 
 	return (0);
@@ -190,6 +194,84 @@ static int32_t PIOS_PWM_Get(uint32_t rcvr_id, uint8_t channel)
 	}
 	return pwm_dev->CaptureValue[channel];
 }
+
+/**
+ * @brief Disable the PWM input function on this port
+ * @param[in] rcvr_id The receiver port
+ * @return 0 if success, -1 if failure
+ */
+int32_t PIOS_PWM_Disable(uint32_t rcvr_id)
+ {
+ 	uint32_t pwm_id = PIOS_RCVR_GetLower(rcvr_id);
+ 	if (pwm_id == 0)
+ 		return -1;
+
+ 	struct pios_pwm_dev *pwm_dev = (struct pios_pwm_dev *) pwm_id;
+ 	if (!PIOS_PWM_validate(pwm_dev))
+ 		return -1;
+
+ 	pwm_dev->enabled = false;
+ 	return 0;
+ }
+
+ /**
+ * @brief Enable the PWM input function on this port
+ * @param[in] rcvr_id The receiver port
+ * @return 0 if success, -1 if failure
+ */
+ int32_t PIOS_PWM_Enable(uint32_t rcvr_id)
+ {
+ 	uint32_t pwm_id = PIOS_RCVR_GetLower(rcvr_id);
+ 	if (pwm_id == 0)
+ 		return -1;
+
+ 	struct pios_pwm_dev *pwm_dev = (struct pios_pwm_dev *) pwm_id;
+ 	if (!PIOS_PWM_validate(pwm_dev))
+ 		return -1;
+
+
+	for (uint8_t i = 0; i < PIOS_PWM_NUM_INPUTS; i++) {
+		/* Flush counter variables */
+		pwm_dev->CaptureState[i] = 0;
+		pwm_dev->RiseValue[i] = 0;
+		pwm_dev->FallValue[i] = 0;
+		pwm_dev->CaptureValue[i] = PIOS_RCVR_TIMEOUT;
+	}
+
+	/* Configure the channels to be in capture/compare mode */
+	for (uint8_t i = 0; i < pwm_dev->cfg->num_channels; i++) {
+		const struct pios_tim_channel * chan = &pwm_dev->cfg->channels[i];
+
+		/* Configure timer for input capture */
+		TIM_ICInitTypeDef TIM_ICInitStructure = pwm_dev->cfg->tim_ic_init;
+		TIM_ICInitStructure.TIM_Channel = chan->timer_chan;
+		TIM_ICInit(chan->timer, &TIM_ICInitStructure);
+		
+		/* Enable the Capture Compare Interrupt Request */
+		switch (chan->timer_chan) {
+		case TIM_Channel_1:
+			TIM_ITConfig(chan->timer, TIM_IT_CC1, ENABLE);
+			break;
+		case TIM_Channel_2:
+			TIM_ITConfig(chan->timer, TIM_IT_CC2, ENABLE);
+			break;
+		case TIM_Channel_3:
+			TIM_ITConfig(chan->timer, TIM_IT_CC3, ENABLE);
+			break;
+		case TIM_Channel_4:
+			TIM_ITConfig(chan->timer, TIM_IT_CC4, ENABLE);
+			break;
+		}
+
+		// Need the update event for that timer to detect timeouts
+		TIM_ITConfig(chan->timer, TIM_IT_Update, ENABLE);
+
+	}
+
+ 	pwm_dev->enabled = true;
+
+ 	return 0;
+ }
 
 static void PIOS_PWM_tim_overflow_cb (uint32_t tim_id, uint32_t context, uint8_t channel, uint16_t count)
 {
@@ -226,6 +308,11 @@ static void PIOS_PWM_tim_edge_cb (uint32_t tim_id, uint32_t context, uint8_t cha
 		/* Invalid device specified */
 		return;
 	}
+
+	// Since this reconfigures the compare mode it breaks softusart.  By just hooking this ISR the 
+	// tim_overflow_cb will set the channel to timeout.
+	if (!pwm_dev->enabled)
+		return;
 
 	if (chan_idx >= pwm_dev->cfg->num_channels) {
 		/* Channel out of range */

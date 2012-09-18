@@ -77,6 +77,24 @@ out_fail:
 }
 
 /**
+ * Helper function for lower drivers that need to make a public API
+ * @param[in] com_id The COM port
+ * @returns The inner driver handle
+ * 
+ * @note This method is only for lower level drivers to use in order
+ * to map from the general com handle to the internal one.  Any non
+ * zero handles should be properly checked as an expected device type.
+ */
+uint32_t PIOS_RCVR_GetLower(uint32_t rcvr_id)
+{
+  struct pios_rcvr_dev * rcvr_dev = (struct pios_rcvr_dev *)rcvr_id;
+  if (!PIOS_RCVR_validate(rcvr_dev))
+    return 0;
+
+  return rcvr_dev->lower_id;
+}
+
+/**
  * @brief Reads an input channel from the appropriate driver
  * @param[in] rcvr_id driver to read from
  * @param[in] channel channel to read

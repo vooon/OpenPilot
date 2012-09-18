@@ -30,4 +30,10 @@
 #ifndef PIOS_PWM_H
 #define PIOS_PWM_H
 
+//! Disable the pwm input responding to the ISR
+ int32_t PIOS_PWM_Disable(uint32_t rcvr_id);
+
+ //! Enable the pwm input responding to the ISR
+ int32_t PIOS_PWM_Enable(uint32_t rcvr_id);
+
 #endif /* PIOS_PWM_H */

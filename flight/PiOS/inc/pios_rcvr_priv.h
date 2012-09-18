@@ -39,6 +39,8 @@ extern int32_t PIOS_RCVR_Init(uint32_t * rcvr_id, const struct pios_rcvr_driver 
 
 extern void PIOS_RCVR_IRQ_Handler(uint32_t rcvr_id);
 
+uint32_t PIOS_RCVR_GetLower(uint32_t rcvr_id);
+
 #endif /* PIOS_RCVR_PRIV_H */
 
 /**
