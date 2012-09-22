@@ -52,6 +52,7 @@
 #include "homelocation.h"
 #include "positionactual.h"
 #include "velocityactual.h"
+#include "attitudeactual.h"
 
 // Private constants
 #define STACK_SIZE_BYTES 530
@@ -72,16 +73,17 @@ static struct Integral {
 	float EnergyError;
 	float VelocityError;
 	float AltitudeError;
+	float CourseError;
 } *integral;
 
 // Private variables
 static uint8_t positionHoldLast;
 static xTaskHandle ccguidanceTaskHandle;
-static bool gpsNew_flag = false;
+static bool PositionActualNew_flag = false;
 static bool CCGuidanceEnabled = false;
 
 // Private functions
-static void GPSPositionUpdatedCb(UAVObjEvent * objEv);
+static void PositionActualUpdatedCb(UAVObjEvent * objEv);
 static void ccguidanceTask(void *parameters);
 static float bound(float val, float min, float max);
 
@@ -114,7 +116,7 @@ int32_t CCGuidanceInitialize()
 	SystemSettingsInitialize();
 
 	uint8_t optionalModules[HWSETTINGS_OPTIONALMODULES_NUMELEM];
-	gpsNew_flag=false;
+	PositionActualNew_flag=false;
 
 	HwSettingsOptionalModulesGet(optionalModules);
 
@@ -145,7 +147,7 @@ int32_t CCGuidanceInitialize()
 		integral = (struct Integral *) pvPortMalloc(sizeof(struct Integral));
 		memset(integral, 0, sizeof(struct Integral));
 
-		GPSPositionConnectCallback(&GPSPositionUpdatedCb);
+		PositionActualConnectCallback(&PositionActualUpdatedCb);
 
 		return 0;
 	}
@@ -174,7 +176,10 @@ static void ccguidanceTask(void *parameters)
 	float DistanceToBaseOld     = 0.0f;
 
 	float SpeedToRTB            = 0.0f;
-	float course                = 0.0f;
+	float CourseJob             = 0.0f;
+	float CourseError           = 0.0f;
+	float attitudeActualYaw     = 0.0f;
+	float headingActual         = 0.0f;
 	float DistanceToBase        = 0.0f;
 	float ThrottleStep          = 0.0f;
 	float ThrottleJob           = 0.0f;
@@ -189,6 +194,7 @@ static void ccguidanceTask(void *parameters)
 	float thisTimeSpeedToRTB    = 0.0f;
 
 	uint16_t TimeEnableFailSafe = 0;
+	uint8_t GPSstatus           = GPSPOSITION_STATUS_NOFIX;
 
 	bool firstRunSetCourse      = TRUE;
 	bool TacksAngleRight        = FALSE;
@@ -227,7 +233,10 @@ static void ccguidanceTask(void *parameters)
 
 		dT_gps += dT;
 
-		if( gpsNew_flag == true){
+		AttitudeActualYawGet (&attitudeActualYaw);
+		GPSPositionStatusGet(&GPSstatus);
+
+		if( PositionActualNew_flag == true){
 
 			PositionActualGet(&positionActual);
 			uint8_t HomeLocationSet;
@@ -263,20 +272,15 @@ static void ccguidanceTask(void *parameters)
 
 			stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_ROLL] = STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE;
 			stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_PITCH] = STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE;
-			stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_YAW] = STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE;
+			stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_YAW] = STABILIZATIONDESIRED_STABILIZATIONMODE_RATE;
 
 			thisTimeHoldCourse += dT_gps;
 			thisTimeTacks      += dT_gps;
 			thisTimeSpeedToRTB += dT_gps;
 
 			/* safety */
-			uint8_t GPSstatus;
-			GPSPositionStatusGet(&GPSstatus);
-
 			if (GPSstatus == GPSPOSITION_STATUS_FIX3D) {
-				/* main position hold loop */
-				// Calculation of the rate after the turn and the beginning of motion in a straight line.
-
+				// The calculation of flight speed in the plane.
 				VelocityActualGet(&velocityActual);
 				VelocityActualNE = sqrt(velocityActual.North*velocityActual.North + velocityActual.East*velocityActual.East);
 
@@ -292,10 +296,7 @@ static void ccguidanceTask(void *parameters)
 					*/
 
 					// initialize variables
-					float   GPSheading;
-					GPSPositionHeadingGet(&GPSheading);
-
-					stabDesired.Yaw    = GPSheading;
+					CourseJob          = attitudeActualYaw;
 					SpeedToRTB         = VelocityActualNE;
 					TacksAngleRight    = FALSE;
 					thisTimeHoldCourse = 0.0f;
@@ -314,8 +315,8 @@ static void ccguidanceTask(void *parameters)
 					// square of the distance to the base
 					DistanceToBase = sqrt((DistanceToBaseNorth * DistanceToBaseNorth) + (DistanceToBaseEast * DistanceToBaseEast));
 					// true direction of the base
-					course = atan2(DistanceToBaseEast, DistanceToBaseNorth) * RAD2DEG;
-					if (isnan(course)) course=0;
+					CourseJob = atan2(DistanceToBaseEast, DistanceToBaseNorth) * RAD2DEG;
+					if (isnan(CourseJob)) CourseJob=0;
 
 					if (DistanceToBase > ccguidanceSettings.RadiusBase) {
 						if ((DistanceToBaseOld != 0) && (thisTimeSpeedToRTB != 0.0f)) {
@@ -334,33 +335,34 @@ static void ccguidanceTask(void *parameters)
 							}
 							if (thisTimeTacks <= ccguidanceSettings.TacksTime) {
 								// Adjust the rate for set tack.
-								if (TacksAngleRight == TRUE) course += ccguidanceSettings.TacksAngle;	// Right track
-								else course -= ccguidanceSettings.TacksAngle;							// Left track
+								if (TacksAngleRight == TRUE) CourseJob += ccguidanceSettings.TacksAngle;	// Right track
+								else CourseJob -= ccguidanceSettings.TacksAngle;							// Left track
 							}
 						}
-
-						while (course<-180.) course+=360.;
-						while (course>180.)  course-=360.;
-						stabDesired.Yaw    = course; 	// Set new course
 						thisTimeHoldCourse = 0.0f;		// Turn on the retention of the new direction of flight.
 					} else {
 						/* Circular motion in the area between RadiusBase */
 						if (ccguidanceSettings.CircleAroundBase == TRUE) {
 							if (ccguidanceSettings.CircleAroundBaseAngle == 0.0f) {
-								course += bound((180.0f-180.0f * (DistanceToBase / ccguidanceSettings.RadiusBase)), 0.0f, 100.0f);
-							} else course += ccguidanceSettings.CircleAroundBaseAngle;
-									//course += acos(DistanceToBase / ccguidanceSettings.RadiusBase) * RAD2DEG;
-							while (course<-180.) course+=360.;
-							while (course>180.)  course-=360.;
-							stabDesired.Yaw = course;	//Set new course
+								CourseJob += bound((180.0f-180.0f * (DistanceToBase / ccguidanceSettings.RadiusBase)), 0.0f, 100.0f);
+							} else CourseJob += ccguidanceSettings.CircleAroundBaseAngle;
+									//CourseJob += acos(DistanceToBase / ccguidanceSettings.RadiusBase) * RAD2DEG;
 						}
 						// reset variable in radius base.
 						SpeedToRTB        = VelocityActualNE;
 						TacksAngleRight   = FALSE;
 						thisTimeTacks     = 0.0f;
 						DistanceToBaseOld = 0.0f;
+						thisTimeHoldCourse = ccguidanceSettings.TimeHoldCourse;
 					}
-					thisTimeHoldCourse = 0.0f;
+
+					// Current heading
+					headingActual = atan2f(velocityActual.East, velocityActual.North) * RAD2DEG;
+					// Required course for the gyroscope attitudeYaw.
+					// Here is compensated as wind drift and drift gyro Yaw.
+					CourseJob = attitudeActualYaw + CourseJob - headingActual;
+					while (CourseJob<-180.0f) CourseJob+=360.0f;
+					while (CourseJob>180.0f)  CourseJob-=360.0f;
 				}
 
 
@@ -431,23 +433,49 @@ static void ccguidanceTask(void *parameters)
 					/* Throttle (manual) */
 					throttleManualControl = TRUE;
 				}
-
-				stabDesired.Roll = ccguidanceSettings.Roll[CCGUIDANCESETTINGS_ROLL_NEUTRAL];
 				AlarmsClear(SYSTEMALARMS_ALARM_GUIDANCE);
+			}
+			PositionActualNew_flag = false;
+			dT_gps = 0;
+		}
 
-			} else {
-				/* Fallback, no position data! */
-				stabDesired.Yaw = ccguidanceSettings.Yaw;
-				stabDesired.Pitch = ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_CLIMB];
-				stabDesired.Roll = ccguidanceSettings.Roll[CCGUIDANCESETTINGS_ROLL_MAX];
-				stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_YAW] = STABILIZATIONDESIRED_STABILIZATIONMODE_RATE;
-				/* Throttle (manual) */
-				throttleManualControl = TRUE;
-				AlarmsSet(SYSTEMALARMS_ALARM_GUIDANCE,SYSTEMALARMS_ALARM_WARNING);
+		if (GPSstatus == GPSPOSITION_STATUS_FIX3D) {
+			/*--- Hold the desired course. ---*/
+			CourseError = CourseJob - attitudeActualYaw;
+			if (CourseError<-180.0f) CourseError+=360.0f;
+			if (CourseError>180.0f)  CourseError-=360.0f;
+
+			if (ccguidanceSettings.CoursePI[CCGUIDANCESETTINGS_COURSEPI_KI] > 0.0f){
+				//Integrate with saturation
+				integral->CourseError=bound(integral->CourseError + CourseError * dT,
+											-ccguidanceSettings.CoursePI[CCGUIDANCESETTINGS_COURSEPI_ILIMIT] /
+											ccguidanceSettings.CoursePI[CCGUIDANCESETTINGS_COURSEPI_KI],
+											ccguidanceSettings.CoursePI[CCGUIDANCESETTINGS_COURSEPI_ILIMIT] /
+											ccguidanceSettings.CoursePI[CCGUIDANCESETTINGS_COURSEPI_KI]);
 			}
 
-			gpsNew_flag = false;
-			dT_gps = 0;
+			float stabDesiredCourse = bound(
+				CourseError * ccguidanceSettings.CoursePI[CCGUIDANCESETTINGS_COURSEPI_KP] +
+				integral->CourseError * ccguidanceSettings.CoursePI[CCGUIDANCESETTINGS_COURSEPI_KI] +
+				ccguidanceSettings.YawRoll[CCGUIDANCESETTINGS_YAWROLL_NEUTRAL],
+				-ccguidanceSettings.YawRoll[CCGUIDANCESETTINGS_YAWROLL_MAX],
+				ccguidanceSettings.YawRoll[CCGUIDANCESETTINGS_YAWROLL_MAX]
+				);
+			if (ccguidanceSettings.AileronsControlCourse == TRUE) {
+				stabDesired.Roll = stabDesiredCourse;
+				stabDesired.Yaw = 0;
+			} else {
+				stabDesired.Yaw = stabDesiredCourse;
+				stabDesired.Roll = 0;
+			}
+
+		} else {
+			/* Fallback, no position data! */
+			stabDesired.Yaw = ccguidanceSettings.YawRoll[CCGUIDANCESETTINGS_YAWROLL_NEUTRAL];
+			stabDesired.Roll = ccguidanceSettings.YawRoll[CCGUIDANCESETTINGS_YAWROLL_MAX];
+			stabDesired.Pitch = ccguidanceSettings.Pitch[CCGUIDANCESETTINGS_PITCH_CLIMB];
+			throttleManualControl = TRUE; //  Throttle (manual)
+			AlarmsSet(SYSTEMALARMS_ALARM_GUIDANCE,SYSTEMALARMS_ALARM_WARNING);
 		}
 
 		// Smooth increase or decrease the engine speed
@@ -487,9 +515,9 @@ static float bound(float val, float min, float max)
 }
 
 /**
- *
+ * Expect updates position
  */
-static void GPSPositionUpdatedCb(UAVObjEvent * objEv)
+static void PositionActualUpdatedCb(UAVObjEvent * objEv)
 {
-	gpsNew_flag=true;
+	PositionActualNew_flag=true;
 }

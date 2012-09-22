@@ -1,0 +1,31 @@
+<xml>
+	<object name="CCGuidanceSettings" singleinstance="true" settings="true">
+		<description>Settings for the @ref CCGuidanceModule</description>
+		<field name="YawRoll" units="deg" type="float" elementnames="Max,Neutral" defaultvalue="40,0"/>
+		<field name="Pitch" units="deg" type="float" elementnames="Climb,Sink,Neutral" defaultvalue="20,-10,0"/>
+		<field name="PitchPI" units="1/(m/s)" type="float" elementnames="Kp,Ki,ILimit" defaultvalue="0.5,0.5,10"/>
+		<field name="CoursePI" units="1/(m/s)" type="float" elementnames="Kp,Ki,ILimit" defaultvalue="0.3,0.3,10"/>
+		<field name="Throttle" units="" type="float" elementnames="Kp,Ki,ILimit,Damper,Max,Min,Grav2Kp" defaultvalue="0.002,0.0001,0.5,1.5,1,0,19.62"/>
+		<field name="AileronsControlCourse" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="TRUE"/>
+		<field name="SpeedControlThePitch" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
+		<field name="AltitudeOffsetHome" units="meter" type="int16" elements="1" defaultvalue="-80"/>
+		<field name="RadiusBase" units="meter" type="uint16" elementnames="1" defaultvalue="100"/>
+		<field name="CircleAroundBaseAngle" units="deg" type="int8" elements="1" defaultvalue="65"/>
+		<field name="CircleAroundBase" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="TRUE"/>
+		<field name="TacksAngle" units="deg" type="int8" elementnames="1" defaultvalue="20"/>
+		<field name="TacksTime" units="sec" type="float" elementnames="1" defaultvalue="0"/>
+		<field name="TimeHoldCourse" units="sec" type="float" elements="1" defaultvalue="5.0"/>
+		<field name="VelocityDesired" units="m/sec" type="float" elementnames="1" defaultvalue="15"/>
+		<field name="FailSafeRTB" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
+		<field name="ThrottleControl" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
+		<field name="TargetLocationSet" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
+		<field name="TargetLocationNorth" units="m" type="float" elements="1" defaultvalue="0"/>
+		<field name="TargetLocationEast" units="m" type="float" elements="1" defaultvalue="0"/>
+		<field name="TargetLocationDown" units="m over geoid" type="float" elements="1" defaultvalue="-80"/>
+		<field name="UpdatePeriod" units="msec" type="uint16" elements="1" defaultvalue="100"/>
+		<access gcs="readwrite" flight="readwrite"/>
+		<telemetrygcs acked="true" updatemode="onchange" period="0"/>
+		<telemetryflight acked="true" updatemode="onchange" period="0"/>
+		<logging updatemode="manual" period="0"/>
+	</object>
+</xml>
