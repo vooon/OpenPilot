@@ -253,15 +253,14 @@ static void ccguidanceTask(void *parameters)
 				positionDesiredDown = positionActual.Down;
 				positionHoldLast = 1;
 				firstRunSetCourse = TRUE;
-			} else if (positionHoldLast != 2 && (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_RETURNTOBASE && HomeLocationSet == TRUE)) {
+			} else if (positionHoldLast != 2 && (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_RETURNTOBASE)) {
 				/* When we RTB, safe home position */
 				positionDesiredNorth = 0;
 				positionDesiredEast = 0;
 				positionDesiredDown = ccguidanceSettings.AltitudeOffsetHome;
 				positionHoldLast = 2;
 				firstRunSetCourse = TRUE;
-			} else 	if (positionHoldLast != 3 &&
-				((flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_FLIGHTTOTARGET) && ( HomeLocationSet == TRUE))) {
+			} else 	if (positionHoldLast != 3 && (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_FLIGHTTOTARGET)) {
 				/* Sets target position */
 				positionDesiredNorth = ccguidanceSettings.TargetLocationNorth;
 				positionDesiredEast = ccguidanceSettings.TargetLocationEast;
