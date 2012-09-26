@@ -70,7 +70,7 @@ static float GravityAccel(float latitude, float longitude, float altitude);
 // Unfortunately need a good size stack for the WMM calculation
 	#if defined(PIOS_GPS_MINIMAL)
 	// Only saving coordinate base
-		#define STACK_SIZE_BYTES            500
+		#define STACK_SIZE_BYTES            550
 	#else
 		#define STACK_SIZE_BYTES            784
 	#endif // PIOS_GPS_MINIMAL
