@@ -125,9 +125,15 @@ private:
     ComStats stats;
 
     bool useUDPMirror;
-    QUdpSocket * udpSocketTx;
-    QUdpSocket * udpSocketRx;
+    bool streamTelemetry;
+
+    QUdpSocket * udpSocketGCS2FC;
+    QUdpSocket * udpSocketFC2GCS;
+    QUdpSocket * udpSocketStreaming;
     QByteArray rxDataArray;
+
+    QString udpStreamingAddress;
+    uint32_t udpStreamingPort;
 
     // Methods
     bool objectTransaction(UAVObject* obj, quint8 type, bool allInstances);

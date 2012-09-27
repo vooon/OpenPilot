@@ -34,6 +34,7 @@
 #include <QtGui/QRadioButton>
 #include <QtGui/QHBoxLayout>
 #include <QtGui/QVBoxLayout>
+#include <QDebug>
 
 #include "ui_ipconnectionoptionspage.h"
 
@@ -54,25 +55,33 @@ QWidget *IPconnectionOptionsPage::createPage(QWidget *parent)
     QWidget *w = new QWidget(parent);
     m_page->setupUi(w);
 
-    m_page->Port->setValue(m_config->Port());
-    m_page->HostName->setText(m_config->HostName());
-    m_page->UseTCP->setChecked(m_config->UseTCP()?true:false);
-    m_page->UseUDP->setChecked(m_config->UseTCP()?false:true);
+    m_page->ExternalHwAddressSpinBox->setText(m_config->getExternalHwAddress());
+    m_page->ExternalHwPortSpinBox->setValue(m_config->getExternalHwPort());
+    m_page->UseTCP->setChecked(m_config->getUseTCP()?true:false);
+    m_page->UseUDP->setChecked(m_config->getUseTCP()?false:true);
+
+    m_page->StreamingAddressSpinBox->setText(m_config->getStreamingAddress());
+    m_page->StreamingPortSpinBox->setValue(m_config->getStreamingPort());
+    m_page->StreamTelemetryCheckBox->setChecked(m_config->getStreamTelemetry()?true:false);
 
     return w;
 }
 
 void IPconnectionOptionsPage::apply()
 {
-    m_config->setPort(m_page->Port->value());
-    m_config->setHostName(m_page->HostName->text());
+    m_config->setExternalHwAddress(m_page->ExternalHwAddressSpinBox->text());
+    m_config->setExternalHwPort(m_page->ExternalHwPortSpinBox->value());
     m_config->setUseTCP(m_page->UseTCP->isChecked()?1:0);
+
+    m_config->setStreamingAddress(m_page->StreamingAddressSpinBox->text());
+    m_config->setStreamingPort(m_page->StreamingPortSpinBox->value());
+    m_config->setStreamTelemetry(m_page->StreamTelemetryCheckBox->isChecked());
+
+    qDebug() << m_config->getStreamingAddress() << " " << m_config->getStreamingPort() << " " << m_config->getStreamTelemetry();
+
     m_config->savesettings();
 
     emit availableDevChanged();
-
-
-
 }
 
 void IPconnectionOptionsPage::finish()

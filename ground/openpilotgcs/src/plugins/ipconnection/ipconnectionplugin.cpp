@@ -163,11 +163,11 @@ QList <Core::IConnection::device> IPconnectionConnection::availableDevices()
 {
     QList <Core::IConnection::device> list;
     device d;
-    if (m_config->HostName().length()>1)
-        d.displayName=(const QString )m_config->HostName();
+    if (m_config->getExternalHwAddress().length()>1)
+        d.displayName=(const QString )m_config->getExternalHwAddress();
     else
         d.displayName="Unconfigured";
-    d.name=(const QString )m_config->HostName();
+    d.name=(const QString )m_config->getExternalHwAddress();
     //we only have one "device" as defined by the configuration m_config
     list.append(d);
 
@@ -182,9 +182,9 @@ QIODevice *IPconnectionConnection::openDevice(const QString &)
     QMessageBox msgBox;
 
     //get the configuration info
-    HostName = m_config->HostName();
-    Port = m_config->Port();
-    UseTCP = m_config->UseTCP();
+    HostName = m_config->getExternalHwAddress();
+    Port = m_config->getExternalHwPort();
+    UseTCP = m_config->getUseTCP();
 
     if (ipSocket){
         //Andrew: close any existing socket... this should never occur
@@ -227,7 +227,7 @@ QString IPconnectionConnection::connectionName()
 
 QString IPconnectionConnection::shortName()
 {//updated from serial plugin
-    if (m_config->UseTCP()) {
+    if (m_config->getUseTCP()) {
         return QString("TCP");
     } else {
         return QString("UDP");

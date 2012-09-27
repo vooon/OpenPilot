@@ -37,9 +37,9 @@ using namespace Core;
 class IPconnectionConfiguration : public IUAVGadgetConfiguration
 {
 Q_OBJECT
-Q_PROPERTY(QString HostName READ HostName WRITE setHostName)
-Q_PROPERTY(int Port READ Port WRITE setPort)
-Q_PROPERTY(int UseTCP READ UseTCP WRITE setUseTCP)
+Q_PROPERTY(QString ExternalHwAddress READ getExternalHwAddress WRITE setExternalHwAddress)
+Q_PROPERTY(int ExternalHwPort READ getExternalHwPort WRITE setExternalHwPort)
+Q_PROPERTY(int UseTCP READ getUseTCP WRITE setUseTCP)
 
 public:
     explicit IPconnectionConfiguration(QString classId, QSettings* qSettings = 0, QObject *parent = 0);
@@ -50,25 +50,35 @@ public:
     //void restoresettings(QSettings* settings);
     void savesettings() const;
     void restoresettings();
-     IUAVGadgetConfiguration *clone();
+    IUAVGadgetConfiguration *clone();
 
-    QString HostName() const { return m_HostName; }
-    int Port() const { return m_Port; }
-    int UseTCP() const { return m_UseTCP; }
+    QString getExternalHwAddress() const { return m_ExternalHwAddress; }
+    int getExternalHwPort() const { return m_ExternalHwPort; }
+    int getUseTCP() const { return m_UseTCP; }
 
+     QString getStreamingAddress()  { return m_StreamingAddress; }
+     int getStreamingPort()  { return m_StreamingPort; }
+    static int getStreamTelemetry()  { return m_StreamTelemetry; }
 
 public slots:
-    void setHostName(QString HostName) { m_HostName = HostName; }
-    void setPort(int Port) { m_Port = Port; }
+    void setExternalHwAddress(QString IPAddress) { m_ExternalHwAddress = IPAddress; }
+    void setExternalHwPort(int Port) { m_ExternalHwPort = Port; }
     void setUseTCP(int UseTCP) { m_UseTCP = UseTCP; }
 
+    void setStreamingAddress(QString IPAddress) { m_StreamingAddress = IPAddress; }
+    void setStreamingPort(int Port) { m_StreamingPort = Port; }
+    void setStreamTelemetry(int streamTelemetry) { m_StreamTelemetry = streamTelemetry; }
+
 private:
-    QString m_HostName;
-    int m_Port;
+    QString m_ExternalHwAddress;
+    int m_ExternalHwPort;
     int m_UseTCP;
+
+    static QString m_StreamingAddress;
+    static int m_StreamingPort;
+    static int m_StreamTelemetry;
+
     QSettings* settings;
-
-
 };
 
 #endif // IPconnectionCONFIGURATION_H

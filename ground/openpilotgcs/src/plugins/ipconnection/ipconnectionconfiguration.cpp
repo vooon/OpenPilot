@@ -27,11 +27,21 @@
 
 #include "ipconnectionconfiguration.h"
 #include <coreplugin/icore.h>
+#include <QDebug>
+
+QString IPconnectionConfiguration::m_StreamingAddress="127.0.0.1";
+int IPconnectionConfiguration::m_StreamingPort=9000;
+int IPconnectionConfiguration::m_StreamTelemetry=false;
+
+//QString m_StreamingAddress;
+//int m_StreamingPort;
+//int m_StreamTelemetry;
+
 
 IPconnectionConfiguration::IPconnectionConfiguration(QString classId, QSettings* qSettings, QObject *parent) :
     IUAVGadgetConfiguration(classId, parent),
-    m_HostName("127.0.0.1"),
-    m_Port(1000),
+    m_ExternalHwAddress("127.0.0.1"),
+    m_ExternalHwPort(9000),
     m_UseTCP(1)
 {
     Q_UNUSED(qSettings);
@@ -46,8 +56,8 @@ IPconnectionConfiguration::~IPconnectionConfiguration()
 IUAVGadgetConfiguration *IPconnectionConfiguration::clone()
 {
     IPconnectionConfiguration *m = new IPconnectionConfiguration(this->classId());
-    m->m_Port = m_Port;
-    m->m_HostName = m_HostName;
+    m->m_ExternalHwAddress = m_ExternalHwAddress;
+    m->m_ExternalHwPort = m_ExternalHwPort;
     m->m_UseTCP = m_UseTCP;
     return m;
 }
@@ -57,8 +67,8 @@ IUAVGadgetConfiguration *IPconnectionConfiguration::clone()
  *
  */
 void IPconnectionConfiguration::saveConfig(QSettings* qSettings) const {
-   qSettings->setValue("port", m_Port);
-   qSettings->setValue("hostName", m_HostName);
+   qSettings->setValue("externalHwPort", m_ExternalHwPort);
+   qSettings->setValue("externalHwAddress", m_ExternalHwAddress);
    qSettings->setValue("useTCP", m_UseTCP);
 }
 
@@ -68,9 +78,12 @@ void IPconnectionConfiguration::savesettings() const
 
         settings->beginWriteArray("Current");
         settings->setArrayIndex(0);
-        settings->setValue(QLatin1String("HostName"), m_HostName);
-        settings->setValue(QLatin1String("Port"), m_Port);
+        settings->setValue(QLatin1String("ExternalHwAddress"), m_ExternalHwAddress);
+        settings->setValue(QLatin1String("ExternalHwPort"), m_ExternalHwPort);
         settings->setValue(QLatin1String("UseTCP"), m_UseTCP);
+        settings->setValue(QLatin1String("StreamingAddress"), m_StreamingAddress);
+        settings->setValue(QLatin1String("StreamingPort"), m_StreamingPort);
+        settings->setValue(QLatin1String("StreamTelemetry"), m_StreamTelemetry);
         settings->endArray();
         settings->endGroup();
 }
@@ -82,12 +95,16 @@ void IPconnectionConfiguration::restoresettings()
 
         settings->beginReadArray("Current");
         settings->setArrayIndex(0);
-        m_HostName = (settings->value(QLatin1String("HostName"), tr("")).toString());
-        m_Port = (settings->value(QLatin1String("Port"), tr("")).toInt());
+        m_ExternalHwAddress = (settings->value(QLatin1String("ExternalHwAddress"), tr("")).toString());
+        m_ExternalHwPort = (settings->value(QLatin1String("ExternalHwPort"), tr("")).toInt());
         m_UseTCP = (settings->value(QLatin1String("UseTCP"), tr("")).toInt());
+        m_StreamingAddress = (settings->value(QLatin1String("StreamingAddress"), tr("")).toString());
+        m_StreamingPort = (settings->value(QLatin1String("StreamingPort"), tr("")).toInt());
+        m_StreamTelemetry = (settings->value(QLatin1String("StreamTelemetry"), tr("")).toInt());
+
+//        qDebug() << " IP:" << IPconnectionConfiguration::m_StreamingAddress << " Port: " << IPconnectionConfiguration::m_StreamingPort << " Telem:" << IPconnectionConfiguration::m_StreamTelemetry;
+
         settings->endArray();
         settings->endGroup();
-
-
 }
 

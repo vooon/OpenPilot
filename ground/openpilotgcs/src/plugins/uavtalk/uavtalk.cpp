@@ -36,6 +36,7 @@
 #else  // UAVTALK_DEBUG
   #define UAVTALK_QXTLOG_DEBUG(args...)
 #endif	// UAVTALK_DEBUG
+#include "ipconnection/ipconnectionconfiguration.h"
 
 #define SYNC_VAL 0x3C
 
@@ -79,15 +80,34 @@ UAVTalk::UAVTalk(QIODevice* iodev, UAVObjectManager* objMngr)
     ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
     Core::Internal::GeneralSettings * settings=pm->getObject<Core::Internal::GeneralSettings>();
     useUDPMirror=settings->useUDPMirror();
+
+//    streamTelemetry=IPconnectionConfiguration::getStreamTelemetry();
+//    streamTelemetry=true;
+
     qDebug()<<"USE UDP:::::::::::."<<useUDPMirror;
-    if(useUDPMirror)
-    {
-        udpSocketTx=new QUdpSocket(this);
-        udpSocketRx=new QUdpSocket(this);
-        udpSocketTx->bind(9000);
-        udpSocketRx->connectToHost(QHostAddress::LocalHost,9000);
-        connect(udpSocketTx,SIGNAL(readyRead()),this,SLOT(dummyUDPRead()));
-        connect(udpSocketRx,SIGNAL(readyRead()),this,SLOT(dummyUDPRead()));
+
+//    qDebug() << " IP:" << IPconnectionConfiguration::getStreamingAddress() << " Port: " << IPconnectionConfiguration::getStreamingPort() << " Telem:" << IPconnectionConfiguration::getStreamTelemetry();
+//    qDebug() << " IP:" << IPconnectionConfiguration::m_StreamingAddress << " Port: " << IPconnectionConfiguration::m_StreamingPort << " Telem:" << IPconnectionConfiguration::m_StreamTelemetry;
+    if(streamTelemetry){
+        if(useUDPMirror)
+        {
+            udpSocketGCS2FC=new QUdpSocket(this);
+            udpSocketFC2GCS=new QUdpSocket(this);
+            udpSocketGCS2FC->bind(9000);
+            udpSocketFC2GCS->connectToHost(QHostAddress::LocalHost,9000);
+            connect(udpSocketGCS2FC,SIGNAL(readyRead()),this,SLOT(dummyUDPRead()));
+            connect(udpSocketFC2GCS,SIGNAL(readyRead()),this,SLOT(dummyUDPRead()));
+        }
+        else{
+
+
+            udpSocketStreaming=new QUdpSocket(this);
+//            udpStreamingAddress=IPconnectionConfiguration::getStreamingAddress();
+//            udpStreamingPort=IPconnectionConfiguration::getStreamingPort();
+            udpStreamingAddress=QString("127.0.0.1");
+            udpStreamingPort=2324;
+        }
+
     }
 }
 
@@ -482,7 +502,7 @@ bool UAVTalk::processInputByte(quint8 rxbyte)
                 receiveObject(rxType, rxObjId, rxInstId, rxBuffer, rxLength);
                 if(useUDPMirror)
                 {
-                    udpSocketTx->writeDatagram(rxDataArray,QHostAddress::LocalHost,udpSocketRx->localPort());
+                    udpSocketGCS2FC->writeDatagram(rxDataArray,QHostAddress::LocalHost,udpSocketFC2GCS->localPort());
                 }
                 stats.rxObjectBytes += rxLength;
                 stats.rxObjects++;
@@ -781,7 +801,7 @@ bool UAVTalk::transmitNack(quint32 objId)
         io->write((const char*)txBuffer, dataOffset+CHECKSUM_LENGTH);
         if(useUDPMirror)
         {
-            udpSocketRx->writeDatagram((const char*)txBuffer,dataOffset+CHECKSUM_LENGTH,QHostAddress::LocalHost,udpSocketTx->localPort());
+            udpSocketFC2GCS->writeDatagram((const char*)txBuffer,dataOffset+CHECKSUM_LENGTH,QHostAddress::LocalHost,udpSocketGCS2FC->localPort());
         }
     }
     else
@@ -873,9 +893,15 @@ bool UAVTalk::transmitSingleObject(UAVObject* obj, quint8 type, bool allInstance
     if (!io.isNull() && io->isWritable() && io->bytesToWrite() < TX_BUFFER_SIZE )
     {
         io->write((const char*)txBuffer, dataOffset+length+CHECKSUM_LENGTH);
-        if(useUDPMirror)
-        {
-            udpSocketRx->writeDatagram((const char*)txBuffer,dataOffset+length+CHECKSUM_LENGTH,QHostAddress::LocalHost,udpSocketTx->localPort());
+        if(streamTelemetry){
+            if(useUDPMirror)
+            {
+                udpSocketFC2GCS->writeDatagram((const char*)txBuffer,dataOffset+length+CHECKSUM_LENGTH,QHostAddress::LocalHost,udpSocketGCS2FC->localPort());
+            }
+            else{
+
+                udpSocketStreaming->writeDatagram((const char*)txBuffer,dataOffset+length+CHECKSUM_LENGTH,QHostAddress(udpStreamingAddress), udpStreamingPort );
+            }
         }
     }
     else
