@@ -36,13 +36,16 @@
 #include "stabilizationsettings.h"
 #include "actuatordesired.h"
 #include "ratedesired.h"
-#include "relaytuning.h"
-#include "relaytuningsettings.h"
 #include "stabilizationdesired.h"
 #include "attitudeactual.h"
 #include "gyros.h"
 #include "flightstatus.h"
 #include "manualcontrol.h" // Just to get a macro
+
+// Special UAVOs for autotuning TODO: conditionally include ?
+#include "frequencysweep.h"
+#include "relaytuning.h"
+#include "relaytuningsettings.h"
 
 // Math libraries
 #include "CoordinateConversions.h"
@@ -52,6 +55,7 @@
 // Includes for various stabilization algorithms
 #include "relay_tuning.h"
 #include "virtualflybar.h"
+#include "sweep_freq.h"
 
 // Private constants
 #define MAX_QUEUE_SIZE 1
@@ -127,6 +131,9 @@ int32_t StabilizationInitialize()
 	sin_lookup_initalize();
 	RelayTuningSettingsInitialize();
 	RelayTuningInitialize();
+
+	// Required for system identification
+	FrequencySweepInitialize();
 
 	return 0;
 }
@@ -334,6 +341,24 @@ static void stabilizationTask(void* parameters)
 					// Run the relay controller which also estimates the oscillation parameters
 					stabilization_relay_rate(rateDesiredAxis[i] - gyro_filtered[i], &actuatorDesiredAxis[i], i, reinit);
 					actuatorDesiredAxis[i] = bound(actuatorDesiredAxis[i],1.0);
+
+					break;
+
+				case STABILIZATIONDESIRED_STABILIZATIONMODE_FREQSWEEP:
+					if(reinit) {
+						pids[PID_RATE_ROLL + i].iAccumulator = 0;
+						// TODO: Reini the sweep
+					}
+
+					// Store to rate desired variable for storing to UAVO
+					rateDesiredAxis[i] = bound(attitudeDesiredAxis[i], settings.ManualRate[i]);
+
+					// Compute the inner loop
+					float temporary_output = pid_apply_setpoint(&pids[PID_RATE_ROLL + i],  rateDesiredAxis[i],  gyro_filtered[i], dT);
+
+					// Introduce a periodic disturbance
+					sweep_freq(temporary_output, *(&gyrosData.x + i), &actuatorDesiredAxis[i], i, reinit);
+					actuatorDesiredAxis[i] = bound(actuatorDesiredAxis[i],1.0f);
 
 					break;
 
