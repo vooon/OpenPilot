@@ -361,7 +361,6 @@ static void stabilizationTask(void* parameters)
 					    (i == PITCH) ? gyrosData.y : \
 					    (i == YAW) ? gyrosData.z : 0;
 					sweep_freq(temporary_output, gyro_val, &actuatorDesiredAxis[i], i, reinit);
-					//actuatorDesiredAxis[i] = temporary_output;
 					actuatorDesiredAxis[i] = bound(actuatorDesiredAxis[i],1.0f);
 
 					break;
