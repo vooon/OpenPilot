@@ -30,6 +30,7 @@
 
 /* Project Includes */
 #include "pios.h"
+#include "openpilot.h"
 
 #if defined(PIOS_INCLUDE_GCSRCVR)
 

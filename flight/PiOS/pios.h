@@ -57,6 +57,9 @@
 #else
 #include <stm32f10x.h>
 #endif
+#if defined(PIOS_INCLUDE_FLASH_EEPROM)
+#include <pios_eeprom.h>
+#endif
 
 #if defined(PIOS_INCLUDE_SDCARD)
 /* Dosfs Includes */
@@ -151,6 +154,10 @@
 
 #if defined(PIOS_INCLUDE_USB)
 #include <pios_usb.h>
+#endif
+
+#if defined(PIOS_INCLUDE_CYRF6936)
+#include <pios_cyrf6936.h>
 #endif
 
 #include <pios_crc.h>
