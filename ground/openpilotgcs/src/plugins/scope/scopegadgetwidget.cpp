@@ -677,19 +677,13 @@ int ScopeGadgetWidget::csvLoggingAddData()
             }
             else
             {
-                if (plotData2->uavObject == "GPSPosition")
-                    ss  << QString().sprintf("%3.10g",plotData2->yData->last());
-                else
-                    ss  << QString().sprintf("%3.6g",plotData2->yData->last());
+                ss  << QString().sprintf("%3.10g",plotData2->yData->last());
                 m_csvLoggingDataValid=1;
             }
         }
         else
         {
-            if (plotData2->uavObject == "GPSPosition")
-                ss  << QString().sprintf("%3.10g",plotData2->yData->last());
-            else
-                ss  << QString().sprintf("%3.6g",plotData2->yData->last());
+            ss  << QString().sprintf("%3.10g",plotData2->yData->last());
             m_csvLoggingDataValid=1;
         }
     }
