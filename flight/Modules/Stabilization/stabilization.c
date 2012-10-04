@@ -63,7 +63,7 @@
 #if defined(PIOS_STABILIZATION_STACK_SIZE)
 #define STACK_SIZE_BYTES PIOS_STABILIZATION_STACK_SIZE
 #else
-#define STACK_SIZE_BYTES 724
+#define STACK_SIZE_BYTES 784
 #endif
 
 #define TASK_PRIORITY (tskIDLE_PRIORITY+4)
@@ -357,7 +357,11 @@ static void stabilizationTask(void* parameters)
 					float temporary_output = pid_apply_setpoint(&pids[PID_RATE_ROLL + i],  rateDesiredAxis[i],  gyro_filtered[i], dT);
 
 					// Introduce a periodic disturbance
-					sweep_freq(temporary_output, *(&gyrosData.x + i), &actuatorDesiredAxis[i], i, reinit);
+					float gyro_val = (i == ROLL) ? gyrosData.x : \
+					    (i == PITCH) ? gyrosData.y : \
+					    (i == YAW) ? gyrosData.z : 0;
+					sweep_freq(temporary_output, gyro_val, &actuatorDesiredAxis[i], i, reinit);
+					//actuatorDesiredAxis[i] = temporary_output;
 					actuatorDesiredAxis[i] = bound(actuatorDesiredAxis[i],1.0f);
 
 					break;

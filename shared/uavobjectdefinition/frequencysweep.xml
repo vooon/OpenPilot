@@ -1,8 +1,8 @@
 <xml>
     <object name="FrequencySweep" singleinstance="true" settings="false">
         <description>The results of perturbing the system at various frequencies</description>
-	<field name="Gain" units="(deg/s)/output" type="float" elements="5"/>
-	<field name="Phase" units="deg" type="float" elements="5"/>
+	<field name="Gain" units="(deg/s)/output" type="uint16" elements="20"/>
+	<field name="Phase" units="deg" type="int16" elements="20"/>
         <access gcs="readonly" flight="readwrite"/>
         <telemetrygcs acked="false" updatemode="manual" period="0"/>
         <telemetryflight acked="false" updatemode="periodic" period="1000"/>

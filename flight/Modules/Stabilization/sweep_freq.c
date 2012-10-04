@@ -54,12 +54,9 @@ int sweep_freq(float control_in, float gyro, float * control_out, int channel, b
 	static uint32_t accumulated = 0;
 
 	const float AMPLITUDE = 0.15;
-	const float FREQUENCIES[] = {2, 4, 8, 16, 32};
+	const float FREQUENCIES[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
 	const int NUM_FREQUENCIES = NELEMENTS(FREQUENCIES);
-	const float TIME_PER_FREQ = 10000; // in ms
-
-	float calculated_gains[NUM_FREQUENCIES];
-	float calculated_phases[NUM_FREQUENCIES];
+	const float TIME_PER_FREQ = 3000; // in ms
 
 	portTickType thisTime = xTaskGetTickCount();
 
@@ -97,19 +94,19 @@ int sweep_freq(float control_in, float gyro, float * control_out, int channel, b
 	bool done = (freq_time > TIME_PER_FREQ) && (phase < last_phase);
 	last_phase = phase;
 
-	if ( done ){
+	if (done) {
 
 		float this_amplitude = 2 * sqrtf(accum_sin*accum_sin + accum_cos*accum_cos) / accumulated;
-		calculated_gains[freq_index] = this_amplitude / AMPLITUDE;
-		calculated_phases[freq_index] = 180.0f * atan2f(accum_cos, accum_sin) / F_PI;
+		float calculated_gains = this_amplitude / AMPLITUDE;
+		float calculated_phases = 180.0f * atan2f(accum_cos, accum_sin) / F_PI;
 
 		// Store result from this frequency
 		FrequencySweepData result;
 		FrequencySweepGet(&result);
 		if (freq_index < FREQUENCYSWEEP_GAIN_NUMELEM)
-			result.Gain[freq_index] = calculated_gains[freq_index];
+			result.Gain[freq_index] = calculated_gains;
 		if (freq_index < FREQUENCYSWEEP_PHASE_NUMELEM)
-			result.Phase[freq_index] = calculated_phases[freq_index];
+			result.Phase[freq_index] = calculated_phases;
 		FrequencySweepSet(&result);
 
 		accumulated = 0;
