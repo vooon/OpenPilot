@@ -50,10 +50,11 @@ int sweep_freq(float control_in, float gyro, float * control_out, int channel, b
 
 	static int freq_index = 0;
 
-	static float accum_sin, accum_cos;
+	static float gyro_accum_sin, gyro_accum_cos;
+	static float output_accum_sin, output_accum_cos;
 	static uint32_t accumulated = 0;
 
-	const float AMPLITUDE = 0.15;
+	const float AMPLITUDE = 0.1f;
 	const float FREQUENCIES[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
 	const int NUM_FREQUENCIES = NELEMENTS(FREQUENCIES);
 	const float TIME_PER_FREQ = 3000; // in ms
@@ -64,8 +65,10 @@ int sweep_freq(float control_in, float gyro, float * control_out, int channel, b
 
 	// On first run initialize estimates to something reasonable
 	if(reinit) {
-		accum_sin = 0;
-		accum_cos = 0;
+		gyro_accum_sin = 0;
+		gyro_accum_cos = 0;
+		output_accum_sin = 0;
+		output_accum_cos = 0;
 		accumulated = 0;
 
 		// TODO: Move this to the end of a frequency
@@ -86,8 +89,10 @@ int sweep_freq(float control_in, float gyro, float * control_out, int channel, b
 	/**** The code below here is to estimate the properties of the oscillation ****/
 
 	// Accumulate the complex gyro response
-	accum_sin += sin_lookup_deg(phase) * gyro;
-	accum_cos += sin_lookup_deg(phase + 90) * gyro;
+	gyro_accum_sin += sin_lookup_deg(phase) * gyro;
+	gyro_accum_cos += sin_lookup_deg(phase + 90) * gyro;
+	output_accum_sin += 100.0f * sin_lookup_deg(phase) * (*control_out);
+	output_accum_cos += 100.0f * sin_lookup_deg(phase + 90) * (*control_out);
 	accumulated ++;
 
 	// Stop when phase wraps around and enough time elapsed
@@ -96,22 +101,33 @@ int sweep_freq(float control_in, float gyro, float * control_out, int channel, b
 
 	if (done) {
 
-		float this_amplitude = 2 * sqrtf(accum_sin*accum_sin + accum_cos*accum_cos) / accumulated;
+		float this_amplitude = 2 * sqrtf(gyro_accum_sin*gyro_accum_sin + gyro_accum_cos*gyro_accum_cos) / accumulated;
 		float calculated_gains = this_amplitude / AMPLITUDE;
-		float calculated_phases = 180.0f * atan2f(accum_cos, accum_sin) / F_PI;
+		float calculated_phases = 180.0f * atan2f(gyro_accum_cos, gyro_accum_sin) / F_PI;
 
 		// Store result from this frequency
 		FrequencySweepData result;
 		FrequencySweepGet(&result);
-		if (freq_index < FREQUENCYSWEEP_GAIN_NUMELEM)
-			result.Gain[freq_index] = calculated_gains;
-		if (freq_index < FREQUENCYSWEEP_PHASE_NUMELEM)
-			result.Phase[freq_index] = calculated_phases;
+		if (freq_index < FREQUENCYSWEEP_GYROGAIN_NUMELEM)
+			result.GyroGain[freq_index] = calculated_gains;
+		if (freq_index < FREQUENCYSWEEP_GYROPHASE_NUMELEM)
+			result.GyroPhase[freq_index] = calculated_phases;
+
+		this_amplitude = 2 * sqrtf(output_accum_sin*output_accum_sin + output_accum_cos*output_accum_cos) / accumulated;
+		calculated_gains = this_amplitude / AMPLITUDE;
+		calculated_phases = 180.0f * atan2f(output_accum_cos, output_accum_sin) / F_PI;
+		if (freq_index < FREQUENCYSWEEP_OUTPUTGAIN_NUMELEM)
+			result.OutputGain[freq_index] = calculated_gains;
+		if (freq_index < FREQUENCYSWEEP_OUTPUTPHASE_NUMELEM)
+			result.OutputPhase[freq_index] = calculated_phases;
+
 		FrequencySweepSet(&result);
 
 		accumulated = 0;
-		accum_sin = 0;
-		accum_cos = 0;
+		gyro_accum_sin = 0;
+		gyro_accum_cos = 0;
+		output_accum_sin = 0;
+		output_accum_cos = 0;
 
 		freq_index = (freq_index + 1) % NUM_FREQUENCIES;		
 		freqStartTime = thisTime;
