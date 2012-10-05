@@ -1,13 +1,13 @@
 /**
  ******************************************************************************
  *
- * @file       svgimageprovider.h
- * @author     Dmytro Poplavskiy Copyright (C) 2012.
- * @addtogroup GCSPlugins GCS Plugins
+ * @file       vehicleconfigurationsource.cpp
+ * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2012.
+ * @addtogroup
  * @{
- * @addtogroup OPMapPlugin QML Viewer Plugin
+ * @addtogroup VehicleConfigurationSource
  * @{
- * @brief Svg declarative image provider
+ * @brief
  *****************************************************************************/
 /*
  * This program is free software; you can redistribute it and/or modify
@@ -25,25 +25,8 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef SVGIMAGEPROVIDER_H_
-#define SVGIMAGEPROVIDER_H_
+#include "vehicleconfigurationsource.h"
 
-#include <QtDeclarative/qdeclarativeimageprovider.h>
-#include <QSvgRenderer>
-#include <QMap>
-
-class SvgImageProvider : public QDeclarativeImageProvider
+VehicleConfigurationSource::VehicleConfigurationSource()
 {
-public:
-    SvgImageProvider(const QString &basePath);
-   ~SvgImageProvider();
-
-    QImage requestImage(const QString &id, QSize *size, const QSize& requestedSize);
-    QPixmap requestPixmap(const QString &id, QSize *size, const QSize& requestedSize);
-
-private:
-    QMap<QString, QSvgRenderer*> m_renderers;
-    QString m_basePath;
-};
-
-#endif
+}

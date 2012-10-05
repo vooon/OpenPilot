@@ -116,6 +116,7 @@ public:
     void setMaxUpdateRate(int update_rate);
     void setHomePosition(QPointF pos);
     void setOverlayOpacity(qreal value);
+    bool getGPSPosition(double &latitude, double &longitude, double &altitude);
 signals:
     void defaultLocationAndZoomChanged(double lng,double lat,double zoom);
     void overlayOpacityChanged(qreal);
@@ -211,6 +212,8 @@ private slots:
     void on_tbFind_clicked();
     void onHomeDoubleClick(HomeItem*);
     void onOverlayOpacityActGroup_triggered(QAction *action);
+    void on_leFind_returnPressed();
+
 private:
 	int m_min_zoom;
 	int m_max_zoom;
@@ -305,7 +308,6 @@ private:
     internals::PointLatLng destPoint(internals::PointLatLng source, double bear, double dist);
 
 	bool getUAVPosition(double &latitude, double &longitude, double &altitude);
-	bool getGPSPosition(double &latitude, double &longitude, double &altitude);
     double getUAV_Yaw();
 
     void setMapFollowingMode();
