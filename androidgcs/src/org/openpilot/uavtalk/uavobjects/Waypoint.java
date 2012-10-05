@@ -58,23 +58,12 @@ public class Waypoint extends UAVDataObject {
 		fields.add( new UAVObjectField("Position", "m", UAVObjectField.FieldType.FLOAT32, PositionElemNames, null) );
 
 		List<String> VelocityElemNames = new ArrayList<String>();
-		VelocityElemNames.add("North");
-		VelocityElemNames.add("East");
-		VelocityElemNames.add("Down");
+		VelocityElemNames.add("0");
 		fields.add( new UAVObjectField("Velocity", "m/s", UAVObjectField.FieldType.FLOAT32, VelocityElemNames, null) );
-
-		List<String> YawDesiredElemNames = new ArrayList<String>();
-		YawDesiredElemNames.add("0");
-		fields.add( new UAVObjectField("YawDesired", "deg", UAVObjectField.FieldType.FLOAT32, YawDesiredElemNames, null) );
 
 		List<String> ActionElemNames = new ArrayList<String>();
 		ActionElemNames.add("0");
-		List<String> ActionEnumOptions = new ArrayList<String>();
-		ActionEnumOptions.add("PathToNext");
-		ActionEnumOptions.add("EndpointToNext");
-		ActionEnumOptions.add("Land");
-		ActionEnumOptions.add("Stop");
-		fields.add( new UAVObjectField("Action", "", UAVObjectField.FieldType.ENUM, ActionElemNames, ActionEnumOptions) );
+		fields.add( new UAVObjectField("Action", "", UAVObjectField.FieldType.UINT8, ActionElemNames, null) );
 
 
 		// Compute the number of bytes for this object
@@ -148,7 +137,7 @@ public class Waypoint extends UAVDataObject {
 	}
 
 	// Constants
-	protected static final long OBJID = 0x338C5F90l;
+	protected static final long OBJID = 0xD23852DCl;
 	protected static final String NAME = "Waypoint";
 	protected static String DESCRIPTION = "A waypoint the aircraft can try and hit.  Used by the @ref PathPlanner module";
 	protected static final boolean ISSINGLEINST = 0 > 0;
