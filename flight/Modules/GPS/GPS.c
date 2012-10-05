@@ -152,8 +152,7 @@ int32_t GPSInitialize(void)
 	}
 
 	if (gpsPort && gpsEnabled) {
-		GPSSettingsInitialize();
-		GPSSettingsDataProtocolGet(&gpsProtocol);
+		HwSettingsGPSDataProtocolGet(&gpsProtocol);
 		switch (gpsProtocol) {
 			case GPSSETTINGS_DATAPROTOCOL_NMEA:
 				gps_rx_buffer = pvPortMalloc(NMEA_MAX_PACKET_LENGTH);
@@ -187,7 +186,7 @@ static void gpsTask(void *parameters)
 	GPSPositionData gpsposition;
 	uint8_t	gpsProtocol;
 
-	GPSSettingsDataProtocolGet(&gpsProtocol);
+	HwSettingsGPSDataProtocolGet(&gpsProtocol);
 
 	timeOfLastUpdateMs = timeNowMs;
 	timeOfLastCommandMs = timeNowMs;
