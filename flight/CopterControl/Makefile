@@ -218,6 +218,7 @@ SRC += $(OPUAVSYNTHDIR)/gcsreceiver.c
 SRC += $(OPUAVSYNTHDIR)/receiveractivity.c
 SRC += $(OPUAVSYNTHDIR)/relaytuningsettings.c
 SRC += $(OPUAVSYNTHDIR)/relaytuning.c
+SRC += $(OPUAVSYNTHDIR)/frequencysweep.c
 SRC += $(OPUAVSYNTHDIR)/taskinfo.c
 SRC += $(OPUAVSYNTHDIR)/mixerstatus.c
 SRC += $(OPUAVSYNTHDIR)/ratedesired.c
