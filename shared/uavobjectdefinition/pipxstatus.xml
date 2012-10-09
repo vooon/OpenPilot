@@ -22,6 +22,11 @@
 		<field name="PairIDs" units="" type="uint32" elements="4" defaultvalue="0"/>
 		<field name="PairSignalStrengths" units="dBm" type="int8" elements="4" defaultvalue="-127"/>
 
+		<field name="PerfectPackets" units="" type="uint8" elements="1" defaultvalue="0"/>
+		<field name="FixedPackets" units="" type="uint8" elements="1" defaultvalue="0"/>
+		<field name="ErrorPackets" units="" type="uint8" elements="1" defaultvalue="0"/>
+		<field name="DroppedPackets" units="" type="uint8" elements="1" defaultvalue="0"/>
+
 		<access gcs="readonly" flight="readwrite"/>
 		<telemetrygcs acked="false" updatemode="manual" period="0"/>
 		<telemetryflight acked="false" updatemode="periodic" period="1000"/>
