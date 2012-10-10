@@ -221,6 +221,9 @@ struct pios_rfm22b_dev {
 	uint8_t fast_error_packets;
 	uint8_t slow_link_quality;
 	uint8_t fast_link_quality;
+	uint8_t last_slow_good_packets;
+	uint8_t last_slow_corrected_packets;
+	uint8_t last_slow_error_packets;
 
 	// Stats
 	uint16_t resets;
@@ -584,6 +587,9 @@ int32_t PIOS_RFM22B_Init(uint32_t *rfm22b_id, uint32_t spi_id, uint32_t slave_nu
 	rfm22b_dev->fast_error_packets = 0;
 	rfm22b_dev->slow_link_quality = 255;
 	rfm22b_dev->fast_link_quality = 255;
+	rfm22b_dev->last_slow_good_packets = 0;
+	rfm22b_dev->last_slow_corrected_packets = 0;
+	rfm22b_dev->last_slow_error_packets = 0;
 
 	// Initialize the stats.
 	rfm22b_dev->resets = 0;
@@ -742,11 +748,15 @@ uint16_t PIOS_RFM22B_Timeouts(uint32_t rfm22b_id)
 	return rfm22b_dev->timeouts;
 }
 
-uint8_t PIOS_RFM22B_LinkQuality(uint32_t rfm22b_id)
+uint8_t PIOS_RFM22B_LinkQuality(uint32_t rfm22b_id, uint8_t *good_packets, uint8_t *corrected_packets, uint8_t *error_packets, uint8_t *dropped_packets)
 {
 	struct pios_rfm22b_dev *rfm22b_dev = (struct pios_rfm22b_dev *)rfm22b_id;
 	if(!PIOS_RFM22B_validate(rfm22b_dev))
 		return 0;
+	*good_packets = rfm22b_dev->last_slow_good_packets;
+	*corrected_packets = rfm22b_dev->last_slow_corrected_packets;
+	*error_packets = rfm22b_dev->last_slow_error_packets;
+	*dropped_packets = 255 - rfm22b_dev->last_slow_good_packets - rfm22b_dev->last_slow_corrected_packets - rfm22b_dev->last_slow_error_packets;
 	return rfm22b_dev->slow_link_quality;
 }
 
@@ -854,7 +864,7 @@ uint32_t PIOS_RFM22B_Receive_Packet(uint32_t rfm22b_id, PHPacketHandle *pret, ui
 
 			// Update the link statistics if necessary.
 			uint8_t fast_block = (p->header.seq_num >> 2) & 0xff;
-			uint8_t slow_block = (p->header.seq_num >> 4) & 0xff;
+			uint8_t slow_block = (p->header.seq_num >> 8) & 0xff;
 			if (rfm22b_dev->fast_block != fast_block)
 			{
 				rfm22b_dev->fast_link_quality = (uint8_t)(((4 + (uint16_t)rfm22b_dev->fast_good_packets - rfm22b_dev->fast_error_packets) << 5) - 1);
@@ -867,6 +877,12 @@ uint32_t PIOS_RFM22B_Receive_Packet(uint32_t rfm22b_id, PHPacketHandle *pret, ui
 			if (rfm22b_dev->slow_block != slow_block)
 			{
 				rfm22b_dev->slow_link_quality = (uint8_t)(((16 + (uint16_t)rfm22b_dev->slow_good_packets - rfm22b_dev->slow_error_packets) << 3) - 1);
+
+				// Cache the last packet count to avoid race conditions
+				rfm22b_dev->last_slow_good_packets = rfm22b_dev->slow_good_packets;
+				rfm22b_dev->last_slow_corrected_packets = rfm22b_dev->slow_corrected_packets;
+				rfm22b_dev->last_slow_error_packets = rfm22b_dev->slow_error_packets;
+
 				rfm22b_dev->slow_good_packets = rfm22b_dev->slow_corrected_packets = rfm22b_dev->slow_error_packets = 0;
 				rfm22b_dev->slow_block = slow_block;
 			}

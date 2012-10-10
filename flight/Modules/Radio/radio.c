@@ -409,7 +409,8 @@ static void radioStatusTask(void *parameters)
 		// Update the status
 		pipxStatus.DeviceID = PIOS_RFM22B_DeviceID(pios_rfm22b_id);
 		pipxStatus.Retries = data->comTxRetries;
-		pipxStatus.LinkQuality = PIOS_RFM22B_LinkQuality(pios_rfm22b_id);
+		pipxStatus.LinkQuality = PIOS_RFM22B_LinkQuality(pios_rfm22b_id, &pipxStatus.PerfectPackets, \
+			&pipxStatus.FixedPackets, &pipxStatus.ErrorPackets, &pipxStatus.DroppedPackets);
 		pipxStatus.UAVTalkErrors = data->UAVTalkErrors;
 		pipxStatus.Dropped = data->droppedPackets;
 		pipxStatus.Resets = PIOS_RFM22B_Resets(pios_rfm22b_id);
@@ -418,7 +419,6 @@ static void radioStatusTask(void *parameters)
 		pipxStatus.RXRate = (uint16_t)((float)(data->rxBytes * 1000) / STATS_UPDATE_PERIOD_MS);
 		data->rxBytes = 0;
 		pipxStatus.LinkState = PIPXSTATUS_LINKSTATE_DISCONNECTED;
-		pipxStatus.RSSI = PIOS_RFM22B_LinkQuality(pios_rfm22b_id);
 		LINK_LED_OFF;
 
 		// Update the potential pairing contacts
