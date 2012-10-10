@@ -110,6 +110,7 @@ static void radioStatusTask(void *parameters);
 static void StatusHandler(PHStatusPacketHandle p, int8_t rssi, int8_t afc);
 static int32_t transmitPacket(PHPacketHandle packet);
 static void PPMHandler(uint16_t *channels);
+static void SettingsUpdatedCb(UAVObjEvent * ev);
 
 // ****************
 // Private variables
@@ -177,9 +178,6 @@ static int32_t RadioInitialize(void)
 	PipXSettingsInitialize();
 	PipXStatusInitialize();
 
-	PipXSettingsData pipxSettings;
-	PipXSettingsGet(&pipxSettings);
-
 	/* Retrieve hardware settings. */
 	const struct pios_board_info * bdinfo = &pios_board_info_blob;
 	pios_rfm22b_cfg = PIOS_BOARD_HW_DEFS_GetRfm22Cfg(bdinfo->board_rev);
@@ -188,61 +186,11 @@ static int32_t RadioInitialize(void)
 	if (PIOS_RFM22B_Init(&pios_rfm22b_id, PIOS_RFM22_SPI_PORT, pios_rfm22b_cfg->slave_num, pios_rfm22b_cfg))
 		return -1;
 
-	// Set the maximum radio RF power.
-	switch (pipxSettings.MaxRFPower)
-	{
-	case PIPXSETTINGS_MAXRFPOWER_125:
-		PIOS_RFM22B_SetTxPower(pios_rfm22b_id, RFM22_tx_pwr_txpow_0);
-		break;
-	case PIPXSETTINGS_MAXRFPOWER_16:
-		PIOS_RFM22B_SetTxPower(pios_rfm22b_id, RFM22_tx_pwr_txpow_1);
-		break;
-	case PIPXSETTINGS_MAXRFPOWER_316:
-		PIOS_RFM22B_SetTxPower(pios_rfm22b_id, RFM22_tx_pwr_txpow_2);
-		break;
-	case PIPXSETTINGS_MAXRFPOWER_63:
-		PIOS_RFM22B_SetTxPower(pios_rfm22b_id, RFM22_tx_pwr_txpow_3);
-		break;
-	case PIPXSETTINGS_MAXRFPOWER_126:
-		PIOS_RFM22B_SetTxPower(pios_rfm22b_id, RFM22_tx_pwr_txpow_4);
-		break;
-	case PIPXSETTINGS_MAXRFPOWER_25:
-		PIOS_RFM22B_SetTxPower(pios_rfm22b_id, RFM22_tx_pwr_txpow_5);
-		break;
-	case PIPXSETTINGS_MAXRFPOWER_50:
-		PIOS_RFM22B_SetTxPower(pios_rfm22b_id, RFM22_tx_pwr_txpow_6);
-		break;
-	case PIPXSETTINGS_MAXRFPOWER_100:
-		PIOS_RFM22B_SetTxPower(pios_rfm22b_id, RFM22_tx_pwr_txpow_7);
-		break;
-	}
-
-	switch (pipxSettings.RFSpeed) {
-	case PIPXSETTINGS_RFSPEED_2400:
-		RFM22_SetDatarate(pios_rfm22b_id, RFM22_datarate_2000, true);
-		break;
-	case PIPXSETTINGS_RFSPEED_4800:
-		RFM22_SetDatarate(pios_rfm22b_id, RFM22_datarate_4000, true);
-		break;
-	case PIPXSETTINGS_RFSPEED_9600:
-		RFM22_SetDatarate(pios_rfm22b_id, RFM22_datarate_9600, true);
-		break;
-	case PIPXSETTINGS_RFSPEED_19200:
-		RFM22_SetDatarate(pios_rfm22b_id, RFM22_datarate_19200, true);
-		break;
-	case PIPXSETTINGS_RFSPEED_38400:
-		RFM22_SetDatarate(pios_rfm22b_id, RFM22_datarate_32000, true);
-		break;
-	case PIPXSETTINGS_RFSPEED_57600:
-		RFM22_SetDatarate(pios_rfm22b_id, RFM22_datarate_64000, true);
-		break;
-	case PIPXSETTINGS_RFSPEED_115200:
-		RFM22_SetDatarate(pios_rfm22b_id, RFM22_datarate_128000, true);
-		break;
-	}
+	PipXSettingsConnectCallback(SettingsUpdatedCb);
+	SettingsUpdatedCb((UAVObjEvent *) NULL);
 
 	// Set the radio destination ID.
-	PIOS_RFM22B_SetDestinationId(pios_rfm22b_id, pipxSettings.PairID);
+	
 
 	// Initialize the packet handler
 	PacketHandlerConfig pios_ph_cfg = {
@@ -456,6 +404,67 @@ static void radioStatusTask(void *parameters)
 		PipXStatusSet(&pipxStatus);
 
 		vTaskDelay(STATS_UPDATE_PERIOD_MS / portTICK_RATE_MS);
+	}
+}
+
+static void SettingsUpdatedCb(UAVObjEvent * ev)
+{
+	PipXSettingsData pipxSettings;
+	PipXSettingsGet(&pipxSettings);
+	
+	PIOS_RFM22B_SetDestinationId(pios_rfm22b_id, pipxSettings.PairID);
+
+	// Set the maximum radio RF power.
+	switch (pipxSettings.MaxRFPower)
+	{
+	case PIPXSETTINGS_MAXRFPOWER_125:
+		PIOS_RFM22B_SetTxPower(pios_rfm22b_id, RFM22_tx_pwr_txpow_0);
+		break;
+	case PIPXSETTINGS_MAXRFPOWER_16:
+		PIOS_RFM22B_SetTxPower(pios_rfm22b_id, RFM22_tx_pwr_txpow_1);
+		break;
+	case PIPXSETTINGS_MAXRFPOWER_316:
+		PIOS_RFM22B_SetTxPower(pios_rfm22b_id, RFM22_tx_pwr_txpow_2);
+		break;
+	case PIPXSETTINGS_MAXRFPOWER_63:
+		PIOS_RFM22B_SetTxPower(pios_rfm22b_id, RFM22_tx_pwr_txpow_3);
+		break;
+	case PIPXSETTINGS_MAXRFPOWER_126:
+		PIOS_RFM22B_SetTxPower(pios_rfm22b_id, RFM22_tx_pwr_txpow_4);
+		break;
+	case PIPXSETTINGS_MAXRFPOWER_25:
+		PIOS_RFM22B_SetTxPower(pios_rfm22b_id, RFM22_tx_pwr_txpow_5);
+		break;
+	case PIPXSETTINGS_MAXRFPOWER_50:
+		PIOS_RFM22B_SetTxPower(pios_rfm22b_id, RFM22_tx_pwr_txpow_6);
+		break;
+	case PIPXSETTINGS_MAXRFPOWER_100:
+		PIOS_RFM22B_SetTxPower(pios_rfm22b_id, RFM22_tx_pwr_txpow_7);
+		break;
+	}
+
+	switch (pipxSettings.RFSpeed) {
+	case PIPXSETTINGS_RFSPEED_2400:
+		RFM22_SetDatarate(pios_rfm22b_id, RFM22_datarate_2000, true);
+		break;
+	case PIPXSETTINGS_RFSPEED_4800:
+		RFM22_SetDatarate(pios_rfm22b_id, RFM22_datarate_4000, true);
+		break;
+	case PIPXSETTINGS_RFSPEED_9600:
+		RFM22_SetDatarate(pios_rfm22b_id, RFM22_datarate_9600, true);
+		break;
+	case PIPXSETTINGS_RFSPEED_19200:
+		RFM22_SetDatarate(pios_rfm22b_id, RFM22_datarate_19200, true);
+		break;
+	case PIPXSETTINGS_RFSPEED_38400:
+		RFM22_SetDatarate(pios_rfm22b_id, RFM22_datarate_32000, true);
+		break;
+	case PIPXSETTINGS_RFSPEED_57600:
+		RFM22_SetDatarate(pios_rfm22b_id, RFM22_datarate_64000, true);
+		break;
+	case PIPXSETTINGS_RFSPEED_115200:
+		RFM22_SetDatarate(pios_rfm22b_id, RFM22_datarate_128000, true);
+		break;
 	}
 }
 

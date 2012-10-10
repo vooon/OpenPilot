@@ -603,6 +603,7 @@ int32_t PIOS_RFM22B_Init(uint32_t *rfm22b_id, uint32_t spi_id, uint32_t slave_nu
 	// Bind the configuration to the device instance
 	rfm22b_dev->cfg = *cfg;
 	rfm22b_dev->datarate = RFM22B_DEFAULT_RX_DATARATE;
+	rfm22b_dev->tx_power = RFM22_tx_pwr_txpow_0;
 
 	// Initialize the packets.
 	rfm22b_dev->rx_packet = NULL;
