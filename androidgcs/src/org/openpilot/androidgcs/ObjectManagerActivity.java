@@ -36,7 +36,6 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
 
-import org.junit.Assert;
 import org.openpilot.androidgcs.fragments.ObjectManagerFragment;
 import org.openpilot.androidgcs.telemetry.OPTelemetryService;
 import org.openpilot.androidgcs.telemetry.OPTelemetryService.LocalBinder;
@@ -206,7 +205,6 @@ public abstract class ObjectManagerActivity extends Activity {
 
 		if (telemetryStatsConnected) {
 			UAVObject stats = objMngr.getObject("GCSTelemetryStats");
-			Assert.assertNotNull(stats); // Should not be null if we connected
 
 			stats.removeUpdatedObserver(telemetryObserver);
 			telemetryStatsConnected = false;
@@ -256,6 +254,7 @@ public abstract class ObjectManagerActivity extends Activity {
 		// Bind to the telemetry service (which will start it)
 		Intent intent = new Intent(getApplicationContext(),
 				org.openpilot.androidgcs.telemetry.OPTelemetryService.class);
+		startService(intent);
 		if (DEBUG)
 			Log.d(TAG, "Attempting to bind: " + intent);
 		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);

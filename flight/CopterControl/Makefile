@@ -38,8 +38,14 @@ OUTDIR := $(TOP)/build/$(TARGET)
 DEBUG ?= NO
 
 # Include objects that are just nice information to show
-DIAGNOSTICS ?= NO
+STACK_DIAGNOSTICS ?= NO
+MIXERSTATUS_DIAGNOSTICS ?= NO
+RATEDESIRED_DIAGNOSTICS ?= NO
+I2C_WDG_STATS_DIAGNOSTICS ?= NO
 DIAG_TASKS ?= NO
+
+#Or just turn on all the above diagnostics. WARNING: This consumes massive amounts of memory.
+ALL_DIGNOSTICS ?=NO
 
 # Set to YES to build a FW version that will erase all flash memory
 ERASE_FLASH ?= NO
@@ -133,9 +139,10 @@ STMUSBINCDIR = $(STMUSBDIR)/inc
 CMSISDIR  = $(STMLIBDIR)/CMSIS/Core/CM3
 DOSFSDIR  = $(APPLIBDIR)/dosfs
 MSDDIR  = $(APPLIBDIR)/msd
-RTOSDIR = $(APPLIBDIR)/FreeRTOS
+RTOSDIR = $(PIOSCOMMON)/Libraries/FreeRTOS
 RTOSSRCDIR = $(RTOSDIR)/Source
 RTOSINCDIR = $(RTOSSRCDIR)/include
+RTOSPORTDIR = $(APPLIBDIR)/FreeRTOS/Source
 DOXYGENDIR = ../Doc/Doxygen
 AHRSBOOTLOADER = ../Bootloaders/AHRS/
 AHRSBOOTLOADERINC = $(AHRSBOOTLOADER)/inc
@@ -313,8 +320,8 @@ SRC += $(RTOSSRCDIR)/queue.c
 SRC += $(RTOSSRCDIR)/tasks.c
 
 ## RTOS Portable
-SRC += $(RTOSSRCDIR)/portable/GCC/ARM_CM3/port.c
-SRC += $(RTOSSRCDIR)/portable/MemMang/heap_1.c
+SRC += $(RTOSPORTDIR)/portable/GCC/ARM_CM3/port.c
+SRC += $(RTOSPORTDIR)/portable/MemMang/heap_1.c
 
 ## Dosfs file system
 #SRC += $(DOSFSDIR)/dosfs.c
@@ -385,7 +392,7 @@ EXTRAINCDIRS  += $(DOSFSDIR)
 EXTRAINCDIRS  += $(MSDDIR)
 EXTRAINCDIRS  += $(RTOSINCDIR)
 EXTRAINCDIRS  += $(APPLIBDIR)
-EXTRAINCDIRS  += $(RTOSSRCDIR)/portable/GCC/ARM_CM3
+EXTRAINCDIRS  += $(RTOSPORTDIR)/portable/GCC/ARM_CM3
 EXTRAINCDIRS  += $(AHRSBOOTLOADERINC)
 EXTRAINCDIRS  += $(PYMITEINC)
 EXTRAINCDIRS  += $(HWDEFSINC)
@@ -485,11 +492,25 @@ ifeq ($(DEBUG),YES)
 CFLAGS += -DDEBUG
 endif
 
-ifeq ($(DIAGNOSTICS),YES)
-CFLAGS += -DDIAGNOSTICS
+#The following Makefile command, ifneq (, $(filter) $(A), $(B) $(C)) is equivalent 
+# to the pseudocode `if(A== B || A==C)`
+ifneq (,$(filter YES,$(STACK_DIAGNOSTICS) $(ALL_DIGNOSTICS)))
+CFLAGS += -DSTACK_DIAGNOSTICS
 endif
 
-ifeq ($(DIAG_TASKS),YES)
+ifneq (,$(filter YES,$(MIXERSTATUS_DIAGNOSTICS) $(ALL_DIGNOSTICS)))
+CFLAGS += -DMIXERSTATUS_DIAGNOSTICS
+endif
+
+ifneq (,$(filter YES,$(RATEDESIRED_DIAGNOSTICS) $(ALL_DIGNOSTICS)))
+CFLAGS += -DRATEDESIRED_DIAGNOSTICS
+endif
+
+ifneq (,$(filter YES,$(I2C_WDG_STATS_DIAGNOSTICS) $(ALL_DIGNOSTICS)))
+CFLAGS += -DI2C_WDG_STATS_DIAGNOSTICS
+endif
+
+ifneq (,$(filter YES,$(DIAG_TASKS) $(ALL_DIGNOSTICS)))
 CFLAGS += -DDIAG_TASKS
 endif
 
