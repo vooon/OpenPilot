@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>880</width>
-    <height>672</height>
+    <width>860</width>
+    <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -110,8 +110,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>850</width>
-            <height>572</height>
+            <width>830</width>
+            <height>500</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout">
@@ -381,7 +381,7 @@
                  <bool>false</bool>
                 </property>
                 <property name="text">
-                 <string>Manual Calibration</string>
+                 <string>Manual Calibration (Click Again When Completed)</string>
                 </property>
                 <property name="checkable">
                  <bool>true</bool>
@@ -495,8 +495,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>850</width>
-            <height>572</height>
+            <width>830</width>
+            <height>500</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_7" rowstretch="1,0,0">
@@ -1284,8 +1284,8 @@ channel value for each flight mode.</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>850</width>
-            <height>572</height>
+            <width>830</width>
+            <height>500</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_2">
