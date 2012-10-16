@@ -334,7 +334,7 @@ static void PIOS_RFM22B_TxStart(uint32_t rfm22b_id, uint16_t tx_bytes_avail);
 static void PIOS_RFM22B_RxStart(uint32_t rfm22b_id, uint16_t rx_bytes_avail);
 
 /* Local variables */
-const struct pios_com_driver pios_rfm22b_com_driver = {
+const struct pios_com_driver old_pios_rfm22b_com_driver = {
 	.set_baud   = PIOS_RFM22B_ChangeBaud,
 	.tx_start   = PIOS_RFM22B_TxStart,
 	.rx_start   = PIOS_RFM22B_RxStart,

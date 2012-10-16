@@ -155,6 +155,11 @@
 #include <pios_usb.h>
 #endif
 
+#if defined(PIOS_INCLUDE_RFM22B)
+#include <pios_rfm22b.h>
+#include <pios_rfm22b_com.h>
+#endif
+
 #include <pios_crc.h>
 
 #define NELEMENTS(x) (sizeof(x) / sizeof(*(x)))

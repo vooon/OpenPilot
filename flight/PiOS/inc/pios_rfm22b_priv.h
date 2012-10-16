@@ -35,8 +35,6 @@
 #include "fifo_buffer.h"
 #include "pios_rfm22b.h"
 
-extern const struct pios_com_driver pios_rfm22b_com_driver;
-
 // ************************************
 
 #define RFM22_DEVICE_VERSION_V2		0x02

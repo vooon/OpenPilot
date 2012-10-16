@@ -121,6 +121,7 @@ static RadioData *data = 0;
 uint32_t pios_rfm22b_id = 0;
 uint32_t pios_com_rfm22b_id = 0;
 uint32_t pios_packet_handler = 0;
+uint32_t pios_rfm22b_com_id;
 const struct pios_rfm22b_cfg *pios_rfm22b_cfg;
 
 // ***************
@@ -186,6 +187,9 @@ static int32_t RadioInitialize(void)
 
 	/* Initalize the RFM22B radio COM device. */
 	if (PIOS_RFM22B_Init(&pios_rfm22b_id, PIOS_RFM22_SPI_PORT, pios_rfm22b_cfg->slave_num, pios_rfm22b_cfg))
+		return -1;
+
+	if (PIOS_RFM22B_COM_Init(&pios_rfm22b_com_id, pios_rfm22b_id))
 		return -1;
 
 	// Set the maximum radio RF power.
