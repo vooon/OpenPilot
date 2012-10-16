@@ -574,7 +574,7 @@ static void updateSettings()
  */
 static uint32_t getComPort() {
 #if defined(PIOS_INCLUDE_USB)
-	if (PIOS_USB_CheckAvailable(0) && PIOS_COM_TELEM_USB)
+	if ( PIOS_COM_Available(PIOS_COM_TELEM_USB) )
 		return PIOS_COM_TELEM_USB;
 	else
 #endif /* PIOS_INCLUDE_USB */
