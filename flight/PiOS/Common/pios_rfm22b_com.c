@@ -64,6 +64,7 @@ struct pios_rfm22b_com_dev {
 	uint32_t rfm22b_id;
 
 	bool enable_reception;
+	uint8_t buffer[PH_MAX_DATA];
 
 	pios_com_callback rx_in_cb;
 	uint32_t rx_in_context;
@@ -136,6 +137,7 @@ static void PIOS_RFM22B_COM_RxStart(uint32_t rfm22b_com_id, uint16_t rx_bytes_av
 	rfm22b_com_dev->enable_reception = true;
 }
 
+
 //! Enable transmission of data packets
 static void PIOS_RFM22B_COM_TxStart(uint32_t rfm22b_com_id, uint16_t tx_bytes_avail)
 {
@@ -147,13 +149,12 @@ static void PIOS_RFM22B_COM_TxStart(uint32_t rfm22b_com_id, uint16_t tx_bytes_av
 	// TODO: If data is pending, send some
 	if (rfm22b_com_dev->tx_out_cb) {
 		bool tx_need_yield;
-		const uint32_t MAX_SIZE = 40;
-		uint8_t buffer[MAX_SIZE];
 
 		// Copy data out of the com fifo that should be sent
-	    uint32_t bytes_to_send = (rfm22b_com_dev->tx_out_cb)(rfm22b_com_dev->tx_out_context, buffer, MAX_SIZE, NULL, &tx_need_yield);
+	    uint32_t bytes_to_send = (rfm22b_com_dev->tx_out_cb)(rfm22b_com_dev->tx_out_context,
+	    	rfm22b_com_dev->buffer, sizeof(rfm22b_com_dev->buffer), NULL, &tx_need_yield);
 	    if (bytes_to_send)
-	    	PHTransmitData(PIOS_PACKET_HANDLER, buffer, bytes_to_send);
+	    	PHTransmitData(PIOS_PACKET_HANDLER, rfm22b_com_dev->buffer, bytes_to_send);
 		if (tx_need_yield)
 			vPortYieldFromISR();
 	}

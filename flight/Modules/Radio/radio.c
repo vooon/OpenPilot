@@ -291,8 +291,8 @@ static int32_t RadioInitialize(void)
 	if (PIOS_RFM22B_COM_Init(&pios_rfm22b_com_inner_id, pios_rfm22b_id))
 		return -1;
 
-	uint32_t PIOS_RFM22B_TX_BUF_LEN = 128;
-	uint32_t PIOS_RFM22B_RX_BUF_LEN = 128;
+	uint32_t PIOS_RFM22B_TX_BUF_LEN = PH_MAX_DATA;
+	uint32_t PIOS_RFM22B_RX_BUF_LEN = PH_MAX_DATA * 2;
 	uint8_t *tx_buffer = pvPortMalloc(PIOS_RFM22B_TX_BUF_LEN);
 	uint8_t *rx_buffer = pvPortMalloc(PIOS_RFM22B_RX_BUF_LEN);
 	if (tx_buffer == NULL || rx_buffer == NULL)
