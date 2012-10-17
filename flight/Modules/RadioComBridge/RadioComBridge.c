@@ -133,7 +133,7 @@ static void transparentCommTask(void * parameters);
 static void ppmInputTask(void *parameters);
 static int32_t UAVTalkSendHandler(uint8_t * data, int32_t length);
 static int32_t GCSUAVTalkSendHandler(uint8_t * data, int32_t length);
-static void receiveData(uint8_t *buf, uint8_t len, int8_t rssi, int8_t afc);
+static void receiveData(uint8_t *buf, uint8_t len, uint32_t context);
 static void transmitData(uint32_t outputPort, uint8_t *buf, uint8_t len, bool checkHid);
 static BufferedReadHandle BufferedReadInit(uint32_t com_port, uint16_t buffer_length);
 static bool BufferedRead(BufferedReadHandle h, uint8_t *value, uint32_t timeout_ms);
@@ -774,10 +774,8 @@ static void transmitData(uint32_t outputPort, uint8_t *buf, uint8_t len, bool ch
  * \param[in] buf The received data buffer
  * \param[in] length Length of buffer
  */
-static void receiveData(uint8_t *buf, uint8_t len, int8_t rssi, int8_t afc)
+static void receiveData(uint8_t *buf, uint8_t len, uint32_t context)
 {
-	data->RSSI = rssi;
-
 	// Packet data should go to transparent com if it's configured,
 	// or just send it through the UAVTalk link.
 	if (PIOS_COM_TRANS_COM)
