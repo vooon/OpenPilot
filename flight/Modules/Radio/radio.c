@@ -121,7 +121,8 @@ static RadioData *data = 0;
 uint32_t pios_rfm22b_id = 0;
 uint32_t pios_com_rfm22b_id = 0;
 uint32_t pios_packet_handler = 0;
-uint32_t pios_rfm22b_com_id;
+uint32_t pios_rfm22b_com_id = 0;
+uint32_t pios_rfm22b_com_inner_id = 0;
 const struct pios_rfm22b_cfg *pios_rfm22b_cfg;
 
 // ***************
@@ -154,7 +155,6 @@ static int32_t RadioStart(void)
 	return 0;
 }
 
-
 /**
  * Initialise the module
  * \return -1 if initialisation failed
@@ -185,11 +185,7 @@ static int32_t RadioInitialize(void)
 	const struct pios_board_info * bdinfo = &pios_board_info_blob;
 	pios_rfm22b_cfg = PIOS_BOARD_HW_DEFS_GetRfm22Cfg(bdinfo->board_rev);
 
-	/* Initalize the RFM22B radio COM device. */
 	if (PIOS_RFM22B_Init(&pios_rfm22b_id, PIOS_RFM22_SPI_PORT, pios_rfm22b_cfg->slave_num, pios_rfm22b_cfg))
-		return -1;
-
-	if (PIOS_RFM22B_COM_Init(&pios_rfm22b_com_id, pios_rfm22b_id))
 		return -1;
 
 	// Set the maximum radio RF power.
@@ -290,6 +286,22 @@ static int32_t RadioInitialize(void)
 	PHRegisterStatusHandler(pios_packet_handler, StatusHandler);
 	PHRegisterOutputStream(pios_packet_handler, transmitPacket);
 	PHRegisterPPMHandler(pios_packet_handler, PPMHandler);
+
+	// Start the COM interface
+	if (PIOS_RFM22B_COM_Init(&pios_rfm22b_com_inner_id, pios_rfm22b_id))
+		return -1;
+
+	uint32_t PIOS_RFM22B_TX_BUF_LEN = 128;
+	uint32_t PIOS_RFM22B_RX_BUF_LEN = 128;
+	uint8_t *tx_buffer = pvPortMalloc(PIOS_RFM22B_TX_BUF_LEN);
+	uint8_t *rx_buffer = pvPortMalloc(PIOS_RFM22B_RX_BUF_LEN);
+	if (tx_buffer == NULL || rx_buffer == NULL)
+		return -1;
+
+	if (PIOS_COM_Init(&pios_rfm22b_com_id, &pios_rfm22b_com_driver, pios_rfm22b_com_inner_id,
+						tx_buffer, PIOS_RFM22B_RX_BUF_LEN,
+						rx_buffer, PIOS_RFM22B_TX_BUF_LEN))
+		return -1;
 
 	return 0;
 }

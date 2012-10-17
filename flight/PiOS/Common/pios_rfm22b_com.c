@@ -106,8 +106,8 @@ int32_t PIOS_RFM22B_COM_Init(uint32_t * rfm22b_com_id, uint32_t rfm22b_id)
 	PIOS_DEBUG_Assert(rfm22b_id);
 
 	struct pios_rfm22b_com_dev * rfm22b_com_dev;
-
-	rfm22b_com_dev = (struct pios_rfm22b_com_dev *) PIOS_RFM22B_COM_alloc();
+	*rfm22b_com_id = 1;
+	rfm22b_com_dev = PIOS_RFM22B_COM_alloc();
 	if (!rfm22b_com_dev) goto out_fail;
 
 	/* Bind the configuration to the device instance */

@@ -561,7 +561,7 @@ static void updateSettings()
  *  2. RFM22B
  *  3. Telemetry serial
  */
-extern int32_t pios_rfm22b_com_id;
+extern uint32_t pios_rfm22b_com_id;
 static uint32_t getComPort() {
 
 #if defined(PIOS_INCLUDE_USB)
