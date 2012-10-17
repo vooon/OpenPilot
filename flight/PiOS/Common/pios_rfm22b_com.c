@@ -63,6 +63,8 @@ struct pios_rfm22b_com_dev {
 
 	uint32_t rfm22b_id;
 
+	bool enable_reception;
+
 	pios_com_callback rx_in_cb;
 	uint32_t rx_in_context;
 	pios_com_callback tx_out_cb;
@@ -113,7 +115,8 @@ int32_t PIOS_RFM22B_COM_Init(uint32_t * rfm22b_com_id, uint32_t rfm22b_id)
 	*rfm22b_com_id = (uint32_t) rfm22b_com_dev;
 
 	// TODO: Install a callback to this driver whenever a RFM22b data packet is
-	// sent or received
+	// sent to queue up another.  Right now telemetry sending is all that kicks
+	// off sending data to the packet handler.
 
 	// The receive data handler
 	PHRegisterDataHandler(PIOS_PACKET_HANDLER, rfm22b_com_receivePacketData, *rfm22b_com_id);
@@ -130,12 +133,7 @@ static void PIOS_RFM22B_COM_RxStart(uint32_t rfm22b_com_id, uint16_t rx_bytes_av
 	
 	bool valid = PIOS_RFM22B_COM_validate(rfm22b_com_dev);
 	PIOS_Assert(valid);
-
-	// TODO: If 
-	//if (rfm22b_com_dev->rx_in_cb) {
-	//	(void) (rfm22b_com_dev->rx_in_cb)(rfm22b_com_dev->rx_in_context, &byte, 1, NULL, &rx_need_yield);
-	//if (rx_need_yield)
-	//	vPortYieldFromISR();
+	rfm22b_com_dev->enable_reception = true;
 }
 
 //! Enable transmission of data packets
@@ -209,8 +207,12 @@ static void PIOS_RFM22B_COM_RegisterTxCallback(uint32_t rfm22b_com_id, pios_com_
 
 static bool PIOS_RFM22B_COM_Available(uint32_t rfm22b_com_id)
 {
-	// TODO: Check link status, true if connected
-	return false;
+	struct pios_rfm22b_com_dev * rfm22b_com_dev = (struct pios_rfm22b_com_dev *)rfm22b_com_id;
+	
+	bool valid = PIOS_RFM22B_COM_validate(rfm22b_com_dev);
+	PIOS_Assert(valid);
+
+	return PIOS_RFM22B_LinkStatus(rfm22b_com_dev->rfm22b_id);
 }
 
 /**
@@ -223,8 +225,9 @@ static void rfm22b_com_receivePacketData(uint8_t *buf, uint8_t len, uint32_t con
 	bool valid = PIOS_RFM22B_COM_validate(rfm22b_com_dev);
 	PIOS_Assert(valid);
 
-	bool rx_need_yield;
-	(void) (rfm22b_com_dev->rx_in_cb)(rfm22b_com_dev->rx_in_context, buf, len, NULL, &rx_need_yield);
+	bool rx_need_yield = false;
+	if (rfm22b_com_dev->enable_reception && rfm22b_com_dev->rx_in_cb)
+		(void) (rfm22b_com_dev->rx_in_cb)(rfm22b_com_dev->rx_in_context, buf, len, NULL, &rx_need_yield);
 	if (rx_need_yield)
 		vPortYieldFromISR();
 }

@@ -1024,6 +1024,20 @@ static void PIOS_RFM22B_RegisterTxCallback(uint32_t rfm22b_id, pios_com_callback
 	rfm22b_dev->tx_out_cb = tx_out_cb;
 }
 
+/**
+ * Query the link stauts
+ * @returns True if the link is connected
+ */
+bool PIOS_RFM22B_LinkStatus(uint32_t rfm22b_id)
+{
+	struct pios_rfm22b_dev * rfm22b_dev = (struct pios_rfm22b_dev *)rfm22b_id;
+
+	bool valid = PIOS_RFM22B_validate(rfm22b_dev);
+	PIOS_Assert(valid);
+
+	return rfm22b_dev->slow_link_quality > 50;
+}
+
 // ************************************
 // SPI read/write
 
