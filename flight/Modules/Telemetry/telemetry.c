@@ -307,7 +307,7 @@ static void processObjEvent(UAVObjEvent * ev)
 static void telemetryTxTask(void *parameters)
 {
 	UAVObjEvent ev;
-
+        PIOS_TAG(PIOS_TAGS_TELEMETRY);
 	// Loop forever
 	while (1) {
 		// Wait for queue message

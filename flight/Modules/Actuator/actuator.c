@@ -178,6 +178,9 @@ static void actuatorTask(void* parameters)
 
 	// Main task loop
 	lastSysTime = xTaskGetTickCount();
+        
+        PIOS_TAG(PIOS_TAGS_ACTUATOR);
+
 	while (1)
 	{
 		PIOS_WDG_UpdateFlag(PIOS_WDG_ACTUATOR);

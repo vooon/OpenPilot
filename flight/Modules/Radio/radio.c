@@ -297,7 +297,7 @@ MODULE_INITCALL(RadioInitialize, RadioStart)
 static void radioReceiveTask(void *parameters)
 {
 	PHPacketHandle p = NULL;
-
+        PIOS_TAG(PIOS_TAGS_RADIO_RX);
 	/* Handle radio -> usart/usb direction */
 	while (1) {
 		uint32_t rx_bytes;
@@ -398,8 +398,9 @@ static void StatusHandler(PHStatusPacketHandle status, int8_t rssi, int8_t afc)
  */
 static void radioStatusTask(void *parameters)
 {
+        PIOS_TAG(PIOS_TAGS_RADIO_ST);
 	while (1) {
-		PipXStatusData pipxStatus;
+		PipXStatusData pipxStaRXtus;
 		uint32_t pairID;
 
 		// Get object data

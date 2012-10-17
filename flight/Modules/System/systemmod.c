@@ -157,7 +157,7 @@ static void systemTask(void *parameters)
 	// Initialize vars
 	idleCounter = 0;
 	idleCounterClear = 0;
-
+        PIOS_TAG(PIOS_TAGS_SYSTEM);
 	// Listen for SettingPersistance object updates, connect a callback function
 	ObjectPersistenceConnectQueue(objectPersistenceQueue);
 
@@ -501,7 +501,8 @@ static void updateSystemAlarms()
  */
 void vApplicationIdleHook(void)
 {
-	// Called when the scheduler has no tasks to run
+	PIOS_TAG(PIOS_TAGS_IDLE);
+        // Called when the scheduler has no tasks to run
 	if (idleCounterClear == 0) {
 		++idleCounter;
 	} else {

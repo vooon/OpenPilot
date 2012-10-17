@@ -211,6 +211,8 @@ static void AttitudeTask(void *parameters)
 	// Invalidate previous algorithm to trigger a first run
 	last_algorithm = 0xfffffff;
 
+        PIOS_TAG(PIOS_TAGS_ATTITUDE);
+        
 	// Main task loop
 	while (1) {
 

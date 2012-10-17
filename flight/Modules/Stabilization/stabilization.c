@@ -153,6 +153,10 @@ static void stabilizationTask(void* parameters)
 	
 	// Main task loop
 	ZeroPids();
+        
+        PIOS_TAG(PIOS_TAGS_STABILIZATION);
+
+        
 	while(1) {
 		float dT;
 		

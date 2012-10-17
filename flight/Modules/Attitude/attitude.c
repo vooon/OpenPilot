@@ -203,7 +203,9 @@ static void AttitudeTask(void *parameters)
 	}
 	// Force settings update to make sure rotation loaded
 	settingsUpdatedCb(AttitudeSettingsHandle());
-	
+
+        PIOS_TAG(PIOS_TAGS_ATTITUDE);
+
 	// Main task loop
 	while (1) {
 		

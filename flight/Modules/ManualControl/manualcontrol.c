@@ -174,12 +174,15 @@ static void manualControlTask(void *parameters)
 	flightStatus.Armed = FLIGHTSTATUS_ARMED_DISARMED;
 	armState = ARM_STATE_DISARMED;
 
-	/* Initialize the RcvrActivty FSM */
+	/* Initialize the RcvSENSORSrActivty FSM */
 	portTickType lastActivityTime = xTaskGetTickCount();
 	resetRcvrActivity(&activity_fsm);
 
 	// Main task loop
 	lastSysTime = xTaskGetTickCount();
+        
+        PIOS_TAG(PIOS_TAGS_MANUALCONTROL);        
+        
 	while (1) {
 		float scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_NUMELEM];
 

@@ -203,7 +203,10 @@ static void gpsTask(void *parameters)
 	timeOfLastCommandMs = timeNowMs;
 
 	GPSPositionGet(&gpsposition);
-	// Loop forever
+	
+        PIOS_TAG(PIOS_TAGS_GPS);
+        
+        // Loop forever
 	while (1)
 	{
 		uint8_t c;

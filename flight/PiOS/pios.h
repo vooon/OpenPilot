@@ -31,6 +31,14 @@
 /* PIOS Feature Selection */
 #include "pios_config.h"
 
+/* PIOS Application tags, used for tracing */
+#include "pios_app_tags.h"
+
+#if defined(PIOS_TRACING)
+/* PIOS Tracing support */
+#include "pios_tracing.h"
+#endif
+
 #if defined(PIOS_INCLUDE_FREERTOS)
 /* FreeRTOS Includes */
 #include "FreeRTOS.h"

@@ -210,6 +210,7 @@ static void SensorsTask(void *parameters)
 	lastSysTime = xTaskGetTickCount();
 	bool error = false;
 	uint32_t mag_update_time = PIOS_DELAY_GetRaw();
+        PIOS_TAG(PIOS_TAGS_SENSORS);
 	while (1) {
 		// TODO: add timeouts to the sensor reads and set an error if the fail
 		sensor_dt_us = PIOS_DELAY_DiffuS(timeval);
