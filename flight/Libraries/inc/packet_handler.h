@@ -96,7 +96,7 @@ typedef struct {
 } PacketHandlerConfig;
 
 typedef int32_t (*PHOutputStream)(PHPacketHandle packet);
-typedef void (*PHDataHandler)(uint8_t *data, uint8_t len, int8_t rssi, int8_t afc);
+typedef void (*PHDataHandler)(uint8_t *data, uint8_t len, uint32_t context);
 typedef void (*PHStatusHandler)(PHStatusPacketHandle s, int8_t rssi, int8_t afc);
 typedef void (*PHPPMHandler)(uint16_t *channels);
 
@@ -105,7 +105,7 @@ typedef uint32_t PHInstHandle;
 // Public functions
 PHInstHandle PHInitialize(PacketHandlerConfig *cfg);
 void PHRegisterOutputStream(PHInstHandle h, PHOutputStream f);
-void PHRegisterDataHandler(PHInstHandle h, PHDataHandler f);
+void PHRegisterDataHandler(PHInstHandle h, PHDataHandler f, uint32_t context);
 void PHRegisterStatusHandler(PHInstHandle h, PHStatusHandler f);
 void PHRegisterPPMHandler(PHInstHandle h, PHPPMHandler f);
 uint32_t PHConnect(PHInstHandle h, uint32_t dest_id);

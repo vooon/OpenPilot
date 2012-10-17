@@ -48,6 +48,7 @@ typedef struct {
 	PHDataHandler data_handler;
 	PHStatusHandler status_handler;
 	PHPPMHandler ppm_handler;
+	uint32_t data_callback_context;
 } PHPacketData, *PHPacketDataHandle;
 
 // Private functions
@@ -115,10 +116,10 @@ void PHRegisterOutputStream(PHInstHandle h, PHOutputStream f)
  * \param[in] h The packet handler instance data pointer.
  * \param[in] f The data handler function
  */
-void PHRegisterDataHandler(PHInstHandle h, PHDataHandler f)
+void PHRegisterDataHandler(PHInstHandle h, PHDataHandler f, uint32_t context)
 {
 	PHPacketDataHandle data = (PHPacketDataHandle)h;
-
+	data->data_callback_context = context;
 	data->data_handler = f;
 }
 
@@ -351,7 +352,7 @@ uint8_t PHReceivePacket(PHInstHandle h, PHPacketHandle p)
 
 		// Pass on the data to the data handler.
 		if(data->data_handler)
-			data->data_handler(p->data, p->header.data_size, rssi, afc);
+			data->data_handler(p->data, p->header.data_size, data->data_callback_context);
 		break;
 
 	default:
