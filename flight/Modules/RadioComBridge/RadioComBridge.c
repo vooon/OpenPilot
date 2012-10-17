@@ -157,7 +157,7 @@ static int32_t RadioComBridgeStart(void)
 
 		// Register the callbacks with the packet handler
 		// This has to happen after the Radio module is initialized.
-		PHRegisterDataHandler(pios_packet_handler, receiveData);
+		PHRegisterDataHandler(pios_packet_handler, receiveData, 0);
 
 		// Start the primary tasks for receiving/sending UAVTalk packets from the GCS.
 		xTaskCreate(UAVTalkRecvTask, (signed char *)"GCSUAVTalkRecvTask", STACK_SIZE_BYTES, (void*)&(data->gcs_uavtalk_params), TASK_PRIORITY + 2, &(data->GCSUAVTalkRecvTaskHandle));
