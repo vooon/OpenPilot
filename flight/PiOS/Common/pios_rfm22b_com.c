@@ -69,6 +69,9 @@ struct pios_rfm22b_com_dev {
 	uint32_t tx_out_context;
 };
 
+/* Local methods */
+static void rfm22b_com_receivePacketData(uint8_t *buf, uint8_t len, uint32_t context);
+
 static bool PIOS_RFM22B_COM_validate(struct pios_rfm22b_com_dev * rfm22b_com_dev)
 {
 	return (rfm22b_com_dev->magic == PIOS_RFM22B_COM_DEV_MAGIC);
@@ -107,10 +110,13 @@ int32_t PIOS_RFM22B_COM_Init(uint32_t * rfm22b_com_id, uint32_t rfm22b_id)
 
 	/* Bind the configuration to the device instance */
 	rfm22b_com_dev->rfm22b_id = rfm22b_id;
+	*rfm22b_com_id = (uint32_t) rfm22b_com_dev;
 
 	// TODO: Install a callback to this driver whenever a RFM22b data packet is
 	// sent or received
 
+	// The receive data handler
+	PHRegisterDataHandler(PIOS_PACKET_HANDLER, rfm22b_com_receivePacketData, *rfm22b_com_id);
 	return(0);
 
 out_fail:
@@ -141,10 +147,19 @@ static void PIOS_RFM22B_COM_TxStart(uint32_t rfm22b_com_id, uint16_t tx_bytes_av
 	PIOS_Assert(valid);
 	
 	// TODO: If data is pending, send some
-	// if (rfm22b_com_dev->tx_out_cb)
-	//     bytes_to_send = (rfm22b_com_dev->tx_out_cb)(rfm22b_com_dev->tx_out_context, &b, 1, NULL, &tx_need_yield);
-	// if (tx_need_yield)
-	//     vPortYieldFromISR();
+	if (rfm22b_com_dev->tx_out_cb) {
+		bool tx_need_yield;
+		const uint32_t MAX_SIZE = 40;
+		uint8_t buffer[MAX_SIZE];
+
+		// Copy data out of the com fifo that should be sent
+	    uint32_t bytes_to_send = (rfm22b_com_dev->tx_out_cb)(rfm22b_com_dev->tx_out_context, buffer, MAX_SIZE, NULL, &tx_need_yield);
+	    if (bytes_to_send)
+	    	PHTransmitData(PIOS_PACKET_HANDLER, buffer, bytes_to_send);
+		if (tx_need_yield)
+			vPortYieldFromISR();
+	}
+
 }
 
 /**
@@ -194,7 +209,24 @@ static void PIOS_RFM22B_COM_RegisterTxCallback(uint32_t rfm22b_com_id, pios_com_
 
 static bool PIOS_RFM22B_COM_Available(uint32_t rfm22b_com_id)
 {
+	// TODO: Check link status, true if connected
 	return false;
+}
+
+/**
+ * Callback from the packet handler which adds data to the PIOS_COM FIFO
+ */
+static void rfm22b_com_receivePacketData(uint8_t *buf, uint8_t len, uint32_t context)
+{
+	struct pios_rfm22b_com_dev * rfm22b_com_dev = (struct pios_rfm22b_com_dev *)context;
+	
+	bool valid = PIOS_RFM22B_COM_validate(rfm22b_com_dev);
+	PIOS_Assert(valid);
+
+	bool rx_need_yield;
+	(void) (rfm22b_com_dev->rx_in_cb)(rfm22b_com_dev->rx_in_context, buf, len, NULL, &rx_need_yield);
+	if (rx_need_yield)
+		vPortYieldFromISR();
 }
 
 #endif /* PIOS_INCLUDE_RFM22B_COM */
