@@ -326,22 +326,6 @@ static void rfm22_write(uint8_t addr, uint8_t data);
 static uint8_t rfm22_read(uint8_t addr);
 static uint8_t rfm22_read_noclaim(uint8_t addr);
 
-/* Provide a COM driver */
-static void PIOS_RFM22B_ChangeBaud(uint32_t rfm22b_id, uint32_t baud);
-static void PIOS_RFM22B_RegisterRxCallback(uint32_t rfm22b_id, pios_com_callback rx_in_cb, uint32_t context);
-static void PIOS_RFM22B_RegisterTxCallback(uint32_t rfm22b_id, pios_com_callback tx_out_cb, uint32_t context);
-static void PIOS_RFM22B_TxStart(uint32_t rfm22b_id, uint16_t tx_bytes_avail);
-static void PIOS_RFM22B_RxStart(uint32_t rfm22b_id, uint16_t rx_bytes_avail);
-
-/* Local variables */
-const struct pios_com_driver old_pios_rfm22b_com_driver = {
-	.set_baud   = PIOS_RFM22B_ChangeBaud,
-	.tx_start   = PIOS_RFM22B_TxStart,
-	.rx_start   = PIOS_RFM22B_RxStart,
-	.bind_tx_cb = PIOS_RFM22B_RegisterTxCallback,
-	.bind_rx_cb = PIOS_RFM22B_RegisterRxCallback,
-};
-
 /* Te state transition table */
 const static struct pios_rfm22b_transition rfm22b_transitions[RFM22B_STATE_NUM_STATES] = {
 	[RFM22B_STATE_UNINITIALIZED] = {
@@ -758,15 +742,6 @@ int8_t PIOS_RFM22B_RSSI(uint32_t rfm22b_id)
 	return rfm22b_dev->rssi_dBm;
 }
 
-static void PIOS_RFM22B_RxStart(uint32_t rfm22b_id, uint16_t rx_bytes_avail)
-{
-	struct pios_rfm22b_dev * rfm22b_dev = (struct pios_rfm22b_dev *)rfm22b_id;
-
-	bool valid = PIOS_RFM22B_validate(rfm22b_dev);
-	PIOS_Assert(valid);
-
-}
-
 /**
  * Insert a packet on the packet queue for sending.
  * Note: If this finction succedds, the packet will be released by the driver, so no release is necessary.
@@ -960,68 +935,6 @@ static void PIOS_RFM22B_Task(void *parameters)
 			if (rfm22_sendStatus(rfm22b_dev))
 				lastStatusTicks = curTicks;
 	}
-}
-
-static void PIOS_RFM22B_TxStart(uint32_t rfm22b_id, uint16_t tx_bytes_avail)
-{
-	struct pios_rfm22b_dev * rfm22b_dev = (struct pios_rfm22b_dev *)rfm22b_id;
-	bool valid = PIOS_RFM22B_validate(rfm22b_dev);
-	PIOS_Assert(valid);
-
-#ifdef NEVER
-	// Get some data to send
-	bool need_yield = false;
-	if(tx_pre_buffer_size == 0)
-		tx_pre_buffer_size = (rfm22b_dev->tx_out_cb)(rfm22b_dev->tx_out_context, tx_pre_buffer,
-							     TX_BUFFER_SIZE, NULL, &need_yield);
-
-	// Inject a send packet event
-	PIOS_RFM22B_InjectEvent(g_rfm22b_dev, RFM22B_EVENT_TX_START, false);
-#endif
-}
-
-/**
- * Changes the baud rate of the RFM22B peripheral without re-initialising.
- * \param[in] rfm22b_id RFM22B name (GPS, TELEM, AUX)
- * \param[in] baud Requested baud rate
- */
-static void PIOS_RFM22B_ChangeBaud(uint32_t rfm22b_id, uint32_t baud)
-{
-	struct pios_rfm22b_dev * rfm22b_dev = (struct pios_rfm22b_dev *)rfm22b_id;
-
-	bool valid = PIOS_RFM22B_validate(rfm22b_dev);
-	PIOS_Assert(valid);
-
-}
-
-static void PIOS_RFM22B_RegisterRxCallback(uint32_t rfm22b_id, pios_com_callback rx_in_cb, uint32_t context)
-{
-	struct pios_rfm22b_dev * rfm22b_dev = (struct pios_rfm22b_dev *)rfm22b_id;
-
-	bool valid = PIOS_RFM22B_validate(rfm22b_dev);
-	PIOS_Assert(valid);
-
-	/* 
-	 * Order is important in these assignments since ISR uses _cb
-	 * field to determine if it's ok to dereference _cb and _context
-	 */
-	rfm22b_dev->rx_in_context = context;
-	rfm22b_dev->rx_in_cb = rx_in_cb;
-}
-
-static void PIOS_RFM22B_RegisterTxCallback(uint32_t rfm22b_id, pios_com_callback tx_out_cb, uint32_t context)
-{
-	struct pios_rfm22b_dev * rfm22b_dev = (struct pios_rfm22b_dev *)rfm22b_id;
-
-	bool valid = PIOS_RFM22B_validate(rfm22b_dev);
-	PIOS_Assert(valid);
-
-	/* 
-	 * Order is important in these assignments since ISR uses _cb
-	 * field to determine if it's ok to dereference _cb and _context
-	 */
-	rfm22b_dev->tx_out_context = context;
-	rfm22b_dev->tx_out_cb = tx_out_cb;
 }
 
 /**
