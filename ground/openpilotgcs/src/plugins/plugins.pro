@@ -241,3 +241,11 @@ SUBDIRS += plugin_setupwizard
 #plugin_powerlog.depends = plugin_coreplugin
 #plugin_powerlog.depends += plugin_rawhid
 #SUBDIRS += plugin_powerlog
+
+# UpdateGadget - for updating firmware and so on ..
+plugin_updategadget.subdir = updategadget
+plugin_updategadget.depends = plugin_coreplugin
+SUBDIRS += plugin_updategadget
+
+
+
