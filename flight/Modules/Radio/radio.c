@@ -400,7 +400,7 @@ static void radioStatusTask(void *parameters)
 {
         PIOS_TAG(PIOS_TAGS_RADIO_ST);
 	while (1) {
-		PipXStatusData pipxStaRXtus;
+		PipXStatusData pipxStatus;
 		uint32_t pairID;
 
 		// Get object data
