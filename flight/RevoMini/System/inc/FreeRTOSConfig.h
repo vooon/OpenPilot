@@ -33,7 +33,13 @@
 #define configUSE_PREEMPTION					1
 #define configUSE_IDLE_HOOK						1
 #define configUSE_TICK_HOOK						0
+#ifdef PIOS_TRACING
+#include<pios_tracing.h>
+#define configUSE_TRACE_FACILITY				1
+#define configUSE_APPLICATION_TASK_TAG                          1
+#else
 #define configUSE_TRACE_FACILITY				0
+#endif
 #define configUSE_16_BIT_TICKS					0
 #define configIDLE_SHOULD_YIELD					0
 #define configUSE_MUTEXES						1

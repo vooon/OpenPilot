@@ -42,7 +42,7 @@
  * switch.
  * It is recommended this function being an inline function and as short/fast 
  * as possible to prevent great performance impacts */
-extern inline void PIOS_trace_impl(void * tag);
+extern void PIOS_trace_impl(void * tag);
 
 /* Define the traceTASK_SWITCHED_IN() macro to call the actual 
  * board specific tag log implementation */

@@ -1222,6 +1222,7 @@ static const struct pios_tim_channel pios_tim_rcvrport_all_channels[] = {
 		},
 		.remap = GPIO_AF_TIM12,
 	},
+#ifndef PIOS_TRACING
 	{
 		.timer = TIM8,
 		.timer_chan = TIM_Channel_1,
@@ -1286,6 +1287,7 @@ static const struct pios_tim_channel pios_tim_rcvrport_all_channels[] = {
 		},
 		.remap = GPIO_AF_TIM8,
 	},
+#endif
 };
 
 const struct pios_pwm_cfg pios_pwm_cfg = {
@@ -1421,3 +1423,73 @@ const struct pios_usb_cdc_cfg pios_usb_cdc_cfg = {
 	.data_tx_ep = 3,
 };
 #endif	/* PIOS_INCLUDE_USB_CDC */
+
+#if defined(PIOS_TRACING)
+const struct stm32_gpio pios_tracing_pins[] = {
+    {
+        .gpio = GPIOC,
+        .init =
+        {
+            .GPIO_Pin = GPIO_Pin_6,
+            .GPIO_Speed = GPIO_Speed_50MHz,
+            .GPIO_Mode  = GPIO_Mode_OUT,
+            .GPIO_OType = GPIO_OType_PP,
+            .GPIO_PuPd = GPIO_PuPd_UP
+        },
+        .pin_source = GPIO_PinSource6,
+    },
+    {
+        .gpio = GPIOC,
+        .init =
+        {
+            .GPIO_Pin = GPIO_Pin_7,
+            .GPIO_Speed = GPIO_Speed_50MHz,
+            .GPIO_Mode  = GPIO_Mode_OUT,
+            .GPIO_OType = GPIO_OType_PP,
+            .GPIO_PuPd = GPIO_PuPd_UP
+        },
+        .pin_source = GPIO_PinSource7,
+    },
+    {
+        .gpio = GPIOC,
+        .init =
+        {
+            .GPIO_Pin = GPIO_Pin_8,
+            .GPIO_Speed = GPIO_Speed_50MHz,
+            .GPIO_Mode  = GPIO_Mode_OUT,
+            .GPIO_OType = GPIO_OType_PP,
+            .GPIO_PuPd = GPIO_PuPd_UP
+        },
+        .pin_source = GPIO_PinSource8,
+    },
+    {
+        .gpio = GPIOC,
+        .init =
+        {
+            .GPIO_Pin = GPIO_Pin_9,
+            .GPIO_Speed = GPIO_Speed_50MHz,
+            .GPIO_Mode  = GPIO_Mode_OUT,
+            .GPIO_OType = GPIO_OType_PP,
+            .GPIO_PuPd = GPIO_PuPd_UP
+        },
+        .pin_source = GPIO_PinSource9,
+    }
+};
+
+inline void PIOS_trace_impl(void * tag)
+{  
+    uint16_t out = (uint16_t)(uint32_t)tag;
+    out &= 0x000F;
+    
+    GPIOC->ODR &= ~(0x000F << 6);
+    GPIOC->ODR |= out << 6;
+}
+
+static void PIOS_InitTracing(void)
+{
+    for (uint8_t i = 0; i < 4; i++) 
+    {
+        GPIO_Init(pios_tracing_pins[i].gpio, &pios_tracing_pins[i].init);
+    }
+}
+#endif

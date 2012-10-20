@@ -678,7 +678,9 @@ void PIOS_Board_Init(void) {
 #if defined(PIOS_INCLUDE_MPU6000)
 	PIOS_MPU6000_Init(pios_spi_gyro_id,0, &pios_mpu6000_cfg);
 #endif
-
+#if defined(PIOS_TRACING)
+        PIOS_InitTracing(); 
+#endif 
 }
 
 /**

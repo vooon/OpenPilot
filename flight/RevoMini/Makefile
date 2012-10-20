@@ -37,6 +37,11 @@ OUTDIR := $(TOP)/build/$(TARGET)
 # Set to YES for debugging
 DEBUG ?= NO
 
+
+# SET to yes to use the tracing feature of freeRTOS using the four GPIOC pins of the 
+# receiver port to show the tag of the task currently running
+PIOS_TRACE_FREERTOS? = NO
+
 # Set to YES when using Code Sourcery toolchain
 CODE_SOURCERY ?= NO
 
@@ -286,6 +291,10 @@ CFLAGS += -DDIAG_TASKS
 # to the board file or something
 CFLAGS += -DSTM32F4XX
 CFLAGS += -DMEM_SIZE=1024000000
+
+ifeq ($(PIOS_TRACE_FREERTOS), YES)
+CDEFS += -DPIOS_TRACING
+endif
 
 # Output format. (can be ihex or binary or both)
 #  binary to create a load-image in raw-binary format i.e. for SAM-BA,

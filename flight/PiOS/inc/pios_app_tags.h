@@ -46,7 +46,7 @@
 #define PIOS_TAGS_RADIO_ST 10
 #define PIOS_TAGS_RADIO_RX 11
 
-#if (configUSE_APPLICATION_TASK_TAG == 1)
+#ifdef PIOS_TRACING
 #define PIOS_TAG(x) vTaskSetApplicationTaskTag( NULL, ( void * ) x );
 #else
 #define PIOS_TAG(x) 
