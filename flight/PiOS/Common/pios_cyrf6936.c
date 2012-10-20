@@ -32,11 +32,14 @@
 #include <pios.h>
 
 #if defined(PIOS_INCLUDE_CYRF6936)
+#include <pios_cyrf6936.h>
 
-#define CS_HI() (GPIO_SetBits(GPIOA, GPIO_Pin_4))
-#define CS_LO() (GPIO_ResetBits(GPIOA, GPIO_Pin_4))
-#define RS_HI() GPIO_SetBits(GPIOA, GPIO_Pin_0)
-#define RS_LO() GPIO_ResetBits(GPIOA, GPIO_Pin_0)
+const struct pios_cyrf6936_cfg * dev_cfg;
+
+#define CS_HI() (GPIO_SetBits(dev_cfg->cyrf_cs.gpio, dev_cfg->cyrf_cs.init.GPIO_Pin))
+#define CS_LO() (GPIO_ResetBits(dev_cfg->cyrf_cs.gpio, dev_cfg->cyrf_cs.init.GPIO_Pin))
+#define RS_HI() (GPIO_SetBits(dev_cfg->cyrf_rs.gpio, dev_cfg->cyrf_rs.init.GPIO_Pin))
+#define RS_LO() (GPIO_ResetBits(dev_cfg->cyrf_rs.gpio, dev_cfg->cyrf_rs.init.GPIO_Pin))
 
 void Delay(uint32_t);
 
@@ -45,28 +48,23 @@ int32_t CYRF_TransferByte(uint16_t b)
 {
 	uint16_t rx_byte;
 
-	/*
-	 * Procedure taken from STM32F10xxx Reference Manual section 23.3.5
-	 */
-
 	/* Make sure the RXNE flag is cleared by reading the DR register */
-	//dummy = SPI1->DR;
+	dummy = dev_cfg->cyrf_spi.regs->DR;
 
 	/* Start the transfer */
-	SPI1->DR = b;
+	dev_cfg->cyrf_spi.regs->DR = b;
 
 	/* Wait until there is a byte to read */
-	while (!(SPI1->SR & SPI_I2S_FLAG_RXNE)) ;
-	//while (SPI2->SR & SPI_I2S_FLAG_BSY) ;
+	while (!(dev_cfg->cyrf_spi.regs->SR & SPI_I2S_FLAG_RXNE)) ;
 
 	/* Read the rx'd byte */
-	rx_byte = SPI1->DR;
+	rx_byte = dev_cfg->cyrf_spi.regs->DR;
 
 	/* Wait until the TXE goes high */
-	while (!(SPI1->SR & SPI_I2S_FLAG_TXE)) ;
+	while (!(dev_cfg->cyrf_spi.regs->SR & SPI_I2S_FLAG_TXE)) ;
 
 	/* Wait for SPI transfer to have fully completed */
-	while (SPI1->SR & SPI_I2S_FLAG_BSY) ;
+	while (dev_cfg->cyrf_spi.regs->SR & SPI_I2S_FLAG_BSY) ;
 
 	/* Return received byte */
 	return rx_byte;
@@ -126,74 +124,27 @@ void CYRF_Reset()
     PIOS_DELAY_WaituS(50);
 }
 
-void CYRF_Initialize()
+void CYRF_Initialize(const struct pios_cyrf6936_cfg * cfg)
 {
+	dev_cfg = cfg; // store config
 
-	/* Enable SPI2 */
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, ENABLE);
-    //rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_SPI2EN);
-    /* Enable GPIOB */
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
-    //rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPBEN);
 
-//reset
-	GPIO_InitTypeDef GPIO_InitStructure;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);
-//cs
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);
-//mosi
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-	//GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);
-//sck
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-	//GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);
-//miso
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);
-//irq
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);
+	GPIO_Init(dev_cfg->cyrf_spi.sclk.gpio, (GPIO_InitTypeDef*)&(dev_cfg->cyrf_spi.sclk.init));
+	GPIO_Init(dev_cfg->cyrf_spi.miso.gpio, (GPIO_InitTypeDef*)&(dev_cfg->cyrf_spi.miso.init));
+	GPIO_Init(dev_cfg->cyrf_spi.mosi.gpio, (GPIO_InitTypeDef*)&(dev_cfg->cyrf_spi.mosi.init));
+	GPIO_Init(dev_cfg->cyrf_cs.gpio, (GPIO_InitTypeDef*)&(dev_cfg->cyrf_cs.init));
+	GPIO_Init(dev_cfg->cyrf_rs.gpio, (GPIO_InitTypeDef*)&(dev_cfg->cyrf_rs.init));
+	PIOS_EXTI_Init(dev_cfg->cyrf_irq);
 
     CS_HI();
     RS_LO();
-    //GPIO_PinRemapConfig(GPIO_Remap_SPI1, DISABLE);
 
-	SPI_Cmd(SPI1,DISABLE);
-	SPI_InitTypeDef spi_init;
-	SPI_StructInit(&spi_init);
-	spi_init.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
-	spi_init.SPI_Mode = SPI_Mode_Master;
-	spi_init.SPI_DataSize = SPI_DataSize_8b;
-	spi_init.SPI_CPOL = SPI_CPOL_Low;
-	//spi_init.SPI_CPOL = SPI_CPOL_High;
-	spi_init.SPI_CPHA = SPI_CPHA_1Edge;
-	//spi_init.SPI_CPHA = SPI_CPHA_2Edge;
-	spi_init.SPI_NSS = SPI_NSS_Soft;
-	spi_init.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_16;
-	spi_init.SPI_FirstBit = SPI_FirstBit_MSB;
-	spi_init.SPI_CRCPolynomial = 7;
-
-	SPI_Init(SPI1,&spi_init);
-	//SPI_NSSInternalSoftwareConfig(SPI2, SPI_NSSInternalSoft_Set);
-	SPI_CalculateCRC(SPI1, DISABLE);
-	SPI_Cmd(SPI1,ENABLE);
+	SPI_Init(dev_cfg->cyrf_spi.regs,&dev_cfg->cyrf_spi.init);
+	SPI_CalculateCRC(dev_cfg->cyrf_spi.regs, DISABLE);
+	SPI_Cmd(dev_cfg->cyrf_spi.regs,ENABLE);
 
 	CYRF_Reset();
 }
@@ -363,6 +314,12 @@ void CYRF_FindBestChannels(u8 *channels, u8 len, u8 minspace, u8 min, u8 max)
         }
     }
     CYRF_ConfigRxTx(1);
+}
+
+
+bool PIOS_CYRF_ISR(void)
+{
+	/* Do nothing */
 }
 
 #endif

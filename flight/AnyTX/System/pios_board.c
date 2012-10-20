@@ -238,7 +238,7 @@ void PIOS_Board_Init(void) {
  	PIOS_GPIO_Init();
 
  	// CYRF
- 	CYRF_Initialize();
+ 	CYRF_Initialize(&pios_cyrf_cfg);
  	// PROTOCOL
 	Model.tx_power = TXPOWER_150mW;
 	Model.fixed_id = 0;

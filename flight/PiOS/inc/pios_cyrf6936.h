@@ -3,6 +3,18 @@
 #define PIOS_CYRF6936_H
 
 #include <pios.h>
+#if defined(PIOS_INCLUDE_CYRF6936)
+
+#include <pios_stm32.h>
+#include <pios_spi_priv.h>
+
+struct pios_cyrf6936_cfg {
+	const struct pios_spi_cfg cyrf_spi;
+	const struct pios_exti_cfg * cyrf_irq;
+	struct stm32_gpio cyrf_rs;
+	struct stm32_gpio cyrf_cs;
+};
+
 
 enum {
     CYRF_01_TX_LENGTH      = 0x01,
@@ -43,8 +55,12 @@ enum CYRF_PWR {
     CYRF_PWR_DEFAULT,
 };
 
+
+
+
+
 /* SPI CYRF6936 */
-extern void CYRF_Initialize();
+extern void CYRF_Initialize(const struct pios_cyrf6936_cfg * cfg);
 extern void CYRF_Reset();
 extern void CYRF_GetMfgData(u8 data[]);
 
@@ -64,4 +80,7 @@ extern u8 CYRF_ReadRegister(u8 address);
 extern void CYRF_WritePreamble(u32 preamble);
 extern u8 CYRF_MaxPower();
 extern void CYRF_FindBestChannels(u8 *channels, u8 len, u8 minspace, u8 minchan, u8 maxchan);
+extern bool PIOS_CYRF_ISR(void);
 #endif
+
+#endif /* PIOS_CYRF6936_H */

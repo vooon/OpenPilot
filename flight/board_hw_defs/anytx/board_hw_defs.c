@@ -381,3 +381,102 @@ const struct pios_eeprom_cfg pios_eeprom_cfg = {
 };
 #endif /* PIOS_INCLUDE_FLASH_EEPROM */
 
+
+#if defined(PIOS_INCLUDE_CYRF6936)
+
+#include <pios_cyrf6936.h>
+const struct pios_exti_cfg pios_exti_cyrf_cfg __exti_config = {
+	.vector = PIOS_CYRF_ISR,
+	.line = EXTI_Line1,
+	.pin = {
+		.gpio = GPIOA,
+		.init = {
+			.GPIO_Pin = GPIO_Pin_1,
+			.GPIO_Speed = GPIO_Speed_50MHz,
+			.GPIO_Mode = GPIO_Mode_IPU,
+		},
+	},
+	.irq = {
+		.init = {
+			.NVIC_IRQChannel = EXTI1_IRQn,
+			.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGH,
+			.NVIC_IRQChannelSubPriority = 0,
+			.NVIC_IRQChannelCmd = ENABLE,
+		},
+	},
+	.exti = {
+		.init = {
+			.EXTI_Line = EXTI_Line1, // matches above GPIO pin
+			.EXTI_Mode = EXTI_Mode_Interrupt,
+			//.EXTI_Trigger = EXTI_Trigger_Rising_Falling,
+			.EXTI_Trigger = EXTI_Trigger_Falling,
+			//.EXTI_Trigger = EXTI_Trigger_Rising,
+			.EXTI_LineCmd = ENABLE,
+		},
+	},
+};
+
+static const struct pios_cyrf6936_cfg pios_cyrf_cfg = {
+	.cyrf_spi = {
+			.regs   = SPI1,
+			.init   = {
+				.SPI_Mode              = SPI_Mode_Master,
+				.SPI_Direction         = SPI_Direction_2Lines_FullDuplex,
+				.SPI_DataSize          = SPI_DataSize_8b,
+				.SPI_NSS               = SPI_NSS_Soft,
+				.SPI_FirstBit          = SPI_FirstBit_MSB,
+				.SPI_CRCPolynomial     = 7,
+				.SPI_CPOL              = SPI_CPOL_Low,
+				.SPI_CPHA              = SPI_CPHA_1Edge,
+				.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_16,
+			},
+			.use_crc = false,
+			.dma = {},
+			.sclk = {
+				.gpio = GPIOA,
+				.init = {
+					.GPIO_Pin   = GPIO_Pin_5,
+					.GPIO_Speed = GPIO_Speed_50MHz,
+					.GPIO_Mode  = GPIO_Mode_AF_PP,
+				},
+			},
+			.miso = {
+				.gpio = GPIOA,
+				.init = {
+					.GPIO_Pin   = GPIO_Pin_6,
+					.GPIO_Speed = GPIO_Speed_50MHz,
+					.GPIO_Mode  = GPIO_Mode_IPU,
+				},
+			},
+			.mosi = {
+				.gpio = GPIOA,
+				.init = {
+					.GPIO_Pin   = GPIO_Pin_7,
+					.GPIO_Speed = GPIO_Speed_50MHz,
+					.GPIO_Mode  = GPIO_Mode_AF_PP,
+				},
+			},
+			.slave_count = 1,
+	},
+
+	.cyrf_irq = &pios_exti_cyrf_cfg,
+	.cyrf_rs = {
+		.gpio = GPIOA,
+		.init = {
+			.GPIO_Pin = GPIO_Pin_1,
+			.GPIO_Speed = GPIO_Speed_50MHz,
+			.GPIO_Mode = GPIO_Mode_IPU,
+		},
+	},
+	.cyrf_cs = {
+		.gpio = GPIOA,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_4,
+			.GPIO_Speed = GPIO_Speed_50MHz,
+			.GPIO_Mode  = GPIO_Mode_Out_PP,
+		},
+	},
+};
+
+#endif
+
