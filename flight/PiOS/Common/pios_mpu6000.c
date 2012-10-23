@@ -34,6 +34,16 @@
 
 #if defined(PIOS_INCLUDE_MPU6000)
 
+#define DEBUG_THIS_FILE
+
+#if defined(PIOS_INCLUDE_DEBUG_CONSOLE) && defined(DEBUG_THIS_FILE)
+#define DEBUG_MSG(format, ...) PIOS_COM_SendFormattedString(PIOS_COM_DEBUG, format, ## __VA_ARGS__)
+#define DEBUG_BLOB(binary, bytes) PIOS_COM_SendBufferNonBlocking(PIOS_COM_DEBUG, binary, bytes)
+#else
+#define DEBUG_MSG(format, ...)
+#define DEBUG_BLOB(binary, bytes)
+#endif
+
 #include "fifo_buffer.h"
 
 /* Global Variables */
@@ -402,8 +412,10 @@ uint32_t mpu6000_transfer_size;
 
 bool PIOS_MPU6000_IRQHandler(void)
 {
+	static uint8_t count = 0;
 	static uint32_t timeval;
 	mpu6000_interval_us = PIOS_DELAY_DiffuS(timeval);
+	uint32_t last_timeval = timeval;
 	timeval = PIOS_DELAY_GetRaw();
 
 	if(!mpu6000_configured)
@@ -465,7 +477,11 @@ bool PIOS_MPU6000_IRQHandler(void)
 	mpu6000_irq++;
 	
 	mpu6000_time_us = PIOS_DELAY_DiffuS(timeval);
-	
+
+	DEBUG_BLOB(&count,1);
+	DEBUG_BLOB((uint8_t *) &data.gyro_x, 6);
+	count++;
+
 	return xHigherPriorityTaskWoken == pdTRUE;	
 }
 
