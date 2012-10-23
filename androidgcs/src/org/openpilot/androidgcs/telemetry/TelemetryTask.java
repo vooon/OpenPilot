@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.util.Observable;
 import java.util.Observer;
 
+import org.openpilot.androidgcs.telemetry.tasks.LoggingTask;
 import org.openpilot.uavtalk.Telemetry;
 import org.openpilot.uavtalk.TelemetryMonitor;
 import org.openpilot.uavtalk.UAVObjectManager;
@@ -77,6 +78,9 @@ public abstract class TelemetryTask implements Runnable {
 	//! Indicate a physical connection is established
 	private boolean connected;
 
+	//! An object which can log the telemetry stream
+	private final LoggingTask logger = new LoggingTask();
+
 	TelemetryTask(OPTelemetryService s) {
 		telemService = s;
 		shutdown = false;
@@ -116,6 +120,9 @@ public abstract class TelemetryTask implements Runnable {
 
 		// Create a new thread that processes the input bytes
 		startInputProcessing();
+
+		// Connect the logger
+		logger.connect(objMngr);
 
 		connected = true;
 		return connected;
