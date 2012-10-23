@@ -415,7 +415,6 @@ bool PIOS_MPU6000_IRQHandler(void)
 	static uint8_t count = 0;
 	static uint32_t timeval;
 	mpu6000_interval_us = PIOS_DELAY_DiffuS(timeval);
-	uint32_t last_timeval = timeval;
 	timeval = PIOS_DELAY_GetRaw();
 
 	if(!mpu6000_configured)

@@ -492,6 +492,8 @@ ifeq ($(DEBUG),YES)
 CFLAGS += -DDEBUG
 endif
 
+CFLAGS += -DPIOS_INCLUDE_DEBUG_CONSOLE
+
 #The following Makefile command, ifneq (, $(filter) $(A), $(B) $(C)) is equivalent 
 # to the pseudocode `if(A== B || A==C)`
 ifneq (,$(filter YES,$(STACK_DIAGNOSTICS) $(ALL_DIGNOSTICS)))
