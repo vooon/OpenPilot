@@ -164,7 +164,7 @@ int32_t PathFollowerInitialize()
 		PathDesiredInitialize();
 
 		//VVVVVVVVVVVVVVV
-//		pathFollowerTypeInitialize[pathFollowerType]; <-- THIS NEEDS TO BE A VIRTUAL FUNCTION INSTEAD OF A SWITCH
+//		pathFollowerTypeInitialize[pathFollowerType]; <-- THIS NEEDS TO BE DONE LIKE THIS, WITH A VIRTUAL FUNCTION INSTEAD OF A SWITCH
 		switch(pathFollowerType) {
 			case FIXEDWING:
 				initializeFixedWingPathFollower();
@@ -224,17 +224,18 @@ static void PathFollowerTask(void *parameters)
 		//Depending on vehicle type, call appropriate path follower
 		switch(pathFollowerType) {
 			case FIXEDWING:
-				updateFixedDesiredStabilization(fixedwingpathfollowerSettings);
+				updateFixedWingDesiredStabilization(flightMode, fixedwingpathfollowerSettings);
 				break;
 			case MULTIROTOR:
-				updateMultirotorDesiredStabilization(fixedwingpathfollowerSettings);
+				updateMultirotorDesiredStabilization(flightMode, fixedwingpathfollowerSettings);
 			case HELICOPTER:
 				AlarmsSet(SYSTEMALARMS_ALARM_GUIDANCE, SYSTEMALARMS_ALARM_CRITICAL); //<--Helicopter mode is very far from being ready
 //				updateHelicopterDesiredStabilization(fixedwingpathfollowerSettings);
 			case HOLONOMIC:
+				AlarmsSet(SYSTEMALARMS_ALARM_GUIDANCE, SYSTEMALARMS_ALARM_CRITICAL); //<--Honomomic mode is very far from being ready, and might never even be used
 				break;
 			case DUBINSCART:
-				updateDubinsCartDesiredStabilization(fixedwingpathfollowerSettings);
+				updateDubinsCartDesiredStabilization(flightMode, fixedwingpathfollowerSettings);
 				break;
 			default:
 				//Something has gone wrong, we shouldn't be able to get to this point
@@ -243,19 +244,6 @@ static void PathFollowerTask(void *parameters)
 		}
 	}
 }
-
-
-////Triggered by changes in FixedWingPathFollowerSettings and PathDesired
-//static void FixedWingPathFollowerParamsUpdatedCb(UAVObjEvent * ev)
-//{
-//	FixedWingPathFollowerSettingsGet(&fixedwingpathfollowerSettings);
-//	FlightStatusFlightModeGet(&flightMode);
-//	PathDesiredGet(&pathDesired);
-//	
-//	float r[2] = {pathDesired.End[0]-pathDesired.Start[0], pathDesired.End[1]-pathDesired.Start[1]};
-//	pathLength=sqrtf(r[0]*r[0]+r[1]*r[1]);
-//	
-//}
 
 //Triggered by changes in FlightStatus
 static void FlightStatusUpdatedCb(UAVObjEvent * ev){

@@ -32,6 +32,6 @@
 #include "fixedwingpathfollowersettings.h"
 
 void initializeDubinsCartPathFollower();
-uint8_t updateDubinsCartDesiredStabilization(FixedWingPathFollowerSettingsData fixedwingpathfollowerSettings);
+uint8_t updateDubinsCartDesiredStabilization(uint8_t flightMode, FixedWingPathFollowerSettingsData fixedwingpathfollowerSettings);
 
 #endif // DUBINSCARTPATHFOLLOWER_H

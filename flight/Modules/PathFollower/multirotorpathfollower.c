@@ -79,12 +79,12 @@ static struct Integral {
 
 
 // Private variables
-static uint8_t flightMode=FLIGHTSTATUS_FLIGHTMODE_MANUAL;
 extern bool flightStatusUpdate;
 static bool homeOrbit=true;
 
 
 // Private functions
+static uint8_t waypointFollowing(uint8_t flightMode, FixedWingPathFollowerSettingsData fixedwingpathfollowerSettings);
 //static void FixedWingPathFollowerParamsUpdatedCb(UAVObjEvent * ev);
 //static void updateSteadyStateAttitude();
 static float bound(float val, float min, float max);
@@ -99,6 +99,27 @@ void initializeMultirotorPathFollower(){
 	memset(integral, 0, sizeof(struct Integral));
 }
 
+uint8_t updateMultirotorDesiredStabilization(uint8_t flightMode, FixedWingPathFollowerSettingsData fixedwingpathfollowerSettings)
+{
+	// Compute path follower commands
+	switch(flightMode) {
+		case FLIGHTSTATUS_FLIGHTMODE_RETURNTOHOME:
+		case FLIGHTSTATUS_FLIGHTMODE_POSITIONHOLD:
+			waypointFollowing(flightMode, fixedwingpathfollowerSettings);
+			break;
+		default:
+			// Be cleaner and reset integrals
+			integral->altitudeError = 0;
+			integral->airspeedError = 0;
+			integral->lineError = 0;
+			integral->circleError = 0;
+			
+			break;
+	}
+	
+	return 0;
+}
+
 /**
  * Compute desired attitude from the desired velocity
  *
@@ -106,7 +127,7 @@ void initializeMultirotorPathFollower(){
  * NED frame as the feedback term and then compares the 
  * @ref VelocityActual against the @ref VelocityDesired
  */
- uint8_t updateMultirotorDesiredStabilization(FixedWingPathFollowerSettingsData fixedwingpathfollowerSettings)
+static uint8_t waypointFollowing(uint8_t flightMode, FixedWingPathFollowerSettingsData fixedwingpathfollowerSettings)
 {
 	float dT = fixedwingpathfollowerSettings.UpdatePeriod / 1000.0f; //Convert from [ms] to [s]
 
