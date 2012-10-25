@@ -379,14 +379,13 @@ void initializeMultirotorPathFollower(){
 	
 
 	/**
-	 * Compute desired yaw command
+ 	 * Reset desired roll and pitch commands
 	 */
-	// TODO Once coordinated flight is merged in, YAW needs to switch to STABILIZATIONDESIRED_STABILIZATIONMODE_COORDINATEDFLIGHT
-	stabDesired.Yaw = 0;
-
+	stabDesired.Roll = 0;
+	
 	stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_ROLL] = STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE;
 	stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_PITCH] = STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE;
-	stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_YAW] = STABILIZATIONDESIRED_STABILIZATIONMODE_NONE;
+	stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_YAW] = STABILIZATIONDESIRED_STABILIZATIONMODE_AXISLOCK;
 	
 	StabilizationDesiredSet(&stabDesired);
 

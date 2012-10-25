@@ -384,7 +384,7 @@ uint8_t updateFixedDesiredStabilization(FixedWingPathFollowerSettingsData fixedw
 	/**
 	 * Compute desired yaw command
 	 */
-	// TODO Once coordinated flight is merged in, YAW needs to switch to STABILIZATIONDESIRED_STABILIZATIONMODE_COORDINATEDFLIGHT
+	// Coordinated flight, so we reset the desired yaw.
 	stabDesired.Yaw = 0;
 
 	stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_ROLL] = STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE;
