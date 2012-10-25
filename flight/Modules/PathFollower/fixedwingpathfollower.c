@@ -85,6 +85,7 @@ static bool homeOrbit=true;
 
 // Private functions
 static uint8_t waypointFollowing(uint8_t flightMode, FixedWingPathFollowerSettingsData fixedwingpathfollowerSettings);
+static uint8_t dlgLaunch(FixedWingPathFollowerSettingsData fixedwingpathfollowerSettings);
 //static void FixedWingPathFollowerParamsUpdatedCb(UAVObjEvent * ev);
 //static void updateSteadyStateAttitude();
 static float bound(float val, float min, float max);
@@ -106,6 +107,9 @@ uint8_t updateFixedWingDesiredStabilization(uint8_t flightMode, FixedWingPathFol
 		case FLIGHTSTATUS_FLIGHTMODE_RETURNTOHOME:
 		case FLIGHTSTATUS_FLIGHTMODE_POSITIONHOLD:
 			waypointFollowing(flightMode, fixedwingpathfollowerSettings);
+			break;
+		case FLIGHTSTATUS_FLIGHTMODE_DLGLAUNCH:
+			dlgLaunch(fixedwingpathfollowerSettings);
 			break;
 		default:
 			// Be cleaner and reset integrals
@@ -480,6 +484,34 @@ float followOrbit(float c[3], float rho, bool direction, float p[3], float psi, 
 #endif
 	return psi_command;
 }
+
+
+/**
+ * Compute desired attitude from the desired velocity
+ *
+ * Takes in @ref NedActual which has the acceleration in the 
+ * NED frame as the feedback term and then compares the 
+ * @ref VelocityActual against the @ref VelocityDesired
+ */
+uint8_t dlgLaunch(FixedWingPathFollowerSettingsData fixedwingpathfollowerSettings)
+{
+/*	switch (launchStatus) {
+		case IDLE:
+			break;
+		case GYRATING:
+			break;
+		case CLIMBING:
+			break;
+		case GLIDING:
+			break;
+		default:
+			break;
+	}
+*/	
+//	return LAUNCH_IN_PROGRESS
+//	return LAUNCH_SUCCESSFUL
+	return 0;
+}	
 
 /**
  * Bound input value between limits
