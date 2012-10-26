@@ -202,13 +202,20 @@ static void actuatorTask(void* parameters)
 			continue;
 		}
 
+		FlightStatusGet(&flightStatus);
+
+		// If the controller is no longer present then shut down the motors
+		if (flightStatus.Controller == FLIGHTSTATUS_CONTROLLER_ABSENT) {
+			setFailsafe(&actuatorSettings, &mixerSettings);
+			continue;			
+		}
+
 		// Check how long since last update
 		thisSysTime = xTaskGetTickCount();
 		if(thisSysTime > lastSysTime) // reuse dt in case of wraparound
 			dT = (thisSysTime - lastSysTime) / portTICK_RATE_MS / 1000.0f;
 		lastSysTime = thisSysTime;
 
-		FlightStatusGet(&flightStatus);
 		ActuatorDesiredGet(&desired);
 		ActuatorCommandGet(&command);
 

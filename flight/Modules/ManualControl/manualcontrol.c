@@ -285,6 +285,11 @@ static void manualControlTask(void *parameters)
 				disconnected_count = 0;
 			}
 
+			// Store whether a controller is present to enable motors
+			uint8_t controller_status = cmd.Connected == MANUALCONTROLCOMMAND_CONNECTED_TRUE ? FLIGHTSTATUS_CONTROLLER_PRESENT :
+				FLIGHTSTATUS_CONTROLLER_ABSENT;
+			FlightStatusControllerSet(&controller_status);
+
 			if (cmd.Connected == MANUALCONTROLCOMMAND_CONNECTED_FALSE) {
 				cmd.Throttle = -1;	// Shut down engine with no control
 				cmd.Roll = 0;
