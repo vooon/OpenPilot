@@ -53,7 +53,7 @@
 // Private types
 
 // Private functions
-static void pathPlannerTask(void *parameters);
+static void pathPlannerCompute(UAVObjEvent *ev);
 static void settingsUpdated(UAVObjEvent * ev);
 static void updatePathDesired(UAVObjEvent * ev);
 static void setWaypoint(uint16_t num);
@@ -75,8 +75,6 @@ static uint8_t conditionImmediate();
 
 
 // Private variables
-static xTaskHandle taskHandle;
-static xQueueHandle queue;
 static PathPlannerSettingsData pathPlannerSettings;
 static WaypointActiveData waypointActive;
 static WaypointData waypoint;
@@ -89,11 +87,6 @@ static bool pathplanner_active = false;
  */
 int32_t PathPlannerStart()
 {
-	taskHandle = NULL;
-
-	// Start VM thread
-	xTaskCreate(pathPlannerTask, (signed char *)"PathPlanner", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &taskHandle);
-	TaskMonitorAdd(TASKINFO_RUNNING_PATHPLANNER, taskHandle);
 
 	return 0;
 }
@@ -103,8 +96,6 @@ int32_t PathPlannerStart()
  */
 int32_t PathPlannerInitialize()
 {
-	taskHandle = NULL;
-
 	PathPlannerSettingsInitialize();
 	PathActionInitialize();
 	PathStatusInitialize();
@@ -115,19 +106,6 @@ int32_t PathPlannerInitialize()
 	WaypointInitialize();
 	WaypointActiveInitialize();
 	
-	// Create object queue
-	queue = xQueueCreate(MAX_QUEUE_SIZE, sizeof(UAVObjEvent));
-
-	return 0;
-}
-
-MODULE_INITCALL(PathPlannerInitialize, PathPlannerStart)
-
-/**
- * Module task
- */
-static void pathPlannerTask(void *parameters)
-{
 	// update settings on change
 	PathPlannerSettingsConnectCallback(settingsUpdated);
 	settingsUpdated(PathPlannerSettingsHandle());
@@ -136,88 +114,95 @@ static void pathPlannerTask(void *parameters)
 	WaypointConnectCallback(updatePathDesired);
 	WaypointActiveConnectCallback(updatePathDesired);
 	PathActionConnectCallback(updatePathDesired);
+	PathStatusConnectCallback(pathPlannerCompute);
 
-	FlightStatusData flightStatus;
-	PathDesiredData pathDesired;
-	PathStatusData pathStatus;
+
+	return 0;
+}
+
+MODULE_INITCALL(PathPlannerInitialize, 0)
+
+/**
+ * Main Module function
+ */
+void pathPlannerCompute(UAVObjEvent * ev)
+{
+	static FlightStatusData flightStatus;
+	static PathDesiredData pathDesired;
+	static PathStatusData pathStatus;
 	
 	// Main thread loop
 	bool endCondition = false;
-	while (1)
-	{
 
-		vTaskDelay(20);
+	FlightStatusGet(&flightStatus);
+	if (flightStatus.FlightMode != FLIGHTSTATUS_FLIGHTMODE_PATHPLANNER) {
+		pathplanner_active = false;
+		return;
+	}
 
-		FlightStatusGet(&flightStatus);
-		if (flightStatus.FlightMode != FLIGHTSTATUS_FLIGHTMODE_PATHPLANNER) {
-			pathplanner_active = false;
-			continue;
-		}
+	WaypointActiveGet(&waypointActive);
 
-		WaypointActiveGet(&waypointActive);
+	if(pathplanner_active == false) {
 
-		if(pathplanner_active == false) {
+		pathplanner_active = true;
 
-			pathplanner_active = true;
+		// This triggers callback to update variable
+		waypointActive.Index = 0;
+		WaypointActiveSet(&waypointActive);
 
-			// This triggers callback to update variable
-			waypointActive.Index = 0;
-			WaypointActiveSet(&waypointActive);
+		return;
+	}
 
-			continue;
-		}
+	WaypointInstGet(waypointActive.Index,&waypoint);
+	PathActionInstGet(waypoint.Action, &pathAction);
+	PathStatusGet(&pathStatus);
+	PathDesiredGet(&pathDesired);
 
-		WaypointInstGet(waypointActive.Index,&waypoint);
-		PathActionInstGet(waypoint.Action, &pathAction);
-		PathStatusGet(&pathStatus);
-		PathDesiredGet(&pathDesired);
+	// delay next step until path follower has acknowledged the path mode
+	if (pathStatus.UID != pathDesired.UID) {
+		return;
+	}
 
-		// delay next step until path follower has acknowledged the path mode
-		if (pathStatus.UID != pathDesired.UID) {
-			continue;
-		}
+	// negative destinations DISABLE this feature
+	if (pathStatus.Status == PATHSTATUS_STATUS_CRITICAL && waypointActive.Index != pathAction.ErrorDestination && pathAction.ErrorDestination >= 0) {
+		setWaypoint(pathAction.ErrorDestination);
+		return;
+	}
 
-		// negative destinations DISABLE this feature
-		if (pathStatus.Status == PATHSTATUS_STATUS_CRITICAL && waypointActive.Index != pathAction.ErrorDestination && pathAction.ErrorDestination >= 0) {
-			setWaypoint(pathAction.ErrorDestination);
-			continue;
-		}
+	// check if condition has been met
+	endCondition = pathConditionCheck();
 
-		// check if condition has been met
-		endCondition = pathConditionCheck();
-
-		// decide what to do
-		switch (pathAction.Command) {
-			case PATHACTION_COMMAND_ONNOTCONDITIONNEXTWAYPOINT:
-				endCondition = !endCondition;
-			case PATHACTION_COMMAND_ONCONDITIONNEXTWAYPOINT:
-				if (endCondition) setWaypoint(waypointActive.Index+1);
-				break;
-			case PATHACTION_COMMAND_ONNOTCONDITIONJUMPWAYPOINT:
-				endCondition = !endCondition;
-			case PATHACTION_COMMAND_ONCONDITIONJUMPWAYPOINT:
-				if (endCondition) {
-					if (pathAction.JumpDestination<0) {
-						// waypoint ids <0 code relative jumps
-						setWaypoint(waypointActive.Index - pathAction.JumpDestination );
-					} else {
-						setWaypoint(pathAction.JumpDestination);
-					}
-				}
-				break;
-			case PATHACTION_COMMAND_IFCONDITIONJUMPWAYPOINTELSENEXTWAYPOINT:
-				if (endCondition) {
-					if (pathAction.JumpDestination<0) {
-						// waypoint ids <0 code relative jumps
-						setWaypoint(waypointActive.Index - pathAction.JumpDestination );
-					} else {
-						setWaypoint(pathAction.JumpDestination);
-					}
+	// decide what to do
+	switch (pathAction.Command) {
+		case PATHACTION_COMMAND_ONNOTCONDITIONNEXTWAYPOINT:
+			endCondition = !endCondition;
+		case PATHACTION_COMMAND_ONCONDITIONNEXTWAYPOINT:
+			if (endCondition) setWaypoint(waypointActive.Index+1);
+			break;
+		case PATHACTION_COMMAND_ONNOTCONDITIONJUMPWAYPOINT:
+			endCondition = !endCondition;
+		case PATHACTION_COMMAND_ONCONDITIONJUMPWAYPOINT:
+			if (endCondition) {
+				if (pathAction.JumpDestination<0) {
+					// waypoint ids <0 code relative jumps
+					setWaypoint(waypointActive.Index - pathAction.JumpDestination );
 				} else {
-					setWaypoint(waypointActive.Index+1);
+					setWaypoint(pathAction.JumpDestination);
 				}
-				break;
-		}
+			}
+			break;
+		case PATHACTION_COMMAND_IFCONDITIONJUMPWAYPOINTELSENEXTWAYPOINT:
+			if (endCondition) {
+				if (pathAction.JumpDestination<0) {
+					// waypoint ids <0 code relative jumps
+					setWaypoint(waypointActive.Index - pathAction.JumpDestination );
+				} else {
+					setWaypoint(pathAction.JumpDestination);
+				}
+			} else {
+				setWaypoint(waypointActive.Index+1);
+			}
+			break;
 	}
 }
 
@@ -388,8 +373,8 @@ static uint8_t conditionTimeOut() {
  * Parameter 1:  flag: 0=2d 1=3d
  */
 static uint8_t conditionDistanceToTarget() {
-	float distance;
-	PositionActualData positionActual;
+	static float distance;
+	static PositionActualData positionActual;
 
 	PositionActualGet(&positionActual);
 	if (pathAction.ConditionParameters[1]>0.5f) {
@@ -415,13 +400,14 @@ static uint8_t conditionDistanceToTarget() {
  */
 static uint8_t conditionLegRemaining() {
 
-	PathDesiredData pathDesired;
-	PositionActualData positionActual;
+	static PathDesiredData pathDesired;
+	static PositionActualData positionActual;
+	
 	PathDesiredGet(&pathDesired);
 	PositionActualGet(&positionActual);
 
 	float cur[3] = {positionActual.North, positionActual.East, positionActual.Down};
-	struct path_status progress;
+	static struct path_status progress;
 
 	path_progress(pathDesired.Start, pathDesired.End, cur, &progress, pathDesired.Mode);
 	if ( progress.fractional_progress >= 1.0f - pathAction.ConditionParameters[0] ) {
@@ -437,13 +423,13 @@ static uint8_t conditionLegRemaining() {
  */
 static uint8_t conditionBelowError() {
 
-	PathDesiredData pathDesired;
-	PositionActualData positionActual;
+	static PathDesiredData pathDesired;
+	static PositionActualData positionActual;
 	PathDesiredGet(&pathDesired);
 	PositionActualGet(&positionActual);
 
 	float cur[3] = {positionActual.North, positionActual.East, positionActual.Down};
-	struct path_status progress;
+	static struct path_status progress;
 
 	path_progress(pathDesired.Start, pathDesired.End, cur, &progress, pathDesired.Mode);
 	if ( progress.error <= pathAction.ConditionParameters[0] ) {
@@ -459,7 +445,7 @@ static uint8_t conditionBelowError() {
  * Parameter 0:  altitude in meters (negative!)
  */
 static uint8_t conditionAboveAltitude() {
-	PositionActualData positionActual;
+	static PositionActualData positionActual;
 	PositionActualGet(&positionActual);
 	
 	if (positionActual.Down <= pathAction.ConditionParameters[0]) {
@@ -476,7 +462,7 @@ static uint8_t conditionAboveAltitude() {
  */
 static uint8_t conditionAboveSpeed() {
 
-	VelocityActualData velocityActual;
+	static VelocityActualData velocityActual;
 	VelocityActualGet(&velocityActual);
 	float velocity = sqrtf( velocityActual.North*velocityActual.North + velocityActual.East*velocityActual.East + velocityActual.Down*velocityActual.Down );
 
@@ -508,12 +494,12 @@ static uint8_t conditionPointingTowardsNext() {
 	if (nextWaypointId>=UAVObjGetNumInstances(WaypointHandle())) {
 		nextWaypointId = 0;
 	}
-	WaypointData nextWaypoint;
+	static WaypointData nextWaypoint;
 	WaypointInstGet(nextWaypointId,&nextWaypoint);
 
 	float angle1 = atan2f((nextWaypoint.Position[0]-waypoint.Position[0]),(nextWaypoint.Position[1]-waypoint.Position[1]));
 
-	VelocityActualData velocity;
+	static VelocityActualData velocity;
 	VelocityActualGet (&velocity);
 	float angle2 = atan2f(velocity.North,velocity.East);
 
