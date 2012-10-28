@@ -2,10 +2,10 @@
  ******************************************************************************
  * @addtogroup OpenPilotModules OpenPilot Modules
  * @{ 
- * @addtogroup Attitude Attitude Module
+ * @addtogroup PathFollower Module
  * @{ 
  *
- * @file       attitude.h
+ * @file       multirotorpathfollower.h
  * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2011.
  * @brief      Acquires sensor data and fuses it into attitude estimate for CC
  *
@@ -27,36 +27,11 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-#ifndef ATTITUDE_H
-#define ATTITUDE_H
+#ifndef MULTIROTORPATHFOLLOWER_H
+#define MULTIROTORPATHFOLLOWER_H
+#include "fixedwingpathfollowersettings.h"
 
-#include "openpilot.h"
+void initializeMultirotorPathFollower();
+uint8_t updateMultirotorDesiredStabilization(uint8_t flightMode, FixedWingPathFollowerSettingsData fixedwingpathfollowerSettings);
 
-struct GlobalAttitudeVariables {
-	float accelKi;
-	float accelKp;
-	float yawBiasRate;
-	float gyroGain[3];
-	float gyroGain_ref;
-	float accelbias[3];
-	float accelscale[3];
-	float gyro_correct_int[3];
-	float q[4];
-	float Rsb[3][3]; //Rotation matrix that transforms from the sensor frame to the body frame
-	bool rotate;
-	bool zero_during_arming;
-	bool bias_correct_gyro;	
-	uint8_t filter_choice;
-	
-	// For running trim flights
-	bool trim_requested;
-	float trim_accels[3];
-	int32_t trim_samples;
-	
-};
-
-
-int32_t AttitudeInitialize(void);
-
-
-#endif // ATTITUDE_H
+#endif // MULTIROTORPATHFOLLOWER_H
