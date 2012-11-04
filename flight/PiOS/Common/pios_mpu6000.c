@@ -34,7 +34,7 @@
 
 #if defined(PIOS_INCLUDE_MPU6000)
 
-#define DEBUG_THIS_FILE
+//#define DEBUG_THIS_FILE
 
 #if defined(PIOS_INCLUDE_DEBUG_CONSOLE) && defined(DEBUG_THIS_FILE)
 #define DEBUG_MSG(format, ...) PIOS_COM_SendFormattedString(PIOS_COM_DEBUG, format, ## __VA_ARGS__)
@@ -479,6 +479,8 @@ bool PIOS_MPU6000_IRQHandler(void)
 
 	DEBUG_BLOB(&count,1);
 	DEBUG_BLOB((uint8_t *) &data.gyro_x, 6);
+	DEBUG_BLOB((uint8_t *) &data.accel_x, 6);
+	
 	count++;
 
 	return xHigherPriorityTaskWoken == pdTRUE;	

@@ -59,6 +59,16 @@
 #include "CoordinateConversions.h"
 #include <pios_board_info.h>
  
+#define DEBUG_THIS_FILE
+
+#if defined(PIOS_INCLUDE_DEBUG_CONSOLE) && defined(DEBUG_THIS_FILE)
+#define DEBUG_MSG(format, ...) PIOS_COM_SendFormattedString(PIOS_COM_DEBUG, format, ## __VA_ARGS__)
+#define DEBUG_BLOB(binary, bytes) PIOS_COM_SendBufferNonBlocking(PIOS_COM_DEBUG, binary, bytes)
+#else
+#define DEBUG_MSG(format, ...)
+#define DEBUG_BLOB(binary, bytes)
+#endif
+
 // Private constants
 #define STACK_SIZE_BYTES 540
 #define TASK_PRIORITY (tskIDLE_PRIORITY+3)
@@ -367,6 +377,7 @@ struct pios_mpu6000_data mpu6000_data;
 static int32_t updateSensorsCC3D(AccelsData * accelsData, GyrosData * gyrosData)
 {
 	float accels[3], gyros[3];
+	static uint8_t count = 0;
 	
 #if defined(PIOS_INCLUDE_MPU6000)
 	
@@ -374,6 +385,11 @@ static int32_t updateSensorsCC3D(AccelsData * accelsData, GyrosData * gyrosData)
 	
 	if(xQueueReceive(queue, (void *) &mpu6000_data, SENSOR_PERIOD) == errQUEUE_EMPTY)
 		return -1;	// Error, no data
+
+	DEBUG_BLOB(&count,1);
+	DEBUG_BLOB((uint8_t *) &mpu6000_data.gyro_x, 6);
+	DEBUG_BLOB((uint8_t *) &mpu6000_data.accel_x, 6);
+	count++;
 
 	// Do not read raw sensor data in simulation mode
 	if (GyrosReadOnly() || AccelsReadOnly())
