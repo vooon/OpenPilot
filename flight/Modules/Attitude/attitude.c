@@ -463,10 +463,10 @@ static int32_t updateSensors(AccelsData * accels, GyrosData * gyros, bool cc3d_f
 		float tmpVec[3];
 		
 		//Rotate the vector into a temporary vector, and then copy back into the original vectors.
-		rot_mult(glbl->Rsb, prelim_accels, tmpVec, false);
+		rot_mult(glbl->Rsb, prelim_accels, tmpVec, true);
 		memcpy(prelim_accels, tmpVec, sizeof(tmpVec));
 		
-		rot_mult(glbl->Rsb, prelim_gyros,  tmpVec, false);
+		rot_mult(glbl->Rsb, prelim_gyros,  tmpVec, true);
 		memcpy(prelim_gyros,  tmpVec, sizeof(tmpVec));
 	}
 	
@@ -634,28 +634,24 @@ static void settingsUpdatedCb(UAVObjEvent * objEv) {
 		
 		//Inverse rotation of sensor data, from body frame into sensor frame
 		float a_sensor[3];
-		rot_mult(glbl->Rsb, a_body, a_sensor, true);
+		rot_mult(glbl->Rsb, a_body, a_sensor, false);
 		
 		//Temporary variables
-		float psi, theta, phi;
-		
-		psi=attitudeSettings.BoardRotation[ATTITUDESETTINGS_BOARDROTATION_YAW]*DEG2RAD/100.0f;
-		
-		float cP=cosf(psi);
-		float sP=sinf(psi);
-
-		//In case psi is too small, we have to use a different equation to solve for theta
-		if (fabs(psi) > 3.1415f/2)
-			theta=atanf((a_sensor[1]+cP*(sP*a_sensor[0]-cP*a_sensor[1]))/(sP*a_sensor[2]));
-		else
-			theta=atanf((a_sensor[0]-sP*(sP*a_sensor[0]-cP*a_sensor[1]))/(cP*a_sensor[2]));
-			
-		phi=atan2f((sP*a_sensor[0]-cP*a_sensor[1])/GRAV,(a_sensor[2]/cosf(theta)/GRAV));
+		float theta, phi;
+				
+		phi=atan2f(-a_sensor[1], -a_sensor[2]);
+		//In case phi is too small, we have to use a different equation to solve for theta
+		if (phi > 3.1415f/2)
+			theta=atan2f(a_sensor[0], -a_sensor[1]/sinf(phi));
+		else 
+			theta=atan2f(a_sensor[0], -a_sensor[2]/cosf(phi));
 		
 		attitudeSettings.BoardRotation[ATTITUDESETTINGS_BOARDROTATION_ROLL]  = phi*RAD2DEG*100.0f;
 		attitudeSettings.BoardRotation[ATTITUDESETTINGS_BOARDROTATION_PITCH] = theta*RAD2DEG*100.0f;
 
 		attitudeSettings.TrimFlight = ATTITUDESETTINGS_TRIMFLIGHT_NORMAL;
+		
+		//Note that this UAVO set operation triggers a nested callback
 		AttitudeSettingsSet(&attitudeSettings);
 	} else {
 		glbl->trim_requested = false;
