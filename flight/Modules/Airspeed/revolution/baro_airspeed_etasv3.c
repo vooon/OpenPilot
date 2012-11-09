@@ -57,6 +57,7 @@
 // Private functions
 
 static uint16_t calibrationCount=0;
+static uint16_t calibrationCount2=0;
 
 
 void baro_airspeedGetETASV3(BaroAirspeedData *baroAirspeedData, portTickType *lastSysTime, uint8_t airspeedSensorType, int8_t airspeedADCPin){
@@ -85,10 +86,11 @@ void baro_airspeedGetETASV3(BaroAirspeedData *baroAirspeedData, portTickType *la
 			return;
 		} else if (calibrationCount <= (CALIBRATION_IDLE_MS + CALIBRATION_COUNT_MS)/SAMPLING_DELAY_MS_ETASV3) {
 			calibrationCount++;
+			calibrationCount2++;
 			calibrationSum +=  baroAirspeedData->SensorValue;
 			if (calibrationCount > (CALIBRATION_IDLE_MS + CALIBRATION_COUNT_MS)/SAMPLING_DELAY_MS_ETASV3) {
 
-				airspeedSettingsData.ZeroPoint = (int16_t) (((float)calibrationSum) / CALIBRATION_COUNT_MS +0.5f);
+				airspeedSettingsData.ZeroPoint = (int16_t) ((float)calibrationSum / (float)calibrationCount2);
 				AirspeedSettingsZeroPointSet( &airspeedSettingsData.ZeroPoint );
 			} else {
 				return;
