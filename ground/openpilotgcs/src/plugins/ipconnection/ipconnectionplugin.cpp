@@ -116,6 +116,10 @@ void IPConnection::onCloseDevice(QAbstractSocket *ipSocket)
     ipConMutex.unlock();
 }
 
+void IPconnectionPlugin::setConfig(IPconnectionConfiguration *bob)
+{
+    m_config=bob;
+}
 
 IPConnection * connection = 0;
 

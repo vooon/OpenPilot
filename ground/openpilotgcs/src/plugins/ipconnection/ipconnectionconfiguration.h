@@ -58,7 +58,7 @@ public:
 
      QString getStreamingAddress()  { return m_StreamingAddress; }
      int getStreamingPort()  { return m_StreamingPort; }
-    static int getStreamTelemetry()  { return m_StreamTelemetry; }
+     int getStreamTelemetry()  { return m_StreamTelemetry; }
 
 public slots:
     void setExternalHwAddress(QString IPAddress) { m_ExternalHwAddress = IPAddress; }
@@ -74,9 +74,9 @@ private:
     int m_ExternalHwPort;
     int m_UseTCP;
 
-    static QString m_StreamingAddress;
-    static int m_StreamingPort;
-    static int m_StreamTelemetry;
+    QString m_StreamingAddress;
+    int m_StreamingPort;
+    int m_StreamTelemetry;
 
     QSettings* settings;
 };

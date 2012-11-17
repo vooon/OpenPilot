@@ -3,6 +3,9 @@ TEMPLATE = lib
 TARGET = UAVTalk
 include(../../openpilotgcsplugin.pri)
 include(uavtalk_dependencies.pri)
+
+LIBS *= -l$$qtLibraryName(IPConnection)
+
 HEADERS += uavtalk.h \
     uavtalkplugin.h \
     telemetrymonitor.h \

@@ -56,6 +56,7 @@ bool UAVTalkPlugin::initialize(const QStringList & arguments, QString * errorStr
     // Get UAVObjectManager instance
     ExtensionSystem::PluginManager* pm = ExtensionSystem::PluginManager::instance();
     objMngr = pm->getObject<UAVObjectManager>();
+//    pm->getObject<IC
 
     // Create TelemetryManager
     telMngr = new TelemetryManager();

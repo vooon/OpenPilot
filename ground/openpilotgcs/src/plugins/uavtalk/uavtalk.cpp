@@ -36,7 +36,11 @@
 #else  // UAVTALK_DEBUG
   #define UAVTALK_QXTLOG_DEBUG(args...)
 #endif	// UAVTALK_DEBUG
-#include "ipconnection/ipconnectionconfiguration.h"
+#include "ipconnection/ipconnectionplugin.h"
+#include "../coreplugin/dialogs/iwizard.h"
+#include <coreplugin/core_global.h>
+#include <QtCore/QObject>
+
 
 #define SYNC_VAL 0x3C
 
@@ -86,6 +90,17 @@ UAVTalk::UAVTalk(QIODevice* iodev, UAVObjectManager* objMngr)
 
     qDebug()<<"USE UDP:::::::::::."<<useUDPMirror;
 
+
+//    QList<IWizard*> IWizard::allWizards()
+//    {
+//  ExtensionSystem::PluginManager::instance()->getObjects<IWizard>();
+//    }
+
+   // QList<Core::IOptionsPage*> rc = ExtensionSystem::PluginManager::instance()->getObjects<IOptionsPage>();
+   // IPconnectionPlugin* obj = dynamic_cast<IPconnectionPlugin*>(ExtensionSystem::PluginManager::instance()->getObject<IPconnectionPlugin>());
+    IPconnectionPlugin* obj = ExtensionSystem::PluginManager::instance()->getObject<IPconnectionPlugin>();
+
+//    obj->
 //    qDebug() << " IP:" << IPconnectionConfiguration::getStreamingAddress() << " Port: " << IPconnectionConfiguration::getStreamingPort() << " Telem:" << IPconnectionConfiguration::getStreamTelemetry();
 //    qDebug() << " IP:" << IPconnectionConfiguration::m_StreamingAddress << " Port: " << IPconnectionConfiguration::m_StreamingPort << " Telem:" << IPconnectionConfiguration::m_StreamTelemetry;
     if(streamTelemetry){

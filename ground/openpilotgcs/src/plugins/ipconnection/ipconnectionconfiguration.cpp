@@ -29,15 +29,6 @@
 #include <coreplugin/icore.h>
 #include <QDebug>
 
-QString IPconnectionConfiguration::m_StreamingAddress="127.0.0.1";
-int IPconnectionConfiguration::m_StreamingPort=9000;
-int IPconnectionConfiguration::m_StreamTelemetry=false;
-
-//QString m_StreamingAddress;
-//int m_StreamingPort;
-//int m_StreamTelemetry;
-
-
 IPconnectionConfiguration::IPconnectionConfiguration(QString classId, QSettings* qSettings, QObject *parent) :
     IUAVGadgetConfiguration(classId, parent),
     m_ExternalHwAddress("127.0.0.1"),

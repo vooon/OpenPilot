@@ -91,11 +91,17 @@ public:
     IPconnectionPlugin();
     ~IPconnectionPlugin();
 
+    QString getStreamingAddress()  { return m_config->getStreamingAddress(); }
+    int getStreamingPort()  { return m_config->getStreamingPort(); }
+    int getStreamTelemetry()  { return m_config->getStreamTelemetry(); }
+    void setConfig(IPconnectionConfiguration *m_config);
+
     virtual bool initialize(const QStringList &arguments, QString *error_message);
     virtual void extensionsInitialized();
 
 private:
     IPconnectionConnection *m_connection;
+    IPconnectionConfiguration *m_config;
 
 };
 
