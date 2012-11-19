@@ -44,15 +44,23 @@ Point MercatorProjection::FromLatLngToPixel(double lat, double lng, const int &z
     double y = 0.5 - log((1 + sinLatitude) / (1 - sinLatitude)) / (4 * M_PI);
 
     Size s = GetTileMatrixSizePixel(zoom);
-    int mapSizeX = s.Width();
-    int mapSizeY = s.Height();
+    qint64 mapSizeX = s.Width();
+    qint64 mapSizeY = s.Height();
 
-    ret.SetX((int) Clip(x * mapSizeX + 0.5, 0, mapSizeX - 1));
-    ret.SetY((int) Clip(y * mapSizeY + 0.5, 0, mapSizeY - 1));
+    ret.SetX((qint64) round(Clip(x * mapSizeX + 0.5, 0, mapSizeX - 1)));
+    ret.SetY((qint64) round(Clip(y * mapSizeY + 0.5, 0, mapSizeY - 1)));
 
     return ret;
 }
-internals::PointLatLng MercatorProjection::FromPixelToLatLng(const int &x, const int &y, const int &zoom)
+
+/**
+ * @brief MercatorProjection::FromPixelToLatLng Referenced from top-left of globe, so the lat-lon (0,0), i.e. the intersection of the equator and prime meridian, would be [1<<(zoom-1), 1<<(zoom-1)]
+ * @param x Horizontal location in [pixels], referenced from left edge of global map
+ * @param y Vertical location in [pixels], referenced from top edge of global map
+ * @param zoom
+ * @return Latitude and Longitude in [degrees]
+ */
+internals::PointLatLng MercatorProjection::FromPixelToLatLng(const qint64 &x,const qint64 &y,const int &zoom)
 {
     internals::PointLatLng ret;// = internals::PointLatLng.Empty;
 
@@ -86,10 +94,15 @@ double MercatorProjection::Flattening() const
 }
 Size MercatorProjection::GetTileMatrixMaxXY(const int &zoom)
 {
-    Q_UNUSED(zoom);
     int xy = (1 << zoom);
     return  Size(xy - 1, xy - 1);
 }
+
+/**
+ * @brief MercatorProjection::GetTileMatrixMinXY
+ * @param zoom UNUSED
+ * @return returns Size(0,0)
+ */
 Size MercatorProjection::GetTileMatrixMinXY(const int &zoom)
 {
     Q_UNUSED(zoom);

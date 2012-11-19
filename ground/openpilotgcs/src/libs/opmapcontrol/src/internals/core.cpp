@@ -236,10 +236,11 @@ namespace internals {
     {
         if (!isDragging)
         {
+
             zoom=value;
             minOfTiles=Projection()->GetTileMatrixMinXY(value);
             maxOfTiles=Projection()->GetTileMatrixMaxXY(value);
-            currentPositionPixel=Projection()->FromLatLngToPixel(currentPosition,value);
+            currentPositionPixel=Projection()->FromLatLngToPixel(currentPosition, value);
             if(started)
             {
                 MtileLoadQueue.lock();
@@ -351,6 +352,11 @@ namespace internals {
                 break;
             }
 
+            //Ensure that no matter what the zoom can never exceed the number of bits required to display it
+            if (projection->TileSize().Width()/32 + maxzoom > 32-2){
+                maxzoom=30 - projection->TileSize().Width()/32;
+            }
+
             minOfTiles = Projection()->GetTileMatrixMinXY(Zoom());
             maxOfTiles = Projection()->GetTileMatrixMaxXY(Zoom());
             SetCurrentPositionGPixel(Projection()->FromLatLngToPixel(CurrentPosition(), Zoom()));
@@ -438,7 +444,7 @@ namespace internals {
         return RectLatLng::FromLTRB(p.Lng(), p.Lat(), rlng, blat);
 
     }
-    PointLatLng Core::FromLocalToLatLng(int const& x, int const& y)
+    PointLatLng Core::FromLocalToLatLng(qint64 const& x, qint64 const& y)
     {
         return Projection()->FromPixelToLatLng(Point(x - renderOffset.X(), y - renderOffset.Y()), Zoom());
     }
@@ -545,6 +551,7 @@ namespace internals {
             Point pt = Point(-(GetcurrentPositionGPixel().X() - Width/2), -(GetcurrentPositionGPixel().Y() - Height/2));
             renderOffset.SetX(pt.X() - dragPoint.X());
             renderOffset.SetY(pt.Y() - dragPoint.Y());
+
         }
 
         UpdateCenterTileXYLocation();
@@ -563,7 +570,7 @@ namespace internals {
 
         {
             LastLocationInBounds = CurrentPosition();
-            SetCurrentPosition (FromLocalToLatLng((int) Width/2, (int) Height/2));
+            SetCurrentPosition (FromLocalToLatLng((qint64) Width/2, (qint64) Height/2));
         }
 
         emit OnNeedInvalidation();
@@ -585,14 +592,13 @@ namespace internals {
         if(IsDragging())
         {
             LastLocationInBounds = CurrentPosition();
-            SetCurrentPosition(FromLocalToLatLng((int) Width/2, (int) Height/2));
+            SetCurrentPosition(FromLocalToLatLng((qint64) Width/2, (qint64) Height/2));
         }
 
         emit OnNeedInvalidation();
 
 
         emit OnMapDrag();
-
     }
     void Core::CancelAsyncTasks()
     {
@@ -693,18 +699,23 @@ namespace internals {
         pxRes1000km = (int) (1000000.0 / rez); // 1000km
         pxRes5000km = (int) (5000000.0 / rez); // 5000km
     }
+    /**
+     * @brief Core::keepInBounds Saturate renderOffest. The lower bound is (0,0), and the upper bound is ???
+     */
     void Core::keepInBounds()
     {
         if(renderOffset.X()>0)
             renderOffset.SetX(0);
         if(renderOffset.Y()>0)
             renderOffset.SetY(0);
-        int maxDragY=GetCurrentRegion().Height()-GettileRect().Height()*(maxOfTiles.Height()-minOfTiles.Height()+1);
-        int maxDragX=GetCurrentRegion().Width()-GettileRect().Width()*(maxOfTiles.Width()-minOfTiles.Width()+1);
+
+        qint64 maxDragY=GetCurrentRegion().Height()-GetTileRect().Height()*(maxOfTiles.Height()-minOfTiles.Height()+1);
+        qint64 maxDragX=GetCurrentRegion().Width()-GetTileRect().Width()*(maxOfTiles.Width()-minOfTiles.Width()+1);
 
         if(maxDragY>renderOffset.Y())
             renderOffset.SetY(maxDragY);
         if(maxDragX>renderOffset.X())
             renderOffset.SetX(maxDragX);
+
     }
 }

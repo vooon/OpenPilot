@@ -29,7 +29,7 @@
 
 #include "debugheader.h"
 
-#include "../internals/pointlatlng.h"
+#include "pointlatlng.h"
 #include "mousewheelzoomtype.h"
 #include "../core/size.h"
 #include "../core/point.h"
@@ -118,7 +118,7 @@ namespace internals {
         Size GetmaxOfTiles(){return maxOfTiles;}
         void SetmaxOfTiles(const Size &value){maxOfTiles=value;}
 
-        Rectangle GettileRect(){return tileRect;}
+        Rectangle GetTileRect(){return tileRect;}
         void SettileRect(const Rectangle &value){tileRect=value;}
 
         core::Point GettilePoint(){return tilePoint;}
@@ -162,7 +162,7 @@ namespace internals {
 
         RectLatLng CurrentViewArea();
 
-        PointLatLng FromLocalToLatLng(int const& x, int const& y);
+        PointLatLng FromLocalToLatLng(qint64 const& x, qint64 const& y);
 
         Point FromLatLngToLocal(PointLatLng const& latlng);
 
@@ -259,7 +259,7 @@ namespace internals {
         QMutex MtileToload;
         int tilesToload;
 
-        int maxzoom;
+        int maxzoom; //Max zoom level in  quadtile format
         QMutex MrunningThreads;
         int runningThreads;
         diagnostics diag;
@@ -267,8 +267,8 @@ namespace internals {
     protected:
         bool started;
 
-        int Width;
-        int Height;
+        qint64 Width;
+        qint64 Height;
         int pxRes100m;  // 100 meters
         int pxRes1000m;  // 1km
         int pxRes10km; // 10km
