@@ -41,7 +41,7 @@
 #include <openpilot.h>
 #include <pios_board_info.h>
 #include "anytxradio.h"
-#include "protocol\interface.h"
+#include "protocol/interface.h"
 #include "manualcontrolcommand.h"
 #include "accessorydesired.h"
 #include "anytxcontrolsettings.h"
