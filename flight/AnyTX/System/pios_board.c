@@ -32,7 +32,7 @@
 #include <openpilot.h>
 #include <anytxcontrolsettings.h>
 #include <board_hw_defs.c>
-#include "protocol\interface.h"
+#include "protocol/interface.h"
 #include <hwsettings.h>
 #include <uavobjectsinit.h>
 #include <gcsreceiver.h>
