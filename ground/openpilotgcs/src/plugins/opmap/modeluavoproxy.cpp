@@ -24,10 +24,6 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-
-#include <QDebug>
-#include <QEventLoop>
-#include <QTimer>
 #include "modeluavoproxy.h"
 #include "extensionsystem/pluginmanager.h"
 #include <math.h>
@@ -45,23 +41,12 @@ modelUavoProxy::modelUavoProxy(QObject *parent,flightDataModel * model):QObject(
 void modelUavoProxy::modelToObjects()
 {
     PathAction * act=NULL;
+    Waypoint * wp=NULL;
     QModelIndex index;
     double distance;
     double bearing;
     double altitude;
     int lastaction=-1;
-
-    Waypoint *wp = Waypoint::GetInstance(objManager,0);
-    Q_ASSERT(wp);
-    if (wp == NULL)
-        return;
-
-    // Make sure the object is acked
-    UAVObject::Metadata initialMeta = wp->getMetadata();
-    UAVObject::Metadata meta = initialMeta;
-    UAVObject::SetFlightTelemetryAcked(meta, true);
-    wp->setMetadata(meta);
-
     for(int x=0;x<myModel->rowCount();++x)
     {
         int instances=objManager->getNumInstances(waypointObj->getObjID());
@@ -129,70 +114,10 @@ void modelUavoProxy::modelToObjects()
         if(actionNumber>lastaction)
             lastaction=actionNumber;
         waypoint.Action=actionNumber;
-        if (robustUpdate(waypoint, x))
-            qDebug() << "Successfully updated";
-        else {
-            qDebug() << "Upload failed";
-            break;
-        }
-    }
-    wp->setMetadata(initialMeta);
-}
-/**
- * @brief robustUpdate Upload a waypoint and check for an ACK or retry.
- * @param data The data to set
- * @param instance The instance id
- * @return True if set succeed, false otherwise
- */
-bool modelUavoProxy::robustUpdate(Waypoint::DataFields data, int instance)
-{
-    Waypoint *wp = Waypoint::GetInstance(objManager, instance);
-    connect(wp, SIGNAL(transactionCompleted(UAVObject*,bool)), this, SLOT(waypointTransactionCompleted(UAVObject *, bool)));
-    for (int i = 0; i < 10; i++) {
-            QEventLoop m_eventloop;
-            QTimer::singleShot(500, &m_eventloop, SLOT(quit()));
-            connect(this, SIGNAL(waypointTransactionSucceeded()), &m_eventloop, SLOT(quit()));
-            connect(this, SIGNAL(waypointTransactionFailed()), &m_eventloop, SLOT(quit()));
-            waypointTransactionResult.insert(instance, false);
-            wp->setData(data);
-            wp->updated();
-            m_eventloop.exec();
-            if (waypointTransactionResult.value(instance)) {
-                disconnect(wp, SIGNAL(transactionCompleted(UAVObject*,bool)), this, SLOT(waypointTransactionCompleted(UAVObject *, bool)));
-                return true;
-            }
-
-            // Wait a second for next attempt
-            QTimer::singleShot(500, &m_eventloop, SLOT(quit()));
-            m_eventloop.exec();
-    }
-
-    disconnect(wp, SIGNAL(transactionCompleted(UAVObject*,bool)), this, SLOT(waypointTransactionCompleted(UAVObject *, bool)));
-
-    // None of the attempt got an ack
-    return false;
-}
-
-/**
- * @brief waypointTransactionCompleted Map from the transaction complete to whether it
- * did or not
- */
-void modelUavoProxy::waypointTransactionCompleted(UAVObject *obj, bool success) {
-    Q_ASSERT(obj->getObjID() == Waypoint::OBJID);
-    waypointTransactionResult.insert(obj->getInstID(), success);
-    if (success) {
-        qDebug() << "Success " << obj->getInstID();
-        emit waypointTransactionSucceeded();
-    } else {
-        qDebug() << "Failed transaction " << obj->getInstID();
-        emit waypointTransactionFailed();
+        wp->setData(waypoint);
+        wp->updated();
     }
 }
-
-/**
- * @brief ModelUavoProxy::objectsToModel Take the existing UAV objects and
- * update the GCS model accordingly
- */
 
 void modelUavoProxy::objectsToModel()
 {

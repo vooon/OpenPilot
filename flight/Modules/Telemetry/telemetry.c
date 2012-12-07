@@ -281,7 +281,7 @@ static void processObjEvent(UAVObjEvent * ev)
 		retries = 0;
 		success = -1;
 		if (ev->event == EV_UPDATED || ev->event == EV_UPDATED_MANUAL || ((ev->event == EV_UPDATED_PERIODIC) && (updateMode != UPDATEMODE_THROTTLED))) {
-#if defined(PIOS_PACKET_HANDLER)
+#ifdef PIOS_PACKET_HANDLER
 			// Don't send PipXStatus objects over the radio link.
 			if (PIOS_PACKET_HANDLER && (ev->obj == PipXStatusHandle()) && (getComPort() == 0))
 				return;
