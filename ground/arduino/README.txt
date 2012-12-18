@@ -1,6 +1,10 @@
 UAVTalk for Arduino
 -------------------
 
+THIS PORT IS ABANDONED. PUSHED BY USER DEMAND BUT IS VERY OLD. DON'T EXPECT A LOT FROM IT.
+Lot of changes was done to the main code. Feel free to port if you are interested in that.
+
+
 This directory contains the support libraries for an Arduino port of the
 UAVTalk messaging protocol.  This code is based on the flight version of
 UAVTalk, and has a minimal amount of changes.
