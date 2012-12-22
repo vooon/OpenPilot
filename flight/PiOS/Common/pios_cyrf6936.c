@@ -34,12 +34,15 @@
 #if defined(PIOS_INCLUDE_CYRF6936)
 #include <pios_cyrf6936.h>
 
+extern xSemaphoreHandle anytxSemaphore;
 const struct pios_cyrf6936_cfg * dev_cfg;
 
 #define CS_HI() (GPIO_SetBits(dev_cfg->cyrf_cs.gpio, dev_cfg->cyrf_cs.init.GPIO_Pin))
 #define CS_LO() (GPIO_ResetBits(dev_cfg->cyrf_cs.gpio, dev_cfg->cyrf_cs.init.GPIO_Pin))
 #define RS_HI() (GPIO_SetBits(dev_cfg->cyrf_rs.gpio, dev_cfg->cyrf_rs.init.GPIO_Pin))
 #define RS_LO() (GPIO_ResetBits(dev_cfg->cyrf_rs.gpio, dev_cfg->cyrf_rs.init.GPIO_Pin))
+
+
 
 void Delay(uint32_t);
 
@@ -147,6 +150,44 @@ void CYRF_Initialize(const struct pios_cyrf6936_cfg * cfg)
 	SPI_Cmd(dev_cfg->cyrf_spi.regs,ENABLE);
 
 	CYRF_Reset();
+
+#if 1
+	NVIC_InitTypeDef NVIC_InitStructure;
+	/* Enable the TIM2 gloabal Interrupt */
+	NVIC_InitStructure.NVIC_IRQChannel = TIM1_CC_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGH;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+
+	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+	TIM_OCInitTypeDef TIM_OCInitStructure;
+
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE);
+	/* Compute the prescaler value */
+	/* Time base configuration */
+	TIM_TimeBaseStructure.TIM_Period = 0xffff;
+	TIM_TimeBaseStructure.TIM_Prescaler = (uint16_t) (PIOS_MASTER_CLOCK / 1000000) - 1;
+	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
+	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+	TIM_TimeBaseInit(TIM1, &TIM_TimeBaseStructure);
+	/* Output Compare Timing Mode configuration: Channel1 */
+	/* Frozen - The comparison between the output compare register TIMx_CCR1 and the
+	counter TIMx_CNT has no effect on the outputs.(this mode is used to generate a timing
+	base). */
+	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_Timing;
+	/* OC1 signal is output on the corrisponding output pin */
+	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Disable;
+	TIM_OCInitStructure.TIM_Pulse = 0;
+	/* OC1 active high */
+	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
+	TIM_OC1Init(TIM1, &TIM_OCInitStructure);
+	/* TIMx_CCR1 can be written at anytime, the new value is taken in account immediately */
+	TIM_OC1PreloadConfig(TIM1, TIM_OCPreload_Disable);
+	TIM_ITConfig(TIM1, TIM_IT_CC1, ENABLE);
+	/* TIM2 enable counter */
+	TIM_Cmd(TIM1, DISABLE);
+#endif
 }
 
 u8 CYRF_MaxPower()
@@ -320,6 +361,38 @@ void CYRF_FindBestChannels(u8 *channels, u8 len, u8 minspace, u8 min, u8 max)
 bool PIOS_CYRF_ISR(void)
 {
 	/* Do nothing */
+}
+
+void TIM1_CC_IRQHandler(void) __attribute__ ((alias ("PIOS_CYRFTMR_ISR")));
+void PIOS_CYRFTMR_ISR ()
+{
+	if (TIM_GetITStatus(TIM1, TIM_IT_CC1) != RESET)
+	{
+		TIM_ClearITPendingBit(TIM1, TIM_IT_CC1);
+		static portBASE_TYPE xHigherPriorityTaskWoken;
+
+		xHigherPriorityTaskWoken = pdFALSE;
+		xHigherPriorityTaskWoken = xSemaphoreGiveFromISR(anytxSemaphore, &xHigherPriorityTaskWoken);
+
+		portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
+		//return xHigherPriorityTaskWoken == pdTRUE;
+	}
+}
+
+void PIOS_CYRFTMR_Stop()
+{
+	TIM_Cmd(TIM1, DISABLE);
+}
+
+void PIOS_CYRFTMR_Start()
+{
+	TIM_Cmd(TIM1, ENABLE);
+}
+
+void PIOS_CYRFTMR_Set(u16 timer)
+{
+	TIM_SetCompare1(TIM1, timer);
+	TIM_SetCounter(TIM1, 0);
 }
 
 #endif

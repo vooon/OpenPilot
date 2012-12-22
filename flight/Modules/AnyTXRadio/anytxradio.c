@@ -58,7 +58,8 @@ s16 Channels[NUM_CHANNELS] = {0};
 #endif
 
 #define TASK_PRIORITY (tskIDLE_PRIORITY+2)
-
+#define LONG_TIME 0xffff
+xSemaphoreHandle anytxSemaphore = NULL;
 
 // Private variables
 static uint32_t idleCounter;
@@ -80,6 +81,7 @@ int32_t AnyTXRadioStart(void)
 	stackOverflow = false;
 	mallocFailed = false;
 	// Create pipxtreme system task
+	vSemaphoreCreateBinary(anytxSemaphore);
 	xTaskCreate(anytxradioTask, (signed char *)"AnyTXRadio", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &systemTaskHandle);
 	// Register task
 	TaskMonitorAdd(TASKINFO_RUNNING_ACTUATOR, systemTaskHandle);
@@ -119,99 +121,119 @@ static void anytxradioTask(void *parameters)
 	idleCounterClear = 0;
 	lastSysTime = xTaskGetTickCount();
 
-
+	PIOS_CYRFTMR_Set(10000);
+	PIOS_CYRFTMR_Start();
 	// Main system loop
 	while (1) {
-		// Read settings
-		AnyTXControlSettingsGet(&settings);
-		ManualControlCommandGet(&cmd);
-		if(cmd.Connected == MANUALCONTROLCOMMAND_CONNECTED_TRUE) {
-			if(settings.Protocol == ANYTXCONTROLSETTINGS_PROTOCOL_DSM2) {
-				Channels[0]=cmd.Throttle * 10000 *
-						(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_THROTTLE]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
-				Channels[1]=cmd.Roll * 10000 *
-						(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_ROLL]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
-				Channels[2]=cmd.Pitch * 10000 *
-						(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_PITCH]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
-				Channels[3]=cmd.Yaw * 10000 *
-						(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_YAW]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
-
-				if (AccessoryDesiredInstGet(0, &accessory) == 0) {
-					Channels[6]=accessory.AccessoryVal * 10000;
-				}
-				if (AccessoryDesiredInstGet(1, &accessory) == 0) {
-					Channels[5]=accessory.AccessoryVal * 10000;
-				}
-				if (AccessoryDesiredInstGet(2, &accessory) == 0) {
-					Channels[4]=accessory.AccessoryVal * 10000;
-				}
-				timer = dsm2_cb();
-			} else if(settings.Protocol == ANYTXCONTROLSETTINGS_PROTOCOL_DEVO) {
-				Channels[2]=cmd.Throttle * 10000 *
-						(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_THROTTLE]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
-				Channels[1]=cmd.Roll * 10000 *
-						(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_ROLL]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
-				Channels[0]=cmd.Pitch * 10000 *
-						(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_PITCH]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
-				Channels[3]=cmd.Yaw * 10000 *
-						(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_YAW]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
-				if (AccessoryDesiredInstGet(0, &accessory) == 0) {
-					Channels[6]=accessory.AccessoryVal * 10000;
-				}
-				if (AccessoryDesiredInstGet(1, &accessory) == 0) {
-					Channels[5]=accessory.AccessoryVal * 10000;
-				}
-				if (AccessoryDesiredInstGet(2, &accessory) == 0) {
-					Channels[4]=accessory.AccessoryVal * 10000;
-				}
-				timer = devo_cb();
-			}  else if(settings.Protocol == ANYTXCONTROLSETTINGS_PROTOCOL_WK2401 || settings.Protocol == ANYTXCONTROLSETTINGS_PROTOCOL_WK2601 || settings.Protocol == ANYTXCONTROLSETTINGS_PROTOCOL_WK2801) {
-				Channels[2]=cmd.Throttle * 10000 *
-						(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_THROTTLE]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
-				Channels[1]=cmd.Roll * 10000 *
-						(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_ROLL]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
-				Channels[0]=cmd.Pitch * 10000 *
-						(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_PITCH]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
-				Channels[3]=cmd.Yaw * 10000 *
-						(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_YAW]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
-				if (AccessoryDesiredInstGet(0, &accessory) == 0) {
-					Channels[6]=accessory.AccessoryVal * 10000;
-				}
-				if (AccessoryDesiredInstGet(1, &accessory) == 0) {
-					Channels[5]=accessory.AccessoryVal * 10000;
-				}
-				if (AccessoryDesiredInstGet(2, &accessory) == 0) {
-					Channels[4]=accessory.AccessoryVal * 10000;
-				}
-				timer = wk_cb();
-			}else if(settings.Protocol == ANYTXCONTROLSETTINGS_PROTOCOL_J6PRO) {
-				Channels[2]=cmd.Throttle * 10000 *
-						(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_THROTTLE]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
-				Channels[1]=cmd.Roll * 10000 *
-						(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_ROLL]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
-				Channels[0]=cmd.Pitch * 10000 *
-						(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_PITCH]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
-				Channels[3]=cmd.Yaw * 10000 *
-						(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_YAW]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
-				if (AccessoryDesiredInstGet(0, &accessory) == 0) {
-					Channels[6]=accessory.AccessoryVal * 10000;
-				}
-				if (AccessoryDesiredInstGet(1, &accessory) == 0) {
-					Channels[5]=accessory.AccessoryVal * 10000;
-				}
-				if (AccessoryDesiredInstGet(2, &accessory) == 0) {
-					Channels[4]=accessory.AccessoryVal * 10000;
-				}
-				timer = j6pro_cb();
+#if 0
+		while(1)
+		{
+			if( xSemaphoreTake(anytxSemaphore, LONG_TIME ) == pdTRUE )
+			{
+				PIOS_CYRFTMR_Stop();
+				timer = 20000;
+				PIOS_CYRFTMR_Set(timer);
+				PIOS_CYRFTMR_Start();
 			}
+		}
+#endif
 
-			else {
+		if( xSemaphoreTake(anytxSemaphore, LONG_TIME ) == pdTRUE )
+		{
+			PIOS_CYRFTMR_Stop();
+			// Read settings
+			AnyTXControlSettingsGet(&settings);
+			ManualControlCommandGet(&cmd);
+			if(cmd.Connected == MANUALCONTROLCOMMAND_CONNECTED_TRUE) {
+				if(settings.Protocol == ANYTXCONTROLSETTINGS_PROTOCOL_DSM2) {
+					Channels[0]=cmd.Throttle * 10000 *
+							(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_THROTTLE]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
+					Channels[1]=cmd.Roll * 10000 *
+							(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_ROLL]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
+					Channels[2]=cmd.Pitch * 10000 *
+							(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_PITCH]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
+					Channels[3]=cmd.Yaw * 10000 *
+							(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_YAW]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
+
+					if (AccessoryDesiredInstGet(0, &accessory) == 0) {
+						Channels[6]=accessory.AccessoryVal * 10000;
+					}
+					if (AccessoryDesiredInstGet(1, &accessory) == 0) {
+						Channels[5]=accessory.AccessoryVal * 10000;
+					}
+					if (AccessoryDesiredInstGet(2, &accessory) == 0) {
+						Channels[4]=accessory.AccessoryVal * 10000;
+					}
+					timer = dsm2_cb();
+				} else if(settings.Protocol == ANYTXCONTROLSETTINGS_PROTOCOL_DEVO) {
+					Channels[2]=cmd.Throttle * 10000 *
+							(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_THROTTLE]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
+					Channels[1]=cmd.Roll * 10000 *
+							(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_ROLL]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
+					Channels[0]=cmd.Pitch * 10000 *
+							(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_PITCH]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
+					Channels[3]=cmd.Yaw * 10000 *
+							(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_YAW]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
+					if (AccessoryDesiredInstGet(0, &accessory) == 0) {
+						Channels[6]=accessory.AccessoryVal * 10000;
+					}
+					if (AccessoryDesiredInstGet(1, &accessory) == 0) {
+						Channels[5]=accessory.AccessoryVal * 10000;
+					}
+					if (AccessoryDesiredInstGet(2, &accessory) == 0) {
+						Channels[4]=accessory.AccessoryVal * 10000;
+					}
+					timer = devo_cb();
+				}  else if(settings.Protocol == ANYTXCONTROLSETTINGS_PROTOCOL_WK2401 || settings.Protocol == ANYTXCONTROLSETTINGS_PROTOCOL_WK2601 || settings.Protocol == ANYTXCONTROLSETTINGS_PROTOCOL_WK2801) {
+					Channels[2]=cmd.Throttle * 10000 *
+							(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_THROTTLE]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
+					Channels[1]=cmd.Roll * 10000 *
+							(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_ROLL]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
+					Channels[0]=cmd.Pitch * 10000 *
+							(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_PITCH]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
+					Channels[3]=cmd.Yaw * 10000 *
+							(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_YAW]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
+					if (AccessoryDesiredInstGet(0, &accessory) == 0) {
+						Channels[6]=accessory.AccessoryVal * 10000;
+					}
+					if (AccessoryDesiredInstGet(1, &accessory) == 0) {
+						Channels[5]=accessory.AccessoryVal * 10000;
+					}
+					if (AccessoryDesiredInstGet(2, &accessory) == 0) {
+						Channels[4]=accessory.AccessoryVal * 10000;
+					}
+					timer = wk_cb();
+				}else if(settings.Protocol == ANYTXCONTROLSETTINGS_PROTOCOL_J6PRO) {
+					Channels[2]=cmd.Throttle * 10000 *
+							(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_THROTTLE]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
+					Channels[1]=cmd.Roll * 10000 *
+							(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_ROLL]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
+					Channels[0]=cmd.Pitch * 10000 *
+							(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_PITCH]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
+					Channels[3]=cmd.Yaw * 10000 *
+							(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_YAW]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );
+					if (AccessoryDesiredInstGet(0, &accessory) == 0) {
+						Channels[6]=accessory.AccessoryVal * 10000;
+					}
+					if (AccessoryDesiredInstGet(1, &accessory) == 0) {
+						Channels[5]=accessory.AccessoryVal * 10000;
+					}
+					if (AccessoryDesiredInstGet(2, &accessory) == 0) {
+						Channels[4]=accessory.AccessoryVal * 10000;
+					}
+					timer = j6pro_cb();
+				}
+
+				else {
+					timer = 10000;
+				}
+			} else {
 				timer = 10000;
 			}
-		} else {
-			timer = 10000;
+			PIOS_CYRFTMR_Set(timer);
+			PIOS_CYRFTMR_Start();
 		}
-		vTaskDelayUntil(&lastSysTime, timer/1000 / portTICK_RATE_MS);
+		//vTaskDelayUntil(&lastSysTime, timer/1000 / portTICK_RATE_MS);
 	}
 }
 

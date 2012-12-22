@@ -133,7 +133,7 @@ int32_t PIOS_TIM_InitChannels(uint32_t * tim_id, const struct pios_tim_channel *
 			RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
 			break;
 		case (uint32_t) GPIOC:
-			RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
+			RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
 			break;
 		default:
 			PIOS_Assert(0);
@@ -365,7 +365,7 @@ static void PIOS_TIM_generic_irq_handler(TIM_TypeDef * timer)
  * Map all valid TIM IRQs to the common interrupt handler
  * and give it enough context to properly demux the various timers
  */
-void TIM1_UP_IRQHandler(void) __attribute__ ((alias ("PIOS_TIM_1_UP_irq_handler")));
+/*void TIM1_UP_IRQHandler(void) __attribute__ ((alias ("PIOS_TIM_1_UP_irq_handler")));
 static void PIOS_TIM_1_UP_irq_handler (void)
 {
 	PIOS_TIM_generic_irq_handler (TIM1);
@@ -376,7 +376,7 @@ static void PIOS_TIM_1_CC_irq_handler (void)
 {
 	PIOS_TIM_generic_irq_handler (TIM1);
 }
-
+*/
 void TIM2_IRQHandler(void) __attribute__ ((alias ("PIOS_TIM_2_irq_handler")));
 static void PIOS_TIM_2_irq_handler (void)
 {

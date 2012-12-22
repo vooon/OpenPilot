@@ -73,6 +73,7 @@ enum Protocols {
     PROTOCOL_WK2601,
     PROTOCOL_WK2401,
     PROTOCOL_DSM2,
+    PROTOCOL_DSMX,
     PROTOCOL_J6PRO,
 #endif
 #ifdef PROTO_HAS_A7105

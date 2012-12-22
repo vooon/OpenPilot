@@ -80,6 +80,8 @@ static u8 pkt_num;
 static u8 cyrfmfg_id[6];
 static u8 num_channels;
 static u8 ch_idx;
+static u8 use_fixed_id;
+static u8 failsafe_pkt;
 
 static void scramble_pkt()
 {
@@ -95,8 +97,17 @@ static void scramble_pkt()
 
 static void add_pkt_suffix()
 {
-    //FIXME: upper nibble of byte 9 can be 0x00, 0x80, 0xc0, but which one?
-    packet[10] = 0x00 | (PKTS_PER_CHANNEL - pkt_num - 1);
+    u8 bind_state;
+    if (use_fixed_id) {
+        if (bind_counter > 0) {
+            bind_state = 0xc0;
+        } else {
+            bind_state = 0x80;
+        }
+    } else {
+        bind_state = 0x00;
+    }
+    packet[10] = bind_state | (PKTS_PER_CHANNEL - pkt_num - 1);
     packet[11] = *(radio_ch_ptr + 1);
     packet[12] = *(radio_ch_ptr + 2);
     packet[13] = fixed_id  & 0xff;
@@ -151,6 +162,19 @@ static void build_data_pkt()
     if (ch_idx * 4 >= num_channels)
         ch_idx = 0;
     add_pkt_suffix();
+}
+
+static void cyrf_set_bound_sop_code()
+{
+    /* crc == 0 isn't allowed, so use 1 if the math results in 0 */
+    u8 crc = (cyrfmfg_id[0] + (cyrfmfg_id[1] >> 6) + cyrfmfg_id[2]);
+    if(! crc)
+        crc = 1;
+    u8 sopidx = (0xff &((cyrfmfg_id[0] << 2) + cyrfmfg_id[1] + cyrfmfg_id[2])) % 10;
+    CYRF_ConfigRxTx(1);
+    CYRF_ConfigCRCSeed((crc << 8) + crc);
+    CYRF_ConfigSOPCode(sopcodes[sopidx]);
+    CYRF_WriteRegister(CYRF_03_TX_CFG, 0x08 | Model.tx_power);
 }
 
 static void cyrf_init()
@@ -247,17 +271,11 @@ u16 devo_cb()
     if (state == DEVO_BOUND) {
         /* exit binding state */
         state = DEVO_BOUND_3;
-        /* crc == 0 isn't allowed, so use 1 if the math results in 0 */
-        u8 crc = (cyrfmfg_id[0] + (cyrfmfg_id[1] >> 6) + cyrfmfg_id[2]);
-        if(! crc)
-            crc = 1;
-        u8 sopidx = (0xff &((cyrfmfg_id[0] << 2) + cyrfmfg_id[1] + cyrfmfg_id[2])) % 10;
-        CYRF_ConfigRxTx(1);
-        CYRF_ConfigCRCSeed((crc << 8) + crc);
-        CYRF_ConfigSOPCode(sopcodes[sopidx]);
-        CYRF_WriteRegister(CYRF_03_TX_CFG, 0x08 | Model.tx_power);
-    }   
+        cyrf_set_bound_sop_code();
+    }
     if(pkt_num == 0) {
+        //Keep tx power updated
+        CYRF_WriteRegister(CYRF_03_TX_CFG, 0x08 | Model.tx_power);
         radio_ch_ptr = radio_ch_ptr == &radio_ch[2] ? radio_ch : radio_ch_ptr + 1;
         CYRF_ConfigRFChannel(*radio_ch_ptr);
     }
@@ -274,6 +292,8 @@ void DEVO_Initialize()
     CYRF_ConfigCRCSeed(0x0000);
     CYRF_ConfigSOPCode(sopcodes[0]);
     set_radio_channels();
+    use_fixed_id = 0;
+    failsafe_pkt = 0;
     radio_ch_ptr = radio_ch;
     CYRF_ConfigRFChannel(*radio_ch_ptr);
     //FIXME: Properly setnumber of channels;
@@ -286,10 +306,12 @@ void DEVO_Initialize()
         fixed_id = ((u32)(radio_ch[0] ^ cyrfmfg_id[0] ^ cyrfmfg_id[3]) << 16)
                  | ((u32)(radio_ch[1] ^ cyrfmfg_id[1] ^ cyrfmfg_id[4]) << 8)
                  | ((u32)(radio_ch[2] ^ cyrfmfg_id[2] ^ cyrfmfg_id[5]) << 0);
+        fixed_id = fixed_id % 1000000;
         bind_counter = 0x1388;
         state = DEVO_BIND;
     } else {
         fixed_id = Model.fixed_id;
+        use_fixed_id = 0;
         state = DEVO_BOUND_1;
         bind_counter = 0;
     }

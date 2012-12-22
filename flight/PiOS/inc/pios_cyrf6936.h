@@ -8,11 +8,16 @@
 #include <pios_stm32.h>
 #include <pios_spi_priv.h>
 
+
 struct pios_cyrf6936_cfg {
 	const struct pios_spi_cfg cyrf_spi;
 	const struct pios_exti_cfg * cyrf_irq;
 	struct stm32_gpio cyrf_rs;
 	struct stm32_gpio cyrf_cs;
+/*	TIM_TimeBaseInitTypeDef tim_base_init;
+	TIM_OCInitTypeDef tim_oc_init;
+	const struct pios_tim_channel * channels;*/
+
 };
 
 
@@ -80,7 +85,12 @@ extern u8 CYRF_ReadRegister(u8 address);
 extern void CYRF_WritePreamble(u32 preamble);
 extern u8 CYRF_MaxPower();
 extern void CYRF_FindBestChannels(u8 *channels, u8 len, u8 minspace, u8 minchan, u8 maxchan);
-extern bool PIOS_CYRF_ISR(void);
+extern bool PIOS_CYRF_ISR();
+
+extern void PIOS_CYRFTMR_Stop();
+extern void PIOS_CYRFTMR_Start();
+extern void PIOS_CYRFTMR_Set(u16 timer);
+
 #endif
 
 #endif /* PIOS_CYRF6936_H */

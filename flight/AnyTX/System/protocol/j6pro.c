@@ -37,7 +37,7 @@
 //For Debug
 //#define NO_SCRAMBLE
 
-#define USE_FIXED_MFGID
+//#define USE_FIXED_MFGID
 
 enum PktState {
     J6PRO_BIND,
