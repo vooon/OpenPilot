@@ -1,0 +1,27 @@
+#
+# Line endings normalization (make sure you have committed all local changes first).
+# http://wiki.openpilot.org/display/Doc/Coding+Style
+#
+# You need at least git 1.7.2 for this to work (previous versions ignore text and eol attributes).
+#
+# git rm --cached -r .
+# git reset --hard
+# git add .
+# git commit -m "Normalize line endings"
+#
+
+# Set default behaviour (do not convert line endings regardless of local git core settings)
+*		-text
+
+# All *.txt files in the root should be Windows-readable (CRLF)
+/*.txt		text eol=crlf
+
+# Root Makefile has LF line endings
+/Makefile	text eol=lf
+
+# MS VisualStudio files should always have CRLF line endings
+*.sln		text eol=crlf
+*.vcproj	text eol=crlf
+*.vcproj.*	text eol=crlf
+
+# More attributes are defined in per-directory .gitattributes which override this file

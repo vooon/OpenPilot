@@ -1,0 +1,9 @@
+#
+# All make includes should have LF line endings to be consistent with flight code
+#
+
+*.mk		text eol=lf
+*.py		text eol=lf
+
+/templates/firmwareinfotemplate.c 	text eol=lf
+/templates/gcsversioninfotemplate.h 	text eol=crlf
