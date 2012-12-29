@@ -91,6 +91,7 @@ static bool accel_filter_enabled = false;
 static float accels_filtered[3];
 static float grot_filtered[3];
 static float yawBiasRate = 0;
+static float rollPitchBiasRate = 0;
 static float gyroGain = 0.42;
 static int16_t accelbias[3];
 static float q[4] = {1,0,0,0};
@@ -215,17 +216,19 @@ static void AttitudeTask(void *parameters)
 		FlightStatusGet(&flightStatus);
 		
 		if((xTaskGetTickCount() < 7000) && (xTaskGetTickCount() > 1000)) {
-			// For first 7 seconds use accels to get gyro bias
+			// Use accels to initialize attitude, and calculate gyro bias.
 			accelKp = 1;
-			accelKi = 0.9;
+			accelKi = 0;
 			yawBiasRate = 0.23;
+			rollPitchBiasRate = 0.01;
 			accel_filter_enabled = false;
 			init = 0;
 		}
 		else if (zero_during_arming && (flightStatus.Armed == FLIGHTSTATUS_ARMED_ARMING)) {
 			accelKp = 1;
-			accelKi = 0.9;
+			accelKi = 0;
 			yawBiasRate = 0.23;
+			rollPitchBiasRate = 0.01;
 			accel_filter_enabled = false;
 			init = 0;
 		} else if (init == 0) {
@@ -233,6 +236,7 @@ static void AttitudeTask(void *parameters)
 			AttitudeSettingsAccelKiGet(&accelKi);
 			AttitudeSettingsAccelKpGet(&accelKp);
 			AttitudeSettingsYawBiasRateGet(&yawBiasRate);
+			rollPitchBiasRate = 0;
 			if (accel_alpha > 0.0f)
 				accel_filter_enabled = true;
 			init = 1;
@@ -360,6 +364,10 @@ static int32_t updateSensors(AccelsData * accels, GyrosData * gyros)
 	// and make it average zero (weakly)
 	gyro_correct_int[2] += - gyros->z * yawBiasRate;
 
+	// Force the roll & pitch gyro rates to average zero during initialization.
+	gyro_correct_int[0] += - gyros->x * rollPitchBiasRate;
+	gyro_correct_int[1] += - gyros->y * rollPitchBiasRate;
+
 	GyrosSet(gyros);
 	AccelsSet(accels);
 
@@ -430,6 +438,10 @@ static int32_t updateSensorsCC3D(AccelsData * accelsData, GyrosData * gyrosData)
 	// Because most crafts wont get enough information from gravity to zero yaw gyro, we try
 	// and make it average zero (weakly)
 	gyro_correct_int[2] += - gyrosData->z * yawBiasRate;
+
+	// Force the roll & pitch gyro rates to average zero during initialization.
+	gyro_correct_int[0] += - gyrosData->x * rollPitchBiasRate;
+	gyro_correct_int[1] += - gyrosData->y * rollPitchBiasRate;
 
 	GyrosSet(gyrosData);
 	AccelsSet(accelsData);
