@@ -36,8 +36,9 @@
 #include <pios_rfm22b_rcvr.h>
 
 // Public defines / macros
-#define PHPacketSize(p) ((uint8_t*)(p->data) + p->header.data_size - (uint8_t*)p)
-#define PHPacketSizeECC(p) ((uint8_t*)(p->data) + p->header.data_size  + RS_ECC_NPARITY - (uint8_t*)p)
+#define AES_KEY_LENGTH 32
+#define PHPacketSize(p) ((uint8_t*)(p->data) + 16 * (uint8_t)ceil((p)->header.data_size / 16.0) - (uint8_t*)p)
+#define PHPacketSizeECC(p) ((uint8_t*)(p->data) + 16 * (uint8_t)ceil((p)->header.data_size / 16.0) + RS_ECC_NPARITY - (uint8_t*)p)
 
 // Public types
 typedef enum {
@@ -61,7 +62,7 @@ typedef struct {
 } PHPacketHeader;
 
 #define PH_MAX_DATA (PIOS_PH_MAX_PACKET - sizeof(PHPacketHeader) - RS_ECC_NPARITY)
-#define PH_PACKET_SIZE(p) ((p)->data + (p)->header.data_size - (uint8_t*)(p) + RS_ECC_NPARITY)
+#define PH_PACKET_SIZE(p) ((p)->data + 16 * (uint8_t)ceil((p)->header.data_size / 16.0) - (uint8_t*)(p) + RS_ECC_NPARITY)
 typedef struct {
 	PHPacketHeader header;
 	uint8_t data[PH_MAX_DATA + RS_ECC_NPARITY];
@@ -98,6 +99,7 @@ typedef struct {
 	uint8_t max_tx_power;
 	OPLinkSettingsOutputConnectionOptions port;
 	OPLinkSettingsComSpeedOptions com_speed;
+	uint8_t aeskey[AES_KEY_LENGTH];
 	uint8_t ecc[RS_ECC_NPARITY];
 } PHConnectionPacket, *PHConnectionPacketHandle;
 

@@ -35,6 +35,8 @@
 #include <fifo_buffer.h>
 #include <uavobjectmanager.h>
 #include <oplinkstatus.h>
+#include <polarssl/config.h>
+#include <polarssl/aes.h>
 #include "pios_rfm22b.h"
 #include "pios_rfm22b_rcvr.h"
 
@@ -786,6 +788,10 @@ struct pios_rfm22b_dev {
 	uint16_t ppm_channel[PIOS_RFM22B_RCVR_MAX_CHANNELS];
 	uint8_t ppm_supv_timer;
 	bool ppm_fresh;
+
+	// The AES encryption parameters
+	aes_context aes_enc_ctx;
+	aes_context aes_dec_ctx;
 };
 
 

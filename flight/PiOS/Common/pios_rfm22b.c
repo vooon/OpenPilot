@@ -617,6 +617,13 @@ int32_t PIOS_RFM22B_Init(uint32_t *rfm22b_id, uint32_t spi_id, uint32_t slave_nu
 	// Initialize the ECC library.
 	initialize_ecc();
 
+	// Generate a random AES key.
+	{
+		uint8_t r = 0x3c;
+		for(uint8_t i = 0; i < AES_KEY_LENGTH; ++i)
+			rfm22b_dev->con_packet.aeskey[i] = r = PIOS_CRC_updateByte(r, r);
+	}
+
 	// Set the state to initializing.
 	rfm22b_dev->state = RFM22B_STATE_UNINITIALIZED;
 
@@ -1404,6 +1411,12 @@ static enum pios_rfm22b_event rfm22_txStart(struct pios_rfm22b_dev *rfm22b_dev)
 	D3_LED_TOGGLE;
 #endif
 
+	// Encrypt the packet data if we're connected
+	if (rfm22b_dev->stats.link_state == OPLINKSTATUS_LINKSTATE_CONNECTED)
+		// The message has to be encrypted in 16 byte blocks.
+		for (uint8_t *dp = p->data, *ep = p->data + p->header.data_size; dp < ep; dp += 16)
+			aes_crypt_ecb(&(rfm22b_dev->aes_enc_ctx), AES_ENCRYPT, dp, dp);
+
 	// Add the error correcting code.
 	p->header.source_id = rfm22b_dev->deviceID;
 	encode_data((unsigned char*)p, PHPacketSize(p), (unsigned char*)p);
@@ -1640,13 +1653,18 @@ static bool rfm22_receivePacket(struct pios_rfm22b_dev *rfm22b_dev, PHPacketHand
 
 	// Attempt to correct any errors in the packet.
 	decode_data((unsigned char*)p, rx_len);
-
 	bool good_packet = check_syndrome() == 0;
 	bool corrected_packet = false;
 	// We have an error.  Try to correct it.
 	if(!good_packet && (correct_errors_erasures((unsigned char*)p, rx_len, 0, 0) != 0))
 		// We corrected it
 		corrected_packet = true;
+
+	// Decrypt the packet data.
+	if (rfm22b_dev->stats.link_state == OPLINKSTATUS_LINKSTATE_CONNECTED)
+		// The message has to be encrypted in 16 byte blocks.
+		for (uint8_t *dp = p->data, *ep = p->data + p->header.data_size; dp < ep; dp += 16)
+			aes_crypt_ecb(&(rfm22b_dev->aes_dec_ctx), AES_DECRYPT, dp, dp);
 
 	// Add any missed packets into the stats.
 	bool ack_nack_packet = ((p->header.type == PACKET_TYPE_ACK) || (p->header.type == PACKET_TYPE_ACK_RTS) || (p->header.type == PACKET_TYPE_NACK));
@@ -2091,6 +2109,10 @@ static void rfm22_setConnectionParameters(struct pios_rfm22b_dev *rfm22b_dev)
 	// Call the com port configuration function
 	if (rfm22b_dev->com_config_cb && !rfm22b_dev->coordinator)
 		rfm22b_dev->com_config_cb(cph->port, cph->com_speed);
+
+	// Create the AES encrypt/decrypt context
+	aes_setkey_enc(&(rfm22b_dev->aes_enc_ctx), rfm22b_dev->con_packet.aeskey, 256);
+	aes_setkey_dec(&(rfm22b_dev->aes_dec_ctx), rfm22b_dev->con_packet.aeskey, 256);
 }
 
 static enum pios_rfm22b_event rfm22_acceptConnection(struct pios_rfm22b_dev *rfm22b_dev)

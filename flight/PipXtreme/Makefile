@@ -121,6 +121,9 @@ PYMITEINC += $(OUTDIR)
 FLIGHTPLANLIB = $(OPMODULEDIR)/FlightPlan/lib
 FLIGHTPLANS = $(OPMODULEDIR)/FlightPlan/flightplans
 HWDEFSINC = ../board_hw_defs/$(BOARD_NAME)
+POLARSSLDIR = ../../shared/polarssl
+POLARSSLLIBDIR = $(POLARSSLDIR)/library
+POLARSSLINC = $(POLARSSLDIR)/include
 
 OPUAVSYNTHDIR = $(OUTDIR)/../uavobject-synthetics/flight
 
@@ -194,7 +197,6 @@ SRC += $(PIOSCOMMON)/pios_rfm22b_com.c
 SRC += $(FLIGHTLIB)/fifo_buffer.c
 SRC += $(FLIGHTLIB)/CoordinateConversions.c
 SRC += $(FLIGHTLIB)/taskmonitor.c
-SRC += $(FLIGHTLIB)/aes.c
 ## The Reed-Solomon FEC library
 SRC += $(FLIGHTLIB)/rscode/rs.c
 SRC += $(FLIGHTLIB)/rscode/berlekamp.c
@@ -239,6 +241,10 @@ SRC += $(RTOSSRCDIR)/tasks.c
 ## RTOS Portable
 SRC += $(RTOSPORTDIR)/portable/GCC/ARM_CM3/port.c
 SRC += $(RTOSPORTDIR)/portable/MemMang/heap_1.c
+
+## Encryption library
+SRC += $(POLARSSLLIBDIR)/aes.c
+SRC += $(POLARSSLLIBDIR)/rsa.c
 
 # List C source files here which must be compiled in ARM-Mode (no -mthumb).
 # use file-extension c for "c-only"-files
@@ -293,7 +299,7 @@ EXTRAINCDIRS  += $(RTOSPORTDIR)/portable/GCC/ARM_CM3
 EXTRAINCDIRS  += $(AHRSBOOTLOADERINC)
 EXTRAINCDIRS  += $(PYMITEINC)
 EXTRAINCDIRS  += $(HWDEFSINC)
-
+EXTRAINCDIRS  += $(POLARSSLINC)
 EXTRAINCDIRS += ${foreach MOD, ${OPTMODULES} ${MODULES}, ${OPMODULEDIR}/${MOD}/inc} ${OPMODULEDIR}/System/inc
 
 
