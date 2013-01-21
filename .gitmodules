@@ -1,3 +1,6 @@
 [submodule "overo"]
 	path = overo
 	url = git@github.com:peabody124/op_overo.git
+[submodule "shared/polarssl"]
+	path = shared/polarssl
+	url = https://github.com/polarssl/polarssl.git
