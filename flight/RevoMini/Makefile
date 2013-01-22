@@ -103,6 +103,10 @@ FLIGHTPLANLIB = $(OPMODULEDIR)/FlightPlan/lib
 FLIGHTPLANS = $(OPMODULEDIR)/FlightPlan/flightplans
 HWDEFSINC = ../board_hw_defs/$(BOARD_NAME)
 UAVOBJSYNTHDIR = $(OUTDIR)/../uavobject-synthetics/flight
+POLARSSLDIR = ../../shared/polarssl
+POLARSSLLIBDIR = $(POLARSSLDIR)/library
+POLARSSLINC = $(POLARSSLDIR)/include
+POLARSSLSRC = $(POLARSSLLIBDIR)/aes.c $(POLARSSLLIBDIR)/rsa.c
 
 SRC = 
 # optional component libraries
@@ -182,6 +186,10 @@ SRC += $(PIOSCOMMON)/pios_usb_desc_hid_cdc.c
 SRC += $(PIOSCOMMON)/pios_usb_desc_hid_only.c
 SRC += $(PIOSCOMMON)/pios_usb_util.c
 
+## Encryption library
+SRC += $(POLARSSLLIBDIR)/aes.c
+SRC += $(POLARSSLLIBDIR)/rsa.c
+
 include ./UAVObjects.inc
 SRC += $(UAVOBJSRC)
 
@@ -233,6 +241,7 @@ EXTRAINCDIRS  += $(OPUAVSYNTHDIR)
 EXTRAINCDIRS  += $(BOOTINC)
 EXTRAINCDIRS  += $(PYMITEINC)
 EXTRAINCDIRS  += $(HWDEFSINC)
+EXTRAINCDIRS  += $(POLARSSLINC)
 
 # Generate intermediate code
 gencode: ${OUTDIR}/pmlib_img.c ${OUTDIR}/pmlib_nat.c ${OUTDIR}/pmlibusr_img.c ${OUTDIR}/pmlibusr_nat.c ${OUTDIR}/pmfeatures.h 
@@ -455,13 +464,13 @@ $(eval $(call OPFW_TEMPLATE,$(OUTDIR)/$(TARGET).bin,$(BOARD_TYPE),$(BOARD_REVISI
 $(eval $(call JTAG_TEMPLATE,$(OUTDIR)/$(TARGET).bin,$(FW_BANK_BASE),$(FW_BANK_SIZE),$(OPENOCD_JTAG_CONFIG),$(OPENOCD_CONFIG)))
 
 .PHONY: elf lss sym hex bin bino opfw
-elf: $(OUTDIR)/$(TARGET).elf
-lss: $(OUTDIR)/$(TARGET).lss
-sym: $(OUTDIR)/$(TARGET).sym
-hex: $(OUTDIR)/$(TARGET).hex
-bin: $(OUTDIR)/$(TARGET).bin
-bino: $(OUTDIR)/$(TARGET).bin.o
-opfw: $(OUTDIR)/$(TARGET).opfw
+elf: $(POLARSSLSRC) $(OUTDIR)/$(TARGET).elf
+lss: $(POLARSSLSRC) $(OUTDIR)/$(TARGET).lss
+sym: $(POLARSSLSRC) $(OUTDIR)/$(TARGET).sym
+hex: $(POLARSSLSRC) $(OUTDIR)/$(TARGET).hex
+bin: $(POLARSSLSRC) $(OUTDIR)/$(TARGET).bin
+bino: $(POLARSSLSRC) $(OUTDIR)/$(TARGET).bin.o
+opfw: $(POLARSSLSRC) $(OUTDIR)/$(TARGET).opfw
 
 # Display sizes of sections.
 $(eval $(call SIZE_TEMPLATE, $(OUTDIR)/$(TARGET).elf))
@@ -514,6 +523,10 @@ ifdef ComSpec
 else
 -include $(shell mkdir $(OUTDIR) 2>/dev/null) $(shell mkdir $(OUTDIR)/dep 2>/dev/null) $(wildcard $(OUTDIR)/dep/*)
 endif
+
+# Checkout the submodules if necessary.
+$(POLARSSLSRC):
+	$(V1) (cd ../..; git submodule update --init)
 
 # Listing of phony targets.
 .PHONY : all build clean clean_list install
