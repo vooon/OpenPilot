@@ -601,7 +601,7 @@ endif
 
 # Checkout the submodules if necessary.
 $(POLARSSLSRC):
-	(cd ../..; $(V1) git submodule update --init)
+	$(V1) (cd ../..; git submodule update --init)
 
 # Listing of phony targets.
 .PHONY : all build clean clean_list install
