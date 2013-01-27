@@ -268,6 +268,17 @@ static void stabilizationTask(void* parameters)
 
 					break;
 
+				case STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDEDIRECT:
+					if(reinit) {
+						pids[PID_ROLL + i].iAccumulator = 0;
+					}
+
+					// Compute the outer loop
+					actuatorDesiredAxis[i] = pid_apply(&pids[PID_ROLL + i], 0.1 * local_error[i], dT);
+					actuatorDesiredAxis[i] = bound(actuatorDesiredAxis[i], 1.0f);
+
+					break;
+
 				case STABILIZATIONDESIRED_STABILIZATIONMODE_VIRTUALBAR:
 
 					// Store for debugging output
