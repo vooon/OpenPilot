@@ -83,3 +83,15 @@ androidgcs/bin/
 androidgcs/gen/
 /.cproject
 /.project
+
+# Ignore Eclipse Plugin files since this may vary
+/.metadata\/.mylyn
+/.metadata\/.plugins
+
+# Ignore Eclipse Atlassian local data
+/.metadata\/.atlassian-connector-for-eclipse
+
+# Ignore Eclipse lock and log, these are local to user
+/.metadata\/.lock
+/.metadata\/.log
+ 
