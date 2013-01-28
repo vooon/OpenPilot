@@ -165,7 +165,8 @@ M: Fixed Wing support CC3D
 
 N: Oleg Semyonov
 D: Core Developer & Project organisation
-M: TxPID module
+D: TxPID module
+M: CameraStab module
 M: Common part of multi-platform packaging system
 M: Windows NSIS Installer
 

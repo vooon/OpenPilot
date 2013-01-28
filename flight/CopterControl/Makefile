@@ -77,6 +77,11 @@ USE_ALTITUDE ?= NO
 USE_AUTOTUNE ?= YES
 TEST_FAULTS ?= NO
 
+# Camera gimbal options
+USE_INPUT_LPF ?= YES
+USE_GIMBAL_LPF ?= YES
+USE_GIMBAL_FF ?= YES
+
 # List of optional modules to include
 OPTMODULES =
 ifeq ($(USE_CAMERASTAB), YES)
@@ -139,9 +144,10 @@ STMUSBINCDIR = $(STMUSBDIR)/inc
 CMSISDIR  = $(STMLIBDIR)/CMSIS/Core/CM3
 DOSFSDIR  = $(APPLIBDIR)/dosfs
 MSDDIR  = $(APPLIBDIR)/msd
-RTOSDIR = $(APPLIBDIR)/FreeRTOS
+RTOSDIR = $(PIOSCOMMON)/Libraries/FreeRTOS
 RTOSSRCDIR = $(RTOSDIR)/Source
 RTOSINCDIR = $(RTOSSRCDIR)/include
+RTOSPORTDIR = $(APPLIBDIR)/FreeRTOS/Source
 DOXYGENDIR = ../Doc/Doxygen
 AHRSBOOTLOADER = ../Bootloaders/AHRS/
 AHRSBOOTLOADERINC = $(AHRSBOOTLOADER)/inc
@@ -212,7 +218,6 @@ SRC += $(OPUAVSYNTHDIR)/camerastabsettings.c
 SRC += $(OPUAVSYNTHDIR)/cameradesired.c
 SRC += $(OPUAVSYNTHDIR)/gpsposition.c
 SRC += $(OPUAVSYNTHDIR)/gpsvelocity.c
-SRC += $(OPUAVSYNTHDIR)/gpssettings.c
 SRC += $(OPUAVSYNTHDIR)/hwsettings.c
 SRC += $(OPUAVSYNTHDIR)/gcsreceiver.c
 SRC += $(OPUAVSYNTHDIR)/receiveractivity.c
@@ -223,6 +228,7 @@ SRC += $(OPUAVSYNTHDIR)/mixerstatus.c
 SRC += $(OPUAVSYNTHDIR)/ratedesired.c
 SRC += $(OPUAVSYNTHDIR)/baroaltitude.c
 SRC += $(OPUAVSYNTHDIR)/txpidsettings.c
+SRC += $(OPUAVSYNTHDIR)/airspeedactual.c
 
 endif
 
@@ -239,7 +245,6 @@ SRC += $(PIOSSTM32F10X)/pios_spi.c
 SRC += $(PIOSSTM32F10X)/pios_ppm.c
 SRC += $(PIOSSTM32F10X)/pios_pwm.c
 SRC += $(PIOSSTM32F10X)/pios_dsm.c
-SRC += $(PIOSSTM32F10X)/pios_sbus.c
 SRC += $(PIOSSTM32F10X)/pios_debug.c
 SRC += $(PIOSSTM32F10X)/pios_gpio.c
 SRC += $(PIOSSTM32F10X)/pios_exti.c
@@ -269,6 +274,7 @@ SRC += $(PIOSCOMMON)/pios_flash_jedec.c
 SRC += $(PIOSCOMMON)/pios_adxl345.c
 SRC += $(PIOSCOMMON)/pios_mpu6000.c
 SRC += $(PIOSCOMMON)/pios_com.c
+SRC += $(PIOSCOMMON)/pios_sbus.c
 #SRC += $(PIOSCOMMON)/pios_i2c_esc.c
 #SRC += $(PIOSCOMMON)/pios_bmp085.c
 SRC += $(PIOSCOMMON)/pios_rcvr.c
@@ -319,8 +325,8 @@ SRC += $(RTOSSRCDIR)/queue.c
 SRC += $(RTOSSRCDIR)/tasks.c
 
 ## RTOS Portable
-SRC += $(RTOSSRCDIR)/portable/GCC/ARM_CM3/port.c
-SRC += $(RTOSSRCDIR)/portable/MemMang/heap_1.c
+SRC += $(RTOSPORTDIR)/portable/GCC/ARM_CM3/port.c
+SRC += $(RTOSPORTDIR)/portable/MemMang/heap_1.c
 
 ## Dosfs file system
 #SRC += $(DOSFSDIR)/dosfs.c
@@ -391,7 +397,7 @@ EXTRAINCDIRS  += $(DOSFSDIR)
 EXTRAINCDIRS  += $(MSDDIR)
 EXTRAINCDIRS  += $(RTOSINCDIR)
 EXTRAINCDIRS  += $(APPLIBDIR)
-EXTRAINCDIRS  += $(RTOSSRCDIR)/portable/GCC/ARM_CM3
+EXTRAINCDIRS  += $(RTOSPORTDIR)/portable/GCC/ARM_CM3
 EXTRAINCDIRS  += $(AHRSBOOTLOADERINC)
 EXTRAINCDIRS  += $(PYMITEINC)
 EXTRAINCDIRS  += $(HWDEFSINC)
@@ -444,8 +450,8 @@ CDEFS += -DUSE_$(BOARD)
 ifeq ($(ENABLE_DEBUG_PINS), YES)
 CDEFS += -DPIOS_ENABLE_DEBUG_PINS
 endif
-ifeq ($(ENABLE_AUX_UART), YES)
-CDEFS += -DPIOS_ENABLE_AUX_UART
+ifeq ($(ENABLE_DEBUG_CONSOLE), YES)
+CDEFS += -DPIOS_INCLUDE_DEBUG_CONSOLE
 endif
 ifeq ($(ERASE_FLASH), YES)
 CDEFS += -DERASE_FLASH
@@ -457,6 +463,18 @@ endif
 
 ifeq ($(USE_I2C), YES)
 CDEFS += -DUSE_I2C
+endif
+
+ifeq ($(USE_INPUT_LPF), YES)
+CDEFS += -DUSE_INPUT_LPF
+endif
+
+ifeq ($(USE_GIMBAL_LPF), YES)
+CDEFS += -DUSE_GIMBAL_LPF
+endif
+
+ifeq ($(USE_GIMBAL_FF), YES)
+CDEFS += -DUSE_GIMBAL_FF
 endif
 
 # Declare all non-optional modules as built-in to force inclusion

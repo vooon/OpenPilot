@@ -61,6 +61,11 @@ uint32_t pios_rcvr_group_map[MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE];
 #define PIOS_COM_BRIDGE_RX_BUF_LEN 65
 #define PIOS_COM_BRIDGE_TX_BUF_LEN 12
 
+#if defined(PIOS_INCLUDE_DEBUG_CONSOLE)
+#define PIOS_COM_DEBUGCONSOLE_TX_BUF_LEN 40
+uint32_t pios_com_debug_id;
+#endif	/* PIOS_INCLUDE_DEBUG_CONSOLE */
+
 uint32_t pios_com_telem_rf_id;
 uint32_t pios_com_telem_usb_id;
 uint32_t pios_com_vcp_id;
@@ -106,15 +111,16 @@ static const struct pios_exti_cfg pios_exti_mpu6000_cfg __exti_config = {
 static const struct pios_mpu6000_cfg pios_mpu6000_cfg = {
 	.exti_cfg = &pios_exti_mpu6000_cfg,
 	.Fifo_store = PIOS_MPU6000_FIFO_TEMP_OUT | PIOS_MPU6000_FIFO_GYRO_X_OUT | PIOS_MPU6000_FIFO_GYRO_Y_OUT | PIOS_MPU6000_FIFO_GYRO_Z_OUT,
-	// Clock at 8 khz, downsampled by 8 for 1khz
+	// Clock at 8 khz, downsampled by 16 for 500 Hz
 	.Smpl_rate_div = 15,
 	.interrupt_cfg = PIOS_MPU6000_INT_CLR_ANYRD,
 	.interrupt_en = PIOS_MPU6000_INTEN_DATA_RDY,
-	.User_ctl = PIOS_MPU6000_USERCTL_FIFO_EN,
+	.User_ctl = PIOS_MPU6000_USERCTL_FIFO_EN | PIOS_MPU6000_USERCTL_DIS_I2C,
 	.Pwr_mgmt_clk = PIOS_MPU6000_PWRMGMT_PLL_X_CLK,
 	.accel_range = PIOS_MPU6000_ACCEL_8G,
 	.gyro_range = PIOS_MPU6000_SCALE_500_DEG,
-	.filter = PIOS_MPU6000_LOWPASS_256_HZ
+	.filter = PIOS_MPU6000_LOWPASS_256_HZ,
+	.orientation = PIOS_MPU6000_TOP_180DEG
 };
 #endif /* PIOS_INCLUDE_MPU6000 */
 
@@ -325,6 +331,25 @@ void PIOS_Board_Init(void) {
 		}
 #endif	/* PIOS_INCLUDE_COM */
 		break;
+	case HWSETTINGS_USB_VCPPORT_DEBUGCONSOLE:
+#if defined(PIOS_INCLUDE_COM)
+#if defined(PIOS_INCLUDE_DEBUG_CONSOLE)
+		{
+			uint32_t pios_usb_cdc_id;
+			if (PIOS_USB_CDC_Init(&pios_usb_cdc_id, &pios_usb_cdc_cfg, pios_usb_id)) {
+				PIOS_Assert(0);
+			}
+			uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_DEBUGCONSOLE_TX_BUF_LEN);
+			PIOS_Assert(tx_buffer);
+			if (PIOS_COM_Init(&pios_com_debug_id, &pios_usb_cdc_com_driver, pios_usb_cdc_id,
+						NULL, 0,
+						tx_buffer, PIOS_COM_DEBUGCONSOLE_TX_BUF_LEN)) {
+				PIOS_Assert(0);
+			}
+		}
+#endif	/* PIOS_INCLUDE_DEBUG_CONSOLE */
+#endif	/* PIOS_INCLUDE_COM */
+		break;
 	}
 #endif	/* PIOS_INCLUDE_USB_CDC */
 
@@ -487,7 +512,25 @@ void PIOS_Board_Init(void) {
 		}
 #endif	/* PIOS_INCLUDE_DSM */
 		break;
-	case HWSETTINGS_CC_MAINPORT_COMAUX:
+	case HWSETTINGS_CC_MAINPORT_DEBUGCONSOLE:
+#if defined(PIOS_INCLUDE_COM)
+#if defined(PIOS_INCLUDE_DEBUG_CONSOLE)
+		{
+			uint32_t pios_usart_generic_id;
+			if (PIOS_USART_Init(&pios_usart_generic_id, &pios_usart_generic_main_cfg)) {
+				PIOS_Assert(0);
+			}
+
+			uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_DEBUGCONSOLE_TX_BUF_LEN);
+			PIOS_Assert(tx_buffer);
+			if (PIOS_COM_Init(&pios_com_debug_id, &pios_usart_com_driver, pios_usart_generic_id,
+				NULL, 0,
+				tx_buffer, PIOS_COM_DEBUGCONSOLE_TX_BUF_LEN)) {
+				PIOS_Assert(0);
+			}
+		}
+#endif	/* PIOS_INCLUDE_DEBUG_CONSOLE */
+#endif	/* PIOS_INCLUDE_COM */
 		break;
 	case HWSETTINGS_CC_MAINPORT_COMBRIDGE:
 		{
@@ -613,7 +656,25 @@ void PIOS_Board_Init(void) {
 		}
 #endif	/* PIOS_INCLUDE_DSM */
 		break;
-	case HWSETTINGS_CC_FLEXIPORT_COMAUX:
+	case HWSETTINGS_CC_FLEXIPORT_DEBUGCONSOLE:
+#if defined(PIOS_INCLUDE_COM)
+#if defined(PIOS_INCLUDE_DEBUG_CONSOLE)
+		{
+			uint32_t pios_usart_generic_id;
+			if (PIOS_USART_Init(&pios_usart_generic_id, &pios_usart_generic_flexi_cfg)) {
+				PIOS_Assert(0);
+			}
+
+			uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_DEBUGCONSOLE_TX_BUF_LEN);
+			PIOS_Assert(tx_buffer);
+			if (PIOS_COM_Init(&pios_com_debug_id, &pios_usart_com_driver, pios_usart_generic_id,
+				NULL, 0,
+				tx_buffer, PIOS_COM_DEBUGCONSOLE_TX_BUF_LEN)) {
+				PIOS_Assert(0);
+			}
+		}
+#endif	/* PIOS_INCLUDE_DEBUG_CONSOLE */
+#endif	/* PIOS_INCLUDE_COM */
 		break;
 	case HWSETTINGS_CC_FLEXIPORT_I2C:
 #if defined(PIOS_INCLUDE_I2C)

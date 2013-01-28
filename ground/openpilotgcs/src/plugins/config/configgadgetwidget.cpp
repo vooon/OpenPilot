@@ -32,6 +32,7 @@
 #include "configinputwidget.h"
 #include "configoutputwidget.h"
 #include "configstabilizationwidget.h"
+#include "configautotunewidget.h"
 #include "configcamerastabilizationwidget.h"
 #include "configtxpidwidget.h"
 #include "config_pro_hw_widget.h"
@@ -101,6 +102,12 @@ ConfigGadgetWidget::ConfigGadgetWidget(QWidget *parent) : QWidget(parent)
     icon->addFile(":/configgadget/images/stabilization_selected.png", QSize(), QIcon::Selected, QIcon::Off);
     qwd = new ConfigStabilizationWidget(this);
     ftw->insertTab(ConfigGadgetWidget::stabilization, qwd, *icon, QString("Stabilization"));
+
+    icon = new QIcon();
+    icon->addFile(":/configgadget/images/autotune_normal.png", QSize(), QIcon::Normal, QIcon::Off);
+    icon->addFile(":/configgadget/images/autotune_selected.png", QSize(), QIcon::Selected, QIcon::Off);
+    qwd = new ConfigAutotuneWidget(this);
+    ftw->insertTab(ConfigGadgetWidget::autotune, qwd, *icon, QString("Autotune"));
 
     icon = new QIcon();
     icon->addFile(":/configgadget/images/camstab_normal.png", QSize(), QIcon::Normal, QIcon::Off);
@@ -263,10 +270,8 @@ void ConfigGadgetWidget::tabAboutToChange(int i, bool * proceed)
 /*!
   \brief Called by updates to @PipXStatus
   */
-void ConfigGadgetWidget::updatePipXStatus(UAVObject *object)
+void ConfigGadgetWidget::updatePipXStatus(UAVObject *)
 {
-    Q_UNUSED(object);
-
     // Restart the disconnection timer.
     pipxTimeout->start(5000);
     if (!pipxConnected)

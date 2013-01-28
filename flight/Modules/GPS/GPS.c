@@ -38,7 +38,7 @@
 #include "gpstime.h"
 #include "gpssatellites.h"
 #include "gpsvelocity.h"
-#include "gpssettings.h"
+#include "systemsettings.h"
 #include "WorldMagModel.h"
 #include "CoordinateConversions.h"
 #include "hwsettings.h"
@@ -66,7 +66,7 @@ static float GravityAccel(float latitude, float longitude, float altitude);
 
 #ifdef PIOS_GPS_SETS_HOMELOCATION
 // Unfortunately need a good size stack for the WMM calculation
-	#define STACK_SIZE_BYTES            784
+	#define STACK_SIZE_BYTES            850
 #else
 #if defined(PIOS_GPS_MINIMAL)
 	#define STACK_SIZE_BYTES            500
@@ -138,6 +138,18 @@ int32_t GPSInitialize(void)
 		gpsEnabled = false;
 #endif
 
+#if defined(REVOLUTION)
+	// These objects MUST be initialized for Revolution
+	// because the rest of the system expects to just
+	// attach to their queues
+	GPSPositionInitialize();
+	GPSVelocityInitialize();
+	GPSTimeInitialize();
+	GPSSatellitesInitialize();
+	HomeLocationInitialize();
+	updateSettings();
+
+#else
 	if (gpsPort && gpsEnabled) {
 		GPSPositionInitialize();
 		GPSVelocityInitialize();
@@ -150,15 +162,16 @@ int32_t GPSInitialize(void)
 #endif
 		updateSettings();
 	}
+#endif
 
 	if (gpsPort && gpsEnabled) {
-		GPSSettingsInitialize();
-		GPSSettingsDataProtocolGet(&gpsProtocol);
+		SystemSettingsInitialize();
+		SystemSettingsGPSDataProtocolGet(&gpsProtocol);
 		switch (gpsProtocol) {
-			case GPSSETTINGS_DATAPROTOCOL_NMEA:
+			case SYSTEMSETTINGS_GPSDATAPROTOCOL_NMEA:
 				gps_rx_buffer = pvPortMalloc(NMEA_MAX_PACKET_LENGTH);
 				break;
-			case GPSSETTINGS_DATAPROTOCOL_UBX:
+			case SYSTEMSETTINGS_GPSDATAPROTOCOL_UBX:
 				gps_rx_buffer = pvPortMalloc(sizeof(struct UBXPacket));
 				break;
 			default:
@@ -187,7 +200,7 @@ static void gpsTask(void *parameters)
 	GPSPositionData gpsposition;
 	uint8_t	gpsProtocol;
 
-	GPSSettingsDataProtocolGet(&gpsProtocol);
+	SystemSettingsGPSDataProtocolGet(&gpsProtocol);
 
 	timeOfLastUpdateMs = timeNowMs;
 	timeOfLastCommandMs = timeNowMs;
@@ -204,12 +217,12 @@ static void gpsTask(void *parameters)
 			int res;
 			switch (gpsProtocol) {
 #if defined(PIOS_INCLUDE_GPS_NMEA_PARSER)
-				case GPSSETTINGS_DATAPROTOCOL_NMEA:
+				case SYSTEMSETTINGS_GPSDATAPROTOCOL_NMEA:
 					res = parse_nmea_stream (c,gps_rx_buffer, &gpsposition, &gpsRxStats);
 					break;
 #endif
 #if defined(PIOS_INCLUDE_GPS_UBX_PARSER)
-				case GPSSETTINGS_DATAPROTOCOL_UBX:
+				case SYSTEMSETTINGS_GPSDATAPROTOCOL_UBX:
 					res = parse_ubx_stream (c,gps_rx_buffer, &gpsposition, &gpsRxStats);
 					break;
 #endif
