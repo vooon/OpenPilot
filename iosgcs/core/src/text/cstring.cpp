@@ -252,6 +252,40 @@ CString CString::left(int size) const
 	return result;
 }
 
+CString CString::right(int size) const
+{
+    if (length()-size <= 0)
+        return *this;
+    int start = length() - size;
+    int offset = utf8ByteOffset( d->m_data, start, d->m_length );
+    CString str(d->m_data+offset);
+    return str;
+}
+
+CString CString::trimmed() const
+{
+    if (isEmpty())
+        return *this;
+    int start = 0;
+    for (int i = 0;i<length();i++ )
+    {
+        if (!isWhitespace(at(i)))
+            break;
+        start++;
+    }
+    CString result = *this;
+    result.remove(0, start);
+    start = result.length();
+    for (int i = result.length()-1;i>=0;i--)
+    {
+        if (!isWhitespace(result.at(i)))
+            break;
+        start--;
+    }
+    result.remove(start, result.length());
+    return result;
+}
+
 CString& CString::operator=(const CString& other)
 {
 	if( d )
@@ -859,6 +893,13 @@ char* CString::makeArrayForIntConvert() const
 	}
 	buffer[length] = 0x0;
 	return buffer;
+}
+
+bool CString::isWhitespace(opuint32 c) const
+{
+    if (c == ' ' || c == '\t' || c == '\r' || c == '\n')
+        return true;
+    return false;
 }
 
 //===================================================================

@@ -55,6 +55,8 @@ public:
     opuint32 at(int i) const;
     opuint32 operator[](int i) const;
     CString left(int size) const;
+    CString right(int size) const;
+    CString trimmed() const;
 
     CString& operator=(const CString& other);
     CString& operator=(const char* str);
@@ -123,6 +125,7 @@ private:
     char* toCharArray( opuint32* buffer, int length ) const;
     // collect char* to convert to number
     char* makeArrayForIntConvert() const;
+    bool isWhitespace(opuint32 c) const;
 
 private:
 };
