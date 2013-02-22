@@ -178,8 +178,8 @@ qt_sdk_install: QT_SDK_FILE := qt-linux-opensource-5.0.1-x86_64-offline.run
 qt_sdk_install: QT_SDK_URL := http://releases.qt-project.org/qt5/5.0.1/qt-linux-opensource-5.0.1-x86_64-offline.run
 else
 # 32-bit
-qt_sdk_install: QT_SDK_URL  := http://www.developer.nokia.com/dp?uri=http://sw.nokia.com/id/8ea74da4-fec1-4277-8b26-c58cc82e204b/Qt_SDK_Lin32_offline
-qt_sdk_install: QT_SDK_FILE := QtSdk-offline-linux-x86-v1.2.1.run
+qt_sdk_install: QT_SDK_FILE := qt-linux-opensource-5.0.1-x86-offline.run
+qt_sdk_install: QT_SDK_URL  := http://releases.qt-project.org/qt5/5.0.1/qt-linux-opensource-5.0.1-x86-offline.run
 endif
 # order-only prereq on directory existance:
 qt_sdk_install : | $(DL_DIR) $(TOOLS_DIR)
@@ -474,10 +474,12 @@ android_sdk_update:
 #
 ##############################
 
-ifeq ($(shell [ -d "$(QT_SDK_DIR)" ] && echo "exists"), exists)
+ifeq ($(shell [ -d "$(QT_SDK_DIR)/5.0.1/gcc_64" ] && echo "exists"), exists)
   QMAKE=$(QT_SDK_DIR)/5.0.1/gcc_64/bin/qmake
+else ifeq ($(shell [ -d "$(QT_SDK_DIR)/5.0.1/gcc" ] && echo "exists"), exists)
+  QMAKE=$(QT_SDK_DIR)/5.0.1/gcc/bin/qmake
 else
-  # not installed, hope it's in the path...
+# not installed, hope it's in the path...
   QMAKE=qmake
 endif
 
