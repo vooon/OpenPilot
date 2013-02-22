@@ -199,5 +199,3 @@ void ConfigPlugin::eraseDone(UAVObject * obj)
     msgBox.setDefaultButton(QMessageBox::Ok);
     msgBox.exec();
 }
-
-//Q_EXPORT_PLUGIN(ConfigPlugin)

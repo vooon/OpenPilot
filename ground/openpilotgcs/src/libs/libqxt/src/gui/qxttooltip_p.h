@@ -32,7 +32,7 @@
 
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
 
-typedef QPointer<QtWidgets/QWidget> WidgetPtr;
+typedef QPointer<QWidget> WidgetPtr;
 typedef QPair<WidgetPtr, QRect> WidgetArea;
 
 class QxtToolTipPrivate : public QWidget

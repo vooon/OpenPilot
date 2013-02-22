@@ -91,5 +91,3 @@ void WelcomePlugin::extensionsInitialized()
 {
     Core::ModeManager::instance()->activateMode(m_welcomeMode->uniqueModeName());
 }
-
-//Q_EXPORT_PLUGIN(WelcomePlugin)

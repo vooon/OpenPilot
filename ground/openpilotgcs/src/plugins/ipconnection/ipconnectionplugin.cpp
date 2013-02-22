@@ -261,5 +261,3 @@ bool IPconnectionPlugin::initialize(const QStringList &arguments, QString *error
 
     return true;
 }
-
-//Q_EXPORT_PLUGIN(IPconnectionPlugin)
