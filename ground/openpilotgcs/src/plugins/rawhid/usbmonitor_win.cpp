@@ -145,7 +145,7 @@ void USBMonitor::setUpNotifications( )
     dbh.dbcc_size = sizeof(dbh);
     dbh.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
     // dbh.dbcc_classguid = GUID_DEVCLASS_PORTS; //Ignored in such case
-    CopyMemory(&dbh.dbcc_classguid, &guid_hid, sizeof(GUID));
+    ::CopyMemory(&dbh.dbcc_classguid, &guid_hid, sizeof(GUID));
     DWORD flags = DEVICE_NOTIFY_WINDOW_HANDLE;
     if (::RegisterDeviceNotification((HWND)notificationWidget->winId(), &dbh, flags) == NULL) {
         qWarning() << "RegisterDeviceNotification failed:" << GetLastError();
@@ -174,8 +174,13 @@ LRESULT USBMonitor::onDeviceChangeWin( WPARAM wParam, LPARAM lParam )
     return 0;
 }
 #ifdef QT_GUI_LIB
-bool USBRegistrationWidget::winEvent( MSG* message, long* result )
-{
+
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+    bool USBRegistrationWidget::winEvent(MSG *message, long *result) {
+#else
+    bool USBRegistrationWidget::nativeEvent(const QByteArray & /*eventType*/, void *msg, long *result) {
+        MSG *message = static_cast<MSG *>(msg);
+#endif
     if ( message->message == WM_DEVICECHANGE ) {
         qese->onDeviceChangeWin( message->wParam, message->lParam );
         *result = 1;

@@ -77,7 +77,11 @@ public:
 
 protected:
     USBMonitor* qese;
-    bool winEvent( MSG* message, long* result );
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+    bool winEvent(MSG *message, long *result);
+#else
+    bool nativeEvent(const QByteArray & /*eventType*/, void *msg, long *result);
+#endif
 };
 #endif
 #endif
