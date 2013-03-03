@@ -203,10 +203,10 @@ qt_sdk_clean:
 	$(V1) [ ! -d "$(QT_SDK_DIR)" ] || $(RM) -rf $(QT_SDK_DIR)
 
 # Set up ARM (STM32) SDK
-ARM_SDK_DIR := $(TOOLS_DIR)/gcc-arm-none-eabi-4_6-2012q1
+ARM_SDK_DIR := $(TOOLS_DIR)/gcc-arm-none-eabi-4_6-2012q4
 
 .PHONY: arm_sdk_install
-arm_sdk_install: ARM_SDK_URL  := https://launchpad.net/gcc-arm-embedded/4.6/4.6-2012-q1-update/+download/gcc-arm-none-eabi-4_6-2012q1-20120316.tar.bz2
+arm_sdk_install: ARM_SDK_URL  := http://wiki.openpilot.org/download/attachments/18612236/gcc-arm-none-eabi-4_6-2012q4-i386.tar.bz2?version=1&modificationDate=1355868933000&api=v2
 arm_sdk_install: ARM_SDK_FILE := $(notdir $(ARM_SDK_URL))
 # order-only prereq on directory existance:
 arm_sdk_install: | $(DL_DIR) $(TOOLS_DIR)
