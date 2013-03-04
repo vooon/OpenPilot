@@ -27,6 +27,9 @@ TOP      := $(realpath $(WHEREAMI)/../../../)
 include $(TOP)/make/firmware-defs.mk
 include $(TOP)/make/boards/$(BOARD_NAME)/board-info.mk
 
+# Target MCU - To start with, clean and build
+TARGETMCU := STM32F10x
+
 # Target file name (without extension).
 TARGET := bl_$(BOARD_NAME)
 
@@ -68,13 +71,13 @@ FLIGHTLIB = ../../Libraries
 FLIGHTLIBINC = ../../Libraries/inc
 PIOS = ../../PiOS
 PIOSINC = $(PIOS)/inc
-PIOSSTM32F10X = $(PIOS)/STM32F10x
+PIOSTARGETMCU = $(PIOS)/$(TARGETMCU)
 PIOSCOMMON = $(PIOS)/Common
 PIOSBOARDS = $(PIOS)/Boards
 PIOSCOMMONLIB = $(PIOSCOMMON)/Libraries
-APPLIBDIR = $(PIOSSTM32F10X)/Libraries
+APPLIBDIR = $(PIOSTARGETMCU)/Libraries
 STMLIBDIR = $(APPLIBDIR)
-STMSPDDIR = $(STMLIBDIR)/STM32F10x_StdPeriph_Driver
+STMSPDDIR = $(STMLIBDIR)/$(TARGETMCU)_StdPeriph_Driver
 STMUSBDIR = $(STMLIBDIR)/STM32_USB-FS-Device_Driver
 STMSPDSRCDIR = $(STMSPDDIR)/src
 STMSPDINCDIR = $(STMSPDDIR)/inc
@@ -98,23 +101,23 @@ SRC += $(OPSYSTEM)/pios_board.c
 SRC += $(OPSYSTEM)/op_dfu.c
 
 ## PIOS Hardware (STM32F10x)
-include $(PIOS)/STM32F10x/library.mk
-SRC += $(PIOSSTM32F10X)/pios_sys.c
-SRC += $(PIOSSTM32F10X)/pios_led.c
-SRC += $(PIOSSTM32F10X)/pios_delay.c
-SRC += $(PIOSSTM32F10X)/pios_usart.c
-SRC += $(PIOSSTM32F10X)/pios_irq.c
-SRC += $(PIOSSTM32F10X)/pios_debug.c
-SRC += $(PIOSSTM32F10X)/pios_gpio.c
-SRC += $(PIOSSTM32F10X)/pios_iap.c
-SRC += $(PIOSSTM32F10X)/pios_bl_helper.c
+include $(PIOS)/$(TARGETMCU)/library.mk
+SRC += $(PIOSTARGETMCU)/pios_sys.c
+SRC += $(PIOSTARGETMCU)/pios_led.c
+SRC += $(PIOSTARGETMCU)/pios_delay.c
+SRC += $(PIOSTARGETMCU)/pios_usart.c
+SRC += $(PIOSTARGETMCU)/pios_irq.c
+SRC += $(PIOSTARGETMCU)/pios_debug.c
+SRC += $(PIOSTARGETMCU)/pios_gpio.c
+SRC += $(PIOSTARGETMCU)/pios_iap.c
+SRC += $(PIOSTARGETMCU)/pios_bl_helper.c
 
 # PIOS USB related files (seperated to make code maintenance more easy)
-SRC += $(PIOSSTM32F10X)/pios_usb.c
-SRC += $(PIOSSTM32F10X)/pios_usbhook.c
-SRC += $(PIOSSTM32F10X)/pios_usb_hid.c
-SRC += $(PIOSSTM32F10X)/pios_usb_hid_istr.c
-SRC += $(PIOSSTM32F10X)/pios_usb_hid_pwr.c
+SRC += $(PIOSTARGETMCU)/pios_usb.c
+SRC += $(PIOSTARGETMCU)/pios_usbhook.c
+SRC += $(PIOSTARGETMCU)/pios_usb_hid.c
+SRC += $(PIOSTARGETMCU)/pios_usb_hid_istr.c
+SRC += $(PIOSTARGETMCU)/pios_usb_hid_pwr.c
 SRC += $(OPSYSTEM)/pios_usb_board_data.c
 SRC += $(PIOSCOMMON)/pios_usb_desc_hid_only.c
 SRC += $(PIOSCOMMON)/pios_usb_util.c
@@ -175,7 +178,7 @@ CPPSRCARM =
 # Even though the DOS/Win* filesystem matches both .s and .S the same,
 # it will preserve the spelling of the filenames, and gcc itself does
 # care about how the name is spelled on its command-line.
-ASRC = $(PIOSSTM32F10X)/startup_stm32f10x_$(MODEL)$(MODEL_SUFFIX).S
+ASRC = $(PIOSTARGETMCU)/startup_$(TARGETMCU)_$(MODEL)$(MODEL_SUFFIX).S
 
 # List Assembler source files here which must be assembled in ARM-Mode..
 ASRCARM = 
@@ -191,7 +194,7 @@ EXTRAINCDIRS  += $(OPUAVOBJINC)
 EXTRAINCDIRS  += $(PIOS)
 EXTRAINCDIRS  += $(PIOSINC)
 EXTRAINCDIRS  += $(FLIGHTLIBINC)
-EXTRAINCDIRS  += $(PIOSSTM32F10X)
+EXTRAINCDIRS  += $(PIOSTARGETMCU)
 EXTRAINCDIRS  += $(PIOSCOMMON)
 EXTRAINCDIRS  += $(PIOSBOARDS)
 EXTRAINCDIRS  += $(STMSPDINCDIR)
@@ -219,7 +222,7 @@ EXTRAINCDIRS  += $(HWDEFSINC)
 #EXTRA_LIBS +=
 
 # Path to Linker-Scripts
-LINKERSCRIPTPATH = $(PIOSSTM32F10X)
+LINKERSCRIPTPATH = $(PIOSTARGETMCU)
 
 # Optimization level, can be [0, 1, 2, 3, s]. 
 # 0 = turn off optimization. s = optimize for size.
