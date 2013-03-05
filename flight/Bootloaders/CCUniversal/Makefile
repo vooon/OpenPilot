@@ -133,7 +133,7 @@ SRC += $(FLIGHTLIB)/fifo_buffer.c
 
 ## CMSIS for STM32
 SRC += $(CMSISDIR)/core_cm3.c
-SRC += $(CMSISDIR)/system_$(TARGETMCU).c
+SRC += $(CMSISDIR)/system_$(TARGETMCUL).c
 
 ## Used parts of the STM-Library
 SRC += $(STMSPDSRCDIR)/$(TARGETMCUL)_bkp.c
