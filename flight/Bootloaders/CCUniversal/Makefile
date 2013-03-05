@@ -96,9 +96,9 @@ HWDEFSINC = ../../board_hw_defs/$(BOARD_NAME)
 # use file-extension c for "c-only"-files
 
 ## COPTERCONTROL_BL CORE:
-SRC += $(OPSYSTEM)/main.c
-SRC += $(OPSYSTEM)/pios_board.c
-SRC += $(OPSYSTEM)/op_dfu.c
+SRC += $(OPSYSTEMINC)/main.c
+SRC += $(OPSYSTEMINC)/pios_board.c
+SRC += $(OPSYSTEMINC)/op_dfu.c
 
 ## PIOS Hardware (STM32F10x)
 include $(PIOS)/$(TARGETMCU)/library.mk
