@@ -8,7 +8,8 @@ MCU                 := cortex-m3
 TARGETMCU           := STM32F10x
 TARGETMCUL          := stm32f10x
 # Name and Version of the Std Periph Library
-STDPERLIB           := STM32F10x_StdPeriph_Lib_
+# This should not be driver, revert to lib when versioned
+STDPERLIB           := STM32F10x_StdPeriph_Driver
 STDPLVER            := V3.5.0
 CHIP                := STM32F103CBT
 BOARD               := STM32103CB_CC_Rev1
