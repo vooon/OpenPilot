@@ -8,12 +8,22 @@ MCU                 := cortex-m3
 TARGETMCU           := STM32F10x
 TARGETMCUL          := stm32f10x
 # Name and Version of the Std Periph Library
-STDPERLIB           := STM32F10x_StdPeriph
+STDPERLIB           := STM32F10x_StdPeriph_Lib_
 STDPLVER            := V3.5.0
 CHIP                := STM32F103CBT
 BOARD               := STM32103CB_CC_Rev1
 MODEL               := MD
 MODEL_SUFFIX        := _CC
+
+# RTOS Selection for this board
+RTOS                := FreeRTOS
+RTOSVER             := UNKONOWN
+CMSIS               := CMSIS
+CMSISVER            := 2
+# Cryptic name due to length, CMSIS VENDOR and VERSION
+CMVEN               := UNKNOWN
+CMVENVER            := UNKNOWN
+
 
 OPENOCD_JTAG_CONFIG := foss-jtag.revb.cfg
 OPENOCD_CONFIG      := stm32f1x.cfg
