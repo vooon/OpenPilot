@@ -27,7 +27,7 @@ TOP      := $(realpath $(WHEREAMI)/../../../)
 include $(TOP)/make/firmware-defs.mk
 include $(TOP)/make/boards/$(BOARD_NAME)/board-info.mk
 
-# Target MCU - To start with, clean and build
+# Target MCU - To start with, clean and build. This should be pulled from the mk board file!
 TARGETMCU := STM32F10x
 
 # Target file name (without extension).
