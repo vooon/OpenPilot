@@ -132,21 +132,21 @@ SRC += $(FLIGHTLIB)/fifo_buffer.c
 
 ## CMSIS for STM32
 SRC += $(CMSISDIR)/core_cm3.c
-SRC += $(CMSISDIR)/system_stm32f10x.c
+SRC += $(CMSISDIR)/system_$(TARGETMCU).c
 
 ## Used parts of the STM-Library
-SRC += $(STMSPDSRCDIR)/stm32f10x_bkp.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_crc.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_dma.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_exti.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_flash.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_gpio.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_pwr.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_rcc.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_rtc.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_spi.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_usart.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_dbgmcu.c
+SRC += $(STMSPDSRCDIR)/$(TARGETMCU)_bkp.c
+SRC += $(STMSPDSRCDIR)/$(TARGETMCU)_crc.c
+SRC += $(STMSPDSRCDIR)/$(TARGETMCU)_dma.c
+SRC += $(STMSPDSRCDIR)/$(TARGETMCU)_exti.c
+SRC += $(STMSPDSRCDIR)/$(TARGETMCU)_flash.c
+SRC += $(STMSPDSRCDIR)/$(TARGETMCU)_gpio.c
+SRC += $(STMSPDSRCDIR)/$(TARGETMCU)_pwr.c
+SRC += $(STMSPDSRCDIR)/$(TARGETMCU)_rcc.c
+SRC += $(STMSPDSRCDIR)/$(TARGETMCU)_rtc.c
+SRC += $(STMSPDSRCDIR)/$(TARGETMCU)_spi.c
+SRC += $(STMSPDSRCDIR)/$(TARGETMCU)_usart.c
+SRC += $(STMSPDSRCDIR)/$(TARGETMCU)_dbgmcu.c
 SRC += $(STMSPDSRCDIR)/misc.c
 
 ## STM32 USB Library
