@@ -29,6 +29,7 @@ include $(TOP)/make/boards/$(BOARD_NAME)/board-info.mk
 
 # Target MCU - To start with, clean and build. This should be pulled from the mk board file!
 TARGETMCU := STM32F10x
+TARGETMCUL:= stm32f10x
 
 # Target file name (without extension).
 TARGET := bl_$(BOARD_NAME)
@@ -96,7 +97,7 @@ HWDEFSINC = ../../board_hw_defs/$(BOARD_NAME)
 # use file-extension c for "c-only"-files
 
 ## COPTERCONTROL_BL CORE:
-SRC += $(OPSYSTEMINC)/main.c
+SRC += $(OPSYSTEM)/main.c
 SRC += $(OPSYSTEMINC)/pios_board.c
 SRC += $(OPSYSTEMINC)/op_dfu.c
 
@@ -118,7 +119,7 @@ SRC += $(PIOSTARGETMCU)/pios_usbhook.c
 SRC += $(PIOSTARGETMCU)/pios_usb_hid.c
 SRC += $(PIOSTARGETMCU)/pios_usb_hid_istr.c
 SRC += $(PIOSTARGETMCU)/pios_usb_hid_pwr.c
-SRC += $(OPSYSTEM)/pios_usb_board_data.c
+SRC += $(OPSYSTEMINC)/pios_usb_board_data.c
 SRC += $(PIOSCOMMON)/pios_usb_desc_hid_only.c
 SRC += $(PIOSCOMMON)/pios_usb_util.c
 
@@ -135,18 +136,18 @@ SRC += $(CMSISDIR)/core_cm3.c
 SRC += $(CMSISDIR)/system_$(TARGETMCU).c
 
 ## Used parts of the STM-Library
-SRC += $(STMSPDSRCDIR)/$(TARGETMCU)_bkp.c
-SRC += $(STMSPDSRCDIR)/$(TARGETMCU)_crc.c
-SRC += $(STMSPDSRCDIR)/$(TARGETMCU)_dma.c
-SRC += $(STMSPDSRCDIR)/$(TARGETMCU)_exti.c
-SRC += $(STMSPDSRCDIR)/$(TARGETMCU)_flash.c
-SRC += $(STMSPDSRCDIR)/$(TARGETMCU)_gpio.c
-SRC += $(STMSPDSRCDIR)/$(TARGETMCU)_pwr.c
-SRC += $(STMSPDSRCDIR)/$(TARGETMCU)_rcc.c
-SRC += $(STMSPDSRCDIR)/$(TARGETMCU)_rtc.c
-SRC += $(STMSPDSRCDIR)/$(TARGETMCU)_spi.c
-SRC += $(STMSPDSRCDIR)/$(TARGETMCU)_usart.c
-SRC += $(STMSPDSRCDIR)/$(TARGETMCU)_dbgmcu.c
+SRC += $(STMSPDSRCDIR)/$(TARGETMCUL)_bkp.c
+SRC += $(STMSPDSRCDIR)/$(TARGETMCUL)_crc.c
+SRC += $(STMSPDSRCDIR)/$(TARGETMCUL)_dma.c
+SRC += $(STMSPDSRCDIR)/$(TARGETMCUL)_exti.c
+SRC += $(STMSPDSRCDIR)/$(TARGETMCUL)_flash.c
+SRC += $(STMSPDSRCDIR)/$(TARGETMCUL)_gpio.c
+SRC += $(STMSPDSRCDIR)/$(TARGETMCUL)_pwr.c
+SRC += $(STMSPDSRCDIR)/$(TARGETMCUL)_rcc.c
+SRC += $(STMSPDSRCDIR)/$(TARGETMCUL)_rtc.c
+SRC += $(STMSPDSRCDIR)/$(TARGETMCUL)_spi.c
+SRC += $(STMSPDSRCDIR)/$(TARGETMCUL)_usart.c
+SRC += $(STMSPDSRCDIR)/$(TARGETMCUL)_dbgmcu.c
 SRC += $(STMSPDSRCDIR)/misc.c
 
 ## STM32 USB Library
@@ -178,7 +179,7 @@ CPPSRCARM =
 # Even though the DOS/Win* filesystem matches both .s and .S the same,
 # it will preserve the spelling of the filenames, and gcc itself does
 # care about how the name is spelled on its command-line.
-ASRC = $(PIOSTARGETMCU)/startup_$(TARGETMCU)_$(MODEL)$(MODEL_SUFFIX).S
+ASRC = $(PIOSTARGETMCU)/startup_$(TARGETMCUL)_$(MODEL)$(MODEL_SUFFIX).S
 
 # List Assembler source files here which must be assembled in ARM-Mode..
 ASRCARM = 
