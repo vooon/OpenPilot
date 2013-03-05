@@ -4,7 +4,8 @@ BOOTLOADER_VERSION  := 0x03
 HW_TYPE             := 0x01
 
 MCU                 := cortex-m3
-TARGETMCU           := stm32f10x
+TARGETMCU           := STM32F10x
+TARGETMCUL          := stm32f10x
 CHIP                := STM32F103CBT
 BOARD               := STM32103CB_CC_Rev1
 MODEL               := MD
