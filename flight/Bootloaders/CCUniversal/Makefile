@@ -22,10 +22,12 @@
  # 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  #####
 
+TESTNAME := STM32F103
+
 WHEREAMI := $(dir $(lastword $(MAKEFILE_LIST)))
 TOP      := $(realpath $(WHEREAMI)/../../../)
 include $(TOP)/make/firmware-defs.mk
-include $(TOP)/make/boards/$(BOARD_NAME)/board-info.mk
+include $(TOP)/make/boards/$(BOARD_NAME)/$(TESTNAME)_board-info.mk
 
 # Target MCU pushed to board-info where it belongs
 
