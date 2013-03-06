@@ -10,6 +10,8 @@ TARGETMCUL          := stm32f10x
 # Name and Version of the Std Periph Library
 STDPERLIB           := STM32F10x_StdPeriph_Lib_
 STDPLVER            := V3.5.0
+STDPLINC            := Libraries/STM32F10x_StdPeriph_Driver/inc/
+STDPLSRC            := Libraries/STM32F10x_StdPeriph_Driver/src/
 CHIP                := STM32F103CBT
 BOARD               := STM32103CB_CC_Rev1
 MODEL               := MD
