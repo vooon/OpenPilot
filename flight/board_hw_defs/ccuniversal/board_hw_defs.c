@@ -72,7 +72,7 @@ static struct pios_led_cfg pios_led_cfg_cc3d = {
 	.num_leds = NELEMENTS(pios_leds_cc3d),
 };
 
-const struct pios_led_cfg * PIOS_BOARD_HW_DEFS_GetLedCfg (uint32_t board_revision)
+struct pios_led_cfg * PIOS_BOARD_HW_DEFS_GetLedCfg (uint32_t board_revision)
 {
 	switch (board_revision) {
 	case BOARD_REVISION_CC:		return &pios_led_cfg_cc;
