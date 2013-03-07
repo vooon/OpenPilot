@@ -35,12 +35,12 @@
 
 #include <pios_led_priv.h>
 
-const static struct pios_led_cfg * led_cfg;
+static struct pios_led_cfg * led_cfg;
 
 /**
 * Initialises all the LED's
 */
-int32_t PIOS_LED_Init(const struct pios_led_cfg * cfg)
+int32_t PIOS_LED_Init(struct pios_led_cfg * cfg)
 {
 	PIOS_Assert(cfg);
 
