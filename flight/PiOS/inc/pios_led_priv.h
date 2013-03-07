@@ -41,11 +41,11 @@ struct pios_led {
 };
 
 struct pios_led_cfg {
-	const struct pios_led * leds;
+	struct pios_led * leds;
 	uint8_t num_leds;
 };
 
-extern int32_t PIOS_LED_Init(const struct pios_led_cfg * cfg);
+extern int32_t PIOS_LED_Init(struct pios_led_cfg * cfg);
 
 #endif /* PIOS_LED_PRIV_H */
 

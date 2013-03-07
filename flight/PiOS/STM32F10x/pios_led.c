@@ -48,7 +48,8 @@ int32_t PIOS_LED_Init(const struct pios_led_cfg * cfg)
 	led_cfg = cfg;
 
 	for (uint8_t i = 0; i < cfg->num_leds; i++) {
-		const struct pios_led * led = &(cfg->leds[i]);
+
+		struct pios_led * led = &(cfg->leds[i]);
 
 		/* Enable the peripheral clock for the GPIO */
 		switch ((uint32_t)led->pin.gpio) {
@@ -69,6 +70,12 @@ int32_t PIOS_LED_Init(const struct pios_led_cfg * cfg)
 		if (led->remap) {
 			GPIO_PinRemapConfig(led->remap, ENABLE);
 		}
+/* Revised GPIO_Init in V3.5.0
+ * void GPIO_Init(GPIO_TypeDef* GPIOx, GPIO_InitTypeDef* GPIO_InitStruct)
+ * Old Version
+ * void GPIO_Init(GPIO_TypeDef* GPIOx, const GPIO_InitTypeDef* GPIO_InitStruct)
+ */
+		//GPIO_Init(led->pin.gpio, &led->pin.init);
 
 		GPIO_Init(led->pin.gpio, &led->pin.init);
 
