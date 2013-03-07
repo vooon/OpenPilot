@@ -35,7 +35,7 @@
 #if defined(PIOS_INCLUDE_LED)
 
 #include <pios_led_priv.h>
-static const struct pios_led pios_leds_cc[] = {
+static struct pios_led pios_leds_cc[] = {
 	[PIOS_LED_HEARTBEAT] = {
 		.pin = {
 			.gpio = GPIOA,
@@ -53,7 +53,7 @@ static struct pios_led_cfg pios_led_cfg_cc = {
 	.num_leds = NELEMENTS(pios_leds_cc),
 };
 
-static const struct pios_led pios_leds_cc3d[] = {
+static struct pios_led pios_leds_cc3d[] = {
 	[PIOS_LED_HEARTBEAT] = {
 		.pin = {
 			.gpio = GPIOB,
