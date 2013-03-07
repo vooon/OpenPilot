@@ -48,7 +48,7 @@ static const struct pios_led pios_leds_cc[] = {
 	},
 };
 
-static const struct pios_led_cfg pios_led_cfg_cc = {
+static struct pios_led_cfg pios_led_cfg_cc = {
 	.leds     = pios_leds_cc,
 	.num_leds = NELEMENTS(pios_leds_cc),
 };
@@ -67,7 +67,7 @@ static const struct pios_led pios_leds_cc3d[] = {
 	},
 };
 
-static const struct pios_led_cfg pios_led_cfg_cc3d = {
+static struct pios_led_cfg pios_led_cfg_cc3d = {
 	.leds     = pios_leds_cc3d,
 	.num_leds = NELEMENTS(pios_leds_cc3d),
 };
