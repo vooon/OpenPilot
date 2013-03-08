@@ -1286,6 +1286,9 @@ static struct pios_usb_cfg pios_usb_main_cfg_cc = {
 	}
 };
 
+/* Note, for the differences it should be detected
+ * TODO
+ */
 static struct pios_usb_cfg pios_usb_main_cfg_cc3d = {
 	.irq = {
 		.init    = {
