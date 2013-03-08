@@ -22,7 +22,8 @@
  # 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  #####
 
-TESTNAME := STM32F103
+# Testname is until the main Makefile is revised to pass this
+TESTNAME := STM32F303
 
 WHEREAMI := $(dir $(lastword $(MAKEFILE_LIST)))
 TOP      := $(realpath $(WHEREAMI)/../../../)
