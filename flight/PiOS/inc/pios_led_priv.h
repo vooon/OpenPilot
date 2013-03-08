@@ -41,11 +41,23 @@ struct pios_led {
 };
 
 struct pios_led_cfg {
+/* Test to deal with versioned and legacy StdPeriphLib */
+#if defined(STDPERLIB) && defined(STDPLVER)
+	struct pios_led * leds;
+#endif
+#ifndef STDPLVER
 	const struct pios_led * leds;
+#endif
 	uint8_t num_leds;
 };
 
-extern int32_t PIOS_LED_Init(const struct pios_led_cfg * cfg);
+/* Test to deal with versioned and legacy StdPeriphLib */
+#if defined(STDPERLIB) && defined(STDPLVER)
+extern int32_t PIOS_LED_Init(struct pios_led_cfg * cfg);
+#endif
+#ifndef STDPLVER
+    extern int32_t PIOS_LED_Init(const struct pios_led_cfg * cfg);
+#endif
 
 #endif /* PIOS_LED_PRIV_H */
 
