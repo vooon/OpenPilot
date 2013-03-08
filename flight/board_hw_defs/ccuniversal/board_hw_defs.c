@@ -1267,7 +1267,7 @@ void PIOS_I2C_flexi_adapter_er_irq_handler(void)
 #if defined(PIOS_INCLUDE_USB)
 #include "pios_usb_priv.h"
 
-static const struct pios_usb_cfg pios_usb_main_cfg_cc = {
+static struct pios_usb_cfg pios_usb_main_cfg_cc = {
 	.irq = {
 		.init    = {
 			.NVIC_IRQChannel                   = USB_LP_CAN1_RX0_IRQn,
