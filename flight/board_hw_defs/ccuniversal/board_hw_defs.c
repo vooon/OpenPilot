@@ -1286,7 +1286,7 @@ static struct pios_usb_cfg pios_usb_main_cfg_cc = {
 	}
 };
 
-static const struct pios_usb_cfg pios_usb_main_cfg_cc3d = {
+static struct pios_usb_cfg pios_usb_main_cfg_cc3d = {
 	.irq = {
 		.init    = {
 			.NVIC_IRQChannel                   = USB_LP_CAN1_RX0_IRQn,
