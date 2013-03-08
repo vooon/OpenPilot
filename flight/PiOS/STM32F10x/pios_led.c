@@ -35,12 +35,23 @@
 
 #include <pios_led_priv.h>
 
-const static struct pios_led_cfg * led_cfg;
-
+/* Test to deal with versioned and legacy StdPeriphLib */
+#if defined(STDPERLIB) && defined(STDPLVER)
+    static struct pios_led_cfg * led_cfg;
+#endif
+#ifndef STDPLVER
+    const static struct pios_led_cfg * led_cfg;
+#endif
 /**
 * Initialises all the LED's
 */
-int32_t PIOS_LED_Init(const struct pios_led_cfg * cfg)
+/* Test to deal with versioned and legacy StdPeriphLib */
+#if defined(STDPERLIB) && defined(STDPLVER)
+    int32_t PIOS_LED_Init(struct pios_led_cfg * cfg)
+#endif
+#ifndef STDPLVER
+    int32_t PIOS_LED_Init(const struct pios_led_cfg * cfg)
+#endif
 {
 	PIOS_Assert(cfg);
 
@@ -48,7 +59,13 @@ int32_t PIOS_LED_Init(const struct pios_led_cfg * cfg)
 	led_cfg = cfg;
 
 	for (uint8_t i = 0; i < cfg->num_leds; i++) {
+/* Test to deal with versioned and legacy StdPeriphLib */
+#if defined(STDPERLIB) && defined(STDPLVER)
+		struct pios_led * led = &(cfg->leds[i]);
+#endif
+#ifndef STDPLVER
 		const struct pios_led * led = &(cfg->leds[i]);
+#endif
 
 		/* Enable the peripheral clock for the GPIO */
 		switch ((uint32_t)led->pin.gpio) {
