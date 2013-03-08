@@ -275,6 +275,9 @@ BLONLY_CDEFS += -DBOOTLOADER_VERSION=$(BOOTLOADER_VERSION)
 BLONLY_CDEFS += -DFW_BANK_BASE=$(FW_BANK_BASE)
 BLONLY_CDEFS += -DFW_BANK_SIZE=$(FW_BANK_SIZE)
 BLONLY_CDEFS += -DFW_DESC_SIZE=$(FW_DESC_SIZE)
+# Temporary placement as I am only working with the bootloader right now
+BLONLY_CDEFS += -DSTDPLVER=$(STDPLVER)
+BLONLY_CDEFS += -DSTDPERLIB=$(STDPERLIB)
 
 # Place project-specific -D and/or -U options for 
 # Assembler with preprocessor here.
