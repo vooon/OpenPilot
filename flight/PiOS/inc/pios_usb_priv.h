@@ -39,7 +39,13 @@ struct pios_usb_cfg {
 	struct stm32_gpio vsense;
 };
 
-extern int32_t PIOS_USB_Init(uint32_t * usb_id, const struct pios_usb_cfg * cfg);
+/* Test to deal with versioned and legacy StdPeriphLib */
+#if defined(STDPERLIB) && defined(STDPLVER)
+extern int32_t PIOS_USB_Init(uint32_t * usb_id, struct pios_usb_cfg * cfg);
+#endif
+#ifndef STDPLVER
+    extern int32_t PIOS_USB_Init(uint32_t * usb_id, const struct pios_usb_cfg * cfg);
+#endif
 
 #endif /* PIOS_USB_PRIV_H */
 
