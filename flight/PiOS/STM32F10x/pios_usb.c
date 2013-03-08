@@ -48,7 +48,13 @@ enum pios_usb_dev_magic {
 
 struct pios_usb_dev {
 	enum pios_usb_dev_magic     magic;
+/* Test to deal with versioned and legacy StdPeriphLib */
+#if defined(STDPERLIB) && defined(STDPLVER)
+	struct pios_usb_cfg * cfg;
+#endif
+#ifndef STDPLVER
 	const struct pios_usb_cfg * cfg;
+#endif
 };
 
 /**
@@ -102,7 +108,13 @@ static struct pios_usb_dev * PIOS_USB_alloc(void)
  * \note Applications shouldn't call this function directly, instead please use \ref PIOS_COM layer functions
  */
 static uint32_t pios_usb_com_id;
-int32_t PIOS_USB_Init(uint32_t * usb_id, const struct pios_usb_cfg * cfg)
+/* Test to deal with versioned and legacy StdPeriphLib */
+#if defined(STDPERLIB) && defined(STDPLVER)
+    int32_t PIOS_USB_Init(uint32_t * usb_id, struct pios_usb_cfg * cfg)
+#endif
+#ifndef STDPLVER
+    int32_t PIOS_USB_Init(uint32_t * usb_id, const struct pios_usb_cfg * cfg)
+#endif
 {
 	PIOS_Assert(usb_id);
 	PIOS_Assert(cfg);
