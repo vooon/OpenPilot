@@ -145,19 +145,18 @@ SRC += $(CMSISDIR)/core_cm3.c
 SRC += $(CMSISDIR)/system_$(TARGETMCUL).c
 
 ## Used parts of the STM-Library
-SRC += $(STMSPDSRCDIR)bkp.c
-SRC += $(STMSPDSRCDIR)crc.c
-SRC += $(STMSPDSRCDIR)dma.c
-SRC += $(STMSPDSRCDIR)exti.c
-SRC += $(STMSPDSRCDIR)flash.c
-SRC += $(STMSPDSRCDIR)gpio.c
-SRC += $(STMSPDSRCDIR)pwr.c
-SRC += $(STMSPDSRCDIR)rcc.c
-SRC += $(STMSPDSRCDIR)rtc.c
-SRC += $(STMSPDSRCDIR)spi.c
-SRC += $(STMSPDSRCDIR)usart.c
-SRC += $(STMSPDSRCDIR)dbgmcu.c
-# this will fail
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)bkp.c
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)crc.c
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)dma.c
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)exti.c
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)flash.c
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)gpio.c
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)pwr.c
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)rcc.c
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)rtc.c
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)spi.c
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)usart.c
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)dbgmcu.c
 SRC += $(STMSPDSRCDIR)/misc.c 
 
 ## STM32 USB Library

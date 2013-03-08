@@ -12,8 +12,9 @@ STDPERDVR           := STM32F10x_StdPeriph_Driver
 STDPERLIB           := STM32F10x_StdPeriph_Lib
 STDPLVER            := V3.5.0
 STDPLINC            := Libraries/STM32F10x_StdPeriph_Driver/inc
-STDPLSRC            := Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_
-
+STDPLSRC            := Libraries/STM32F10x_StdPeriph_Driver/src
+# Poor naming convention, need filename stub
+STDPLSTB            := stm32f10x_
 CHIP                := STM32F103CBT
 BOARD               := STM32103CB_CC_Rev1
 MODEL               := MD
