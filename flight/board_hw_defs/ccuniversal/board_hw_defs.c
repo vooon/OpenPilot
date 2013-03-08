@@ -35,8 +35,15 @@
 #if defined(PIOS_INCLUDE_LED)
 
 #include <pios_led_priv.h>
-static const struct pios_led pios_leds_cc[] = {
-	[PIOS_LED_HEARTBEAT] = {
+
+/* Test to deal with versioned and legacy StdPeriphLib */
+#if defined(STDPERLIB) && defined(STDPLVER)
+    static struct pios_led pios_leds_cc[] = {
+#endif
+#ifndef STDPLVER
+    static const struct pios_led pios_leds_cc[] = {
+#endif
+		[PIOS_LED_HEARTBEAT] = {
 		.pin = {
 			.gpio = GPIOA,
 			.init = {
@@ -48,13 +55,25 @@ static const struct pios_led pios_leds_cc[] = {
 	},
 };
 
-static const struct pios_led_cfg pios_led_cfg_cc = {
-	.leds     = pios_leds_cc,
+/* Test to deal with versioned and legacy StdPeriphLib */
+#if defined(STDPERLIB) && defined(STDPLVER)
+    static struct pios_led_cfg pios_led_cfg_cc = {
+#endif
+#ifndef STDPLVER
+    static const struct pios_led_cfg pios_led_cfg_cc = {
+#endif
+		.leds     = pios_leds_cc,
 	.num_leds = NELEMENTS(pios_leds_cc),
 };
 
-static const struct pios_led pios_leds_cc3d[] = {
-	[PIOS_LED_HEARTBEAT] = {
+/* Test to deal with versioned and legacy StdPeriphLib */
+#if defined(STDPERLIB) && defined(STDPLVER)
+    static struct pios_led pios_leds_cc3d[] = {
+#endif
+#ifndef STDPLVER
+    static const struct pios_led pios_leds_cc3d[] = {
+#endif
+    [PIOS_LED_HEARTBEAT] = {
 		.pin = {
 			.gpio = GPIOB,
 			.init = {
@@ -67,12 +86,24 @@ static const struct pios_led pios_leds_cc3d[] = {
 	},
 };
 
-static const struct pios_led_cfg pios_led_cfg_cc3d = {
+/* Test to deal with versioned and legacy StdPeriphLib */
+#if defined(STDPERLIB) && defined(STDPLVER)
+    static struct pios_led_cfg pios_led_cfg_cc3d = {
+#endif
+#ifndef STDPLVER
+    static const struct pios_led_cfg pios_led_cfg_cc3d = {
+#endif
 	.leds     = pios_leds_cc3d,
 	.num_leds = NELEMENTS(pios_leds_cc3d),
 };
 
-const struct pios_led_cfg * PIOS_BOARD_HW_DEFS_GetLedCfg (uint32_t board_revision)
+/* Test to deal with versioned and legacy StdPeriphLib */
+#if defined(STDPERLIB) && defined(STDPLVER)
+    struct pios_led_cfg * PIOS_BOARD_HW_DEFS_GetLedCfg (uint32_t board_revision)
+#endif
+#ifndef STDPLVER
+    const struct pios_led_cfg * PIOS_BOARD_HW_DEFS_GetLedCfg (uint32_t board_revision)
+#endif
 {
 	switch (board_revision) {
 	case BOARD_REVISION_CC:		return &pios_led_cfg_cc;
@@ -1267,8 +1298,14 @@ void PIOS_I2C_flexi_adapter_er_irq_handler(void)
 #if defined(PIOS_INCLUDE_USB)
 #include "pios_usb_priv.h"
 
-static const struct pios_usb_cfg pios_usb_main_cfg_cc = {
-	.irq = {
+/* Test to deal with versioned and legacy StdPeriphLib */
+#if defined(STDPERLIB) && defined(STDPLVER)
+    static struct pios_usb_cfg pios_usb_main_cfg_cc = {
+#endif
+#ifndef STDPLVER
+    static const struct pios_usb_cfg pios_usb_main_cfg_cc = {
+#endif
+    .irq = {
 		.init    = {
 			.NVIC_IRQChannel                   = USB_LP_CAN1_RX0_IRQn,
 			.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_LOW,
@@ -1286,8 +1323,14 @@ static const struct pios_usb_cfg pios_usb_main_cfg_cc = {
 	}
 };
 
-static const struct pios_usb_cfg pios_usb_main_cfg_cc3d = {
-	.irq = {
+/* Test to deal with versioned and legacy StdPeriphLib */
+#if defined(STDPERLIB) && defined(STDPLVER)
+    static struct pios_usb_cfg pios_usb_main_cfg_cc3d = {
+#endif
+#ifndef STDPLVER
+    static const struct pios_usb_cfg pios_usb_main_cfg_cc3d = {
+#endif
+    .irq = {
 		.init    = {
 			.NVIC_IRQChannel                   = USB_LP_CAN1_RX0_IRQn,
 			.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_LOW,
