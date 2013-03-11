@@ -9,10 +9,11 @@ TARGETMCU           := STM32F30x
 TARGETMCUL          := stm32f30x
 # Name and Version of the Std Periph Library
 STDPERDVR           := STM32F30x_StdPeriph_Driver
-STDPERLIB           := STM32F30x_StdPeriph_Lib
+STDPERLIB           := STM32F30x_DSP_StdPeriph_Lib
 STDPLVER            := V1.0.0
 STDPLINC            := Libraries/STM32F30x_StdPeriph_Driver/inc
 STDPLSRC            := Libraries/STM32F30x_StdPeriph_Driver/src
+STDPLCMSIS          := Libraries/CMSIS/Device/ST/STM32F30x
 # Poor naming convention, need filename stub
 STDPLSTB            := stm32f30x_
 CHIP                := STM32F303CCT
