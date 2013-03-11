@@ -7,6 +7,7 @@ MCU                 := cortex-m3
 # Target MCU upper and lowercase names
 TARGETMCU           := STM32F30x
 TARGETMCUL          := stm32f30x
+TARGETMCUC          := STM32F30X
 # Name and Version of the Std Periph Library
 STDPERDVR           := STM32F30x_StdPeriph_Driver
 STDPERLIB           := STM32F30x_DSP_StdPeriph_Lib
