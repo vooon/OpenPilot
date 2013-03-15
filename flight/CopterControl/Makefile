@@ -247,6 +247,7 @@ SRC += $(OPUAVSYNTHDIR)/magnetometer.c
 SRC += $(OPUAVSYNTHDIR)/txpidsettings.c
 SRC += $(OPUAVSYNTHDIR)/airspeedactual.c
 SRC += $(OPUAVSYNTHDIR)/sonaraltitude.c
+SRC += $(OPUAVSYNTHDIR)/mpu6000settings.c
 
 endif
 
