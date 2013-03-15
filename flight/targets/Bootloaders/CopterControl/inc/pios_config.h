@@ -42,7 +42,6 @@
 #define PIOS_INCLUDE_COM_MSG
 #define PIOS_INCLUDE_GPIO
 #define PIOS_INCLUDE_IAP
-#define PIOS_NO_GPS
 
 #endif /* PIOS_CONFIG_H */
 /**
