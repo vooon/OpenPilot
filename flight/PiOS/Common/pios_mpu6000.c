@@ -29,10 +29,9 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-/* Project Includes */
 #include "pios.h"
 
-#if defined(PIOS_INCLUDE_MPU6000)
+#ifdef PIOS_INCLUDE_MPU6000
 
 #include "fifo_buffer.h"
 
@@ -518,7 +517,7 @@ bool PIOS_MPU6000_IRQHandler(void)
 	return xHigherPriorityTaskWoken == pdTRUE;	
 }
 
-#endif
+#endif /* PIOS_INCLUDE_MPU6000 */
 
 /**
  * @}

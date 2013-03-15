@@ -28,15 +28,14 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-/* Project Includes */
 #include "pios.h"
 
-#if defined(PIOS_INCLUDE_COM)
+#ifdef PIOS_INCLUDE_COM
 
 #include "fifo_buffer.h"
 #include <pios_com_priv.h>
 
-#if !defined(PIOS_INCLUDE_FREERTOS)
+#ifndef PIOS_INCLUDE_FREERTOS
 #include "pios_delay.h"		/* PIOS_DELAY_WaitmS */
 #endif
 
@@ -503,7 +502,7 @@ uint16_t PIOS_COM_ReceiveBuffer(uint32_t com_id, uint8_t * buf, uint16_t buf_len
 	return (bytes_from_fifo);
 }
 
-#endif
+#endif /* PIOS_INCLUDE_COM */
 
 /**
  * @}
