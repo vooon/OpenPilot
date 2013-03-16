@@ -163,7 +163,7 @@ static int32_t RadioInitialize(void)
 {
 
 	// See if this module is enabled.
-#ifndef RADIO_BUILTIN
+#ifndef MODULE_Radio_BUILTIN
 	HwSettingsInitialize();
 	uint8_t optionalModules[HWSETTINGS_OPTIONALMODULES_NUMELEM];
 	HwSettingsOptionalModulesGet(optionalModules);
