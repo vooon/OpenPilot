@@ -87,6 +87,7 @@
 #ifdef PIOS_INCLUDE_SYS
 #include <pios_sys.h>
 #endif
+
 /* PIOS hardware peripherals */
 #ifdef PIOS_INCLUDE_IRQ
 #include <pios_irq.h>
@@ -157,6 +158,7 @@
 #endif
 #ifdef PIOS_INCLUDE_HMC5883
 /* HMC5883 3-Axis Digital Compass */
+/* #define PIOS_HMC5883_HAS_GPIOS */
 #include <pios_hmc5883.h>
 #endif
 #ifdef PIOS_INCLUDE_BMP085
@@ -220,6 +222,7 @@
 #endif
 #ifdef PIOS_INCLUDE_FLASH
 /* #define PIOS_INCLUDE_FLASH_SECTOR_SETTINGS */
+/* #define FLASH_FREERTOS */
 #include <pios_flash.h>
 #include <pios_flashfs.h>
 #endif
@@ -236,10 +239,6 @@
 #ifdef PIOS_INCLUDE_WAVE
 #include <pios_wavplay.h>
 #endif
-#ifdef PIOS_INCLUDE_BL_HELPER
-/* #define PIOS_INCLUDE_BL_HELPER_WRITE_SUPPORT */
-#include <pios_bl_helper.h>
-#endif
 #ifdef PIOS_INCLUDE_UDP
 #include <pios_udp.h>
 #endif
@@ -253,12 +252,26 @@
 #ifdef PIOS_INCLUDE_COM
 /* #define PIOS_INCLUDE_COM_MSG */
 /* #define PIOS_INCLUDE_TELEMETRY_RF */
+/* #define PIOS_INCLUDE_COM_TELEM */
+/* #define PIOS_INCLUDE_COM_FLEXI */
+/* #define PIOS_TELEM_PRIORITY_QUEUE */
 /* #define PIOS_INCLUDE_GPS */
 /* #define PIOS_GPS_MINIMAL */
 /* #define PIOS_INCLUDE_GPS_NMEA_PARSER */
 /* #define PIOS_INCLUDE_GPS_UBX_PARSER */
+/* #define PIOS_GPS_SETS_HOMELOCATION */
 #include <pios_com.h>
 #endif
+
+/* PIOS bootloader helper */
+#ifdef PIOS_INCLUDE_BL_HELPER
+/* #define PIOS_INCLUDE_BL_HELPER_WRITE_SUPPORT */
+#include <pios_bl_helper.h>
+#endif
+
+/* Performance counters */
+/* #define IDLE_COUNTS_PER_SEC_AT_NO_LOAD 995998 */
+
 
 #endif /* USE_SIM_POSIX */
 #endif /* PIOS_H */
