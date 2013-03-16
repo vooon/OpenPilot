@@ -27,6 +27,10 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
+#include "pios.h"
+
+#ifdef PIOS_INCLUDE_PACKET_HANDLER
+
 #include "openpilot.h"
 #include "packet_handler.h"
 #include "aes.h"
@@ -383,3 +387,5 @@ static uint8_t PHLTransmitPacket(PHPacketDataHandle data, PHPacketHandle p)
 
 	return 1;
 }
+
+#endif /* PIOS_INCLUDE_PACKET_HANDLER */

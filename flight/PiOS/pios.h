@@ -223,6 +223,7 @@
 #include <pios_eeprom.h>
 #endif
 #ifdef PIOS_INCLUDE_RFM22B
+/* #define PIOS_INCLUDE_PACKET_HANDLER */
 #include <pios_rfm22b.h>
 #endif
 #ifdef PIOS_INCLUDE_VIDEO
