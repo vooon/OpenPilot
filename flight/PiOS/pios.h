@@ -63,8 +63,12 @@
 /* PIOS board specific device configuration */
 #include "pios_board.h"
 
-/* PIOS common functions */
+/* PIOS debug interface */
+/* #define PIOS_INCLUDE_DEBUG_CONSOLE */
+/* #define DEBUG_LEVEL 0 */
 #include <pios_debug.h>
+
+/* PIOS common functions */
 #include <pios_crc.h>
 
 /* PIOS system functions */

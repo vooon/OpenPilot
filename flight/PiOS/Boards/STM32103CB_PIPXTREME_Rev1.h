@@ -172,12 +172,6 @@ extern uint32_t pios_ppm_rcvr_id;
 #define PIOS_COM_TELEM_USB         PIOS_COM_USB_HID
 #define PIOS_PPM_RECEIVER          (pios_ppm_rcvr_id)
 
-#define DEBUG_LEVEL 2
-#if DEBUG_LEVEL > 0
-#define DEBUG_PRINTF(level, ...) {if(level <= DEBUG_LEVEL && PIOS_COM_DEBUG > 0) { PIOS_COM_SendFormattedStringNonBlocking(PIOS_COM_DEBUG, __VA_ARGS__); }}
-#else
-#define DEBUG_PRINTF(...)
-#endif
 #define RFM22_DEBUG 1
 
 //-------------------------
