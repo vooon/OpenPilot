@@ -217,9 +217,9 @@
 #include <pios_overo.h>
 #endif
 #ifdef PIOS_INCLUDE_SDCARD
-#include <pios_sdcard.h>
+/* #define LOG_FILENAME "startup.log" */
 #include <dosfs.h>
-#include <msd.h>
+#include <pios_sdcard.h>
 #endif
 #ifdef PIOS_INCLUDE_FLASH
 /* #define PIOS_INCLUDE_FLASH_SECTOR_SETTINGS */
