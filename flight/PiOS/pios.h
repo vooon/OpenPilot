@@ -213,6 +213,7 @@
 #include <pios_i2c_esc.h>
 #endif
 #ifdef PIOS_INCLUDE_OVERO
+/* #define PIOS_OVERO_SPI */
 #include <pios_overo.h>
 #endif
 #ifdef PIOS_INCLUDE_SDCARD
@@ -254,6 +255,7 @@
 /* #define PIOS_INCLUDE_TELEMETRY_RF */
 /* #define PIOS_INCLUDE_COM_TELEM */
 /* #define PIOS_INCLUDE_COM_FLEXI */
+/* #define PIOS_INCLUDE_COM_AUX */
 /* #define PIOS_TELEM_PRIORITY_QUEUE */
 /* #define PIOS_INCLUDE_GPS */
 /* #define PIOS_GPS_MINIMAL */
