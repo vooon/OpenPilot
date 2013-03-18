@@ -175,7 +175,7 @@ CPPSRCARM =
 # Even though the DOS/Win* filesystem matches both .s and .S the same,
 # it will preserve the spelling of the filenames, and gcc itself does
 # care about how the name is spelled on its command-line.
-ASRC = $(PIOSSTM32F10X)/startup_stm32f10x_$(MODEL)$(MODEL_SUFFIX).S
+ASRC = $(PIOSSTM32F10X)/startup_stm32f10x_$(MCUDENSITY)$(MODEL_SUFFIX).S
 
 # List Assembler source files here which must be assembled in ARM-Mode..
 ASRCARM = 
@@ -243,7 +243,7 @@ DEBUGF = dwarf-2
 
 # Place project-specific -D (define) and/or 
 # -U options for C here.
-CDEFS += -DSTM32F10X_$(MODEL)
+CDEFS += -DSTM32F10X_$(MCUDENSITY)
 CDEFS += -DUSE_STDPERIPH_DRIVER
 CDEFS += -DUSE_$(BOARD)
 ifeq ($(ENABLE_DEBUG_PINS), YES)
