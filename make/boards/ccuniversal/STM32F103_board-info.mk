@@ -18,6 +18,8 @@ STDPLSTB            := stm32f10x_
 CHIP                := STM32F103CBT
 BOARD               := STM32103CB_CC_Rev1
 MODEL               := MD
+# Model does not mean much, density is is correct and descriptive
+MCUDENSITY          := MD
 MODEL_SUFFIX        := _CC
 
 # RTOS Selection for this board
