@@ -26,6 +26,7 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 /* Bootloader Includes */
+#include <stdbool.h>
 #include <pios.h>
 #include <pios_board_info.h>
 #include "op_dfu.h"

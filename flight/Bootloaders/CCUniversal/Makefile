@@ -272,9 +272,9 @@ ifeq ($(ENABLE_AUX_UART), YES)
 CDEFS += -DPIOS_ENABLE_AUX_UART
 endif
 
-# WARNING!!! STRANGE TRUE FALSE ISSUE WORKAROUND !!!
-CDEFS += -DTRUE=1
-CDEFS += -DFALSE=0
+# WARNING!!! CASE TRUE FALSE ISSUE WORKAROUND !!! stdbool.h is lowercase
+CDEFS += -DTRUE=true
+CDEFS += -DFALSE=false
 
 # Provide (only) the bootloader with board-specific defines
 BLONLY_CDEFS += -DBOARD_TYPE=$(BOARD_TYPE)
