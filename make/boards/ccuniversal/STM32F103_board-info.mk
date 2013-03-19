@@ -30,6 +30,7 @@ CMSIS               := Libraries/CMSIS
 CMSISVER            := CM3
 CMSISCORE           := CoreSupport
 CMSISDEV            := DeviceSupport/ST/STM32F10x
+CMSISDSP            := Legacy/CMSIS2/DSP_Lib/Source
 # Cryptic name due to length, CMSIS VENDOR and VERSION
 CMVEN               := UNKNOWN
 CMVENVER            := UNKNOWN

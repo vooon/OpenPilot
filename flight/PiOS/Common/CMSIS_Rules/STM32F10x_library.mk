@@ -9,7 +9,7 @@ EXTRAINCDIRS		+=	$(CMSISDIR)/$(CMSISCORE)
 ifeq ($(USE_DSP_LIB), YES)
 
 DSPLIB_NAME		:=	dsp
-CMSIS_DSPLIB		:=	$(CMSISDIR)/DSP_Lib/Source
+CMSIS_DSPLIB		:=	$(EXTLIBS)/$(CMSISDSP)
 
 # Compile all files into output directory
 DSPLIB_SRC		:=	$(wildcard $(CMSIS_DSPLIB)/*/*.c)
