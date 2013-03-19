@@ -31,6 +31,10 @@ CMSISVER            := CM3
 CMSISCORE           := CoreSupport
 CMSISDEV            := DeviceSupport/ST/STM32F10x
 CMSISDSP            := Legacy/CMSIS2/DSP_Lib/Source
+
+# USB Drivers
+USBDIR              := Legacy/STM32_USB-FS-Device_Driver
+
 # Cryptic name due to length, CMSIS VENDOR and VERSION
 CMVEN               := UNKNOWN
 CMVENVER            := UNKNOWN
