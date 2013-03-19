@@ -145,9 +145,9 @@ SRC += $(PIOSCOMMON)/printf-stdarg.c
 ## Libraries for flight calculations
 SRC += $(FLIGHTLIB)/fifo_buffer.c
 
-## CMSIS for STM32 *** this double includes this ...
-#SRC += $(CMSISDIR)/core_cm3.c
-#SRC += $(CMSISDIR)/system_$(TARGETMCUL).c
+## CMSIS
+SRC += $(CMSISDIR)/$(CMSISCORE)/core_cm3.c
+SRC += $(CMSISDIR)/$(CMSISDEV)/system_$(TARGETMCUL).c
 
 ## Used parts of the STM-Library
 SRC += $(STMSPDSRCDIR)/$(STDPLSTB)bkp.c
