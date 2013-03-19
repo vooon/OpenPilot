@@ -29,6 +29,9 @@ RTOSVER             := UNKONOWN
 CMSIS               := Libraries/CMSIS
 CMSISVER            := CM3
 CMSISCORE           := CoreSupport
+
+# Enable ARM DSP library
+USE_DSP_LIB = NO
 CMSISDEV            := DeviceSupport/ST/STM32F10x
 CMSISDSP            := Legacy/CMSIS2/DSP_Lib/Source
 
