@@ -7,6 +7,7 @@ MCU                 := cortex-m3
 # Target MCU upper and lowercase names
 TARGETMCU           := STM32F10x
 TARGETMCUL          := stm32f10x
+TARGETMCUC          := STM32F10X
 # Name and Version of the Std Periph Library
 STDPERDVR           := STM32F10x_StdPeriph_Driver
 STDPERLIB           := STM32F10x_StdPeriph_Lib
@@ -25,8 +26,10 @@ MODEL_SUFFIX        := _CC
 # RTOS Selection for this board
 RTOS                := FreeRTOS
 RTOSVER             := UNKONOWN
-CMSIS               := CMSIS
-CMSISVER            := 2
+CMSIS               := Libraries/CMSIS
+CMSISVER            := CM3
+CMSISCORE           := CoreSupport
+CMSISDEV            := DeviceSupport/ST/STM32F10x
 # Cryptic name due to length, CMSIS VENDOR and VERSION
 CMVEN               := UNKNOWN
 CMVENVER            := UNKNOWN

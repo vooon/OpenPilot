@@ -23,7 +23,7 @@
  #####
 
 # Testname is until the main Makefile is revised to pass this
-TESTNAME := STM32F303
+TESTNAME := STM32F103
 
 WHEREAMI := $(dir $(lastword $(MAKEFILE_LIST)))
 TOP      := $(realpath $(WHEREAMI)/../../../)
@@ -81,12 +81,16 @@ PIOSCOMMONLIB = $(PIOSCOMMON)/Libraries
 # New Vesioned Periph
 EXTLIBS = ../../ExtLibraries
 
-APPLIBDIR = $(PIOSTARGETMCU)/Libraries
-STMLIBDIR = $(APPLIBDIR)
 # Depreciating in favor of versioning and MCU agnostic
 STMSPDDIR = $(EXTLIBS)/$(STDPERLIB)_$(STDPLVER)
 STMUSBDIR = $(STMLIBDIR)/STM32_USB-FS-Device_Driver
 
+# PIOSCOMMONLIB = $(PIOSCOMMON)/Libraries
+PIOSCOMMONLIB = $(STMSPDDIR)/Libraries
+# APPLIBDIR = $(PIOSSTM32F10X)/Libraries
+APPLIBDIR = $(STMSPDDIR)/Libraries
+# APPLIBDIR = $(PIOSTARGETMCU)/Libraries
+# STMLIBDIR = $(APPLIBDIR)
 
 # Depreciating in favor of versioning and MCU agnostic
 STMSPDSRCDIR = $(EXTLIBS)/$(STDPERLIB)_$(STDPLVER)/$(STDPLSRC)
@@ -94,7 +98,7 @@ STMSPDINCDIR = $(EXTLIBS)/$(STDPERLIB)_$(STDPLVER)/$(STDPLINC)
 
 STMUSBSRCDIR = $(STMUSBDIR)/src
 STMUSBINCDIR = $(STMUSBDIR)/inc
-CMSISDIR  = $(STDPLCMSIS)
+CMSISDIR  = $(EXTLIBS)/$(STDPERLIB)_$(STDPLVER)/$(CMSIS)/$(CMSISVER)/$(CMSISDEV)
 DOSFSDIR  = $(APPLIBDIR)/dosfs
 MSDDIR  = $(APPLIBDIR)/msd
 RTOSDIR = $(APPLIBDIR)/FreeRTOS
@@ -112,7 +116,7 @@ SRC += $(OPSYSTEMINC)/pios_board.c
 SRC += $(OPSYSTEMINC)/op_dfu.c
 
 ## PIOS Hardware (STM32F10x)
-include $(PIOS)/$(TARGETMCU)/library.mk
+include $(PIOS)/Common/CMSIS_Rules/$(TARGETMCU)_library.mk
 SRC += $(PIOSTARGETMCU)/pios_sys.c
 SRC += $(PIOSTARGETMCU)/pios_led.c
 SRC += $(PIOSTARGETMCU)/pios_delay.c
@@ -258,7 +262,7 @@ DEBUGF = dwarf-2
 # Place project-specific -D (define) and/or 
 # -U options for C here.
 CDEFS += -D$(TARGETMCUC)
-CDEFS += -D$(TARGETMCUC)_$(MODEL)
+CDEFS += -D$(TARGETMCUC)_$(MCUDENSITY)
 CDEFS += -DUSE_STDPERIPH_DRIVER
 CDEFS += -DUSE_$(BOARD)
 ifeq ($(ENABLE_DEBUG_PINS), YES)
