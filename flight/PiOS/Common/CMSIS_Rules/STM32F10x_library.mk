@@ -1,15 +1,15 @@
 #
-# Rules to add CMSIS2 to a PiOS target
+# Rules to add CMSIS specific diectories to a PiOS target
 #
 
-CMSIS2_DIR		:=	$(dir $(lastword $(MAKEFILE_LIST)))
-EXTRAINCDIRS		+=	$(CMSIS2_DIR)/Include
+EXTRAINCDIRS		+=	$(CMSISDIR)/$(CMSISDEV)
+EXTRAINCDIRS		+=	$(CMSISDIR)/$(CMSISCORE)
 
 # Rules to build the ARM DSP library
 ifeq ($(USE_DSP_LIB), YES)
 
 DSPLIB_NAME		:=	dsp
-CMSIS_DSPLIB		:=	$(CMSIS2_DIR)/DSP_Lib/Source
+CMSIS_DSPLIB		:=	$(CMSISDIR)/DSP_Lib/Source
 
 # Compile all files into output directory
 DSPLIB_SRC		:=	$(wildcard $(CMSIS_DSPLIB)/*/*.c)

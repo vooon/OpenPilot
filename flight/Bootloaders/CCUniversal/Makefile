@@ -98,7 +98,7 @@ STMSPDINCDIR = $(EXTLIBS)/$(STDPERLIB)_$(STDPLVER)/$(STDPLINC)
 
 STMUSBSRCDIR = $(STMUSBDIR)/src
 STMUSBINCDIR = $(STMUSBDIR)/inc
-CMSISDIR  = $(EXTLIBS)/$(STDPERLIB)_$(STDPLVER)/$(CMSIS)/$(CMSISVER)/$(CMSISDEV)
+CMSISDIR  = $(EXTLIBS)/$(STDPERLIB)_$(STDPLVER)/$(CMSIS)/$(CMSISVER)
 DOSFSDIR  = $(APPLIBDIR)/dosfs
 MSDDIR  = $(APPLIBDIR)/msd
 RTOSDIR = $(APPLIBDIR)/FreeRTOS
@@ -145,9 +145,9 @@ SRC += $(PIOSCOMMON)/printf-stdarg.c
 ## Libraries for flight calculations
 SRC += $(FLIGHTLIB)/fifo_buffer.c
 
-## CMSIS for STM32
-SRC += $(CMSISDIR)/core_cm3.c
-SRC += $(CMSISDIR)/system_$(TARGETMCUL).c
+## CMSIS for STM32 *** this double includes this ...
+#SRC += $(CMSISDIR)/core_cm3.c
+#SRC += $(CMSISDIR)/system_$(TARGETMCUL).c
 
 ## Used parts of the STM-Library
 SRC += $(STMSPDSRCDIR)/$(STDPLSTB)bkp.c
