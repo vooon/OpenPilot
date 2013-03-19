@@ -33,10 +33,16 @@ CMSISCORE           := CoreSupport
 # Enable ARM DSP library
 USE_DSP_LIB = NO
 CMSISDEV            := DeviceSupport/ST/STM32F10x
-CMSISDSP            := Legacy/CMSIS2/DSP_Lib/Source
+#CMSISDSP            := Legacy/CMSIS2/DSP_Lib/Source
 
 # USB Drivers
-USBDIR              := Legacy/STM32_USB-FS-Device_Driver
+#USBDIR              := Legacy/STM32_USB-FS-Device_Driver
+USBLIB              := STM32_USB-FS-Device_Lib
+USBVER              := V4.0.0
+USBDVR              := STM32_USB-FS-Device_Driver
+USBINC              := Libraries/STM32_USB-FS-Device_Driver/inc
+USBSRC              := Libraries/STM32_USB-FS-Device_Driver/src
+USBDIR              := $(USBLIB)_$(USBVER)/Libraries/$(USBDVR)
 
 # Cryptic name due to length, CMSIS VENDOR and VERSION
 CMVEN               := UNKNOWN
