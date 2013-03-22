@@ -356,6 +356,9 @@ enum usb_product_ids {
 	USB_PRODUCT_ID_REVOLUTION     = 0x415E,
 	USB_PRODUCT_ID_OSD            = 0x4194,
 	USB_PRODUCT_ID_SPARE          = 0x4195,
+
+	/* ST Eval Boards */
+	USB_PRODUCT_ID_DISCOVERYF4    = USB_PRODUCT_ID_REVOLUTION,
 } __attribute__((packed));
 
 enum usb_op_board_ids {
@@ -365,6 +368,9 @@ enum usb_op_board_ids {
 	USB_OP_BOARD_ID_COPTERCONTROL  = 4,
 	USB_OP_BOARD_ID_REVOLUTION     = 5,
 	USB_OP_BOARD_ID_OSD     	   = 6,
+	
+	/* ST Eval Boards */
+	USB_OP_BOARD_ID_DISCOVERYF4    = 8,
 } __attribute__((packed));
 
 enum usb_op_board_modes {

@@ -1,6 +1,7 @@
 <xml>
 	<object name="HwSettings" singleinstance="true" settings="true">
 		<description>Selection of optional hardware configurations.</description>
+
 		<field name="CC_RcvrPort" units="function" type="enum" elements="1" options="Disabled,PWM,PPM,PPM+PWM,PPM+Outputs,Outputs" defaultvalue="PWM"/>
 		<field name="CC_MainPort" units="function" type="enum" elements="1" options="Disabled,Telemetry,GPS,S.Bus,DSM2,DSMX (10bit),DSMX (11bit),DebugConsole,ComBridge" defaultvalue="Telemetry"/>
 		<field name="CC_FlexiPort" units="function" type="enum" elements="1" options="Disabled,Telemetry,GPS,I2C,PPM,DSM2,DSMX (10bit),DSMX (11bit),DebugConsole,ComBridge" defaultvalue="Disabled"/>
@@ -15,6 +16,10 @@
 		<field name="RM_RcvrPort" units="function" type="enum" elements="1" options="Disabled,PWM,PPM,PPM+PWM,PPM+Outputs,Outputs" defaultvalue="PWM"/>
 		<field name="RM_MainPort" units="function" type="enum" elements="1" options="Disabled,Telemetry,GPS,S.Bus,DSM2,DSMX (10bit),DSMX (11bit),DebugConsole,ComBridge" defaultvalue="Telemetry"/>
 		<field name="RM_FlexiPort" units="function" type="enum" elements="1" options="Disabled,Telemetry,GPS,I2C,DSM2,DSMX (10bit),DSMX (11bit),DebugConsole,ComBridge" defaultvalue="Disabled"/>
+
+		<field name="D4_RcvrPort" units="function" type="enum" elements="1" options="Disabled,PWM,PPM,PPM+PWM,PPM+Outputs,Outputs" defaultvalue="PWM"/>
+		<field name="D4_MainPort" units="function" type="enum" elements="1" options="Disabled,Telemetry,GPS,S.Bus,DSM2,DSMX (10bit),DSMX (11bit),DebugConsole,ComBridge" defaultvalue="Telemetry"/>
+		<field name="D4_FlexiPort" units="function" type="enum" elements="1" options="Disabled,Telemetry,GPS,I2C,DSM2,DSMX (10bit),DSMX (11bit),DebugConsole,ComBridge" defaultvalue="Disabled"/>
 
 		<field name="RadioPort" units="function" type="enum" elements="1" options="Disabled,Telemetry" defaultvalue="Disabled"/>
 		  
