@@ -62,14 +62,8 @@ ifndef TESTAPP
 
     SRC += $(FLIGHTLIB)/printf2.c
     SRC += $(FLIGHTLIB)/WorldMagModel.c
-else
-    ## Test Code
-    SRC += $(OPTESTS)/test_common.c
-    SRC += $(OPTESTS)/$(TESTAPP).c
-endif
 
-## UAVObjects
-ifndef TESTAPP
+    ## UAVObjects
     SRC += $(OPUAVSYNTHDIR)/objectpersistence.c
     SRC += $(OPUAVSYNTHDIR)/gcstelemetrystats.c
     SRC += $(OPUAVSYNTHDIR)/flighttelemetrystats.c
@@ -92,7 +86,12 @@ ifndef TESTAPP
     SRC += $(OPUAVSYNTHDIR)/osdsettings.c
     SRC += $(OPUAVSYNTHDIR)/baroaltitude.c
     SRC += $(OPUAVSYNTHDIR)/magnetometer.c
+else
+    ## Test Code
+    SRC += $(OPTESTS)/test_common.c
+    SRC += $(OPTESTS)/$(TESTAPP).c
 endif
+
 	
 # Optional component libraries
 include $(PIOS)/Common/Libraries/dosfs/library.mk

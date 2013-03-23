@@ -105,7 +105,7 @@ export GIT	:= git
 export PYTHON	:= python
 export INSTALL	:= install
 
-# version-info cmd to extract some repository data
+# Command to extract version info data from the repository and source tree
 export VERSION_INFO := $(PYTHON) "$(ROOT_DIR)/make/scripts/version-info.py" --path="$(ROOT_DIR)"
 
 # Test if quotes are needed for the echo-command

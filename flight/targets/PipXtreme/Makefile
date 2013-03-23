@@ -41,18 +41,16 @@ ifndef TESTAPP
     SRC += $(OPUAVTALK)/uavtalk.c
     SRC += $(OPUAVOBJ)/uavobjectmanager.c
     SRC += $(OPUAVOBJ)/eventdispatcher.c
-else
-    ## Test Code
-    SRC += $(OPTESTS)/test_common.c
-    SRC += $(OPTESTS)/$(TESTAPP).c
-endif
 
-## UAVObjects
-ifndef TESTAPP
+    ## UAVObjects
     SRC += $(OPUAVSYNTHDIR)/gcsreceiver.c
     SRC += $(OPUAVSYNTHDIR)/pipxstatus.c
     SRC += $(OPUAVSYNTHDIR)/pipxsettings.c
     SRC += $(OPUAVSYNTHDIR)/objectpersistence.c
+else
+    ## Test Code
+    SRC += $(OPTESTS)/test_common.c
+    SRC += $(OPTESTS)/$(TESTAPP).c
 endif
 
 # Optional component libraries

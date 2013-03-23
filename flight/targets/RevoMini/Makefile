@@ -49,8 +49,8 @@ OPTMODULES =
 # Include all camera options
 CDEFS += -DUSE_INPUT_LPF -DUSE_GIMBAL_LPF -DUSE_GIMBAL_FF
 
-# All diagnostics
-CDEFS += -DDIAGNOSTICS -DDIAG_TASKS
+# Some diagnostics
+CDEFS += -DDIAG_TASKS
 
 # Misc options
 CFLAGS += -ffast-math
@@ -76,16 +76,14 @@ ifndef TESTAPP
     SRC += $(FLIGHTLIB)/paths.c
     SRC += $(FLIGHTLIB)/WorldMagModel.c
     SRC += $(FLIGHTLIB)/insgps13state.c
+
+    ## UAVObjects
+    include ./UAVObjects.inc
+    SRC += $(UAVOBJSRC)
 else
     ## Test Code
     SRC += $(OPTESTS)/test_common.c
     SRC += $(OPTESTS)/$(TESTAPP).c
-endif
-
-## UAVObjects
-ifndef TESTAPP
-    include ./UAVObjects.inc
-    SRC += $(UAVOBJSRC)
 endif
 
 # Optional component libraries
