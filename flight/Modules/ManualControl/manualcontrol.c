@@ -91,6 +91,7 @@ static float inputFiltered[MANUALCONTROLSETTINGS_RESPONSETIME_NUMELEM];
 // Private functions
 static void updateActuatorDesired(ManualControlCommandData * cmd);
 static void updateStabilizationDesired(ManualControlCommandData * cmd, ManualControlSettingsData * settings);
+static void updateLandDesired(ManualControlCommandData * cmd, bool changed);
 static void altitudeHoldDesired(ManualControlCommandData * cmd, bool changed);
 static void updatePathDesired(ManualControlCommandData * cmd, bool changed, bool home);
 static void processFlightMode(ManualControlSettingsData * settings, float flightMode);
@@ -452,6 +453,9 @@ static void manualControlTask(void *parameters)
 					case FLIGHTSTATUS_FLIGHTMODE_PATHPLANNER:
 						// No need to call anything.  This just avoids errors.
 						break;
+					case FLIGHTSTATUS_FLIGHTMODE_LAND:
+						updateLandDesired(&cmd, lastFlightMode != flightStatus.FlightMode);
+						break;
 					default:
 						AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_CRITICAL);
 				}
@@ -743,6 +747,38 @@ static void updatePathDesired(ManualControlCommandData * cmd, bool changed,bool 
 	}
 }
 
+
+static void updateLandDesired(ManualControlCommandData * cmd, bool changed)
+{
+	static portTickType lastSysTime;
+	portTickType thisSysTime;
+	float dT;
+
+	thisSysTime = xTaskGetTickCount();
+	dT = (thisSysTime - lastSysTime) / portTICK_RATE_MS / 1000.0f;
+	lastSysTime = thisSysTime;
+
+	PositionActualData positionActual;
+	PositionActualGet(&positionActual);
+
+	PathDesiredData pathDesired;
+	PathDesiredGet(&pathDesired);
+	if(changed) {
+		// After not being in this mode for a while init at current height
+		pathDesired.Start[PATHDESIRED_START_NORTH] = positionActual.North;
+		pathDesired.Start[PATHDESIRED_START_EAST] = positionActual.East;
+		pathDesired.Start[PATHDESIRED_START_DOWN] = positionActual.Down;
+		pathDesired.End[PATHDESIRED_END_NORTH] = positionActual.North;
+		pathDesired.End[PATHDESIRED_END_EAST] = positionActual.East;
+		pathDesired.End[PATHDESIRED_END_DOWN] = positionActual.Down;
+		pathDesired.StartingVelocity=1;
+		pathDesired.EndingVelocity=0;
+		pathDesired.Mode = PATHDESIRED_MODE_FLYENDPOINT;
+	}
+	pathDesired.End[PATHDESIRED_END_DOWN] = positionActual.Down+5;
+	PathDesiredSet(&pathDesired);
+}
+
 /**
  * @brief Update the altitude desired to current altitude when
  * enabled and enable altitude mode for stabilization
@@ -792,6 +828,11 @@ static void altitudeHoldDesired(ManualControlCommandData * cmd, bool changed)
 // could allow them to be called sholud already throw an error to prevent this happening
 // in flight
 static void updatePathDesired(ManualControlCommandData * cmd, bool changed, bool home)
+{
+	AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_ERROR);
+}
+
+static void updateLandDesired(ManualControlCommandData * cmd, bool changed)
 {
 	AlarmsSet(SYSTEMALARMS_ALARM_MANUALCONTROL, SYSTEMALARMS_ALARM_ERROR);
 }

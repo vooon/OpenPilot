@@ -214,6 +214,7 @@ static void vtolPathFollowerTask(void *parameters)
 
 		// Check the combinations of flightmode and pathdesired mode
 		switch(flightStatus.FlightMode) {
+			case FLIGHTSTATUS_FLIGHTMODE_LAND:
 			case FLIGHTSTATUS_FLIGHTMODE_POSITIONHOLD:
 			case FLIGHTSTATUS_FLIGHTMODE_RETURNTOBASE:
 				if (pathDesired.Mode == PATHDESIRED_MODE_FLYENDPOINT) {
@@ -230,10 +231,6 @@ static void vtolPathFollowerTask(void *parameters)
 				switch(pathDesired.Mode) {
 					// TODO: Make updateVtolDesiredAttitude and velocity report success and update PATHSTATUS_STATUS accordingly
 					case PATHDESIRED_MODE_FLYENDPOINT:
-						updateEndpointVelocity();
-						updateVtolDesiredAttitude(false);
-						AlarmsSet(SYSTEMALARMS_ALARM_GUIDANCE,SYSTEMALARMS_ALARM_OK);
-						break;
 					case PATHDESIRED_MODE_FLYVECTOR:
 					case PATHDESIRED_MODE_FLYCIRCLERIGHT:
 					case PATHDESIRED_MODE_FLYCIRCLELEFT:
@@ -363,6 +360,11 @@ static void updatePathVelocity()
 			break;
 		case PATHDESIRED_MODE_FLYENDPOINT:
 		case PATHDESIRED_MODE_DRIVEENDPOINT:
+			groundspeed = pathDesired.EndingVelocity - pathDesired.EndingVelocity *
+				bound(progress.fractional_progress,0,1);
+			if(progress.fractional_progress > 1)
+				groundspeed = 0;
+			break;
 		case PATHDESIRED_MODE_FLYVECTOR:
 		case PATHDESIRED_MODE_DRIVEVECTOR:
 		default:
@@ -423,7 +425,7 @@ void updateEndpointVelocity()
 	
 	PositionActualGet(&positionActual);
 	VelocityDesiredGet(&velocityDesired);
-	
+
 	float northError;
 	float eastError;
 	float downError;
