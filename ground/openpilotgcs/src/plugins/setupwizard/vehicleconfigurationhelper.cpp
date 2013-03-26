@@ -110,10 +110,10 @@ void VehicleConfigurationHelper::applyHardwareConfiguration()
             // Reset all ports
             data.CC_RcvrPort = HwSettings::CC_RCVRPORT_DISABLED;
 
-            //Default flexiport to be active telemetry link
-            data.CC_FlexiPort = HwSettings::CC_FLEXIPORT_TELEMETRY;
+            //Default mainport to be active telemetry link
+            data.CC_MainPort = HwSettings::CC_MAINPORT_TELEMETRY;
 
-            data.CC_MainPort = HwSettings::CC_MAINPORT_DISABLED;
+            data.CC_FlexiPort = HwSettings::CC_FLEXIPORT_DISABLED;
             switch(m_configSource->getInputType())
             {
                 case VehicleConfigurationSource::INPUT_PWM:
@@ -123,16 +123,18 @@ void VehicleConfigurationHelper::applyHardwareConfiguration()
                     data.CC_RcvrPort = HwSettings::CC_RCVRPORT_PPM;
                     break;
                 case VehicleConfigurationSource::INPUT_SBUS:
+                    // We have to set teletry on flexport since s.bus needs the mainport.
                     data.CC_MainPort = HwSettings::CC_MAINPORT_SBUS;
+                    data.CC_FlexiPort = HwSettings::CC_FLEXIPORT_TELEMETRY;
                     break;
                 case VehicleConfigurationSource::INPUT_DSMX10:
-                    data.CC_MainPort = HwSettings::CC_MAINPORT_DSMX10BIT;
+                    data.CC_FlexiPort = HwSettings::CC_FLEXIPORT_DSMX10BIT;
                     break;
                 case VehicleConfigurationSource::INPUT_DSMX11:
-                    data.CC_MainPort = HwSettings::CC_MAINPORT_DSMX11BIT;
+                    data.CC_FlexiPort = HwSettings::CC_FLEXIPORT_DSMX11BIT;
                     break;
                 case VehicleConfigurationSource::INPUT_DSM2:
-                    data.CC_MainPort = HwSettings::CC_MAINPORT_DSM2;
+                    data.CC_FlexiPort = HwSettings::CC_FLEXIPORT_DSM2;
                     break;
                 default:
                     break;
@@ -290,12 +292,12 @@ void VehicleConfigurationHelper::applyFlighModeConfiguration()
 
 void VehicleConfigurationHelper::applyLevellingConfiguration()
 {
+    AttitudeSettings* attitudeSettings = AttitudeSettings::GetInstance(m_uavoManager);
+    Q_ASSERT(attitudeSettings);
+    AttitudeSettings::DataFields data = attitudeSettings->getData();
     if(m_configSource->isLevellingPerformed())
     {
         accelGyroBias bias = m_configSource->getLevellingBias();
-        AttitudeSettings* attitudeSettings = AttitudeSettings::GetInstance(m_uavoManager);
-        Q_ASSERT(attitudeSettings);
-        AttitudeSettings::DataFields data = attitudeSettings->getData();
 
         data.AccelBias[0] += bias.m_accelerometerXBias;
         data.AccelBias[1] += bias.m_accelerometerYBias;
@@ -303,10 +305,10 @@ void VehicleConfigurationHelper::applyLevellingConfiguration()
         data.GyroBias[0] = -bias.m_gyroXBias;
         data.GyroBias[1] = -bias.m_gyroYBias;
         data.GyroBias[2] = -bias.m_gyroZBias;
-
-        attitudeSettings->setData(data);
-        addModifiedObject(attitudeSettings, tr("Writing gyro and accelerometer bias settings"));
     }
+    data.AccelTau = DEFAULT_ENABLED_ACCEL_TAU;
+    attitudeSettings->setData(data);
+    addModifiedObject(attitudeSettings, tr("Writing gyro and accelerometer bias settings"));
 }
 
 void VehicleConfigurationHelper::applyStabilizationConfiguration()

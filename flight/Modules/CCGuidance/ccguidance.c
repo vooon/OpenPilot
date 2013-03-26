@@ -243,7 +243,7 @@ static void ccguidanceTask(void *parameters)
 			HomeLocationSetGet(&HomeLocationSet);
 
 			// Setting the target coordinates to the selected mode of flight navigation.
-			if(positionHoldLast != 1 && (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_POSITIONHOLD2 ||
+			if(positionHoldLast != 1 && (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_POSITIONHOLD ||
 			  (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_RETURNTOBASE && HomeLocationSet == FALSE) ||
 			  (flightStatus.FlightMode == FLIGHTSTATUS_FLIGHTMODE_FLIGHTTOTARGET && ccguidanceSettings.TargetLocationSet == FALSE)))
 			  {

@@ -49,6 +49,14 @@
 #include "watchdogstatus.h"
 #include "taskmonitor.h"
 
+//#define DEBUG_THIS_FILE
+
+#if defined(PIOS_INCLUDE_DEBUG_CONSOLE) && defined(DEBUG_THIS_FILE)
+#define DEBUG_MSG(format, ...) PIOS_COM_SendFormattedString(PIOS_COM_DEBUG, format, ## __VA_ARGS__)
+#else
+#define DEBUG_MSG(format, ...)
+#endif
+
 // Private constants
 #define SYSTEM_UPDATE_PERIOD_MS 1000
 #define LED_BLINK_RATE_HZ 5
@@ -181,6 +189,7 @@ static void systemTask(void *parameters)
 		// Flash the heartbeat LED
 #if defined(PIOS_LED_HEARTBEAT)
 		PIOS_LED_Toggle(PIOS_LED_HEARTBEAT);
+		DEBUG_MSG("+ 0x%08x\r\n", 0xDEADBEEF);
 #endif	/* PIOS_LED_HEARTBEAT */
 
 		// Turn on the error LED if an alarm is set
@@ -221,8 +230,19 @@ static void objectUpdatedCb(UAVObjEvent * ev)
 		ObjectPersistenceGet(&objper);
 
 		int retval = 1;
-		// Execute action
-		if (objper.Operation == OBJECTPERSISTENCE_OPERATION_LOAD) {
+		FlightStatusData flightStatus;
+		FlightStatusGet(&flightStatus);
+
+		// When this is called because of this method don't do anything
+		if (objper.Operation == OBJECTPERSISTENCE_OPERATION_ERROR ||
+			objper.Operation == OBJECTPERSISTENCE_OPERATION_COMPLETED) {
+			return;
+		}
+
+		// Execute action if disarmed
+		if(flightStatus.Armed != FLIGHTSTATUS_ARMED_DISARMED) {
+			retval = -1;
+		} else if (objper.Operation == OBJECTPERSISTENCE_OPERATION_LOAD) {
 			if (objper.Selection == OBJECTPERSISTENCE_SELECTION_SINGLEOBJECT) {
 				// Get selected object
 				obj = UAVObjGetByID(objper.ObjectID);

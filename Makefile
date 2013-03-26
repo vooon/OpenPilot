@@ -7,6 +7,10 @@ TOOLS_DIR=$(ROOT_DIR)/tools
 BUILD_DIR=$(ROOT_DIR)/build
 DL_DIR=$(ROOT_DIR)/downloads
 
+# Function for converting an absolute path to one relative
+# to the top of the source tree.
+toprel = $(subst $(realpath $(ROOT_DIR))/,,$(abspath $(1)))
+
 # Clean out undesirable variables from the environment and command-line
 # to remove the chance that they will cause problems with our build
 define SANITIZE_VAR
@@ -32,6 +36,7 @@ $(foreach var, $(SANITIZE_DEPRECATED_VARS), $(eval $(call SANITIZE_VAR,$(var),de
 QT_SPEC=win32-g++
 UAVOBJGENERATOR="$(BUILD_DIR)/ground/uavobjgenerator/debug/uavobjgenerator.exe"
 UNAME := $(shell uname)
+ARCH := $(shell uname -m)
 ifeq ($(UNAME), Linux)
   QT_SPEC=linux-g++
   UAVOBJGENERATOR="$(BUILD_DIR)/ground/uavobjgenerator/uavobjgenerator"
@@ -69,10 +74,11 @@ help:
 	@echo
 	@echo "   [Tool Installers]"
 	@echo "     qt_sdk_install       - Install the QT v4.7.3 tools"
-	@echo "     arm_sdk_install      - Install the Code Sourcery ARM gcc toolchain"
+	@echo "     arm_sdk_install      - Install the GNU ARM gcc toolchain"
 	@echo "     openocd_install      - Install the OpenOCD JTAG daemon"
 	@echo "     stm32flash_install   - Install the stm32flash tool for unbricking boards"
 	@echo "     dfuutil_install      - Install the dfu-util tool for unbricking F4-based boards"
+	@echo "     android_sdk_install  - Install the Android SDK tools"
 	@echo
 	@echo "   [Big Hammer]"
 	@echo "     all                  - Generate UAVObjects, build openpilot firmware and gcs"
@@ -114,6 +120,8 @@ help:
 	@echo "                            supported boards are ($(BL_BOARDS))"
 	@echo
 	@echo "   [Simulation]"
+	@echo "     sim_osx              - Build OpenPilot simulation firmware for OSX"
+	@echo "     sim_osx_clean        - Delete all build output for the osx simulation"
 	@echo "     sim_win32            - Build OpenPilot simulation firmware for"
 	@echo "                            Windows using mingw and msys"
 	@echo "     sim_win32_clean      - Delete all build output for the win32 simulation"
@@ -127,6 +135,8 @@ help:
 	@echo "     uavobjects_test      - parse xml-files - check for valid, duplicate ObjId's, ... "
 	@echo "     uavobjects_<group>   - Generate source files from a subset of the UAVObject definition XML files"
 	@echo "                            supported groups are ($(UAVOBJ_TARGETS))"
+	@echo
+	@echo "   Hint: Add V=1 to your command line to see verbose build output."
 	@echo
 	@echo "   Note: All tools will be installed into $(TOOLS_DIR)"
 	@echo "         All build output will be placed in $(BUILD_DIR)"
@@ -161,10 +171,16 @@ $(BUILD_DIR):
 QT_SDK_DIR := $(TOOLS_DIR)/qtsdk-v1.2.1
 
 .PHONY: qt_sdk_install
+# Choose the appropriate installer based on host architecture
+ifneq (,$(filter $(ARCH), x86_64 amd64))
+# 64-bit
+qt_sdk_install: QT_SDK_FILE := QtSdk-offline-linux-x86_64-v1.2.1.run
+qt_sdk_install: QT_SDK_URL := http://www.developer.nokia.com/dp?uri=http://sw.nokia.com/id/14b2039c-0e1f-4774-a4f2-9aa60b6d5313/Qt_SDK_Lin64_offline
+else
+# 32-bit
 qt_sdk_install: QT_SDK_URL  := http://www.developer.nokia.com/dp?uri=http://sw.nokia.com/id/8ea74da4-fec1-4277-8b26-c58cc82e204b/Qt_SDK_Lin32_offline
 qt_sdk_install: QT_SDK_FILE := QtSdk-offline-linux-x86-v1.2.1.run
-#qt_sdk_install: QT_SDK_URL  := http://www.developer.nokia.com/dp?uri=http://sw.nokia.com/id/c365bbf5-c2b9-4dda-9c1f-34b2c8d07785/Qt_SDK_Lin32_offline_v1_1_2
-#qt_sdk_install: QT_SDK_FILE := Qt_SDK_Lin32_offline_v1_1_2_en.run
+endif
 # order-only prereq on directory existance:
 qt_sdk_install : | $(DL_DIR) $(TOOLS_DIR)
 qt_sdk_install: qt_sdk_clean
@@ -187,10 +203,10 @@ qt_sdk_clean:
 	$(V1) [ ! -d "$(QT_SDK_DIR)" ] || $(RM) -rf $(QT_SDK_DIR)
 
 # Set up ARM (STM32) SDK
-ARM_SDK_DIR := $(TOOLS_DIR)/arm-2011.03
+ARM_SDK_DIR := $(TOOLS_DIR)/gcc-arm-none-eabi-4_6-2012q1
 
 .PHONY: arm_sdk_install
-arm_sdk_install: ARM_SDK_URL  := https://sourcery.mentor.com/sgpp/lite/arm/portal/package8736/public/arm-none-eabi/arm-2011.03-42-arm-none-eabi-i686-pc-linux-gnu.tar.bz2
+arm_sdk_install: ARM_SDK_URL  := https://launchpad.net/gcc-arm-embedded/4.6/4.6-2012-q1-update/+download/gcc-arm-none-eabi-4_6-2012q1-20120316.tar.bz2
 arm_sdk_install: ARM_SDK_FILE := $(notdir $(ARM_SDK_URL))
 # order-only prereq on directory existance:
 arm_sdk_install: | $(DL_DIR) $(TOOLS_DIR)
@@ -426,6 +442,32 @@ dfuutil_clean:
 	$(V0) @echo " CLEAN        $(DFUUTIL_DIR)"
 	$(V1) [ ! -d "$(DFUUTIL_DIR)" ] || $(RM) -r "$(DFUUTIL_DIR)"
 
+# see http://developer.android.com/sdk/ for latest versions
+ANDROID_SDK_DIR := $(TOOLS_DIR)/android-sdk-linux
+.PHONY: android_sdk_install
+android_sdk_install: ANDROID_SDK_URL  := http://dl.google.com/android/android-sdk_r21.0.1-linux.tgz
+android_sdk_install: ANDROID_SDK_FILE := $(notdir $(ANDROID_SDK_URL))
+# order-only prereq on directory existance:
+android_sdk_install: | $(DL_DIR) $(TOOLS_DIR)
+android_sdk_install: android_sdk_clean
+        # download the source only if it's newer than what we already have
+	$(V0) @echo " DOWNLOAD     $(ANDROID_SDK_URL)"
+	$(V1) wget --no-check-certificate -N -P "$(DL_DIR)" "$(ANDROID_SDK_URL)"
+
+        # binary only release so just extract it
+	$(V0) @echo " EXTRACT      $(ANDROID_SDK_FILE)"
+	$(V1) tar -C $(TOOLS_DIR) -xf "$(DL_DIR)/$(ANDROID_SDK_FILE)"
+
+.PHONY: android_sdk_clean
+android_sdk_clean:
+	$(V0) @echo " CLEAN        $(ANDROID_SDK_DIR)"
+	$(V1) [ ! -d "$(ANDROID_SDK_DIR)" ] || $(RM) -r $(ANDROID_SDK_DIR)
+
+.PHONY: android_sdk_update
+android_sdk_update:
+	$(V0) @echo " UPDATE       $(ANDROID_SDK_DIR)"
+	$(ANDROID_SDK_DIR)/tools/android update sdk --no-ui -t platform-tools,android-14,addon-google_apis-google-14
+
 ##############################
 #
 # Set up paths to tools
@@ -453,6 +495,15 @@ else
   OPENOCD ?= openocd
 endif
 
+ifeq ($(shell [ -d "$(ANDROID_SDK_DIR)" ] && echo "exists"), exists)
+  ANDROID := $(ANDROID_SDK_DIR)/tools/android
+  ANDROID_DX := $(ANDROID_SDK_DIR)/platform-tools/dx
+else
+  # not installed, hope it's in the path...
+  ANDROID ?= android
+  ANDROID_DX ?= dx
+endif
+
 ##############################
 #
 # GCS related components
@@ -467,11 +518,17 @@ all_ground: openpilotgcs
 gcs: openpilotgcs
 gcs_clean: openpilotgcs_clean
 
+ifeq ($(V), 1)
+GCS_SILENT := 
+else
+GCS_SILENT := silent
+endif
+
 .PHONY: openpilotgcs
 openpilotgcs:  uavobjects_gcs
 	$(V1) mkdir -p $(BUILD_DIR)/ground/$@
 	$(V1) ( cd $(BUILD_DIR)/ground/$@ && \
-	  $(QMAKE) $(ROOT_DIR)/ground/openpilotgcs/openpilotgcs.pro -spec $(QT_SPEC) -r CONFIG+=$(GCS_BUILD_CONF) $(GCS_QMAKE_OPTS) && \
+	  $(QMAKE) $(ROOT_DIR)/ground/openpilotgcs/openpilotgcs.pro -spec $(QT_SPEC) -r CONFIG+="$(GCS_BUILD_CONF) $(GCS_SILENT)" $(GCS_QMAKE_OPTS) && \
 	  $(MAKE) -w ; \
 	)
 
@@ -480,11 +537,17 @@ openpilotgcs_clean:
 	$(V0) @echo " CLEAN      $@"
 	$(V1) [ ! -d "$(BUILD_DIR)/ground/openpilotgcs" ] || $(RM) -r "$(BUILD_DIR)/ground/openpilotgcs"
 
+ifeq ($(V), 1)
+UAVOGEN_SILENT := 
+else
+UAVOGEN_SILENT := silent
+endif
+
 .PHONY: uavobjgenerator
 uavobjgenerator:
 	$(V1) mkdir -p $(BUILD_DIR)/ground/$@
 	$(V1) ( cd $(BUILD_DIR)/ground/$@ && \
-	  $(QMAKE) $(ROOT_DIR)/ground/uavobjgenerator/uavobjgenerator.pro -spec $(QT_SPEC) -r CONFIG+=debug && \
+	  $(QMAKE) $(ROOT_DIR)/ground/uavobjgenerator/uavobjgenerator.pro -spec $(QT_SPEC) -r CONFIG+="debug $(UAVOGEN_SILENT)" && \
 	  $(MAKE) --no-print-directory -w ; \
 	)
 
@@ -509,6 +572,155 @@ uavobjects_test: $(UAVOBJ_OUT_DIR) uavobjgenerator
 uavobjects_clean:
 	$(V0) @echo " CLEAN      $@"
 	$(V1) [ ! -d "$(UAVOBJ_OUT_DIR)" ] || $(RM) -r "$(UAVOBJ_OUT_DIR)"
+
+################################
+#
+# Android GCS related components
+#
+################################
+
+ANDROIDGCS_BUILD_CONF ?= debug
+
+# Build the output directory for the Android GCS build
+ANDROIDGCS_OUT_DIR := $(BUILD_DIR)/androidgcs
+$(ANDROIDGCS_OUT_DIR):
+	$(V1) mkdir -p $@
+
+# Build the asset directory for the android assets
+ANDROIDGCS_ASSETS_DIR := $(ANDROIDGCS_OUT_DIR)/assets
+$(ANDROIDGCS_ASSETS_DIR)/uavos:
+	$(V1) mkdir -p $@
+
+ifeq ($(V), 1)
+ANT_QUIET :=
+ANDROID_SILENT := 
+else
+ANT_QUIET := -q
+ANDROID_SILENT := -s
+endif
+.PHONY: androidgcs
+androidgcs: uavo-collections_java
+	$(V0) @echo " ANDROID   $(call toprel, $(ANDROIDGCS_OUT_DIR))"
+	$(V1) mkdir -p $(ANDROIDGCS_OUT_DIR)
+	$(V1) $(ANDROID) $(ANDROID_SILENT) update project --target 'Google Inc.:Google APIs:14' --name androidgcs --path ./androidgcs
+	$(V1) ant -f ./androidgcs/build.xml \
+		$(ANT_QUIET) \
+		-Dout.dir="../$(call toprel, $(ANDROIDGCS_OUT_DIR)/bin)" \
+		-Dgen.absolute.dir="$(ANDROIDGCS_OUT_DIR)/gen" \
+		$(ANDROIDGCS_BUILD_CONF)
+
+.PHONY: androidgcs_clean
+androidgcs_clean:
+	$(V0) @echo " CLEAN      $@"
+	$(V1) [ ! -d "$(ANDROIDGCS_OUT_DIR)" ] || $(RM) -r "$(ANDROIDGCS_OUT_DIR)"
+
+# We want to take snapshots of the UAVOs at each point that they change
+# to allow the GCS to be compatible with as many versions as possible.
+#
+# Find the git hashes of each commit that changes uavobjects with:
+#   git log --format=%h -- shared/uavobjectdefinition/ | head -n 2
+UAVO_GIT_VERSIONS := 5e14f53
+
+# All versions includes a pseudo collection called "working" which represents
+# the UAVOs in the source tree
+UAVO_ALL_VERSIONS := $(UAVO_GIT_VERSIONS) srctree
+
+# This is where the UAVO collections are stored
+UAVO_COLLECTION_DIR := $(BUILD_DIR)/uavo-collections
+
+# $(1) git hash of a UAVO snapshot
+define UAVO_COLLECTION_GIT_TEMPLATE
+
+# Make the output directory that will contain all of the synthetics for the
+# uavo collection referenced by the git hash $(1)
+$$(UAVO_COLLECTION_DIR)/$(1):
+	$$(V1) mkdir -p $$(UAVO_COLLECTION_DIR)/$(1)
+
+# Extract the snapshot of shared/uavobjectdefinition from git hash $(1)
+$$(UAVO_COLLECTION_DIR)/$(1)/uavo-xml.tar: | $$(UAVO_COLLECTION_DIR)/$(1)
+$$(UAVO_COLLECTION_DIR)/$(1)/uavo-xml.tar:
+	$$(V0) @echo " UAVOTAR   $(1)"
+	$$(V1) git archive $(1) -o $$@ -- shared/uavobjectdefinition/
+
+# Extract the uavo xml files from our snapshot
+$$(UAVO_COLLECTION_DIR)/$(1)/uavo-xml: $$(UAVO_COLLECTION_DIR)/$(1)/uavo-xml.tar
+	$$(V0) @echo " UAVOUNTAR $(1)"
+	$$(V1) rm -rf $$@
+	$$(V1) mkdir -p $$@
+	$$(V1) tar -C $$(call toprel, $$@) -xf $$(call toprel, $$<) || rm -rf $$@
+endef
+
+# Map the current working directory into the set of UAVO collections
+$(UAVO_COLLECTION_DIR)/srctree:
+	$(V1) mkdir -p $@
+
+$(UAVO_COLLECTION_DIR)/srctree/uavo-xml: | $(UAVO_COLLECTION_DIR)/srctree
+$(UAVO_COLLECTION_DIR)/srctree/uavo-xml: $(UAVOBJ_XML_DIR)
+	$(V1) ln -sf $(ROOT_DIR) $(UAVO_COLLECTION_DIR)/srctree/uavo-xml
+
+# $(1) git hash (or symbolic name) of a UAVO snapshot
+define UAVO_COLLECTION_BUILD_TEMPLATE
+
+# This leaves us with a (broken) symlink that points to the full sha1sum of the collection
+$$(UAVO_COLLECTION_DIR)/$(1)/uavohash: $$(UAVO_COLLECTION_DIR)/$(1)/uavo-xml
+        # Compute the sha1 hash for this UAVO collection
+        # The sed bit truncates the UAVO hash to 16 hex digits
+	$$(V1) python $$(ROOT_DIR)/make/scripts/version-info.py \
+			--path=$$(ROOT_DIR) \
+			--uavodir=$$(UAVO_COLLECTION_DIR)/$(1)/uavo-xml/shared/uavobjectdefinition \
+			--format='$$$${UAVOSHA1TXT}' | \
+		sed -e 's|\(................\).*|\1|' > $$@
+
+	$$(V0) @echo " UAVOHASH  $(1) ->" $$$$(cat $$(UAVO_COLLECTION_DIR)/$(1)/uavohash)
+
+# Generate the java uavobjects for this UAVO collection
+$$(UAVO_COLLECTION_DIR)/$(1)/java-build/java: $$(UAVO_COLLECTION_DIR)/$(1)/uavohash
+	$$(V0) @echo " UAVOJAVA  $(1)   " $$$$(cat $$(UAVO_COLLECTION_DIR)/$(1)/uavohash)
+	$$(V1) mkdir -p $$@
+	$$(V1) ( \
+		cd $$(UAVO_COLLECTION_DIR)/$(1)/java-build && \
+		$$(UAVOBJGENERATOR) -java $$(UAVO_COLLECTION_DIR)/$(1)/uavo-xml/shared/uavobjectdefinition $$(ROOT_DIR) ; \
+	)
+
+# Build a jar file for this UAVO collection
+$$(UAVO_COLLECTION_DIR)/$(1)/java-build/uavobjects.jar: | $$(ANDROIDGCS_ASSETS_DIR)/uavos
+$$(UAVO_COLLECTION_DIR)/$(1)/java-build/uavobjects.jar: $$(UAVO_COLLECTION_DIR)/$(1)/java-build/java
+	$$(V0) @echo " UAVOJAR   $(1)   " $$$$(cat $$(UAVO_COLLECTION_DIR)/$(1)/uavohash)
+	$$(V1) ( \
+		HASH=$$$$(cat $$(UAVO_COLLECTION_DIR)/$(1)/uavohash) && \
+		cd $$(UAVO_COLLECTION_DIR)/$(1)/java-build && \
+		javac java/*.java \
+		   $$(ROOT_DIR)/androidgcs/src/org/openpilot/uavtalk/UAVDataObject.java \
+		   $$(ROOT_DIR)/androidgcs/src/org/openpilot/uavtalk/UAVObject*.java \
+		   $$(ROOT_DIR)/androidgcs/src/org/openpilot/uavtalk/UAVMetaObject.java \
+		   -d . && \
+		find ./org/openpilot/uavtalk/uavobjects -type f -name '*.class' > classlist.txt && \
+		jar cf tmp_uavobjects.jar @classlist.txt && \
+		$$(ANDROID_DX) \
+			--dex \
+			--output $$(ANDROIDGCS_ASSETS_DIR)/uavos/$$$${HASH}.jar \
+			tmp_uavobjects.jar && \
+		ln -sf $$(ANDROIDGCS_ASSETS_DIR)/uavos/$$$${HASH}.jar uavobjects.jar \
+	)
+
+endef
+
+# One of these for each element of UAVO_GIT_VERSIONS so we can extract the UAVOs from git
+$(foreach githash, $(UAVO_GIT_VERSIONS), $(eval $(call UAVO_COLLECTION_GIT_TEMPLATE,$(githash))))
+
+# One of these for each UAVO_ALL_VERSIONS which includes the ones in the srctree
+$(foreach githash, $(UAVO_ALL_VERSIONS), $(eval $(call UAVO_COLLECTION_BUILD_TEMPLATE,$(githash))))
+
+.PHONY: uavo-collections_java
+uavo-collections_java: $(foreach githash, $(UAVO_ALL_VERSIONS), $(UAVO_COLLECTION_DIR)/$(githash)/java-build/uavobjects.jar)
+
+.PHONY: uavo-collections
+uavo-collections: uavo-collections_java
+
+.PHONY: uavo-collections_clean
+uavo-collections_clean:
+	$(V0) @echo " CLEAN  $(UAVO_COLLECTION_DIR)"
+	$(V1) [ ! -d "$(UAVO_COLLECTION_DIR)" ] || $(RM) -r $(UAVO_COLLECTION_DIR)
 
 ##############################
 #
@@ -652,43 +864,47 @@ all_$(1)_clean: $$(addsuffix _clean, $$(filter bu_$(1), $$(BU_TARGETS)))
 all_$(1)_clean: $$(addsuffix _clean, $$(filter ef_$(1), $$(EF_TARGETS)))
 endef
 
-ALL_BOARDS := coptercontrol pipxtreme simposix
+ALL_BOARDS := coptercontrol pipxtreme revolution revomini simposix osd
+ALL_BOARDS_BU := coptercontrol pipxtreme simposix
 
 # SimPosix only builds on Linux so drop it from the list for
 # all other platforms.
 ifneq ($(UNAME), Linux)
 ALL_BOARDS  := $(filter-out simposix, $(ALL_BOARDS))
+ALL_BOARDS_BU  := $(filter-out simposix, $(ALL_BOARDS_BU))
 endif
 
 # Friendly names of each board (used to find source tree)
 coptercontrol_friendly := CopterControl
 pipxtreme_friendly     := PipXtreme
 revolution_friendly    := Revolution
+revomini_friendly      := RevoMini
 simposix_friendly      := SimPosix
+osd_friendly           := OSD
 
-# SimPosix only builds on Linux so drop it from the list for
-# all other platforms.
-ifneq ($(UNAME), Linux)
-ALL_BOARDS  := $(filter-out simposix, $(ALL_BOARDS))
-endif
-
-# Short hames of each board (used to display board name in parallel builds)
+# Short names of each board (used to display board name in parallel builds)
 coptercontrol_short    := 'cc  '
 pipxtreme_short        := 'pipx'
 revolution_short       := 'revo'
+revomini_short         := 'rm  '
 simposix_short         := 'posx'
 osd_short              := 'osd '
 
 # Start out assuming that we'll build fw, bl and bu for all boards
 FW_BOARDS  := $(ALL_BOARDS)
 BL_BOARDS  := $(ALL_BOARDS)
-BU_BOARDS  := $(ALL_BOARDS)
+BU_BOARDS  := $(ALL_BOARDS_BU)
 EF_BOARDS  := $(ALL_BOARDS)
 
-# FIXME: The INS build doesn't have a bootloader or bootloader
-#        updater yet so we need to filter them out to prevent errors.
-BL_BOARDS  := $(filter-out ins, $(BL_BOARDS))
-BU_BOARDS  := $(filter-out ins, $(BU_BOARDS))
+# FIXME: The BU image doesn't work for F4 boards so we need to
+#        filter them out to prevent errors.
+BU_BOARDS  := $(filter-out revolution osd, $(BU_BOARDS))
+
+# SimPosix doesn't have a BL, BU or EF target so we need to
+# filter them out to prevent errors on the all_flight target.
+BL_BOARDS  := $(filter-out simposix, $(BL_BOARDS))
+BU_BOARDS  := $(filter-out simposix, $(BU_BOARDS))
+EF_BOARDS  := $(filter-out simposix, $(EF_BOARDS))
 
 # SimPosix doesn't have a BL, BU or EF target so we need to
 # filter them out to prevent errors on the all_flight target.
@@ -745,11 +961,32 @@ sim_win32_%: uavobjects_flight
 	$(V1) $(MAKE) --no-print-directory \
 		-C $(ROOT_DIR)/flight/OpenPilot --file=$(ROOT_DIR)/flight/OpenPilot/Makefile.win32 $*
 
+.PHONY: sim_osx
+sim_osx: sim_osx_elf
+
+sim_osx_%: uavobjects_flight
+	$(V1) mkdir -p $(BUILD_DIR)/sim_osx
+	$(V1) $(MAKE) --no-print-directory \
+		-C $(ROOT_DIR)/flight/Revolution --file=$(ROOT_DIR)/flight/Revolution/Makefile.osx $*
 ##############################
 #
 # Packaging components
 #
 ##############################
+
 .PHONY: package
 package:
 	$(V1) cd $@ && $(MAKE) --no-print-directory $@
+
+.PHONY: package_resources
+package_resources:
+	$(V1) cd package && $(MAKE) --no-print-directory opfw_resource
+
+.PHONY: build-info
+build-info:
+	$(V1) mkdir -p $(BUILD_DIR)
+	$(V1) python $(ROOT_DIR)/make/scripts/version-info.py \
+		--path=$(ROOT_DIR) \
+		--uavodir=$(ROOT_DIR)/shared/uavobjectdefinition \
+		--template="make/templates/$@.txt" \
+		--outfile="$(BUILD_DIR)/$@.txt"
