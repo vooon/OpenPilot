@@ -24,18 +24,27 @@ TOP      := $(realpath $(WHEREAMI)/../../../)
 include $(TOP)/make/firmware-defs.mk
 include $(TOP)/make/boards/$(BOARD_NAME)/board-info.mk
 
+# Platform-dependent stuff
+UNAME := $(shell uname)
+STATSIZE := -c%s
+DDSTATUS := status=noxfer
+ifeq ($(UNAME), Darwin)
+  STATSIZE := -f %z
+  DDSTATUS :=
+endif
+
 .PHONY: bin
 bin: $(OUTDIR)/$(TARGET).bin
 
 FW_PRE_PAD = $(shell echo $$[$(FW_BANK_BASE)-$(BL_BANK_BASE)-$(BL_BANK_SIZE)])
 $(OUTDIR)/$(TARGET).fw_pre.pad:
 	$(V0) @echo $(MSG_PADDING) $@
-	$(V1) dd status=noxfer if=/dev/zero count=$(FW_PRE_PAD) bs=1 2>/dev/null | tr '\000' '\377' > $@
+	$(V1) dd $(DDSTATUS) if=/dev/zero count=$(FW_PRE_PAD) bs=1 2>/dev/null | tr '\000' '\377' > $@
 
-FW_POST_PAD = $(shell echo $$[$(FW_BANK_SIZE)-$(FW_DESC_SIZE)-$$(stat -c%s $(FW_BIN))])
+FW_POST_PAD = $(shell echo $$[$(FW_BANK_SIZE)-$(FW_DESC_SIZE)-$$(stat $(STATSIZE) $(FW_BIN))])
 $(OUTDIR)/$(TARGET).fw_post.pad:
 	$(V0) @echo $(MSG_PADDING) $@
-	$(V1) dd status=noxfer if=/dev/zero count=$(FW_POST_PAD) bs=1 2>/dev/null | tr '\000' '\377' > $@
+	$(V1) dd $(DDSTATUS) if=/dev/zero count=$(FW_POST_PAD) bs=1 2>/dev/null | tr '\000' '\377' > $@
 
 
 BL_BIN = $(TOP)/build/bl_$(BOARD_NAME)/bl_$(BOARD_NAME).bin
