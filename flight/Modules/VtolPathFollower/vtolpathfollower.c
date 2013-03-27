@@ -594,7 +594,6 @@ static void updateVtolDesiredAttitude(bool yaw_attitude)
 	// Testing code - refactor into manual control command
 	ManualControlCommandData manualControlData;
 	ManualControlCommandGet(&manualControlData);
-	stabDesired.Yaw = stabSettings.MaximumRate[STABILIZATIONSETTINGS_MAXIMUMRATE_YAW] * manualControlData.Yaw;	
 	
 	// Compute desired north command
 	northError = velocityDesired.North - northVel;
@@ -647,11 +646,12 @@ static void updateVtolDesiredAttitude(bool yaw_attitude)
 	
 	stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_ROLL] = STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE;
 	stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_PITCH] = STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE;
-	if(yaw_attitude)
+	if(yaw_attitude) {
 		stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_YAW] = STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE;
-	else
+	} else {
 		stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_YAW] = STABILIZATIONDESIRED_STABILIZATIONMODE_AXISLOCK;
-	
+		stabDesired.Yaw = stabSettings.MaximumRate[STABILIZATIONSETTINGS_MAXIMUMRATE_YAW] * manualControlData.Yaw;
+	}
 	StabilizationDesiredSet(&stabDesired);
 }
 
