@@ -30,7 +30,8 @@
  */
 
 #include "pios.h"
-#if defined(PIOS_INCLUDE_VIDEO)
+
+#ifdef PIOS_INCLUDE_VIDEO
 
 // Private methods
 static void configure_hsync_timers();
@@ -478,7 +479,4 @@ void PIOS_VIDEO_DMA_Handler(void)
 	}
 }
 
-
-#endif
-
-
+#endif /* PIOS_INCLUDE_VIDEO */

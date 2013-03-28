@@ -28,12 +28,14 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-/* Project Includes */
 #include "pios.h"
 #include "pios_hcsr04_priv.h"
 
-#if defined(PIOS_INCLUDE_HCSR04)
-//------------------------------------------
+#ifdef PIOS_INCLUDE_HCSR04
+
+#if !(defined(PIOS_INCLUDE_DSM) || defined(PIOS_INCLUDE_SBUS))
+#error Only supported with Spektrum/JR DSM or S.Bus interface
+#endif
 
 /* Local Variables */
 /* 100 ms timeout without updates on channels */
@@ -292,5 +294,5 @@ static void PIOS_HCSR04_tim_edge_cb (uint32_t tim_id, uint32_t context, uint8_t 
 
 }
 
+#endif /* PIOS_INCLUDE_HCSR04 */
 
-#endif

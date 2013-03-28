@@ -123,7 +123,7 @@ int32_t StabilizationInitialize()
 	// Initialize variables
 	StabilizationSettingsInitialize();
 	ActuatorDesiredInitialize();
-#if defined(RATEDESIRED_DIAGNOSTICS)
+#ifdef DIAG_RATEDESIRED
 	RateDesiredInitialize();
 #endif
 	// Code required for relay tuning
@@ -175,7 +175,7 @@ static void stabilizationTask(void* parameters)
 		StabilizationDesiredGet(&stabDesired);
 		AttitudeActualGet(&attitudeActual);
 		GyrosGet(&gyrosData);
-#if defined(RATEDESIRED_DIAGNOSTICS)
+#ifdef DIAG_RATEDESIRED
 		RateDesiredGet(&rateDesired);
 #endif
 		
@@ -359,7 +359,7 @@ static void stabilizationTask(void* parameters)
 		if (settings.VbarPiroComp == STABILIZATIONSETTINGS_VBARPIROCOMP_TRUE)
 			stabilization_virtual_flybar_pirocomp(gyro_filtered[2], dT);
 
-#if defined(RATEDESIRED_DIAGNOSTICS)
+#ifdef DIAG_RATEDESIRED
 		RateDesiredSet(&rateDesired);
 #endif
 
