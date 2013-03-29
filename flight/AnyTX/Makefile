@@ -168,6 +168,7 @@ SRC += $(OPUAVSYNTHDIR)/taskinfo.c
 SRC += $(OPUAVSYNTHDIR)/gcsreceiver.c
 #SRC += $(OPUAVSYNTHDIR)/pipxstatus.c
 #SRC += $(OPUAVSYNTHDIR)/pipxsettings.c
+SRC += $(OPUAVSYNTHDIR)/flightbatterystate.c
 
 else
 ## TESTCODE

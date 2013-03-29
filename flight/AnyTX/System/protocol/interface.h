@@ -44,6 +44,7 @@ void FLYSKY_Initialize();
 #ifdef PROTO_HAS_CYRF6936
 void DEVO_Initialize();
 extern u16 devo_cb();
+extern u16 devo_telemetry_cb();
 
 void WK2x01_Initialize();
 extern u16 wk_cb();
@@ -112,5 +113,53 @@ struct Model {
 };
 extern struct Model Model;
 
+#define NUM_TELEM 9
+#define TELEM_ERROR_TIME 5000
+#define TELEM_NUM_ALARMS 6
 
+enum {
+    TELEM_VOLT1 = 1,
+    TELEM_VOLT2,
+    TELEM_VOLT3,
+    TELEM_TEMP1,
+    TELEM_TEMP2,
+    TELEM_TEMP3,
+    TELEM_TEMP4,
+    TELEM_RPM1,
+    TELEM_RPM2,
+    TELEM_GPS_LAT,
+    TELEM_GPS_LONG,
+    TELEM_GPS_ALT,
+    TELEM_GPS_SPEED,
+    TELEM_GPS_TIME,
+};
+enum {
+    TELEMFLAG_ALARM1 = 0x00,
+    TELEMFLAG_ALARM2 = 0x02,
+    TELEMFLAG_ALARM3 = 0x04,
+    TELEMFLAG_ALARM4 = 0x08,
+    TELEMFLAG_ALARM5 = 0x10,
+    TELEMFLAG_ALARM6 = 0x20,
+};
+
+enum {
+    TELEMUNIT_FEET   = 0x40,
+    TELEMUNIT_FAREN  = 0x80,
+};
+struct gps {
+    s32 latitude;
+    s32 longitude;
+    s32 altitude;
+    s32 velocity;
+    u32 time;
+};
+
+struct Telemetry {
+    u16 volt[3];
+    u8 temp[4];
+    u16 rpm[2];
+    struct gps gps;
+    u32 time[3];
+};
+extern struct Telemetry Telemetry;
 #endif //_INTERFACE_H_

@@ -45,6 +45,7 @@
 #include "manualcontrolcommand.h"
 #include "accessorydesired.h"
 #include "anytxcontrolsettings.h"
+#include "flightbatterystate.h"
 
 s16 Channels[NUM_CHANNELS] = {0};
 // Private constants
@@ -67,6 +68,7 @@ static uint32_t idleCounterClear;
 static xTaskHandle systemTaskHandle;
 static bool stackOverflow;
 static bool mallocFailed;
+struct Telemetry Telemetry;
 
 // Private functions
 static void anytxradioTask(void *parameters);
@@ -100,6 +102,7 @@ int32_t AnyTXRadioInitialize(void)
 	ManualControlCommandInitialize();
 	AccessoryDesiredInitialize();
 	AnyTXControlSettingsInitialize();
+	FlightBatteryStateInitialize();
 	return 0;
 }
 
@@ -114,6 +117,7 @@ static void anytxradioTask(void *parameters)
 	ManualControlCommandData cmd;
 	AccessoryDesiredData accessory;
 	AnyTXControlSettingsData settings;
+	FlightBatteryStateData battery;
 	portTickType lastSysTime;
 
 	// Initialize vars
@@ -144,6 +148,7 @@ static void anytxradioTask(void *parameters)
 			// Read settings
 			AnyTXControlSettingsGet(&settings);
 			ManualControlCommandGet(&cmd);
+			FlightBatteryStateGet(&battery);
 			if(cmd.Connected == MANUALCONTROLCOMMAND_CONNECTED_TRUE) {
 				if(settings.Protocol == ANYTXCONTROLSETTINGS_PROTOCOL_DSM2) {
 					Channels[0]=cmd.Throttle * 10000 *
@@ -183,7 +188,12 @@ static void anytxradioTask(void *parameters)
 					if (AccessoryDesiredInstGet(2, &accessory) == 0) {
 						Channels[4]=accessory.AccessoryVal * 10000;
 					}
-					timer = devo_cb();
+					//timer = devo_cb();
+					timer = devo_telemetry_cb();
+					battery.Voltage = Telemetry.volt[0]/10.0;
+					battery.Current = Telemetry.volt[1]/10.0;
+					battery.PeakCurrent = Telemetry.volt[2]/10.0;
+					FlightBatteryStateSet(&battery);
 				}  else if(settings.Protocol == ANYTXCONTROLSETTINGS_PROTOCOL_WK2401 || settings.Protocol == ANYTXCONTROLSETTINGS_PROTOCOL_WK2601 || settings.Protocol == ANYTXCONTROLSETTINGS_PROTOCOL_WK2801) {
 					Channels[2]=cmd.Throttle * 10000 *
 							(settings.OutputDirectionInvert[ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_THROTTLE]==ANYTXCONTROLSETTINGS_OUTPUTDIRECTIONINVERT_TRUE ? -1 : 1 );

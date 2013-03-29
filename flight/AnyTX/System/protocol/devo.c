@@ -33,10 +33,20 @@
 #include "interface.h"
 
 #ifdef PROTO_HAS_CYRF6936
+
 //For Debug
 //#define NO_SCRAMBLE
 
 #define PKTS_PER_CHANNEL 4
+
+#ifdef EMULATOR
+#include <stdlib.h>
+#define BIND_COUNT 4
+#else
+#define BIND_COUNT 0x1388
+#endif
+
+#define TELEMETRY_ENABLE 0x30
 
 enum PktState {
     DEVO_BIND,
@@ -164,6 +174,103 @@ static void build_data_pkt()
     add_pkt_suffix();
 }
 
+static s32 float_to_int(u8 *ptr)
+{
+    s32 value = 0;
+    int seen_decimal = 0;
+    for(int i = 0; i < 7; i++) {
+        if(ptr[i] == '.') {
+            value *= 1000;
+            seen_decimal = 100;
+            continue;
+        }
+        if(ptr[i] == 0)
+            break;
+        if(seen_decimal) {
+            value += (ptr[i] - '0') * seen_decimal;
+            seen_decimal /= 10;
+            if(! seen_decimal)
+                break;
+        } else {
+            value = value * 10 + (ptr[i] - '0');
+        }
+    }
+    return value;
+}
+static void parse_telemetry_packet(u8 *packet)
+{
+    if((packet[0] & 0xF0) != 0x30)
+        return;
+    scramble_pkt(); //This will unscramble the packet
+    //if (packet[0] < 0x37) {
+    //    memcpy(Telemetry.line[packet[0]-0x30], packet+1, 12);
+    //}
+    if (packet[0] == TELEMETRY_ENABLE) {
+        Telemetry.volt[0] = packet[1]; //In 1/10 of Volts
+        Telemetry.volt[1] = packet[3]; //In 1/10 of Volts
+        Telemetry.volt[2] = packet[5]; //In 1/10 of Volts
+        Telemetry.rpm[0]  = packet[7] * 120; //In RPM
+        Telemetry.rpm[1]  = packet[9] * 120; //In RPM
+        //Telemetry.time[0] = CLOCK_getms();
+    }
+    if (packet[0] == 0x31) {
+        Telemetry.temp[0] = packet[1] == 0xff ? 0 : packet[1] - 20; //In degrees-C
+        Telemetry.temp[1] = packet[2] == 0xff ? 0 : packet[2] - 20; //In degrees-C
+        Telemetry.temp[2] = packet[3] == 0xff ? 0 : packet[3] - 20; //In degrees-C
+        Telemetry.temp[3] = packet[3] == 0xff ? 0 : packet[4] - 20; //In degrees-C
+        //Telemetry.time[1] = CLOCK_getms();
+    }
+    /* GPS Data
+       32: 30333032302e3832373045fb  = 030°20.8270E
+       33: 353935342e373737364e0700  = 59°54.776N
+       34: 31322e380000004d4d4e45fb  = 12.8 MMNE (altitude maybe)?
+       35: 000000000000302e30300000  = 0.00 (probably speed)
+       36: 313832353532313531303132  = 2012-10-15 18:25:52 (UTC)
+    */
+    if (packet[0] == 0x32) {
+        //Telemetry.time[2] = CLOCK_getms();
+        Telemetry.gps.longitude = ((packet[1]-'0') * 100 + (packet[2]-'0') * 10 + (packet[3]-'0')) * 3600000
+                                  + ((packet[4]-'0') * 10 + (packet[5]-'0')) * 60000
+                                  + ((packet[7]-'0') * 1000 + (packet[8]-'0') * 100
+                                     + (packet[9]-'0') * 10 + (packet[10]-'0')) * 6;
+        if (packet[11] == 'W')
+            Telemetry.gps.longitude *= -1;
+    }
+    if (packet[0] == 0x33) {
+        //Telemetry.time[2] = CLOCK_getms();
+        Telemetry.gps.latitude = ((packet[1]-'0') * 10 + (packet[2]-'0')) * 3600000
+                                  + ((packet[3]-'0') * 10 + (packet[4]-'0')) * 60000
+                                  + ((packet[6]-'0') * 1000 + (packet[7]-'0') * 100
+                                     + (packet[8]-'0') * 10 + (packet[9]-'0')) * 6;
+        if (packet[10] == 'S')
+            Telemetry.gps.latitude *= -1;
+    }
+    if (packet[0] == 0x34) {
+        //Telemetry.time[2] = CLOCK_getms();
+        Telemetry.gps.altitude = float_to_int(packet+1);
+    }
+    if (packet[0] == 0x35) {
+        //Telemetry.time[2] = CLOCK_getms();
+        Telemetry.gps.velocity = float_to_int(packet+7);
+    }
+    if (packet[0] == 0x36) {
+        //Telemetry.time[2] = CLOCK_getms();
+        u8 hour  = (packet[1]-'0') * 10 + (packet[2]-'0');
+        u8 min   = (packet[3]-'0') * 10 + (packet[4]-'0');
+        u8 sec   = (packet[5]-'0') * 10 + (packet[6]-'0');
+        u8 day   = (packet[7]-'0') * 10 + (packet[8]-'0');
+        u8 month = (packet[9]-'0') * 10 + (packet[10]-'0');
+        u8 year  = (packet[11]-'0') * 10 + (packet[12]-'0'); // + 2000
+        Telemetry.gps.time = ((year & 0x3F) << 26)
+                           | ((month & 0x0F) << 22)
+                           | ((day & 0x1F) << 17)
+                           | ((hour & 0x1F) << 12)
+                           | ((min & 0x3F) << 6)
+                           | ((sec & 0x3F) << 0);
+    }
+
+}
+
 static void cyrf_set_bound_sop_code()
 {
     /* crc == 0 isn't allowed, so use 1 if the math results in 0 */
@@ -255,6 +362,64 @@ void DEVO_BuildPacket()
     pkt_num++;
     if(pkt_num == PKTS_PER_CHANNEL)
         pkt_num = 0;
+}
+
+u16 devo_telemetry_cb()
+{
+    if (txState == 0) {
+        txState = 1;
+        DEVO_BuildPacket();
+        CYRF_WriteDataPacket(packet);
+        return 900;
+    }
+    int delay = 100;
+    if (txState == 1) {
+        while(! (CYRF_ReadRegister(0x04) & 0x02))
+            ;
+        if (state == DEVO_BOUND) {
+            /* exit binding state */
+            state = DEVO_BOUND_3;
+            cyrf_set_bound_sop_code();
+        }
+        if(pkt_num == 0 || bind_counter > 0) {
+            delay = 1500;
+            txState = 15;
+        } else {
+            CYRF_ConfigRxTx(0); //Receive mode
+            CYRF_WriteRegister(0x07, 0x80); //Prepare to receive
+            CYRF_WriteRegister(CYRF_05_RX_CTRL, 0x87); //Prepare to receive
+        }
+    } else {
+        if(CYRF_ReadRegister(0x07) & 0x20) { // this won't be true in emulator so we need to simulate it somehow
+            CYRF_ReadDataPacket(packet);
+            parse_telemetry_packet(packet);
+            delay = 100 * (16 - txState);
+            txState = 15;
+        }
+#ifdef EMULATOR
+        u8 telem_bit = rand() % 7; // random number in [0, 7)
+        packet[0] =  TELEMETRY_ENABLE + telem_bit; // allow emulator to simulate telemetry parsing to prevent future bugs in the telemetry monitor
+        //printf("telem 1st packet: 0x%x\n", packet[0]);
+        for(int i = 1; i < 13; i++)
+            packet[i] = rand() % 256;
+        parse_telemetry_packet(packet);
+        Telemetry.time[0] =  Telemetry.time[1] =  Telemetry.time[2] = CLOCK_getms();
+        delay = 100 * (16 - txState);
+        txState = 15;
+#endif
+    }
+    txState++;
+    if(txState == 16) { //2.3msec have passed
+        CYRF_ConfigRxTx(1); //Write mode
+        if(pkt_num == 0) {
+            //Keep tx power updated
+            CYRF_WriteRegister(CYRF_03_TX_CFG, 0x08 | Model.tx_power);
+            radio_ch_ptr = radio_ch_ptr == &radio_ch[2] ? radio_ch : radio_ch_ptr + 1;
+            CYRF_ConfigRFChannel(*radio_ch_ptr);
+        }
+        txState = 0;
+    }
+    return delay;
 }
 
 u16 devo_cb()
