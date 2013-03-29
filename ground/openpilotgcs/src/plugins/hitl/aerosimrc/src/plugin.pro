@@ -11,7 +11,7 @@ TEMPLATE = lib
 TARGET = plugin_AeroSIMRC
 
 RES_DIR    = $${PWD}/resources
-SIM_DIR    = $$GCS_BUILD_TREE/../AeroSIM-RC
+SIM_DIR    = $$GCS_BUILD_TREE/misc/AeroSIM-RC
 PLUGIN_DIR = $$SIM_DIR/Plugin/CopterControl
 DLLDESTDIR = $$PLUGIN_DIR
 
@@ -62,7 +62,7 @@ equals(copydata, 1) {
                      libgcc_s_dw2-1.dll \
                      mingwm10.dll
         for(dll, MINGW_DLLS) {
-            data_copy.commands += $(COPY_FILE) $$targetPath(\"$$[QT_INSTALL_BINS]/../../../../../mingw/bin/$$dll\") $$targetPath(\"$$SIM_DIR/$$dll\") $$addNewline()
+            data_copy.commands += $(COPY_FILE) $$targetPath(\"$$(QTMINGW)/$$dll\") $$targetPath(\"$$SIM_DIR/$$dll\") $$addNewline()
         }
 
         data_copy.target = FORCE

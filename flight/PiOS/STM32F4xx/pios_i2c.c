@@ -33,12 +33,11 @@
  *       be merged.
  */
 
-/* Project Includes */
 #include "pios.h"
 
-#if defined(PIOS_INCLUDE_I2C)
+#ifdef PIOS_INCLUDE_I2C
 
-#if defined(PIOS_INCLUDE_FREERTOS)
+#ifdef PIOS_INCLUDE_FREERTOS
 #define USE_FREERTOS
 #endif
 
@@ -970,7 +969,8 @@ int32_t PIOS_I2C_Transfer(uint32_t i2c_id, const struct pios_i2c_txn txn_list[],
 	/* Lock the bus */
 	portTickType timeout;
 	timeout = i2c_adapter->cfg->transfer_timeout_ms / portTICK_RATE_MS;
-	semaphore_success &= (xSemaphoreTake(i2c_adapter->sem_busy, timeout) == pdTRUE);
+	if (xSemaphoreTake(i2c_adapter->sem_busy, timeout) == pdFALSE)
+		return -2;
 #else	
 	PIOS_IRQ_Disable();
 	if(i2c_adapter->busy) {
@@ -1046,7 +1046,8 @@ int32_t PIOS_I2C_Transfer_Callback(uint32_t i2c_id, const struct pios_i2c_txn tx
 	/* Lock the bus */
 	portTickType timeout;
 	timeout = i2c_adapter->cfg->transfer_timeout_ms / portTICK_RATE_MS;
-	semaphore_success &= (xSemaphoreTake(i2c_adapter->sem_busy, timeout) == pdTRUE);
+	if (xSemaphoreTake(i2c_adapter->sem_busy, timeout) == pdFALSE)
+		return -2;
 #else
 	if(i2c_adapter->busy) {
 		PIOS_IRQ_Enable();
@@ -1230,7 +1231,7 @@ void PIOS_I2C_ER_IRQ_Handler(uint32_t i2c_id)
 	}	
 }
 
-#endif
+#endif /* PIOS_INCLUDE_I2C */
 
 /**
   * @}

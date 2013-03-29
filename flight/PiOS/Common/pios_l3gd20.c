@@ -29,10 +29,9 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-/* Project Includes */
 #include "pios.h"
 
-#if defined(PIOS_INCLUDE_L3GD20)
+#ifdef PIOS_INCLUDE_L3GD20
 
 #include "fifo_buffer.h"
 
@@ -363,11 +362,11 @@ bool PIOS_L3GD20_IRQHandler(void)
 
 	/* This code duplicates ReadGyros above but uses ClaimBusIsr */
 	if(PIOS_L3GD20_ClaimBusIsr() != 0)
-		return;
+		return false;
 	
 	if(PIOS_SPI_TransferBlock(dev->spi_id, &buf[0], &rec[0], sizeof(buf), NULL) < 0) {
 		PIOS_L3GD20_ReleaseBus();
-		return;
+		return false;
 	}
 	
 	PIOS_L3GD20_ReleaseBus();
@@ -381,7 +380,7 @@ bool PIOS_L3GD20_IRQHandler(void)
 	return xHigherPriorityTaskWoken == pdTRUE;
 }
 
-#endif /* L3GD20 */
+#endif /* PIOS_INCLUDE_L3GD20 */
 
 /**
  * @}

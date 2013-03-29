@@ -28,10 +28,9 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-/* Project Includes */
 #include "pios.h"
 
-#if defined(PIOS_INCLUDE_LED)
+#ifdef PIOS_INCLUDE_LED
 
 #include <pios_led_priv.h>
 
@@ -49,6 +48,40 @@ int32_t PIOS_LED_Init(const struct pios_led_cfg * cfg)
 	
 	for (uint8_t i = 0; i < cfg->num_leds; i++) {
 		const struct pios_led * led = &(cfg->leds[i]);
+		
+		/* Enable the peripheral clock for the GPIO */
+		switch ((uint32_t)led->pin.gpio) {
+			case (uint32_t) GPIOA:
+				RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+				break;
+			case (uint32_t) GPIOB:
+				RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+				break;
+			case (uint32_t) GPIOC:
+				RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
+				break;
+			case (uint32_t) GPIOD:
+				RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
+				break;
+			case (uint32_t) GPIOE:
+				RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOE, ENABLE);
+				break;
+			case (uint32_t) GPIOF:
+				RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOF, ENABLE);
+				break;
+			case (uint32_t) GPIOG:
+				RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOG, ENABLE);
+				break;
+			case (uint32_t) GPIOH:
+				RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOH, ENABLE);
+				break;
+			case (uint32_t) GPIOI:
+				RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOI, ENABLE);
+				break;
+			default:
+				PIOS_Assert(0);
+				break;
+		}
 		
 		if (led->remap) {
 			GPIO_PinAFConfig(led->pin.gpio, led->pin.init.GPIO_Pin, led->remap);
@@ -132,7 +165,7 @@ void PIOS_LED_Toggle(uint32_t led_id)
 	}
 }
 
-#endif
+#endif /* PIOS_INCLUDE_LED */
 
 /**
  * @}

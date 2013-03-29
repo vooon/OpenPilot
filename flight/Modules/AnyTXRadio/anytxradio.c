@@ -118,12 +118,12 @@ static void anytxradioTask(void *parameters)
 	AccessoryDesiredData accessory;
 	AnyTXControlSettingsData settings;
 	FlightBatteryStateData battery;
-	portTickType lastSysTime;
+	//portTickType lastSysTime;
 
 	// Initialize vars
 	idleCounter = 0;
 	idleCounterClear = 0;
-	lastSysTime = xTaskGetTickCount();
+	//lastSysTime = xTaskGetTickCount();
 
 	PIOS_CYRFTMR_Set(10000);
 	PIOS_CYRFTMR_Start();

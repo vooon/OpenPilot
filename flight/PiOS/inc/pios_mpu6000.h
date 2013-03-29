@@ -8,7 +8,7 @@
  *
  * @file       PIOS_MPU6000.h
  * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2012.
- * @brief      MPU6000 3-axis gyor function headers
+ * @brief      MPU6000 3-axis gyro function headers
  * @see        The GNU Public License (GPL) Version 3
  *
  ******************************************************************************
@@ -31,8 +31,6 @@
 
 #ifndef PIOS_MPU6000_H
 #define PIOS_MPU6000_H
-
-#include "pios.h"
 
 /* MPU6000 Addresses */
 #define PIOS_MPU6000_SMPLRT_DIV_REG       0X19
@@ -87,7 +85,10 @@
 
 /* User control functionality */
 #define PIOS_MPU6000_USERCTL_FIFO_EN      0X40
-#define PIOS_MPU6000_USERCTL_FIFO_RST     0X02
+#define PIOS_MPU6000_USERCTL_I2C_MST_EN   0x20
+#define PIOS_MPU6000_USERCTL_DIS_I2C      0X10
+#define PIOS_MPU6000_USERCTL_FIFO_RST     0X04
+#define PIOS_MPU6000_USERCTL_SIG_COND     0X02
 #define PIOS_MPU6000_USERCTL_GYRO_RST     0X01
 
 /* Power management and clock selection */
@@ -122,6 +123,13 @@ enum pios_mpu6000_accel_range {
 	PIOS_MPU6000_ACCEL_16G = 0x18
 };
 
+enum pios_mpu6000_orientation { // clockwise rotation from board forward
+	PIOS_MPU6000_TOP_0DEG    = 0x00,
+	PIOS_MPU6000_TOP_90DEG   = 0x01,
+	PIOS_MPU6000_TOP_180DEG  = 0x02,
+	PIOS_MPU6000_TOP_270DEG  = 0x03
+};
+
 struct pios_mpu6000_data {
 	int16_t gyro_x;
 	int16_t gyro_y;
@@ -138,22 +146,27 @@ struct pios_mpu6000_cfg {
 	const struct pios_exti_cfg * exti_cfg; /* Pointer to the EXTI configuration */
 	
 	uint8_t Fifo_store;		/* FIFO storage of different readings (See datasheet page 31 for more details) */
-	uint8_t Smpl_rate_div;	/* Sample rate divider to use (See datasheet page 32 for more details) */
-	uint8_t interrupt_cfg;	/* Interrupt configuration (See datasheet page 35 for more details) */
+                                        
+                                        /* Sample rate divider to use (See datasheet page 32 for more details).*/
+        uint8_t Smpl_rate_div_no_dlp;   /* used when no dlp is applied (fs=8KHz)*/
+	uint8_t Smpl_rate_div_dlp;	/* used when dlp is on (fs=1kHz)*/
+        uint8_t interrupt_cfg;	/* Interrupt configuration (See datasheet page 35 for more details) */
 	uint8_t interrupt_en;	/* Interrupt configuration (See datasheet page 35 for more details) */
 	uint8_t User_ctl;		/* User control settings (See datasheet page 41 for more details)  */
 	uint8_t Pwr_mgmt_clk;	/* Power management and clock selection (See datasheet page 32 for more details) */
 	enum pios_mpu6000_accel_range accel_range;
 	enum pios_mpu6000_range gyro_range;
 	enum pios_mpu6000_filter filter;
+	enum pios_mpu6000_orientation orientation;
 };
 
 /* Public Functions */
 extern int32_t PIOS_MPU6000_Init(uint32_t spi_id, uint32_t slave_num, const struct pios_mpu6000_cfg * new_cfg);
+extern int32_t PIOS_MPU6000_ConfigureRanges(enum pios_mpu6000_range gyroRange, enum pios_mpu6000_accel_range accelRange,enum pios_mpu6000_filter filterSetting);
 extern xQueueHandle PIOS_MPU6000_GetQueue();
 extern int32_t PIOS_MPU6000_ReadGyros(struct pios_mpu6000_data * buffer);
 extern int32_t PIOS_MPU6000_ReadID();
-extern uint8_t PIOS_MPU6000_Test();
+extern int32_t PIOS_MPU6000_Test();
 extern float PIOS_MPU6000_GetScale();
 extern float PIOS_MPU6000_GetAccelScale();
 extern bool PIOS_MPU6000_IRQHandler(void);

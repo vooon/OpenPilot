@@ -361,6 +361,7 @@ void CYRF_FindBestChannels(u8 *channels, u8 len, u8 minspace, u8 min, u8 max)
 bool PIOS_CYRF_ISR(void)
 {
 	/* Do nothing */
+	return false;
 }
 
 void TIM1_CC_IRQHandler(void) __attribute__ ((alias ("PIOS_CYRFTMR_ISR")));

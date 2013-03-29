@@ -28,14 +28,14 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-/* Project Includes */
 #include "pios.h"
+
+#ifdef PIOS_INCLUDE_USB
+
 #include "usb_core.h"
 #include "pios_usb_board_data.h"
-#include "pios_usb.h"
 #include "pios_usb_priv.h"
 
-#if defined(PIOS_INCLUDE_USB)
 
 /* Rx/Tx status */
 static uint8_t transfer_possible = 0;
@@ -155,7 +155,7 @@ int32_t PIOS_USB_ChangeConnectionState(bool connected)
  * \return 0: interface not available
  */
 uint32_t usb_found;
-bool PIOS_USB_CheckAvailable(uint8_t id)
+bool PIOS_USB_CheckAvailable(uint32_t id)
 {
 	struct pios_usb_dev * usb_dev = (struct pios_usb_dev *) pios_usb_id;
 
@@ -217,7 +217,7 @@ void USB_OTG_BSP_EnableInterrupt(USB_OTG_CORE_HANDLE *pdev)
 	bool valid = PIOS_USB_validate(usb_dev);
 	PIOS_Assert(valid);
 
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 
 	NVIC_Init(&usb_dev->cfg->irq.init);
 }
@@ -261,7 +261,7 @@ void USB_OTG_BSP_TimerIRQ (void)
 
 }
 
-#endif	/* PIOS_INCLUDE_USB */
+#endif /* PIOS_INCLUDE_USB */
 
 /**
  * @}

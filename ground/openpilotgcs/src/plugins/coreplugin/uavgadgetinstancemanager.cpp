@@ -239,8 +239,9 @@ void UAVGadgetInstanceManager::createOptionsPages()
         m_pm->removeObject(m_optionsPages.takeLast());
     }
 
-    foreach (IUAVGadgetConfiguration *config, m_configurations)
-    {
+    QMutableListIterator<IUAVGadgetConfiguration*> ite(m_configurations);
+    while (ite.hasNext()) {
+        IUAVGadgetConfiguration *config = ite.next();
         IUAVGadgetFactory *f = factory(config->classId());
         IOptionsPage *p = f->createOptionsPage(config);
         if (p) {
@@ -249,17 +250,29 @@ void UAVGadgetInstanceManager::createOptionsPages()
             m_optionsPages.append(page);
             m_pm->addObject(page);
         }
+        else {
+            qWarning()
+                    << "UAVGadgetInstanceManager::createOptionsPages - failed to create options page for configuration "
+                            + config->classId() + ":" + config->name() + ", configuration will be removed.";
+            // The m_optionsPages list and m_configurations list must be in synch otherwise nasty issues happen later
+            // so if we fail to create an options page we must remove the associated configuration
+            ite.remove();
+        }
     }
 }
 
 
-IUAVGadget *UAVGadgetInstanceManager::createGadget(QString classId, QWidget *parent)
+IUAVGadget *UAVGadgetInstanceManager::createGadget(QString classId, QWidget *parent, bool loadDefaultConfiguration)
 {
     IUAVGadgetFactory *f = factory(classId);
     if (f) {
         QList<IUAVGadgetConfiguration*> *configs = configurations(classId);
         IUAVGadget *g = f->createGadget(parent);
-        IUAVGadget *gadget = new UAVGadgetDecorator(g, configs);
+        UAVGadgetDecorator *gadget = new UAVGadgetDecorator(g, configs);
+        if ((loadDefaultConfiguration && configs && configs->count()) > 0) {
+            gadget->loadConfiguration(configs->at(0));
+        }
+
         m_gadgetInstances.append(gadget);
         connect(this, SIGNAL(configurationAdded(IUAVGadgetConfiguration*)), gadget, SLOT(configurationAdded(IUAVGadgetConfiguration*)));
         connect(this, SIGNAL(configurationChanged(IUAVGadgetConfiguration*)), gadget, SLOT(configurationChanged(IUAVGadgetConfiguration*)));

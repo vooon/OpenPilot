@@ -1,11 +1,12 @@
 TEMPLATE = lib
 TARGET = Core
 DEFINES += CORE_LIBRARY
-QT += xml \
+QT += declarative \
+    xml \
     network \
     script \
     svg \
-    sql
+    sql 
 include(../../openpilotgcsplugin.pri)
 include(../../libs/utils/utils.pri)
 include(../../shared/scriptwrapper/scriptwrapper.pri)
@@ -142,5 +143,3 @@ unix:!macx {
     INSTALLS += images
 }
 OTHER_FILES += Core.pluginspec
-
-include(gcsversioninfo.pri)

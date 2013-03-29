@@ -422,7 +422,7 @@ void ScopeGadgetWidget::addCurvePlot(QString uavObject, QString uavFieldSubField
     }
     UAVObjectField* field = obj->getField(plotData->uavField);
     if(!field) {
-        qDebug() << "Field " << plotData->uavField << " of object " << plotData->uavObject << " is missing";
+        qDebug() << "In scope gadget, in fields loaded from GCS config file, field" << plotData->uavField << " of object " << plotData->uavObject << " is missing";
         return;
     }
     QString units = field->getUnits();
@@ -432,9 +432,9 @@ void ScopeGadgetWidget::addCurvePlot(QString uavObject, QString uavFieldSubField
 
     QString curveNameScaled;
     if(scaleOrderFactor == 0)
-        curveNameScaled = curveName + "(" + units + ")";
+        curveNameScaled = curveName + " (" + units + ")";
     else
-        curveNameScaled = curveName + "(x10^" + QString::number(scaleOrderFactor) + " " + units + ")";
+        curveNameScaled = curveName + " (x10^" + QString::number(scaleOrderFactor) + " " + units + ")";
 
     QwtPlotCurve* plotCurve = new QwtPlotCurve(curveNameScaled);
     plotCurve->setPen(pen);

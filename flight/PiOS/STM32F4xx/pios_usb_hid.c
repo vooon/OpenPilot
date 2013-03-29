@@ -29,12 +29,10 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-/* Project Includes */
 #include "pios.h"
 
-#if defined(PIOS_INCLUDE_USB_HID)
+#ifdef PIOS_INCLUDE_USB_HID
 
-#include "pios_usb.h"
 #include "pios_usb_hid_priv.h"
 #include "pios_usb_board_data.h" /* PIOS_BOARD_*_DATA_LENGTH */
 #include "pios_usbhook.h"	 /* PIOS_USBHOOK_* */
@@ -52,6 +50,7 @@ const struct pios_com_driver pios_usb_hid_com_driver = {
 	.rx_start    = PIOS_USB_HID_RxStart,
 	.bind_tx_cb  = PIOS_USB_HID_RegisterTxCallback,
 	.bind_rx_cb  = PIOS_USB_HID_RegisterRxCallback,
+	.available   = PIOS_USB_CheckAvailable,	
 };
 
 enum pios_usb_hid_dev_magic {
@@ -524,4 +523,4 @@ static bool PIOS_USB_HID_EP_OUT_Callback(uint32_t usb_hid_id, uint8_t epnum, uin
 	return rc;
 }
 
-#endif	/* PIOS_INCLUDE_USB_HID */
+#endif /* PIOS_INCLUDE_USB_HID */

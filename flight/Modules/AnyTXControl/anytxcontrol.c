@@ -76,7 +76,7 @@ static portTickType lastSysTime;
 static void anytxControlTask(void *parameters);
 static float scaleChannel(int16_t value, int16_t max, int16_t min, int16_t neutral);
 static uint32_t timeDifferenceMs(portTickType start_time, portTickType end_time);
-static bool okToArm(void);
+//static bool okToArm(void);
 static bool validInputRange(int16_t min, int16_t max, uint16_t value);
 static void applyDeadband(float *value, float deadband);
 
@@ -130,7 +130,7 @@ static void anytxControlTask(void *parameters)
 {
 	AnyTXControlSettingsData settings;
 	ManualControlCommandData cmd;
-	float flightMode = 0;
+	//float flightMode = 0;
 
 	uint8_t disconnected_count = 0;
 	uint8_t connected_count = 0;
@@ -291,7 +291,7 @@ static void anytxControlTask(void *parameters)
 				cmd.Pitch          = scaledChannel[ANYTXCONTROLSETTINGS_CHANNELGROUPS_PITCH];
 				cmd.Yaw            = scaledChannel[ANYTXCONTROLSETTINGS_CHANNELGROUPS_YAW];
 				cmd.Throttle       = scaledChannel[ANYTXCONTROLSETTINGS_CHANNELGROUPS_THROTTLE];
-				flightMode         = scaledChannel[ANYTXCONTROLSETTINGS_CHANNELGROUPS_FLIGHTMODE];
+				//flightMode         = scaledChannel[ANYTXCONTROLSETTINGS_CHANNELGROUPS_FLIGHTMODE];
 
 				// Apply deadband for Roll/Pitch/Yaw stick inputs
 				if (settings.Deadband) {
