@@ -29,9 +29,9 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-/* Project Includes */
 #include "pios.h"
-#if defined(PIOS_INCLUDE_MPU6000)
+
+#ifdef PIOS_INCLUDE_MPU6000
 
 #include "fifo_buffer.h"
 
@@ -141,7 +141,7 @@ static void PIOS_MPU6000_Config(struct pios_mpu6000_cfg const * cfg)
 
 	// Reset chip
 	while (PIOS_MPU6000_SetReg(PIOS_MPU6000_PWR_MGMT_REG, PIOS_MPU6000_PWRMGMT_IMU_RST) != 0);
-	PIOS_DELAY_WaitmS(300);
+	PIOS_DELAY_WaitmS(100);
 
 	// Reset chip and fifo
 	while (PIOS_MPU6000_SetReg(PIOS_MPU6000_USER_CTRL_REG,
@@ -551,7 +551,7 @@ bool PIOS_MPU6000_IRQHandler(void)
 	return xHigherPriorityTaskWoken == pdTRUE;
 }
 
-#endif
+#endif /* PIOS_INCLUDE_MPU6000 */
 
 /**
  * @}

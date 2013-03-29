@@ -28,10 +28,11 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-/* Project Includes */
 #include "pios.h"
 
-#if defined(PIOS_INCLUDE_GCSRCVR)
+#ifdef PIOS_INCLUDE_GCSRCVR
+
+#include "uavobjectmanager.h"
 
 #include "pios_gcsrcvr_priv.h"
 
@@ -166,7 +167,7 @@ static void PIOS_gcsrcvr_Supervisor(uint32_t gcsrcvr_id) {
 	gcsrcvr_dev->Fresh = false;
 }
 
-#endif	/* PIOS_INCLUDE_GCSRCVR */
+#endif /* PIOS_INCLUDE_GCSRCVR */
 
 /** 
   * @}
