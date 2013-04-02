@@ -29,12 +29,10 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-/* Project Includes */
 #include "pios.h"
 
-#if defined(PIOS_INCLUDE_USB_CDC)
+#ifdef PIOS_INCLUDE_USB_CDC
 
-#include "pios_usb.h"
 #include "pios_usb_cdc_priv.h"
 #include "pios_usb_board_data.h" /* PIOS_BOARD_*_DATA_LENGTH */
 
@@ -51,6 +49,7 @@ const struct pios_com_driver pios_usb_cdc_com_driver = {
 	.rx_start    = PIOS_USB_CDC_RxStart,
 	.bind_tx_cb  = PIOS_USB_CDC_RegisterTxCallback,
 	.bind_rx_cb  = PIOS_USB_CDC_RegisterRxCallback,
+	.available   = PIOS_USB_CheckAvailable,
 };
 
 enum pios_usb_cdc_dev_magic {
@@ -321,7 +320,10 @@ RESULT PIOS_USB_CDC_SetControlLineState(void)
 	struct pios_usb_cdc_dev * usb_cdc_dev = (struct pios_usb_cdc_dev *)pios_usb_cdc_id;
 
 	bool valid = PIOS_USB_CDC_validate(usb_cdc_dev);
-	PIOS_Assert(valid);
+	if (!valid) {
+		/* No CDC interface is configured */
+		return USB_UNSUPPORT;
+	}
 
 	uint8_t wValue0 = pInformation->USBwValue0;
 	uint8_t wValue1 = pInformation->USBwValue1;
@@ -338,14 +340,25 @@ static struct usb_cdc_line_coding line_coding = {
 	.bDataBits   = 8,
 };
 
-RESULT PIOS_USB_CDC_SetLineCoding(void)
+uint8_t *PIOS_USB_CDC_SetLineCoding(uint16_t Length)
 {
 	struct pios_usb_cdc_dev * usb_cdc_dev = (struct pios_usb_cdc_dev *)pios_usb_cdc_id;
 
 	bool valid = PIOS_USB_CDC_validate(usb_cdc_dev);
-	PIOS_Assert(valid);
+	if (!valid) {
+		/* No CDC interface is configured */
+		return NULL;
+	}
 
-	return USB_SUCCESS;
+	if (Length == 0) {
+		/* Report the number of bytes we're prepared to consume */
+		pInformation->Ctrl_Info.Usb_wLength = sizeof(line_coding);
+		pInformation->Ctrl_Info.Usb_rLength = sizeof(line_coding);
+		return NULL;
+	} else {
+		/* Give out a pointer to the data struct */
+		return ((uint8_t *) &line_coding);
+	}
 }
 
 const uint8_t *PIOS_USB_CDC_GetLineCoding(uint16_t Length)
@@ -353,7 +366,10 @@ const uint8_t *PIOS_USB_CDC_GetLineCoding(uint16_t Length)
 	struct pios_usb_cdc_dev * usb_cdc_dev = (struct pios_usb_cdc_dev *)pios_usb_cdc_id;
 
 	bool valid = PIOS_USB_CDC_validate(usb_cdc_dev);
-	PIOS_Assert(valid);
+	if (!valid) {
+		/* No CDC interface is configured */
+		return NULL;
+	}
 
 	if (Length == 0) {
 		pInformation->Ctrl_Info.Usb_wLength = sizeof(line_coding);
@@ -399,4 +415,4 @@ static void PIOS_USB_CDC_CTRL_EP_IN_Callback(void)
 	SetEPTxValid(usb_cdc_dev->cfg->data_tx_ep);
 }
 
-#endif	/* PIOS_INCLUDE_USB_CDC */
+#endif /* PIOS_INCLUDE_USB_CDC */

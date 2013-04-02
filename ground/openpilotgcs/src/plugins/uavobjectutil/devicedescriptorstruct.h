@@ -8,6 +8,8 @@ public:
        QString gitHash;
        QString gitDate;
        QString gitTag;
+       QByteArray fwHash;
+       QByteArray uavoHash;
        int boardType;
        int boardRevision;
        static QString idToBoardName(int id)
@@ -20,7 +22,7 @@ public:
                return QString("OpenPilot INS");
                break;
            case 0x0301://PipX
-               return QString("PipXtreme");
+               return QString("OPLink");
                break;
            case 0x0401://Coptercontrol
                return QString("CopterControl");
@@ -29,6 +31,12 @@ public:
                // It would be nice to say CC3D here but since currently we use string comparisons
                // for firmware compatibility and the filename path that would break
                return QString("CopterControl");
+               break;
+           case 0x0901://Revolution
+               return QString("Revolution");
+               break;
+           case 0x0903://Revomini
+               return QString("Revomini");
                break;
            default:
                return QString("");

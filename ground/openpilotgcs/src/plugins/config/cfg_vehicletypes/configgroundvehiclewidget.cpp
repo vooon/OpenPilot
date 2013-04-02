@@ -198,24 +198,15 @@ QString ConfigGroundVehicleWidget::updateConfigObjectsFromWidgets()
 	QString airframeType = "GroundVehicleCar";
 	
 	// Save the curve (common to all ground vehicle frames)
-	UAVDataObject *obj = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("MixerSettings")));
+    UAVDataObject *mixer = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("MixerSettings")));
 	
 	// Remove Feed Forward, it is pointless on a ground vehicle:
-	UAVObjectField* field = obj->getField(QString("FeedForward"));
-	field->setDouble(0);
-	
-	field = obj->getField("ThrottleCurve1");
-	QList<double> curve = m_aircraft->groundVehicleThrottle1->getCurve();
-	for (int i=0;i<curve.length();i++) {
-		field->setValue(curve.at(i),i);
-	}
+    setMixerValue(mixer, "FeedForward", 0.0);
 
-	field = obj->getField("ThrottleCurve2");
-	curve = m_aircraft->groundVehicleThrottle2->getCurve();
-	for (int i=0;i<curve.length();i++) {
-		field->setValue(curve.at(i),i);
-	}
-	
+    // set the throttle curves
+    setThrottleCurve(mixer, VehicleConfig::MIXER_THROTTLECURVE1, m_aircraft->groundVehicleThrottle1->getCurve() );
+    setThrottleCurve(mixer, VehicleConfig::MIXER_THROTTLECURVE2, m_aircraft->groundVehicleThrottle2->getCurve() );
+
 	//All airframe types must start with "GroundVehicle"
 	if (m_aircraft->groundVehicleType->currentText() == "Turnable (car)" ) {
 		airframeType = "GroundVehicleCar";
@@ -304,16 +295,10 @@ bool ConfigGroundVehicleWidget::setupGroundVehicleMotorcycle(QString airframeTyp
 	
     UAVDataObject* mixer = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("MixerSettings")));
     Q_ASSERT(mixer);
-
-    int channel;
-    //disable all
-    for (channel=0; (unsigned int) channel < VehicleConfig::CHANNEL_NUMELEM; channel++) {
-        setMixerType(mixer,channel,VehicleConfig::MIXERTYPE_DISABLED);
-        resetMixerVector(mixer, channel);
-    }
+    resetMotorAndServoMixers(mixer);
 
     //motor
-    channel = m_aircraft->gvMotor2ChannelBox->currentIndex()-1;
+    int channel = m_aircraft->gvMotor2ChannelBox->currentIndex()-1;
     setMixerType(mixer, channel, VehicleConfig::MIXERTYPE_SERVO);
     setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_THROTTLECURVE1, 127);
     setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_YAW, 127);
@@ -361,16 +346,10 @@ bool ConfigGroundVehicleWidget::setupGroundVehicleDifferential(QString airframeT
 	
     UAVDataObject* mixer = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("MixerSettings")));
     Q_ASSERT(mixer);
-
-    int channel;
-    //disable all
-    for (channel=0; (unsigned int) channel < VehicleConfig::CHANNEL_NUMELEM; channel++) {
-        setMixerType(mixer,channel,VehicleConfig::MIXERTYPE_DISABLED);
-        resetMixerVector(mixer, channel);
-    }
+    resetMotorAndServoMixers(mixer);
 
     //left motor
-    channel = m_aircraft->gvMotor1ChannelBox->currentIndex()-1;
+    int channel = m_aircraft->gvMotor1ChannelBox->currentIndex()-1;
     setMixerType(mixer, channel, VehicleConfig::MIXERTYPE_SERVO);
     setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_THROTTLECURVE1, 127);
     setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_YAW, 127);
@@ -416,15 +395,9 @@ bool ConfigGroundVehicleWidget::setupGroundVehicleCar(QString airframeType)
 
     UAVDataObject* mixer = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("MixerSettings")));
     Q_ASSERT(mixer);
+    resetMotorAndServoMixers(mixer);
 
-    int channel;
-    //disable all
-    for (channel=0; (unsigned int) channel < VehicleConfig::CHANNEL_NUMELEM; channel++) {
-        setMixerType(mixer,channel,VehicleConfig::MIXERTYPE_DISABLED);
-        resetMixerVector(mixer, channel);
-    }
-
-    channel = m_aircraft->gvSteering1ChannelBox->currentIndex()-1;
+    int channel = m_aircraft->gvSteering1ChannelBox->currentIndex()-1;
     setMixerType(mixer,channel, VehicleConfig::MIXERTYPE_SERVO);
     setMixerVectorValue(mixer, channel, VehicleConfig::MIXERVECTOR_YAW, 127);
 

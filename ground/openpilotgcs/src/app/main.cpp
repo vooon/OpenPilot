@@ -28,6 +28,7 @@
 
 #include "qtsingleapplication.h"
 #include "utils/xmlconfig.h"
+#include "gcssplashscreen.h"
 
 #include <extensionsystem/pluginmanager.h>
 #include <extensionsystem/pluginspec.h>
@@ -46,6 +47,10 @@
 #include <QtGui/QMessageBox>
 #include <QtGui/QApplication>
 #include <QtGui/QMainWindow>
+#include <QtGui/QSplashScreen>
+#include <QtGui/QPainter>
+
+#include <QElapsedTimer>
 
 enum { OptionIndent = 4, DescriptionIndent = 24 };
 
@@ -59,8 +64,8 @@ static const char *fixedOptionsC =
 "    -client             Attempt to connect to already running instance\n"
 "    -clean-config       Delete all existing configuration settings\n"
 "    -exit-after-config  Exit GCS after manipulating configuration settings\n"
-"    -D key=value        Override configuration settings e.g: -D General/OverrideLanguage=de\n";
-
+"    -D key=value        Override configuration settings e.g: -D General/OverrideLanguage=de\n"
+"    -configfile=value       Default configuration file to load if settings file is empty\n";
 static const char *HELP_OPTION1 = "-h";
 static const char *HELP_OPTION2 = "-help";
 static const char *HELP_OPTION3 = "/h";
@@ -231,6 +236,9 @@ static void overrideSettings(QSettings &settings, int argc, char **argv){
 
 int main(int argc, char **argv)
 {
+    QElapsedTimer timer;
+    timer.start();
+
 #ifdef Q_OS_MAC
     // increase the number of file that can be opened in OpenPilot GCS
     struct rlimit rl;
@@ -238,10 +246,19 @@ int main(int argc, char **argv)
     rl.rlim_cur = rl.rlim_max;
     setrlimit(RLIMIT_NOFILE, &rl);
 #endif
+#ifdef Q_OS_LINUX
+    QApplication::setAttribute(Qt::AA_X11InitThreads, true);
+#endif
 
-    QApplication::setGraphicsSystem("raster");
+    //Set the default locale to EN, if this is not set the system locale will be used
+    //and as of now we dont want that behaviour.
+    QLocale::setDefault(QLocale::English);
 
     SharedTools::QtSingleApplication app((QLatin1String(appNameC)), argc, argv);
+
+    //Open Splashscreen
+    GCSSplashScreen splash;
+    splash.show();
 
     QString locale = QLocale::system().name();
 
@@ -250,7 +267,7 @@ int main(int argc, char **argv)
             QCoreApplication::applicationDirPath()+QLatin1String(SHARE_PATH));
     // keep this in sync with the MainWindow ctor in coreplugin/mainwindow.cpp
     QSettings settings(XmlConfig::XmlSettingsFormat, QSettings::UserScope,
-                                 QLatin1String("OpenPilot"), QLatin1String("OpenPilotGCS"));
+                                 QLatin1String("OpenPilot"), QLatin1String("OpenPilotGCS_config"));
 
     overrideSettings(settings, argc, argv);
     locale = settings.value("General/OverrideLanguage", locale).toString();
@@ -272,6 +289,8 @@ int main(int argc, char **argv)
         }
     }
     app.setProperty("qtc_locale", locale); // Do we need this?
+
+    splash.showProgressMessage(QObject::tr("Application starting..."));
 
     // Load
     ExtensionSystem::PluginManager pluginManager;
@@ -312,7 +331,7 @@ int main(int argc, char **argv)
             break;
         }
     }
-    if (!coreplugin) {
+    if(!coreplugin){
         QString nativePaths = QDir::toNativeSeparators(pluginPaths.join(QLatin1String(",")));
         const QString reason = QCoreApplication::translate("Application", "Could not find 'Core.pluginspec' in %1").arg(nativePaths);
         displayError(msgCoreLoadFailure(reason));
@@ -336,16 +355,20 @@ int main(int argc, char **argv)
         printHelp(QFileInfo(app.applicationFilePath()).baseName(), pluginManager);
         return 0;
     }
-
     const bool isFirstInstance = !app.isRunning();
     if (!isFirstInstance && foundAppOptions.contains(QLatin1String(CLIENT_OPTION)))
         return sendArguments(app, pluginManager.arguments()) ? 0 : -1;
 
+    QObject::connect(&pluginManager, SIGNAL(pluginAboutToBeLoaded(ExtensionSystem::PluginSpec*)),
+                     &splash, SLOT(showPluginLoadingProgress(ExtensionSystem::PluginSpec*)));
+
     pluginManager.loadPlugins();
+
     if (coreplugin->hasError()) {
         displayError(msgCoreLoadFailure(coreplugin->errorString()));
         return 1;
     }
+
     {
         QStringList errors;
         foreach (ExtensionSystem::PluginSpec *p, pluginManager.plugins())
@@ -368,5 +391,16 @@ int main(int argc, char **argv)
 
     // Do this after the event loop has started
     QTimer::singleShot(100, &pluginManager, SLOT(startTests()));
-    return app.exec();
+
+    //Update message and postpone closing of splashscreen 3 seconds
+    splash.showProgressMessage(QObject::tr("Application started."));
+    QTimer::singleShot(1500, &splash, SLOT(close()));
+
+    qDebug() << "main() took" << timer.elapsed() << "ms";
+
+    int ret = app.exec();
+
+    qDebug() << "GCS ran for" << timer.elapsed() << "ms";
+
+    return ret;
 }

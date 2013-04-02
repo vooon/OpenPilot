@@ -41,8 +41,8 @@ class Repo:
     def _exec(self, cmd):
         """Execute git using cmd as arguments"""
         self._git = 'git'
-        git = Popen(self._git + " " + cmd, cwd=self._path,
-                    shell=True, stdout=PIPE, stderr=PIPE)
+        git = Popen(self._git + " " + cmd, cwd = self._path,
+                    shell = True, stdout = PIPE, stderr = PIPE)
         self._out, self._err = git.communicate()
         self._rc = git.poll()
 
@@ -158,6 +158,20 @@ class Repo:
         else:
             return clean
 
+    def label(self):
+        """Return package label (tag if defined, or date-hash if no tag)"""
+        if self._tag == None:
+            return ''.join([self.time('%Y%m%d'), "-", self.hash(8, 'untagged'), self.dirty()])
+        else:
+            return ''.join([self.tag(''), self.dirty()])
+
+    def revision(self):
+        """Return full revison string (tag if defined, or branch:hash date time if no tag)"""
+        if self._tag == None:
+            return ''.join([self.branch('no-branch'), ":", self.hash(8, 'no-hash'), self.dirty(), self.time(' %Y%m%d %H:%M')])
+        else:
+            return ''.join([self.tag(''), self.dirty()])
+
     def info(self):
         """Print some repository info"""
         print "path:       ", self.path()
@@ -167,8 +181,10 @@ class Repo:
         print "hash:       ", self.hash()
         print "short hash: ", self.hash(8)
         print "branch:     ", self.branch()
-        print "commit tag: ", self.tag()
+        print "commit tag: ", self.tag('')
         print "dirty:      ", self.dirty('yes', 'no')
+        print "label:      ", self.label()
+        print "revision:   ", self.revision()
 
 def file_from_template(tpl_name, out_name, dict):
     """Create or update file from template using dictionary
@@ -246,9 +262,64 @@ def xtrim(string, suffix, length):
     if len(string) + len(suffix) <= length:
         return ''.join([string, suffix])
     else:
-        n = length-1-len(suffix)
+        n = length - 1 - len(suffix)
         assert n > 0, "length of truncated string+suffix exceeds maximum length"
         return ''.join([string[:n], '+', suffix])
+
+def get_hash_of_dirs(directory, verbose = 0, raw = 0):
+    """Return hash of XML files from UAVObject definition directory"""
+    import hashlib, os
+    SHAhash = hashlib.sha1()
+    if not os.path.exists(directory):
+        return -1
+
+    try:
+        for root, dirs, files in os.walk(directory):
+            # os.walk() is unsorted. Must make sure we process files in sorted
+            # order so that the hash is stable across invocations and across OSes.
+            if files:
+                files.sort()
+
+            for names in files:
+                if verbose == 1:
+                    print 'Hashing', names
+                filepath = os.path.join(root, names)
+                try:
+                    f1 = open(filepath, 'rU')
+                except:
+                    # You can't open the file for some reason
+                    continue
+
+                # Compute file hash. Same as running "sha1sum <file>".
+                f1hash = hashlib.sha1()
+                while 1:
+                    # Read file in as little chunks
+                    buf = f1.read(4096)
+                    if not buf:
+                        break
+                    f1hash.update(buf)
+                f1.close()
+
+                if verbose == 1:
+                    print 'Hash is', f1hash.hexdigest()
+
+                # Append the hex representation of the current file's hash into the cumulative hash
+                SHAhash.update(f1hash.hexdigest())
+
+    except:
+        import traceback
+        # Print the stack traceback
+        traceback.print_exc()
+        return -2
+
+    if verbose == 1:
+        print 'Final hash is', SHAhash.hexdigest()
+
+    if raw == 1:
+        return SHAhash.hexdigest()
+    else:
+        hex_stream = lambda s:",".join(['0x'+hex(ord(c))[2:].zfill(2) for c in s])
+        return hex_stream(SHAhash.digest())
 
 def main():
     """This utility uses git repository in the current working directory
@@ -270,6 +341,12 @@ variable substitution and writes the result into output file. Output
 file will be overwritten only if its content differs from expected.
 Otherwise it will not be touched, so make utility will not remake
 dependent targets.
+
+Optional positional arguments may be used to add more dictionary
+strings for replacement. Each argument has the form:
+    VARIABLE=replacement
+and each ${VARIABLE} reference will be replaced with replacement
+string given.
     """
 
     # Parse command line.
@@ -302,10 +379,9 @@ dependent targets.
                         help='board type, for example, 0x04 for CopterControl');
     parser.add_option('--revision', default = "",
                         help='board revision, for example, 0x01');
-
+    parser.add_option('--uavodir', default = "",
+                        help='uav object definition directory');
     (args, positional_args) = parser.parse_args()
-    if len(positional_args) != 0:
-        parser.error("incorrect number of arguments, try --help for help")
 
     # Process arguments.  No advanced error handling is here.
     # Any error will raise an exception and terminate process
@@ -315,20 +391,36 @@ dependent targets.
     dictionary = dict(
         TEMPLATE = args.template,
         OUTFILENAME = args.outfile,
-        ORIGIN = r.origin(),
+        ORIGIN = r.origin("local repository or using build servers"),
         HASH = r.hash(),
         HASH8 = r.hash(8),
+        TAG = r.tag(''),
         TAG_OR_BRANCH = r.tag(r.branch('unreleased')),
         TAG_OR_HASH8 = r.tag(r.hash(8, 'untagged')),
+        LABEL = r.label(),
+        REVISION = r.revision(),
         DIRTY = r.dirty(),
         FWTAG = xtrim(r.tag(r.branch('unreleased')), r.dirty(), 25),
         UNIXTIME = r.time(),
         DATE = r.time('%Y%m%d'),
         DATETIME = r.time('%Y%m%d %H:%M'),
+        DAY = r.time('%d'),
+        MONTH = r.time('%m'),
+        YEAR = r.time('%Y'),
+        HOUR = r.time('%H'),
+        MINUTE = r.time('%M'),
         BOARD_TYPE = args.type,
         BOARD_REVISION = args.revision,
         SHA1 = sha1(args.image),
+        UAVOSHA1TXT = get_hash_of_dirs(args.uavodir, verbose = 0, raw = 1),
+        UAVOSHA1 = get_hash_of_dirs(args.uavodir, verbose = 0, raw = 0),
     )
+
+    # Process positional arguments in the form of:
+    #   VAR1=str1 VAR2="string 2"
+    for var in positional_args:
+        (key, value) = var.split('=', 1)
+        dictionary[key] = value
 
     if args.info:
         r.info()

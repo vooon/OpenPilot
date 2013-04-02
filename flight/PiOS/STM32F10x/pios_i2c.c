@@ -28,10 +28,9 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-/* Project Includes */
 #include "pios.h"
 
-#if defined(PIOS_INCLUDE_I2C)
+#ifdef PIOS_INCLUDE_I2C
 
 #if defined(PIOS_INCLUDE_FREERTOS)
 #define USE_FREERTOS
@@ -933,7 +932,8 @@ int32_t PIOS_I2C_Transfer(uint32_t i2c_id, const struct pios_i2c_txn txn_list[],
 	/* Lock the bus */
 	portTickType timeout;
 	timeout = i2c_adapter->cfg->transfer_timeout_ms / portTICK_RATE_MS;
-	semaphore_success &= (xSemaphoreTake(i2c_adapter->sem_busy, timeout) == pdTRUE);
+	if (xSemaphoreTake(i2c_adapter->sem_busy, timeout) == pdFALSE)
+		return -2;
 #else
 	uint32_t timeout = 0xfff;
 	while(i2c_adapter->busy && --timeout);
@@ -1145,7 +1145,7 @@ void PIOS_I2C_ER_IRQ_Handler(uint32_t i2c_id)
 	}	
 }
 
-#endif
+#endif /* PIOS_INCLUDE_I2C */
 
 /**
   * @}

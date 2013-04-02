@@ -31,6 +31,7 @@
 #include "extensionsystem/pluginmanager.h"
 #include "uavobjectmanager.h"
 #include "uavobject.h"
+#include "actuatorcommand.h"
 
 
 typedef struct {
@@ -123,11 +124,11 @@ class VehicleConfig: public ConfigTaskWidget
         static void SetConfigData(GUIConfigDataUnion configData);
         static void resetField(UAVObjectField * field);
         static void setComboCurrentIndex(QComboBox* box, int index);
-        static void enableComboBox(QWidget* owner, QString boxName, bool enable);
-
+        static void enableComboBoxes(QWidget* owner, QString boxName, int boxCount, bool enable);
         double  getMixerVectorValue(UAVDataObject* mixer, int channel, MixerVectorElem elementName);
         void    setMixerVectorValue(UAVDataObject* mixer, int channel, MixerVectorElem elementName, double value);
         void    resetMixerVector(UAVDataObject* mixer, int channel);
+        void    resetMotorAndServoMixers(UAVDataObject* mixer);
         QString getMixerType(UAVDataObject* mixer, int channel);
         void    setMixerType(UAVDataObject* mixer, int channel, MixerTypeElem mixerType);
         double  getMixerValue(UAVDataObject* mixer, QString elementName);
@@ -138,14 +139,13 @@ class VehicleConfig: public ConfigTaskWidget
         double  getCurveMin(QList<double>* curve);
         double  getCurveMax(QList<double>* curve);
         virtual void ResetActuators(GUIConfigDataUnion* configData);
-        virtual QStringList getChannelDescriptions();
 
         QStringList channelNames;
         QStringList mixerTypes;
         QStringList mixerVectors;
         QStringList mixerTypeDescriptions;
 
-        static const quint32 CHANNEL_NUMELEM = 10;
+        static const quint32 CHANNEL_NUMELEM = ActuatorCommand::CHANNEL_NUMELEM;
 
     private:
 

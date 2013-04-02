@@ -1,4 +1,60 @@
-Short summary of changes.  For a complete list see the git log.
+﻿Short summary of changes.  For a complete list see the git log.
+
+2012-11-17
+Advanced camera stabilization features.
+They include optional manual control input filtering (moved from camera
+stabilization to manual control input and now available also for main controls),
+optional airframe attitude filtering used by camera stabilization, and optional
+camera actuator feed forward to improve gimbal response.
+
+--- RELEASE-12.10.2 --- Mayan Apocalypse Release ---
+
+List of issues resolved in this maintenance release:
+http://progress.openpilot.org/issues/?filter=10361
+
+OP-459, OP-545, OP-674, OP-679, OP-685, OP-686, OP-687, OP-690, OP-691,
+OP-702, OP-703, OP-714, OP-715, OP-716, OP-721, OP-728, OP-746, OP-748,
+OP-749, OP-750, OP-758, OP-759, OP-760
+
+2012-11-12
+Implemented smoothing filter for accelerometer data.
+Added support for Mode 3 and Mode 4 to the TX Configuration Wizard.
+
+--- RELEASE-12.10.1 ---
+
+2012-10-26
+Temporary disabled AutoTune GCS GUI. It was listed as an experimental
+feature in the previous release, there were however a few cases where
+it did not behave as expected.
+
+--- RELEASE-12.10 ---
+
+2012-10-06
+Receiver port can now be configured as PPM *and* PWM inputs.
+Pin 1 is PPM, other pins are PWM inputs.
+
+2012-07-27
+Added the ability to load stylesheets from external file according to operating system:
+macos.qss, linux.qss, windows.qss
+Files should be placed inside the app folder.
+
+2012-07-27
+Several UI changes. 
+MixerCurveWidget refactoring, now as a simple and advanced view.
+
+2012-07-27
+Added "advanced mode" option to general settings. Right now it only shows the hidden apply buttons.
+To enable go to tools->options->General and click one of the checkboxes to give focus to the form,
+then press F7
+
+2012-07-27
+Made the flight mode switch and accessory pots move according to user input on the input wizard.
+
+2012-07-27
+Changed the board pictures on the uploader widget
+
+2012-07-27
+Add more verbose debug output on the UAVOBJECTS saving code.
 
 2012-08-11
 CopterControl can now emulate an 8-channel USB HID joystick.  Primarily,
@@ -116,7 +172,7 @@ By default a lot of diagnostic objects that were enabled by default are now
 disabled in the build.  This include TaskInfo (and all the FreeRTOS options
 that provide that debugging information).  Also MixerStatus, I2CStatus,
 WatchdogStatus and RateDesired.  These can be reenabled for debugging with
--DDIAGNOSTICS.
+-DDIAG_ALL.
 
 2011-08-04
 Fixed packaging aesthetic issues.  Also avoid runtime issues on OSX Lion by

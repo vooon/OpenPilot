@@ -38,11 +38,22 @@
 #include "hwsettings.h"
 #include "mixersettings.h"
 #include "actuatorcommand.h"
+#include <extensionsystem/pluginmanager.h>
+#include <coreplugin/generalsettings.h>
 
 ConfigCameraStabilizationWidget::ConfigCameraStabilizationWidget(QWidget *parent) : ConfigTaskWidget(parent)
 {
     m_camerastabilization = new Ui_CameraStabilizationWidget();
     m_camerastabilization->setupUi(this);
+    
+    addApplySaveButtons(m_camerastabilization->camerastabilizationSaveRAM,m_camerastabilization->camerastabilizationSaveSD);
+    
+    ExtensionSystem::PluginManager *pm=ExtensionSystem::PluginManager::instance();
+    Core::Internal::GeneralSettings * settings=pm->getObject<Core::Internal::GeneralSettings>();
+    if(!settings->useExpertMode())
+        m_camerastabilization->camerastabilizationSaveRAM->setVisible(false);
+    
+    
 
     // These widgets don't have direct relation to UAVObjects
     // and need special processing
@@ -50,6 +61,7 @@ ConfigCameraStabilizationWidget::ConfigCameraStabilizationWidget(QWidget *parent
         m_camerastabilization->rollChannel,
         m_camerastabilization->pitchChannel,
         m_camerastabilization->yawChannel,
+        
     };
     const int NUM_OUTPUTS = sizeof(outputs) / sizeof(outputs[0]);
 
@@ -143,7 +155,7 @@ void ConfigCameraStabilizationWidget::refreshWidgetsValues(UAVObject *obj)
         // Then search for any mixer channels set to this
         outputs[i]->setCurrentIndex(0);
         for (int j = 0; j < NUM_MIXERS; j++)
-            if (*mixerTypes[j] == (MixerSettings::MIXER1TYPE_CAMERAROLL + i) &&
+            if (*mixerTypes[j] == (MixerSettings::MIXER1TYPE_CAMERAROLLORSERVO1 + i) &&
                     outputs[i]->currentIndex() != (j + 1))
                 outputs[i]->setCurrentIndex(j + 1);
     }
@@ -207,7 +219,7 @@ void ConfigCameraStabilizationWidget::updateObjectsFromWidgets()
 
             if ((mixerNum >= 0) && // Short circuit in case of none
                 (*mixerTypes[mixerNum] != MixerSettings::MIXER1TYPE_DISABLED) &&
-                (*mixerTypes[mixerNum] != MixerSettings::MIXER1TYPE_CAMERAROLL + i) ) {
+                (*mixerTypes[mixerNum] != MixerSettings::MIXER1TYPE_CAMERAROLLORSERVO1 + i) ) {
                 // If the mixer channel already mapped to something, it should not be
                 // used for camera output, we reset it to none
                 outputs[i]->setCurrentIndex(0);
@@ -218,13 +230,13 @@ void ConfigCameraStabilizationWidget::updateObjectsFromWidgets()
             } else {
                 // Make sure no other channels have this output set
                 for (int j = 0; j < NUM_MIXERS; j++)
-                    if (*mixerTypes[j] == (MixerSettings::MIXER1TYPE_CAMERAROLL + i))
+                    if (*mixerTypes[j] == (MixerSettings::MIXER1TYPE_CAMERAROLLORSERVO1 + i))
                         *mixerTypes[j] = MixerSettings::MIXER1TYPE_DISABLED;
 
                 // If this channel is assigned to one of the outputs that is not disabled
                 // set it
                 if ((mixerNum >= 0) && (mixerNum < NUM_MIXERS))
-                    *mixerTypes[mixerNum] = MixerSettings::MIXER1TYPE_CAMERAROLL + i;
+                    *mixerTypes[mixerNum] = MixerSettings::MIXER1TYPE_CAMERAROLLORSERVO1 + i;
             }
         }
     } while(widgetUpdated);

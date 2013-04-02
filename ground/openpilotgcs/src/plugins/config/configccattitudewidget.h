@@ -34,7 +34,6 @@
 #include "uavobject.h"
 #include <QtGui/QWidget>
 #include <QTimer>
-#include <QMutex>
 
 class Ui_Widget;
 
@@ -53,9 +52,9 @@ private slots:
     void timeout();
     void startAccelCalibration();
     void openHelp();
+    void setAccelFiltering(bool active);
 
 private:
-    QMutex startStop;
     Ui_ccattitude *ui;
     QTimer timer;
     UAVObject::Metadata initialAccelsMdata;
@@ -67,7 +66,8 @@ private:
     QList<double> x_accum, y_accum, z_accum;
     QList<double> x_gyro_accum, y_gyro_accum, z_gyro_accum;
 
-    static const int NUM_SENSOR_UPDATES = 60;
+    static const float DEFAULT_ENABLED_ACCEL_TAU = 0.1;
+    static const int NUM_SENSOR_UPDATES = 300;
     static const float ACCEL_SCALE = 0.004f * 9.81f;
 protected:
     virtual void enableControls(bool enable);

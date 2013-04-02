@@ -29,6 +29,9 @@
  */
 
 #include "pios.h"
+
+#ifdef PIOS_INCLUDE_USB
+
 #include "pios_usb.h"		/* PIOS_USB_* */
 #include "pios_usbhook.h"
 #include "pios_usb_defs.h"	/* struct usb_* */
@@ -293,13 +296,16 @@ static void PIOS_USBHOOK_Status_Out(void)
 * Output         : None.
 * Return         : USB_UNSUPPORT or USB_SUCCESS.
 *******************************************************************************/
+extern uint8_t *PIOS_USB_CDC_SetLineCoding(uint16_t Length);
 extern const uint8_t *PIOS_USB_CDC_GetLineCoding(uint16_t Length);
 
 static RESULT PIOS_USBHOOK_Data_Setup(uint8_t RequestNo)
 {
-	const uint8_t *(*CopyRoutine) (uint16_t);
+	uint8_t *(*CopyOutRoutine) (uint16_t);
+	const uint8_t *(*CopyInRoutine) (uint16_t);
 
-	CopyRoutine = NULL;
+	CopyInRoutine = NULL;
+	CopyOutRoutine = NULL;
 
 	switch (Type_Recipient) {
 	case (STANDARD_REQUEST | INTERFACE_RECIPIENT):
@@ -313,10 +319,10 @@ static RESULT PIOS_USBHOOK_Data_Setup(uint8_t RequestNo)
 			case GET_DESCRIPTOR:
 				switch (pInformation->USBwValue1) {
 				case USB_DESC_TYPE_REPORT:
-					CopyRoutine = PIOS_USBHOOK_GetReportDescriptor;
+					CopyInRoutine = PIOS_USBHOOK_GetReportDescriptor;
 					break;
 				case USB_DESC_TYPE_HID:
-					CopyRoutine = PIOS_USBHOOK_GetHIDDescriptor;
+					CopyInRoutine = PIOS_USBHOOK_GetHIDDescriptor;
 					break;
 				}
 			}
@@ -332,7 +338,7 @@ static RESULT PIOS_USBHOOK_Data_Setup(uint8_t RequestNo)
 #endif
 			switch (RequestNo) {
 			case USB_HID_REQ_GET_PROTOCOL:
-				CopyRoutine = PIOS_USBHOOK_GetProtocolValue;
+				CopyInRoutine = PIOS_USBHOOK_GetProtocolValue;
 				break;
 			}
 
@@ -340,8 +346,11 @@ static RESULT PIOS_USBHOOK_Data_Setup(uint8_t RequestNo)
 #if defined(PIOS_INCLUDE_USB_CDC)
 		case 0:		/* CDC Call Control Interface */
 			switch (RequestNo) {
+			case USB_CDC_REQ_SET_LINE_CODING:
+				CopyOutRoutine = PIOS_USB_CDC_SetLineCoding;
+				break;
 			case USB_CDC_REQ_GET_LINE_CODING:
-				//CopyRoutine = PIOS_USB_CDC_GetLineCoding;
+				CopyInRoutine = PIOS_USB_CDC_GetLineCoding;
 				break;
 			}
 
@@ -359,13 +368,27 @@ static RESULT PIOS_USBHOOK_Data_Setup(uint8_t RequestNo)
 		break;
 	}
 
-	if (CopyRoutine == NULL) {
+	/* No registered copy routine */
+	if ((CopyInRoutine == NULL) && (CopyOutRoutine == NULL)) {
 		return USB_UNSUPPORT;
 	}
 
-	pInformation->Ctrl_Info.CopyDataIn = CopyRoutine;
-	pInformation->Ctrl_Info.Usb_wOffset = 0;
-	(*CopyRoutine) (0);
+	/* Registered copy in AND copy out routine */
+	if ((CopyInRoutine != NULL) && (CopyOutRoutine != NULL)) {
+		/* This should never happen */
+		return USB_UNSUPPORT;
+	}
+
+	if (CopyInRoutine != NULL) {
+		pInformation->Ctrl_Info.CopyDataIn = CopyInRoutine;
+		pInformation->Ctrl_Info.Usb_wOffset = 0;
+		(*CopyInRoutine) (0);
+	} else if (CopyOutRoutine != NULL) {
+		pInformation->Ctrl_Info.CopyDataOut = CopyOutRoutine;
+		pInformation->Ctrl_Info.Usb_rOffset = 0;
+		(*CopyOutRoutine) (0);
+	}
+
 	return USB_SUCCESS;
 }
 
@@ -377,7 +400,6 @@ static RESULT PIOS_USBHOOK_Data_Setup(uint8_t RequestNo)
 * Return         : USB_UNSUPPORT or USB_SUCCESS.
 *******************************************************************************/
 extern RESULT PIOS_USB_CDC_SetControlLineState(void);
-extern RESULT PIOS_USB_CDC_SetLineCoding(void);
 
 static RESULT PIOS_USBHOOK_NoData_Setup(uint8_t RequestNo)
 {
@@ -400,9 +422,6 @@ static RESULT PIOS_USBHOOK_NoData_Setup(uint8_t RequestNo)
 #if defined(PIOS_INCLUDE_USB_CDC)
 		case 0:		/* CDC Call Control Interface */
 			switch (RequestNo) {
-			case USB_CDC_REQ_SET_LINE_CODING:
-				return PIOS_USB_CDC_SetLineCoding();
-				break;
 			case USB_CDC_REQ_SET_CONTROL_LINE_STATE:
 				return PIOS_USB_CDC_SetControlLineState();
 				break;
@@ -532,5 +551,7 @@ static const uint8_t *PIOS_USBHOOK_GetProtocolValue(uint16_t Length)
 		return (uint8_t *) (&ProtocolValue);
 	}
 }
+
+#endif /* PIOS_INCLUDE_USB */
 
 /******************* (C) COPYRIGHT 2010 STMicroelectronics *****END OF FILE****/

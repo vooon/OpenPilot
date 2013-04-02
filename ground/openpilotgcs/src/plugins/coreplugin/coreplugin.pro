@@ -1,11 +1,12 @@
 TEMPLATE = lib
 TARGET = Core
 DEFINES += CORE_LIBRARY
-QT += xml \
+QT += declarative \
+    xml \
     network \
     script \
     svg \
-    sql
+    sql 
 include(../../openpilotgcsplugin.pri)
 include(../../libs/utils/utils.pri)
 include(../../shared/scriptwrapper/scriptwrapper.pri)
@@ -62,7 +63,9 @@ SOURCES += mainwindow.cpp \
     uavgadgetdecorator.cpp \
     workspacesettings.cpp \
     uavconfiginfo.cpp \
-    authorsdialog.cpp
+    authorsdialog.cpp \
+    telemetrymonitorwidget.cpp \
+    dialogs/importsettings.cpp
 HEADERS += mainwindow.h \
     tabpositionindicator.h \
     fancyactionbar.h \
@@ -122,12 +125,15 @@ HEADERS += mainwindow.h \
     workspacesettings.h \
     uavconfiginfo.h \
     authorsdialog.h \
-    iconfigurableplugin.h
+    iconfigurableplugin.h \
+    telemetrymonitorwidget.h \
+    dialogs/importsettings.h
 FORMS += dialogs/settingsdialog.ui \
     dialogs/shortcutsettings.ui \
     generalsettings.ui \
     uavgadgetoptionspage.ui \
-    workspacesettings.ui
+    workspacesettings.ui \
+    dialogs/importsettings.ui
 RESOURCES += core.qrc \
     fancyactionbar.qrc
 unix:!macx { 
@@ -137,5 +143,3 @@ unix:!macx {
     INSTALLS += images
 }
 OTHER_FILES += Core.pluginspec
-
-include(gcsversioninfo.pri)

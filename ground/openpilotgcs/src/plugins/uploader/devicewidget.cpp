@@ -31,17 +31,16 @@ deviceWidget::deviceWidget(QWidget *parent) :
 {
     myDevice = new Ui_deviceWidget();
     myDevice->setupUi(this);
-    devicePic = NULL; // Initialize pointer to null
 
     // Initialization of the Device icon display
     myDevice->verticalGroupBox_loaded->setVisible(false);
     myDevice->groupCustom->setVisible(false);
-    myDevice->youdont->setVisible(false);
+    myDevice->confirmCheckBox->setVisible(false);
     myDevice->gVDevice->setScene(new QGraphicsScene(this));
     connect(myDevice->retrieveButton, SIGNAL(clicked()), this, SLOT(downloadFirmware()));
     connect(myDevice->updateButton, SIGNAL(clicked()), this, SLOT(uploadFirmware()));
     connect(myDevice->pbLoad, SIGNAL(clicked()), this, SLOT(loadFirmware()));
-    connect(myDevice->youdont, SIGNAL(stateChanged(int)), this, SLOT(confirmCB(int)));
+    connect(myDevice->confirmCheckBox, SIGNAL(stateChanged(int)), this, SLOT(confirmCB(int)));
     QPixmap pix = QPixmap(QString(":uploader/images/view-refresh.svg"));
     myDevice->statusIcon->setPixmap(pix);
 
@@ -54,18 +53,14 @@ void deviceWidget::showEvent(QShowEvent *event)
     Q_UNUSED(event)
     // Thit fitInView method should only be called now, once the
     // widget is shown, otherwise it cannot compute its values and
-    // the result is usually a ahrsbargraph that is way too small.
-    if (devicePic)
-    {
-        myDevice->gVDevice->fitInView(devicePic,Qt::KeepAspectRatio);
-    }
+    // the result is usually a ahrsbargraph that is way too small
+    myDevice->gVDevice->fitInView(devicePic.rect(),Qt::KeepAspectRatio);
 }
 
 void deviceWidget::resizeEvent(QResizeEvent* event)
 {
     Q_UNUSED(event);
-    if (devicePic)
-        myDevice->gVDevice->fitInView(devicePic, Qt::KeepAspectRatio);
+    myDevice->gVDevice->fitInView(devicePic.rect(), Qt::KeepAspectRatio);
 }
 
 
@@ -92,31 +87,28 @@ void deviceWidget::populate()
     myDevice->lblDevName->setText(deviceDescriptorStruct::idToBoardName(id));
     myDevice->lblHWRev->setText(QString(tr("HW Revision: "))+QString::number(id & 0x00FF, 16));
 
-    devicePic = new QGraphicsSvgItem();
-    devicePic->setSharedRenderer(new QSvgRenderer());
     switch (id) {
     case 0x0101:
-        devicePic->renderer()->load(QString(":/uploader/images/deviceID-0101.svg"));
-        break;
-    case 0x0301:
-        devicePic->renderer()->load(QString(":/uploader/images/deviceID-0301.svg"));
-        break;
-    case 0x0401:
-        devicePic->renderer()->load(QString(":/uploader/images/deviceID-0401.svg"));
-        break;
-    case 0x0402:
-        devicePic->renderer()->load(QString(":/uploader/images/deviceID-0402.svg"));
+        devicePic.load("");//TODO
         break;
     case 0x0201:
-        devicePic->renderer()->load(QString(":/uploader/images/deviceID-0201.svg"));
+        devicePic.load("");//TODO
+        break;
+    case 0x0301:
+        devicePic.load(":/uploader/images/pipx.png");
+        break;
+    case 0x0401:
+        devicePic.load(":/uploader/images/gcs-board-cc.png");
+        break;
+    case 0x0402:
+        devicePic.load(":/uploader/images/gcs-board-cc3d.png");
         break;
     default:
         break;
     }
-    devicePic->setElementId("device");
-    myDevice->gVDevice->scene()->addItem(devicePic);
-    myDevice->gVDevice->setSceneRect(devicePic->boundingRect());
-    myDevice->gVDevice->fitInView(devicePic,Qt::KeepAspectRatio);
+    myDevice->gVDevice->scene()->addPixmap(devicePic);
+    myDevice->gVDevice->setSceneRect(devicePic.rect());
+    myDevice->gVDevice->fitInView(devicePic.rect(),Qt::KeepAspectRatio);
 
     bool r = m_dfu->devices[deviceID].Readable;
     bool w = m_dfu->devices[deviceID].Writable;
@@ -151,9 +143,28 @@ void deviceWidget::populate()
   */
 void deviceWidget::freeze()
 {
-    myDevice->description->setEnabled(false);
-    myDevice->updateButton->setEnabled(false);
-    myDevice->retrieveButton->setEnabled(false);
+    updateButtons(false);
+}
+
+void deviceWidget::updateButtons(bool enabled)
+{
+    if (!enabled) {
+        myDevice->description->setEnabled(false);
+        myDevice->pbLoad->setEnabled(false);
+        myDevice->confirmCheckBox->setEnabled(false);
+        myDevice->updateButton->setEnabled(false);
+        myDevice->retrieveButton->setEnabled(false);
+    }
+    else {
+        myDevice->description->setEnabled(true);
+        // Load button (i.e. choose file) is always enabled
+        myDevice->pbLoad->setEnabled(true);
+        myDevice->confirmCheckBox->setEnabled(true);
+        // Update/Upload button is enabled if the "I know what I'm doing!" check box is checked
+        myDevice->updateButton->setEnabled(myDevice->confirmCheckBox->checkState() == Qt::Checked);
+        // Retreive/Download button is always enabled
+        myDevice->retrieveButton->setEnabled(true);
+    }
 }
 
 /**
@@ -162,13 +173,13 @@ void deviceWidget::freeze()
   */
 bool deviceWidget::populateBoardStructuredDescription(QByteArray desc)
 {
-    if(UAVObjectUtilManager::descriptionToStructure(desc,&onBoardDescription))
+    if(UAVObjectUtilManager::descriptionToStructure(desc,onBoardDescription))
     {
         myDevice->lblGitTag->setText(onBoardDescription.gitHash);
         myDevice->lblBuildDate->setText(onBoardDescription.gitDate.insert(4,"-").insert(7,"-"));
-        if(onBoardDescription.gitTag.startsWith("release",Qt::CaseInsensitive))
+        if(onBoardDescription.gitTag.startsWith("RELEASE",Qt::CaseSensitive))
         {
-            myDevice->lblDescription->setText(QString("Firmware tag: ")+onBoardDescription.gitTag);
+            myDevice->lblDescription->setText(onBoardDescription.gitTag);
             QPixmap pix = QPixmap(QString(":uploader/images/application-certificate.svg"));
             myDevice->lblCertified->setPixmap(pix);
             myDevice->lblCertified->setToolTip(tr("Tagged officially released firmware build"));
@@ -192,11 +203,11 @@ bool deviceWidget::populateBoardStructuredDescription(QByteArray desc)
 }
 bool deviceWidget::populateLoadedStructuredDescription(QByteArray desc)
 {
-    if(UAVObjectUtilManager::descriptionToStructure(desc,&LoadedDescription))
+    if(UAVObjectUtilManager::descriptionToStructure(desc,LoadedDescription))
     {
         myDevice->lblGitTagL->setText(LoadedDescription.gitHash);
         myDevice->lblBuildDateL->setText( LoadedDescription.gitDate.insert(4,"-").insert(7,"-"));
-        if(LoadedDescription.gitTag.startsWith("release",Qt::CaseInsensitive))
+        if(LoadedDescription.gitTag.startsWith("RELEASE",Qt::CaseSensitive))
         {
             myDevice->lblDescritpionL->setText(LoadedDescription.gitTag);
             myDevice->description->setText(LoadedDescription.gitTag);
@@ -230,12 +241,7 @@ void deviceWidget::dfuStatus(QString str)
 
 void deviceWidget::confirmCB(int value)
 {
-    if(value==Qt::Checked)
-    {
-        myDevice->updateButton->setEnabled(true);
-    }
-    else
-        myDevice->updateButton->setEnabled(false);
+    updateButtons(true);
 }
 
 /**
@@ -269,6 +275,9 @@ void deviceWidget::loadFirmware()
 
     filename = setOpenFileName();
 
+    myDevice->confirmCheckBox->setVisible(false);
+    myDevice->confirmCheckBox->setChecked(false);
+
     if (filename.isEmpty()) {
         status("Empty filename", STATUSICON_FAIL);
         return;
@@ -281,58 +290,46 @@ void deviceWidget::loadFirmware()
     }
 
     loadedFW = file.readAll();
-    myDevice->youdont->setVisible(false);
-    myDevice->youdont->setChecked(false);
+
     QByteArray desc = loadedFW.right(100);
     QPixmap px;
-    if(loadedFW.length()>m_dfu->devices[deviceID].SizeOfCode)
+    if (loadedFW.length()>m_dfu->devices[deviceID].SizeOfCode) {
         myDevice->lblCRCL->setText(tr("Can't calculate, file too big for device"));
-    else
+    }
+    else {
         myDevice->lblCRCL->setText( QString::number(DFUObject::CRCFromQBArray(loadedFW,m_dfu->devices[deviceID].SizeOfCode)));
+    }
     //myDevice->lblFirmwareSizeL->setText(QString("Firmware size: ")+QVariant(loadedFW.length()).toString()+ QString(" bytes"));
     if (populateLoadedStructuredDescription(desc))
     {
-        myDevice->youdont->setChecked(true);
+        myDevice->confirmCheckBox->setChecked(true);
         myDevice->verticalGroupBox_loaded->setVisible(true);
         myDevice->groupCustom->setVisible(false);
-        if(myDevice->lblCRC->text()==myDevice->lblCRCL->text())
-        {
-            myDevice->statusLabel->setText(tr("The board has the same firmware as loaded. No need to update"));
+        if (myDevice->lblCRC->text() == myDevice->lblCRCL->text()) {
+            myDevice->statusLabel->setText(tr("The board has the same firmware as loaded. No need to update."));
             px.load(QString(":/uploader/images/warning.svg"));
-        }
-        else if(myDevice->lblDevName->text()!=myDevice->lblBrdNameL->text())
-        {
+        } else if (myDevice->lblDevName->text() != myDevice->lblBrdNameL->text()) {
             myDevice->statusLabel->setText(tr("WARNING: the loaded firmware is for different hardware. Do not update!"));
             px.load(QString(":/uploader/images/error.svg"));
-        }
-        else if(QDateTime::fromString(onBoardDescription.gitDate)>QDateTime::fromString(LoadedDescription.gitDate))
-        {
+        } else if (QDateTime::fromString(onBoardDescription.gitDate) > QDateTime::fromString(LoadedDescription.gitDate)) {
             myDevice->statusLabel->setText(tr("The board has newer firmware than loaded. Are you sure you want to update?"));
             px.load(QString(":/uploader/images/warning.svg"));
-        }
-        else if(!LoadedDescription.gitTag.startsWith("release",Qt::CaseInsensitive))
-        {
-            myDevice->statusLabel->setText(tr("The loaded firmware is untagged or custom build. Update only if it was received from a trusted source (official website or your own build)"));
+        } else if (!LoadedDescription.gitTag.startsWith("RELEASE", Qt::CaseSensitive)) {
+            myDevice->statusLabel->setText(tr("The loaded firmware is untagged or custom build. Update only if it was received from a trusted source (official website or your own build)."));
             px.load(QString(":/uploader/images/warning.svg"));
-        }
-        else
-        {
-            myDevice->statusLabel->setText(tr("This is the tagged officially released OpenPilot firmware"));
+        } else {
+            myDevice->statusLabel->setText(tr("This is the tagged officially released OpenPilot firmware."));
             px.load(QString(":/uploader/images/gtk-info.svg"));
         }
-    }
-    else
-    {
-        myDevice->statusLabel->setText(tr("WARNING: the loaded firmware was not packaged with the OpenPilot format. Do not update unless you know what you are doing"));
+    } else {
+        myDevice->statusLabel->setText(tr("WARNING: the loaded firmware was not packaged with the OpenPilot format. Do not update unless you know what you are doing."));
         px.load(QString(":/uploader/images/error.svg"));
-        myDevice->youdont->setChecked(false);
-        myDevice->youdont->setVisible(true);
+        myDevice->confirmCheckBox->setChecked(false);
+        myDevice->confirmCheckBox->setVisible(true);
         myDevice->verticalGroupBox_loaded->setVisible(false);
         myDevice->groupCustom->setVisible(true);
     }
     myDevice->statusIcon->setPixmap(px);
-    //myDevice->updateButton->setEnabled(true);
-
 }
 
 /**
@@ -340,10 +337,14 @@ void deviceWidget::loadFirmware()
   */
 void deviceWidget::uploadFirmware()
 {
-    myDevice->updateButton->setEnabled(false);
+    // clear progress bar now
+    // this avoids displaying an error message and the progress at 100% at the same time
+    setProgress(0);
+    updateButtons(false);
+
     if (!m_dfu->devices[deviceID].Writable) {
         status("Device not writable!", STATUSICON_FAIL);
-        myDevice->updateButton->setEnabled(true);
+        updateButtons(true);
         return;
     }
 
@@ -361,11 +362,13 @@ void deviceWidget::uploadFirmware()
         int board = m_dfu->devices[deviceID].ID;
         int firmwareBoard = ((desc.at(12)&0xff)<<8) + (desc.at(13)&0xff);
         if((board == 0x401 && firmwareBoard == 0x402) ||
-           (board == 0x901 && firmwareBoard == 0x902)) {
+           (board == 0x901 && firmwareBoard == 0x902) || // L3GD20 revo supports Revolution firmware
+           (board == 0x902 && firmwareBoard == 0x903))   // RevoMini1 supporetd by RevoMini2 firmware
+        {
             // These firmwares are designed to be backwards compatible
         } else if (firmwareBoard != board) {
             status("Error: firmware does not match board", STATUSICON_FAIL);
-            myDevice->updateButton->setEnabled(true);
+            updateButtons(true);
             return;
         }
         // Check the firmware embedded in the file:
@@ -373,7 +376,7 @@ void deviceWidget::uploadFirmware()
         QByteArray fileHash = QCryptographicHash::hash(loadedFW.left(loadedFW.length()-100), QCryptographicHash::Sha1);
         if (firmwareHash != fileHash) {
             status("Error: firmware file corrupt", STATUSICON_FAIL);
-            myDevice->updateButton->setEnabled(true);
+            updateButtons(true);
             return;
         }
     } else {
@@ -382,16 +385,16 @@ void deviceWidget::uploadFirmware()
         descriptionArray.clear();
     }
 
-
     status("Starting firmware upload", STATUSICON_RUNNING);
+    emit uploadStarted();
+
     // We don't know which device was used previously, so we
     // are cautious and reenter DFU for this deviceID:
-    emit uploadStarted();
     if(!m_dfu->enterDFU(deviceID))
     {
-        status("Error:Could not enter DFU mode", STATUSICON_FAIL);
-        myDevice->updateButton->setEnabled(true);
         emit uploadEnded(false);
+        status("Error:Could not enter DFU mode", STATUSICON_FAIL);
+        updateButtons(true);
         return;
     }
     OP_DFU::Status ret=m_dfu->StatusRequest();
@@ -401,13 +404,14 @@ void deviceWidget::uploadFirmware()
     connect(m_dfu, SIGNAL(progressUpdated(int)), this, SLOT(setProgress(int)));
     connect(m_dfu, SIGNAL(operationProgress(QString)), this, SLOT(dfuStatus(QString)));
     connect(m_dfu, SIGNAL(uploadFinished(OP_DFU::Status)), this, SLOT(uploadFinished(OP_DFU::Status)));
-    bool retstatus = m_dfu->UploadFirmware(filename,verify, deviceID);
-    if(!retstatus ) {
-        status("Could not start upload", STATUSICON_FAIL);
-        myDevice->updateButton->setEnabled(true);
+    bool retstatus = m_dfu->UploadFirmware(filename, verify, deviceID);
+    if (!retstatus) {
         emit uploadEnded(false);
+        status("Could not start upload!", STATUSICON_FAIL);
+        updateButtons(true);
         return;
     }
+
     status("Uploading, please wait...", STATUSICON_RUNNING);
 }
 
@@ -416,29 +420,43 @@ void deviceWidget::uploadFirmware()
   */
 void deviceWidget::downloadFirmware()
 {
+    // clear progress bar now
+    // this avoids displaying an error message and the progress at 100% at the same time
+    setProgress(0);
+    updateButtons(false);
+
     if (!m_dfu->devices[deviceID].Readable) {
         myDevice->statusLabel->setText(QString("Device not readable!"));
+        status("Device not readable!", STATUSICON_FAIL);
+        updateButtons(true);
         return;
     }
 
-    myDevice->retrieveButton->setEnabled(false);
     filename = setSaveFileName();
-
     if (filename.isEmpty()) {
         status("Empty filename", STATUSICON_FAIL);
+        updateButtons(true);
         return;
     }
 
-    status("Downloading firmware from device", STATUSICON_RUNNING);
+    status("Starting firmware download", STATUSICON_RUNNING);
+    emit downloadStarted();
+
     connect(m_dfu, SIGNAL(progressUpdated(int)), this, SLOT(setProgress(int)));
     connect(m_dfu, SIGNAL(downloadFinished()), this, SLOT(downloadFinished()));
+
     downloadedFirmware.clear(); // Empty the byte array
     bool ret = m_dfu->DownloadFirmware(&downloadedFirmware,deviceID);
-    if(!ret) {
+
+    if (!ret) {
+        emit downloadEnded(false);
         status("Could not start download!", STATUSICON_FAIL);
+        updateButtons(true);
         return;
     }
-    status("Download started, please wait", STATUSICON_RUNNING);
+
+    status("Downloading, please wait...", STATUSICON_RUNNING);
+    return;
 }
 
 /**
@@ -448,10 +466,13 @@ void deviceWidget::downloadFinished()
 {
     disconnect(m_dfu, SIGNAL(downloadFinished()), this, SLOT(downloadFinished()));
     disconnect(m_dfu, SIGNAL(progressUpdated(int)), this, SLOT(setProgress(int)));
-    status("Download successful", STATUSICON_OK);
+
     // Now save the result (use the utility function from OP_DFU)
     m_dfu->SaveByteArrayToFile(filename, downloadedFirmware);
-    myDevice->retrieveButton->setEnabled(true);
+
+    emit downloadEnded(true);
+    status("Download successful", STATUSICON_OK);
+    updateButtons(true);
 }
 
 /**
@@ -459,13 +480,14 @@ void deviceWidget::downloadFinished()
   */
 void deviceWidget::uploadFinished(OP_DFU::Status retstatus)
 {
-    myDevice->updateButton->setEnabled(true);
     disconnect(m_dfu, SIGNAL(uploadFinished(OP_DFU::Status)), this, SLOT(uploadFinished(OP_DFU::Status)));
     disconnect(m_dfu, SIGNAL(progressUpdated(int)), this, SLOT(setProgress(int)));
     disconnect(m_dfu, SIGNAL(operationProgress(QString)), this, SLOT(dfuStatus(QString)));
-    if(retstatus != OP_DFU::Last_operation_Success) {
-        status(QString("Upload failed with code: ") + m_dfu->StatusToString(retstatus).toLatin1().data(), STATUSICON_FAIL);
+
+    if (retstatus != OP_DFU::Last_operation_Success) {
         emit uploadEnded(false);
+        status(QString("Upload failed with code: ") + m_dfu->StatusToString(retstatus).toLatin1().data(), STATUSICON_FAIL);
+        updateButtons(true);
         return;
     } else
         if (!descriptionArray.isEmpty()) {
@@ -473,9 +495,10 @@ void deviceWidget::uploadFinished(OP_DFU::Status retstatus)
             status(QString("Updating description"), STATUSICON_RUNNING);
             repaint(); // Make sure the text above shows right away
             retstatus = m_dfu->UploadDescription(descriptionArray);
-            if( retstatus != OP_DFU::Last_operation_Success) {
-                status(QString("Upload failed with code: ") + m_dfu->StatusToString(retstatus).toLatin1().data(), STATUSICON_FAIL);
+            if (retstatus != OP_DFU::Last_operation_Success) {
                 emit uploadEnded(false);
+                status(QString("Upload failed with code: ") + m_dfu->StatusToString(retstatus).toLatin1().data(), STATUSICON_FAIL);
+                updateButtons(true);
                 return;
             }
 
@@ -484,16 +507,19 @@ void deviceWidget::uploadFinished(OP_DFU::Status retstatus)
             status(QString("Updating description"), STATUSICON_RUNNING);
             repaint(); // Make sure the text above shows right away
             retstatus = m_dfu->UploadDescription(myDevice->description->text());
-            if( retstatus != OP_DFU::Last_operation_Success) {
-                status(QString("Upload failed with code: ") + m_dfu->StatusToString(retstatus).toLatin1().data(), STATUSICON_FAIL);
+            if (retstatus != OP_DFU::Last_operation_Success) {
                 emit uploadEnded(false);
+                status(QString("Upload failed with code: ") + m_dfu->StatusToString(retstatus).toLatin1().data(), STATUSICON_FAIL);
+                updateButtons(true);
                 return;
             }
         }
+
     populate();
+
     emit uploadEnded(true);
     status("Upload successful", STATUSICON_OK);
-
+    updateButtons(true);
 }
 
 /**

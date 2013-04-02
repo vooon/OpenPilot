@@ -28,10 +28,9 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-/* Project Includes */
 #include "pios.h"
 
-#if defined(PIOS_INCLUDE_LED)
+#ifdef PIOS_INCLUDE_LED
 
 #include <pios_led_priv.h>
 
@@ -93,7 +92,10 @@ void PIOS_LED_On(uint32_t led_id)
 
 	const struct pios_led * led = &(led_cfg->leds[led_id]);
 
-	GPIO_ResetBits(led->pin.gpio, led->pin.init.GPIO_Pin);
+	if (led->active_high)
+		GPIO_SetBits(led->pin.gpio, led->pin.init.GPIO_Pin);
+	else
+		GPIO_ResetBits(led->pin.gpio, led->pin.init.GPIO_Pin);
 }
 
 /**
@@ -111,7 +113,10 @@ void PIOS_LED_Off(uint32_t led_id)
 
 	const struct pios_led * led = &(led_cfg->leds[led_id]);
 
-	GPIO_SetBits(led->pin.gpio, led->pin.init.GPIO_Pin);
+	if (led->active_high)
+		GPIO_ResetBits(led->pin.gpio, led->pin.init.GPIO_Pin);
+	else
+		GPIO_SetBits(led->pin.gpio, led->pin.init.GPIO_Pin);
 }
 
 /**
@@ -130,13 +135,19 @@ void PIOS_LED_Toggle(uint32_t led_id)
 	const struct pios_led * led = &(led_cfg->leds[led_id]);
 
 	if (GPIO_ReadOutputDataBit(led->pin.gpio, led->pin.init.GPIO_Pin) == Bit_SET) {
-		PIOS_LED_On(led_id);
+		if (led->active_high)
+			PIOS_LED_Off(led_id);
+		else
+			PIOS_LED_On(led_id);
 	} else {
-		PIOS_LED_Off(led_id);
+		if (led->active_high)
+			PIOS_LED_On(led_id);
+		else
+			PIOS_LED_Off(led_id);
 	}
 }
 
-#endif
+#endif /* PIOS_INCLUDE_LED */
 
 /**
   * @}

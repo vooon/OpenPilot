@@ -27,7 +27,7 @@
 
 #include "telemetry.h"
 #include "qxtlogger.h"
-#include "pipxsettings.h"
+#include "oplinksettings.h"
 #include "objectpersistence.h"
 #include <QTime>
 #include <QtGlobal>
@@ -376,7 +376,7 @@ void Telemetry::processObjectQueue()
     if ( gcsStats.Status != GCSTelemetryStats::STATUS_CONNECTED )
     {
         objQueue.clear();
-        if ( objInfo.obj->getObjID() != GCSTelemetryStats::OBJID && objInfo.obj->getObjID() != PipXSettings::OBJID  && objInfo.obj->getObjID() != ObjectPersistence::OBJID )
+        if ( objInfo.obj->getObjID() != GCSTelemetryStats::OBJID && objInfo.obj->getObjID() != OPLinkSettings::OBJID  && objInfo.obj->getObjID() != ObjectPersistence::OBJID )
         {
             objInfo.obj->emitTransactionCompleted(false);
             return;
@@ -391,7 +391,6 @@ void Telemetry::processObjectQueue()
         QMap<quint32, ObjectTransactionInfo*>::iterator itr = transMap.find(objInfo.obj->getObjID());
         if ( itr != transMap.end() ) {
             qDebug() << "!!!!!! Making request for an object: " << objInfo.obj->getName() << " for which a request is already in progress!!!!!!";
-            return;
         }
         UAVObject::Metadata metadata = objInfo.obj->getMetadata();
         ObjectTransactionInfo *transInfo = new ObjectTransactionInfo(this);

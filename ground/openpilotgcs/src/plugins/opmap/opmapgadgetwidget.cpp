@@ -46,7 +46,6 @@
 
 #include "uavtalk/telemetrymanager.h"
 #include "uavobject.h"
-#include "uavobjectmanager.h"
 
 #include "positionactual.h"
 #include "homelocation.h"
@@ -55,6 +54,7 @@
 #include "attitudeactual.h"
 #include "positionactual.h"
 #include "velocityactual.h"
+#include "airspeedactual.h"
 
 #define allow_manual_home_location_move
 
@@ -588,15 +588,21 @@ void OPMapGadgetWidget::updatePosition()
     AttitudeActual *attitudeActualObj = AttitudeActual::GetInstance(obm);
     PositionActual *positionActualObj = PositionActual::GetInstance(obm);
     VelocityActual *velocityActualObj = VelocityActual::GetInstance(obm);
+	AirspeedActual *airspeedActualObj = AirspeedActual::GetInstance(obm);
+
     Gyros *gyrosObj = Gyros::GetInstance(obm);
 
+    Q_ASSERT(attitudeActualObj);
     Q_ASSERT(positionActualObj);
     Q_ASSERT(velocityActualObj);
+	Q_ASSERT(airspeedActualObj);
     Q_ASSERT(gyrosObj);
 
     AttitudeActual::DataFields attitudeActualData = attitudeActualObj->getData();
     PositionActual::DataFields positionActualData = positionActualObj->getData();
     VelocityActual::DataFields velocityActualData = velocityActualObj->getData();
+	AirspeedActual::DataFields airspeedActualData = airspeedActualObj->getData();
+
     Gyros::DataFields gyrosData = gyrosObj->getData();
 
     double NED[3]={positionActualData.North, positionActualData.East, positionActualData.Down};
@@ -604,7 +610,7 @@ void OPMapGadgetWidget::updatePosition()
 
     //Set the position and heading estimates in the painter module
     m_map->UAV->SetNED(NED);
-    m_map->UAV->SetCAS(-1); //THIS NEEDS TO BECOME AIRSPEED, ONCE WE SETTLE ON A UAVO
+	m_map->UAV->SetCAS(airspeedActualData.CalibratedAirspeed);
     m_map->UAV->SetGroundspeed(vNED, m_maxUpdateRate);
 
     //Convert angular velocities into a rotationg rate around the world-frame yaw axis. This is found by simply taking the dot product of the angular Euler-rate matrix with the angular rates.
@@ -866,8 +872,10 @@ void OPMapGadgetWidget::onTelemetryConnect()
     setHome(internals::PointLatLng(LLA[0], LLA[1]),LLA[2]);
 
     if (m_map)
-		m_map->SetCurrentPosition(m_home_position.coord);         // set the map position
-
+    {
+        if(m_map->UAV->GetMapFollowType()!=UAVMapFollowType::None)
+            m_map->SetCurrentPosition(m_home_position.coord);         // set the map position
+    }
     // ***********************
 }
 
@@ -919,7 +927,7 @@ void OPMapGadgetWidget::setHome(QPointF pos)
 /**
   Sets the home position on the map widget
   */
-void OPMapGadgetWidget::setHome(internals::PointLatLng pos_lat_lon,double altitude)
+void OPMapGadgetWidget::setHome(internals::PointLatLng pos_lat_lon, double altitude)
 {
 	if (!m_widget || !m_map)
 		return;
@@ -941,13 +949,13 @@ void OPMapGadgetWidget::setHome(internals::PointLatLng pos_lat_lon,double altitu
     if (longitude >  180) longitude =  180;
     else
     if (longitude < -180) longitude = -180;
-    else if(altitude != altitude) altitude=0;
 
     // *********
 
-	m_home_position.coord = internals::PointLatLng(latitude, longitude);
+    m_home_position.coord = internals::PointLatLng(latitude, longitude);
+    m_home_position.altitude = altitude;
 
-	m_map->Home->SetCoord(m_home_position.coord);
+    m_map->Home->SetCoord(m_home_position.coord);
     m_map->Home->SetAltitude(altitude);
     m_map->Home->RefreshPos();
 
@@ -1659,7 +1667,15 @@ void OPMapGadgetWidget::onSetHomeAct_triggered()
 	if (!m_widget || !m_map)
 		return;
 
-    setHome(m_context_menu_lat_lon,0);
+    float altitude=0;
+    bool ok;
+
+    //Get desired HomeLocation altitude from dialog box.
+    //TODO: Populate box with altitude already in HomeLocation UAVO
+    altitude = QInputDialog::getDouble(this, tr("Set home altitude"),
+                                      tr("In [m], referenced to WGS84:"), altitude, -100, 100000, 2, &ok);
+
+    setHome(m_context_menu_lat_lon, altitude);
 
     setHomeLocationObject();  // update the HomeLocation UAVObject
 }
@@ -2159,6 +2175,7 @@ void OPMapGadgetWidget::on_tbFind_clicked()
     {
         pal.setColor( m_widget->leFind->backgroundRole(), Qt::green);
         m_widget->leFind->setPalette(pal);
+        m_map->SetZoom(12);
     }
     else
     {
@@ -2179,4 +2196,9 @@ void OPMapGadgetWidget::onOverlayOpacityActGroup_triggered(QAction *action)
 
     m_map->setOverlayOpacity(action->data().toReal()/100);
     emit overlayOpacityChanged(action->data().toReal()/100);
+}
+
+void OPMapGadgetWidget::on_leFind_returnPressed()
+{
+    on_tbFind_clicked();
 }

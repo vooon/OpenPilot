@@ -25,7 +25,15 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#define GCS_REVISION ${TAG_OR_BRANCH}:${HASH8}${DIRTY} ${DATETIME}
+#ifndef _GCSVERSIONINFO_H
+#define _GCSVERSIONINFO_H
+
+#define GCS_REVISION    "${REVISION}"
+#define GCS_YEAR        "${YEAR}"
+#define GCS_ORIGIN      "${ORIGIN}"
+#define UAVO_HASH       "{ ${UAVOSHA1} }"
+
+#endif // _GCSVERSIONINFO_H
 
 /**
  * @}

@@ -29,10 +29,10 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "fifo_buffer.h"
-
 #ifndef PIOS_BMA180_H
 #define PIOS_BMA180_H
+
+#include "fifo_buffer.h"
 
 #include <pios.h>
 
@@ -103,7 +103,7 @@ extern float PIOS_BMA180_GetScale();
 extern int32_t PIOS_BMA180_ReadFifo(struct pios_bma180_data * buffer);
 extern int32_t PIOS_BMA180_ReadAccels(struct pios_bma180_data * data);
 extern int32_t PIOS_BMA180_Test();
-extern void PIOS_BMA180_IRQHandler();
+extern bool PIOS_BMA180_IRQHandler();
 
 #endif /* PIOS_BMA180_H */
 

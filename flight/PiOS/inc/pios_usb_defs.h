@@ -267,7 +267,7 @@ enum usb_cdc_requests {
 	USB_CDC_REQ_SET_LINE_CODING        = 0x20,
 	USB_CDC_REQ_GET_LINE_CODING        = 0x21,
 
-	USB_CDC_REQ_SET_CONTROL_LINE_STATE = 0x23,
+	USB_CDC_REQ_SET_CONTROL_LINE_STATE = 0x22,
 };
 
 struct usb_cdc_header_func_desc {
@@ -364,6 +364,7 @@ enum usb_op_board_ids {
 	USB_OP_BOARD_ID_PIPXTREME      = 3,
 	USB_OP_BOARD_ID_COPTERCONTROL  = 4,
 	USB_OP_BOARD_ID_REVOLUTION     = 5,
+	USB_OP_BOARD_ID_OSD     	   = 6,
 } __attribute__((packed));
 
 enum usb_op_board_modes {

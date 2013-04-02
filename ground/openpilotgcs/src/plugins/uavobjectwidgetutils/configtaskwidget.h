@@ -70,6 +70,16 @@ public:
         QList<shadow *> shadowsList;
     };
 
+    struct temphelper
+    {
+        quint32 objid;
+        quint32 objinstid;
+        bool operator==(const temphelper& lhs)
+        {
+            return (lhs.objid==this->objid && lhs.objinstid==this->objinstid);
+        }
+    };
+
     enum buttonTypeEnum {none,save_button,apply_button,reload_button,default_button,help_button};
     struct uiRelationAutomation
     {
@@ -92,6 +102,7 @@ public:
     void saveObjectToSD(UAVObject *obj);
     UAVObjectManager* getObjectManager();
     static double listMean(QList<double> list);
+    static double listVar(QList<double> list);
 
     void addUAVObject(QString objectName, QList<int> *reloadGroups=NULL);
     void addUAVObject(UAVObject * objectName, QList<int> *reloadGroups=NULL);
@@ -127,6 +138,7 @@ public:
     void setOutOfLimitsStyle(QString style){outOfLimitsStyle=style;}
     void addHelpButton(QPushButton * button,QString url);
     void forceShadowUpdates();
+    void forceConnectedState();
 public slots:
     void onAutopilotDisconnect();
     void onAutopilotConnect();

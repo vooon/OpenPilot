@@ -8,16 +8,13 @@ INCLUDEPATH += ../../libs/eigen
 OTHER_FILES += Config.pluginspec
 
 HEADERS += configplugin.h \
-    configgadgetconfiguration.h \
     configgadgetwidget.h \
     configgadgetfactory.h \
-    configgadgetoptionspage.h \
     configgadget.h \
     fancytabwidget.h \
     configinputwidget.h \
     configoutputwidget.h \
     configvehicletypewidget.h \
-    config_pro_hw_widget.h \
     config_cc_hw_widget.h \
     configccattitudewidget.h \
     configpipxtremewidget.h \
@@ -36,18 +33,19 @@ HEADERS += configplugin.h \
     cfg_vehicletypes/configfixedwingwidget.h \
     cfg_vehicletypes/vehicleconfig.h \
     configrevowidget.h \
-    config_global.h
+    config_global.h \
+    mixercurve.h \
+    dblspindelegate.h \
+    configrevohwwidget.h
+
 SOURCES += configplugin.cpp \
-    configgadgetconfiguration.cpp \
     configgadgetwidget.cpp \
     configgadgetfactory.cpp \
-    configgadgetoptionspage.cpp \
     configgadget.cpp \
     fancytabwidget.cpp \
     configinputwidget.cpp \
     configoutputwidget.cpp \
     configvehicletypewidget.cpp \
-    config_pro_hw_widget.cpp \
     config_cc_hw_widget.cpp \
     configccattitudewidget.cpp \
     configstabilizationwidget.cpp \
@@ -67,10 +65,13 @@ SOURCES += configplugin.cpp \
     cfg_vehicletypes/configfixedwingwidget.cpp \
     cfg_vehicletypes/configccpmwidget.cpp \
     outputchannelform.cpp \
-    cfg_vehicletypes/vehicleconfig.cpp
+    cfg_vehicletypes/vehicleconfig.cpp \
+    mixercurve.cpp \
+    dblspindelegate.cpp \
+    configrevohwwidget.cpp
+
 FORMS += airframe.ui \
     cc_hw_settings.ui \
-    pro_hw_settings.ui \
     ccpm.ui \
     stabilization.ui \
     input.ui \
@@ -83,5 +84,8 @@ FORMS += airframe.ui \
     outputchannelform.ui \
     revosensors.ui \
     txpid.ui \
-    pipxtreme.ui
+    pipxtreme.ui \
+    mixercurve.ui \
+    configrevohwwidget.ui
+
 RESOURCES += configgadget.qrc

@@ -32,8 +32,6 @@
 #ifndef PIOS_L3GD20_H
 #define PIOS_L3GD20_H
 
-#include "pios.h"
-
 /* L3GD20 Addresses */
 #define PIOS_L3GD20_WHOAMI               0x0F
 #define PIOS_L3GD20_CTRL_REG1            0X20
@@ -141,7 +139,7 @@ extern int32_t PIOS_L3GD20_SetRange(enum pios_l3gd20_range range);
 extern float PIOS_L3GD20_GetScale();
 extern int32_t PIOS_L3GD20_ReadID();
 extern uint8_t PIOS_L3GD20_Test();
-extern void PIOS_L3GD20_IRQHandler();
+extern bool PIOS_L3GD20_IRQHandler();
 
 #endif /* PIOS_L3GD20_H */
 

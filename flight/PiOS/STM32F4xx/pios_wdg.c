@@ -37,6 +37,9 @@
  */
 
 #include "pios.h"
+
+#ifdef PIOS_INCLUDE_WDG
+
 #include "stm32f4xx_iwdg.h"
 #include "stm32f4xx_dbgmcu.h"
 #include "stm32f4xx_rtc.h"
@@ -98,7 +101,10 @@ uint16_t PIOS_WDG_Init()
  */
 bool PIOS_WDG_RegisterFlag(uint16_t flag_requested) 
 {
-	
+	// flag are being registered so we are in module initialization phase
+	// clear the WDG to prevent timeout while initializing modules. (OP-815)
+	PIOS_WDG_Clear();
+
 	/* Fail if flag already registered */
 	if(wdg_configuration.used_flags & flag_requested)
 		return false;
@@ -174,3 +180,5 @@ void PIOS_WDG_Clear(void)
 	IWDG_ReloadCounter();
 #endif
 }
+
+#endif /* PIOS_INCLUDE_WDG */

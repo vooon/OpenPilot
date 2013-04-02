@@ -1,21 +1,19 @@
 include(../../openpilotgcs.pri)
 include(../shared/qtsingleapplication/qtsingleapplication.pri)
+include(gcsversioninfo.pri)
 
 TEMPLATE = app
 TARGET = $$GCS_APP_TARGET
 DESTDIR = $$GCS_APP_PATH
 QT += xml
-
-SOURCES += main.cpp
-
+SOURCES += main.cpp \
+    gcssplashscreen.cpp
 include(../rpath.pri)
 include(../libs/utils/utils.pri)
 
 LIBS *= -l$$qtLibraryName(ExtensionSystem) -l$$qtLibraryName(Aggregation)
 
 win32 {
-#    CONFIG(debug, debug|release):LIBS *= -lExtensionSystemd -lAggregationd  -lQExtSerialPortd
-#    else:LIBS *= -lExtensionSystem -lAggregation -lQExtSerialPort
     RC_FILE = openpilotgcs.rc
     target.path = /bin
     INSTALLS += target
@@ -32,3 +30,9 @@ win32 {
 }
 
 OTHER_FILES += openpilotgcs.rc
+
+RESOURCES += \
+    appresources.qrc
+
+HEADERS += \
+    gcssplashscreen.h
