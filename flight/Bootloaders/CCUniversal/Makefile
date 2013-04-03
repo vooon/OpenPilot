@@ -23,12 +23,13 @@
  #####
 
 # Testname is until the main Makefile is revised to pass this
-TESTNAME := STM32F103
+TESTNAME := $(TARGET_MCU)
+# STM32F103
 
 WHEREAMI := $(dir $(lastword $(MAKEFILE_LIST)))
 TOP      := $(realpath $(WHEREAMI)/../../../)
 include $(TOP)/make/firmware-defs.mk
-include $(TOP)/make/boards/$(BOARD_NAME)/$(TESTNAME)_board-info.mk
+include $(TOP)/make/boards/$(BOARD_NAME)/$(TARGET_MCU)_board-info.mk
 
 # Target MCU pushed to board-info where it belongs
 

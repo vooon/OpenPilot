@@ -107,6 +107,7 @@ help:
 	@echo "   [Bootloader]"
 	@echo "     bl_<board>           - Build bootloader for <board>"
 	@echo "                            supported boards are ($(BL_BOARDS))"
+	@echo "     bl_<board> TARGET_MCU=<mcu>     - *** Do Not Use *** Supported are: ($(BL_MCU))"
 	@echo "     bl_<board>_clean     - Remove bootloader for <board>"
 	@echo "     bl_<board>_program   - Use OpenOCD + JTAG to write bootloader to <board>"
 	@echo
@@ -731,6 +732,7 @@ uavo-collections_clean:
 # $(1) = Canonical board name all in lower case (e.g. coptercontrol)
 # $(2) = Name of board used in source tree (e.g. CopterControl)
 # $(3) = Short name for board (e.g CC)
+# $(4) = Short name for MCU (e.g STM32F103)
 define FW_TEMPLATE
 .PHONY: $(1) fw_$(1)
 $(1): fw_$(1)_opfw
@@ -756,6 +758,7 @@ endef
 
 # $(1) = Canonical board name all in lower case (e.g. coptercontrol)
 # $(2) = Name of board used in source tree (e.g. CopterControl)
+# $(4) = Short name for MCU (e.g STM32F103)
 define BL_TEMPLATE
 .PHONY: bl_$(1)
 bl_$(1): bl_$(1)_bin
@@ -763,10 +766,12 @@ bl_$(1)_bino: bl_$(1)_bin
 
 bl_$(1)_%:
 	$(V1) mkdir -p $(BUILD_DIR)/bl_$(1)/dep
+	$(V1) @echo " BUILDING Bootloader for:  $(1) mcu: $(TARGET_MCU)"
 	$(V1) cd $(ROOT_DIR)/flight/Bootloaders/$(2) && \
 		$$(MAKE) -r --no-print-directory \
 		BOARD_NAME=$(1) \
 		BOARD_SHORT_NAME=$(3) \
+		BOARD_SHORT_MCU=$(TARGET_MCU) \
 		BUILD_TYPE=bl \
 		TCHAIN_PREFIX="$(ARM_SDK_PREFIX)" \
 		REMOVE_CMD="$(RM)" OOCD_EXE="$(OPENOCD)" \
@@ -865,6 +870,7 @@ all_$(1)_clean: $$(addsuffix _clean, $$(filter ef_$(1), $$(EF_TARGETS)))
 endef
 
 ALL_BOARDS := coptercontrol pipxtreme revolution revomini simposix osd ccuniversal
+ALL_MCU := STM32F103 STM32F303
 ALL_BOARDS_BU := coptercontrol pipxtreme simposix
 
 # SimPosix only builds on Linux so drop it from the list for
@@ -913,6 +919,9 @@ EF_BOARDS  := $(filter-out simposix, $(EF_BOARDS))
 BL_BOARDS  := $(filter-out simposix, $(BL_BOARDS))
 BU_BOARDS  := $(filter-out simposix, $(BU_BOARDS))
 EF_BOARDS  := $(filter-out simposix, $(EF_BOARDS))
+
+# Add MCU specific call
+BL_MCU := $(ALL_MCU)
 
 # Generate the targets for whatever boards are left in each list
 FW_TARGETS := $(addprefix fw_, $(FW_BOARDS))
