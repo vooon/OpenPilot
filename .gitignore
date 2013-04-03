@@ -86,3 +86,15 @@ androidgcs/bin/
 androidgcs/gen/
 /.cproject
 /.project
+
+# Ignore Eclipse Metadata
+/.metadata
+
+# Ignore interesting Eclipse temp folder, git plugin based?
+RemoteSystemsTempFiles
+ 
+
+# Patch based output ignores
+*.rej
+*.orig
+*.diff~
