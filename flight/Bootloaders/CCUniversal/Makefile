@@ -393,9 +393,9 @@ DEPFILES   = $(addprefix $(OUTDIR)/dep/, $(addsuffix .o.d, $(ALLSRCBASE)))
 all: patch build
 
 patch: 
-    $(V1) echo patch -p0 flight/ExtLibraries/Patches/hw_config.h --input=flight/ExtLibraries/Patches/STM32F10x_USB.diff
-    $(shell patch -p0 /ExtLibraries/Patches/hw_config.h --input=../../flight/ExtLibraries/Patches/STM32F10x_USB.diff)
-    $(shell patch -p0 flight/ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_lib.h --input=../../flight/ExtLibraries/Patches/STM32F10x_USB-2.diff)
+ #   $(V1) echo patch -p0 flight/ExtLibraries/Patches/hw_config.h --input=flight/ExtLibraries/Patches/STM32F10x_USB.diff
+	$(shell patch -N -p1 ../../ExtLibraries/Patches/hw_config.h --input=../../ExtLibraries/Patches/STM32F10x_USB.diff)
+	$(shell patch -N -p1 ../../ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_lib.h --input=../../ExtLibraries/Patches/STM32F10x_USB-2.diff)
 
 #	$(shell patch -p0 $(TOP)/flight/ExtLibraries/Patches/hw_config.h --input=$(TOP)/flight/ExtLibraries/Patches/STM32F10x_USB.diff)
 #	$(shell patch -p0 $(TOP)/flight/ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_lib.h --input=$(TOP)/flight/ExtLibraries/Patches/STM32F10x_USB-2.diff)
