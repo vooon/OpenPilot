@@ -398,6 +398,8 @@ patch:
 
 
 $(foreach number,$(NUMPATCHES), $(warning  Patch $(number) being applied); $(shell patch -N -p1 $(TARGET_$(number)) --input=$(PATCH_$(number))) ;)
+# Reverse test
+$(foreach number,$(NUMPATCHES), $(warning  Reversing Patch $(number)); $(shell patch -R -p1 $(TARGET_$(number)) --input=$(PATCH_$(number))) ;)
 
 #	$(shell patch -N -p1 $$(PATCH_1) --input=$$(TARGET_1))
 #	$(shell patch -N -p1 ../../ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_lib.h --input=../../ExtLibraries/Patches/STM32F10x_USB-2.diff)
