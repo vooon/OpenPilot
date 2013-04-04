@@ -45,9 +45,15 @@ USBSRC              := Libraries/STM32_USB-FS-Device_Driver/src
 USBDIR              := $(USBLIB)_$(USBVER)/Libraries/$(USBDVR)
 
 # Cryptic name due to length, CMSIS VENDOR and VERSION
-CMVEN               := UNKNOWN
+CMVEN               := STMicro
 CMVENVER            := UNKNOWN
 
+# Patches required, make silliness requires funny numbering
+NUMPATCHES := 1 2
+PATCH_1    := ../../ExtLibraries/Patches/hw_config.h
+TARGET_1  := ../../ExtLibraries/Patches/STM32F10x_USB.diff
+PATCH_2    :=
+TARGET_2  :=
 
 OPENOCD_JTAG_CONFIG := foss-jtag.revb.cfg
 OPENOCD_CONFIG      := stm32f1x.cfg
