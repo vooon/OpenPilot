@@ -766,6 +766,11 @@ bl_$(1)_bino: bl_$(1)_bin
 
 bl_$(1)_%:
 	$(V1) mkdir -p $(BUILD_DIR)/bl_$(1)/dep
+	$(V1) echo patch -p0 flight/ExtLibraries/Patches/hw_config.h --input=flight/ExtLibraries/Patches/STM32F10x_USB.diff
+	$(V1) patch -p0 flight/ExtLibraries/Patches/hw_config.h --input=flight/ExtLibraries/Patches/STM32F10x_USB.diff
+	$(V1) echo patch -p0 $(TOP)/flight/ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_lib.h --input=$(TOP)/flight/ExtLibraries/Patches/STM32F10x_USB-2.diff
+	$(V1) patch -p0 $(TOP)/flight/ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_lib.h --input=$(TOP)/flight/ExtLibraries/Patches/STM32F10x_USB-2.diff
+
 	$(V1) @echo " BUILDING Bootloader for:  $(1) mcu: $(TARGET_MCU)"
 	$(V1) cd $(ROOT_DIR)/flight/Bootloaders/$(2) && \
 		$$(MAKE) -r --no-print-directory \
