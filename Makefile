@@ -794,11 +794,6 @@ $(if $(filter-out undefined,$(origin UNBRICK_TTY)),
 
 .PHONY: bl_$(1)_clean
 bl_$(1)_clean:
-#	$(V0) @echo " CLEAN      $$@"
-#	$(V1) $(RM) -fr $(BUILD_DIR)/bl_$(1)
-#	NUMPATCHES = 2
-#	$(foreach number,$(NUMPATCHES), $(warning  Reversing Patch $(number)); $(warning patch -R -p1 flight/ExtLibraries/Patches/$(TARGET_$(number)) --input=flight/ExtLibraries/Patches/$(PATCH_$(number))) ;)
-
 	$(V0) @echo " CLEAN      $$@"
 	$(V1) cd $(ROOT_DIR)/flight/Bootloaders/$(2) && \
 		$$(MAKE) -r --no-print-directory \
