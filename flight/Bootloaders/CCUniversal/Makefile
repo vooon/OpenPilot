@@ -374,7 +374,8 @@ LDFLAGS += -T$(LINKERSCRIPTPATH)/link_$(BOARD)_memory.ld
 LDFLAGS += -T$(LINKERSCRIPTPATH)/link_$(BOARD)_BL_sections.ld
 
 # Define programs and commands.
-REMOVE  = $(REMOVE_CMD) -f
+REMOVE    = $(REMOVE_CMD) -f
+REMOVEALL = $(REMOVE_CMD) -rf
 
 # List of all source files.
 ALLSRC     = $(ASRCARM) $(ASRC) $(SRCARM) $(SRC) $(CPPSRCARM) $(CPPSRC)
@@ -506,7 +507,7 @@ clean_list :
 
 # This clean is not used?? 
 # The equiv command from the top-level Makefile that was orriding the above
-	$(V1) $(REMOVE_CMD) -fr $(OUTDIR)
+	$(V1) $(REMOVEALL) -fr $(OUTDIR)
 # Reverse applied patches incase target is changed
 	$(foreach number,$(NUMPATCHES), $(warning  Reversing Patch $(number))) 
 	$(foreach number,$(NUMPATCHES), $(shell patch -R -p1 $(TARGET_$(number)) --input=$(PATCH_$(number))) ;)
