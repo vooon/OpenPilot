@@ -52,8 +52,8 @@ CMVENVER            := UNKNOWN
 NUMPATCHES := 1 2
 PATCH_1    := ../../ExtLibraries/Patches/hw_config.h
 TARGET_1  := ../../ExtLibraries/Patches/STM32F10x_USB.diff
-PATCH_2    :=
-TARGET_2  :=
+PATCH_2    := ../../ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_lib.h
+TARGET_2  := ../../ExtLibraries/Patches/STM32F10x_USB-2.diff
 
 OPENOCD_JTAG_CONFIG := foss-jtag.revb.cfg
 OPENOCD_CONFIG      := stm32f1x.cfg
