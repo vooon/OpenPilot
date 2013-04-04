@@ -398,8 +398,6 @@ patch:
 
 
 $(foreach number,$(NUMPATCHES), $(warning  Patch $(number) being applied); $(shell patch -N -p1 $(TARGET_$(number)) --input=$(PATCH_$(number))) ;)
-# Reverse test
-$(foreach number,$(NUMPATCHES), $(warning  Reversing Patch $(number)); $(shell patch -R -p1 $(TARGET_$(number)) --input=$(PATCH_$(number))) ;)
 
 #	$(shell patch -N -p1 $$(PATCH_1) --input=$$(TARGET_1))
 #	$(shell patch -N -p1 ../../ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_lib.h --input=../../ExtLibraries/Patches/STM32F10x_USB-2.diff)
@@ -490,21 +488,28 @@ endif
 clean: clean_list
 
 clean_list :
-	@echo $(MSG_CLEANING)
-	$(V1) $(REMOVE) $(OUTDIR)/$(TARGET).map
-	$(V1) $(REMOVE) $(OUTDIR)/$(TARGET).elf
-	$(V1) $(REMOVE) $(OUTDIR)/$(TARGET).hex
-	$(V1) $(REMOVE) $(OUTDIR)/$(TARGET).bin
-	$(V1) $(REMOVE) $(OUTDIR)/$(TARGET).sym
-	$(V1) $(REMOVE) $(OUTDIR)/$(TARGET).lss
-	$(V1) $(REMOVE) $(OUTDIR)/$(TARGET).bin.o
-	$(V1) $(REMOVE) $(ALLOBJ)
-	$(V1) $(REMOVE) $(LSTFILES)
-	$(V1) $(REMOVE) $(DEPFILES)
-	$(V1) $(REMOVE) $(SRC:.c=.s)
-	$(V1) $(REMOVE) $(SRCARM:.c=.s)
-	$(V1) $(REMOVE) $(CPPSRC:.cpp=.s)
-	$(V1) $(REMOVE) $(CPPSRCARM:.cpp=.s)
+#	@echo $(MSG_CLEANING)
+#	$(V1) $(REMOVE) $(OUTDIR)/$(TARGET).map
+#	$(V1) $(REMOVE) $(OUTDIR)/$(TARGET).elf
+#	$(V1) $(REMOVE) $(OUTDIR)/$(TARGET).hex
+#	$(V1) $(REMOVE) $(OUTDIR)/$(TARGET).bin
+#	$(V1) $(REMOVE) $(OUTDIR)/$(TARGET).sym
+#	$(V1) $(REMOVE) $(OUTDIR)/$(TARGET).lss
+#	$(V1) $(REMOVE) $(OUTDIR)/$(TARGET).bin.o
+#	$(V1) $(REMOVE) $(ALLOBJ)
+#	$(V1) $(REMOVE) $(LSTFILES)
+#	$(V1) $(REMOVE) $(DEPFILES)
+#	$(V1) $(REMOVE) $(SRC:.c=.s)
+#	$(V1) $(REMOVE) $(SRCARM:.c=.s)
+#	$(V1) $(REMOVE) $(CPPSRC:.cpp=.s)
+#	$(V1) $(REMOVE) $(CPPSRCARM:.cpp=.s)
+
+# This clean is not used?? 
+# The equiv command from the top-level Makefile that was orriding the above
+	$(V1) $(REMOVE_CMD) -fr $(OUTDIR)
+# Reverse applied patches incase target is changed
+	$(foreach number,$(NUMPATCHES), $(warning  Reversing Patch $(number))) 
+	$(foreach number,$(NUMPATCHES), $(shell patch -R -p1 $(TARGET_$(number)) --input=$(PATCH_$(number))) ;)
 
 
 # Create output files directory

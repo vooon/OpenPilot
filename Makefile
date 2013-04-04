@@ -794,8 +794,22 @@ $(if $(filter-out undefined,$(origin UNBRICK_TTY)),
 
 .PHONY: bl_$(1)_clean
 bl_$(1)_clean:
+#	$(V0) @echo " CLEAN      $$@"
+#	$(V1) $(RM) -fr $(BUILD_DIR)/bl_$(1)
+#	NUMPATCHES = 2
+#	$(foreach number,$(NUMPATCHES), $(warning  Reversing Patch $(number)); $(warning patch -R -p1 flight/ExtLibraries/Patches/$(TARGET_$(number)) --input=flight/ExtLibraries/Patches/$(PATCH_$(number))) ;)
+
 	$(V0) @echo " CLEAN      $$@"
-	$(V1) $(RM) -fr $(BUILD_DIR)/bl_$(1)
+	$(V1) cd $(ROOT_DIR)/flight/Bootloaders/$(2) && \
+		$$(MAKE) -r --no-print-directory \
+		BOARD_NAME=$(1) \
+		BOARD_SHORT_NAME=$(3) \
+		BOARD_SHORT_MCU=$(TARGET_MCU) \
+		BUILD_TYPE=bl \
+		TCHAIN_PREFIX="$(ARM_SDK_PREFIX)" \
+		REMOVE_CMD="$(RM)" OOCD_EXE="$(OPENOCD)" \
+		clean
+	
 endef
 
 # $(1) = Canonical board name all in lower case (e.g. coptercontrol)
