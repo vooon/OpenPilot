@@ -1,0 +1,13 @@
+diff --git a/flight/ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_lib.h b/flight/ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_lib.h
+index 2a9469a..9521465 100644
+--- a/flight/ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_lib.h
++++ b/flight/ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_lib.h
+@@ -31,7 +31,7 @@
+ #define __USB_LIB_H
+ 
+ /* Includes ------------------------------------------------------------------*/
+-#include "hw_config.h"
++#include "../../../../Patches/hw_config.h"
+ #include "usb_type.h"
+ #include "usb_regs.h"
+ #include "usb_def.h"
