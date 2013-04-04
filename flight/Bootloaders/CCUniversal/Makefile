@@ -390,7 +390,11 @@ LSTFILES   = $(addprefix $(OUTDIR)/, $(addsuffix .lst, $(ALLSRCBASE)))
 DEPFILES   = $(addprefix $(OUTDIR)/dep/, $(addsuffix .o.d, $(ALLSRCBASE)))
 
 # Default target.
-all: build
+all: patch build
+
+patch: 
+#    $(V1) echo patch -p0 flight/ExtLibraries/Patches/hw_config.h --input=flight/ExtLibraries/Patches/STM32F10x_USB.diff
+	$(shell patch -p0 $(TOP)/flight/ExtLibraries/Patches/hw_config.h --input=$(TOP)/flight/ExtLibraries/Patches/STM32F10x_USB.diff)
 
 ifeq ($(LOADFORMAT),ihex)
 build: elf hex sym
