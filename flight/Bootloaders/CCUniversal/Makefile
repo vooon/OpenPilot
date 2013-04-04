@@ -397,7 +397,7 @@ patch:
 # Setup function loop to apply patches
 
 
-$(foreach number,$(NUMPATCHES), $(warning $(number) patch -N -p1 $(TARGET_$(number)) --input=$(PATCH_$(number))) ;)
+$(foreach number,$(NUMPATCHES), $(warning  Patch $(number) being applied); $(shell patch -N -p1 $(TARGET_$(number)) --input=$(PATCH_$(number))) ;)
 
 #	$(shell patch -N -p1 $$(PATCH_1) --input=$$(TARGET_1))
 #	$(shell patch -N -p1 ../../ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_lib.h --input=../../ExtLibraries/Patches/STM32F10x_USB-2.diff)
