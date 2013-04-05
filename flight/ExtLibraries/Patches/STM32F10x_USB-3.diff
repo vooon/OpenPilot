@@ -1,0 +1,25 @@
+diff --git a/flight/ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_type.h b/flight/ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_type.h
+index 7b12a59..19ecff1 100644
+--- a/flight/ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_type.h
++++ b/flight/ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_type.h
+@@ -39,11 +39,15 @@
+ #define NULL ((void *)0)
+ #endif
+ 
+-typedef enum
+-{
+-  FALSE = 0, TRUE  = !FALSE
+-}
+-bool;
++/* The compiler does not like this as it is already defined in stdbool.h */
++#if !defined FALSE
++ typedef enum
++ {
++   FALSE = 0, TRUE  = !FALSE
++ }
++ bool;
++
++#endif
+ 
+ /* Exported macro ------------------------------------------------------------*/
+ /* Exported functions ------------------------------------------------------- */

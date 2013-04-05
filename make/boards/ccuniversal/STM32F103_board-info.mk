@@ -49,11 +49,13 @@ CMVEN               := STMicro
 CMVENVER            := UNKNOWN
 
 # Patches required, make silliness requires funny numbering
-NUMPATCHES  := 1 2
+NUMPATCHES  := 1 2 3
 TARGET_1    := ../../ExtLibraries/Patches/hw_config.h
 PATCH_1     := ../../ExtLibraries/Patches/STM32F10x_USB.diff
 TARGET_2    := ../../ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_lib.h
 PATCH_2     := ../../ExtLibraries/Patches/STM32F10x_USB-2.diff
+TARGET_3    := ../../ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_type.h
+PATCH_3     := ../../ExtLibraries/Patches/STM32F10x_USB-3.diff
 
 OPENOCD_JTAG_CONFIG := foss-jtag.revb.cfg
 OPENOCD_CONFIG      := stm32f1x.cfg
