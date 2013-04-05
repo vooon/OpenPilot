@@ -299,7 +299,7 @@ extern const uint8_t *PIOS_USB_CDC_GetLineCoding(uint16_t Length);
 static RESULT PIOS_USBHOOK_Data_Setup(uint8_t RequestNo)
 {
 	uint8_t *(*CopyOutRoutine) (uint16_t);
-	const uint8_t *(*CopyInRoutine) (uint16_t);
+	uint8_t *(*CopyInRoutine) (uint16_t);
 
 	CopyInRoutine = NULL;
 	CopyOutRoutine = NULL;
@@ -377,11 +377,11 @@ static RESULT PIOS_USBHOOK_Data_Setup(uint8_t RequestNo)
 	}
 
 	if (CopyInRoutine != NULL) {
-		pInformation->Ctrl_Info.CopyDataIn = CopyInRoutine;
+		pInformation->Ctrl_Info.CopyData = CopyInRoutine;
 		pInformation->Ctrl_Info.Usb_wOffset = 0;
 		(*CopyInRoutine) (0);
 	} else if (CopyOutRoutine != NULL) {
-		pInformation->Ctrl_Info.CopyDataOut = CopyOutRoutine;
+		pInformation->Ctrl_Info.CopyData = CopyOutRoutine;
 		pInformation->Ctrl_Info.Usb_rOffset = 0;
 		(*CopyOutRoutine) (0);
 	}
