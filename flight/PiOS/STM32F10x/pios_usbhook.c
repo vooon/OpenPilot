@@ -441,7 +441,7 @@ static RESULT PIOS_USBHOOK_NoData_Setup(uint8_t RequestNo)
 * Output         : None.
 * Return         : The address of the device descriptor.
 *******************************************************************************/
-static const uint8_t *PIOS_USBHOOK_GetDeviceDescriptor(uint16_t Length)
+static uint8_t *PIOS_USBHOOK_GetDeviceDescriptor(uint16_t Length)
 {
 	return Standard_GetDescriptorData(Length, &Device_Descriptor);
 }
