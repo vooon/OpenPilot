@@ -1,5 +1,5 @@
 diff --git a/flight/ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_core.h b/flight/ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_core.h
-index 44dc327..43f2c35 100644
+index 44dc327..f686618 100644
 --- a/flight/ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_core.h
 +++ b/flight/ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_core.h
 @@ -48,7 +48,8 @@
@@ -11,4 +11,17 @@ index 44dc327..43f2c35 100644
 +  uint8_t const *Descriptor;
    uint16_t Descriptor_Size;
  }
- ONE_DESCRIPTOR, *PONE_DESCRIPTOR;
+ ONE_DESCRIPTOR, *PONE_DESCRIPTOR;
+@@ -182,9 +183,9 @@
+ 
+   RESULT  (*Class_Get_Interface_Setting)(uint8_t Interface, uint8_t AlternateSetting);
+ 
+-  uint8_t* (*GetDeviceDescriptor)(uint16_t Length);
+-  uint8_t* (*GetConfigDescriptor)(uint16_t Length);
+-  uint8_t* (*GetStringDescriptor)(uint16_t Length);
++  uint8_t const* (*GetDeviceDescriptor)(uint16_t Length);
++  uint8_t const* (*GetConfigDescriptor)(uint16_t Length);
++  uint8_t const* (*GetStringDescriptor)(uint16_t Length);
+ 
+   /* This field is not used in current library version. It is kept only for 
+    compatibility with previous versions */
