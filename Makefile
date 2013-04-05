@@ -791,7 +791,7 @@ $(if $(filter-out undefined,$(origin UNBRICK_TTY)),
 	$(V0) @echo "ERROR: You must specify UNBRICK_TTY=<serial-device> to use for unbricking."
 	$(V0) @echo "       eg. $$(MAKE) $$@ UNBRICK_TTY=/dev/ttyUSB0"
 )
-
+# bl_XX_clean now uses the bl Makefile to clean 
 .PHONY: bl_$(1)_clean
 bl_$(1)_clean:
 	$(V0) @echo " CLEAN      $$@"

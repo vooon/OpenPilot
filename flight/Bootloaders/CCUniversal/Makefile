@@ -506,9 +506,9 @@ clean_list :
 #	$(V1) $(REMOVE) $(CPPSRCARM:.cpp=.s)
 
 # This clean is not used?? 
-# The equiv command from the top-level Makefile that was orriding the above
+# The equiv command from the top-level Makefile that was overriding the above
 	$(V1) $(REMOVEALL) -fr $(OUTDIR)
-# Reverse applied patches incase target is changed
+# Reverse applied patches incase target is changed, this throws an error even though it works ...
 	$(foreach number,$(NUMPATCHES), $(warning  Reversing Patch $(number))) 
 	$(foreach number,$(NUMPATCHES), $(shell patch -R -p1 $(TARGET_$(number)) --input=$(PATCH_$(number))) ;)
 
