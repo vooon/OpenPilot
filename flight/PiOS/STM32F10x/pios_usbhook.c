@@ -43,7 +43,7 @@ static ONE_DESCRIPTOR Device_Descriptor;
 
 void PIOS_USBHOOK_RegisterDevice(const uint8_t * desc, uint16_t desc_size)
 {
-	Device_Descriptor.Descriptor      = desc;
+	Device_Descriptor.Descriptor = desc;
 	Device_Descriptor.Descriptor_Size = desc_size;
 }
 

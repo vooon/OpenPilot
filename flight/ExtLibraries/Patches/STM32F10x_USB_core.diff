@@ -1,0 +1,14 @@
+diff --git a/flight/ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_core.h b/flight/ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_core.h
+index 44dc327..43f2c35 100644
+--- a/flight/ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_core.h
++++ b/flight/ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_core.h
+@@ -48,7 +48,8 @@
+ 
+ typedef struct OneDescriptor
+ {
+-  uint8_t *Descriptor;
++/* Need to carry a const here for PiOS compatability */
++  uint8_t const *Descriptor;
+   uint16_t Descriptor_Size;
+ }
+ ONE_DESCRIPTOR, *PONE_DESCRIPTOR;
