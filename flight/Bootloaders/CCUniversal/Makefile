@@ -84,7 +84,7 @@ EXTLIBS = ../../ExtLibraries
 
 # Depreciating in favor of versioning and MCU agnostic
 STMSPDDIR = $(EXTLIBS)/$(STDPERLIB)_$(STDPLVER)
-STMUSBDIR = $(STMLIBDIR)/STM32_USB-FS-Device_Driver
+STMUSBDIR = $(EXTLIBS)/$(USBLIB)_$(USBVER)
 
 # PIOSCOMMONLIB = $(PIOSCOMMON)/Libraries
 PIOSCOMMONLIB = $(STMSPDDIR)/Libraries
