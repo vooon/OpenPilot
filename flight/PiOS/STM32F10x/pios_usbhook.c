@@ -41,7 +41,7 @@
 
 static ONE_DESCRIPTOR Device_Descriptor;
 
-void PIOS_USBHOOK_RegisterDevice(const uint8_t * desc, uint16_t desc_size)
+void PIOS_USBHOOK_RegisterDevice(uint8_t *desc, uint16_t desc_size)
 {
 	Device_Descriptor.Descriptor = desc;
 	Device_Descriptor.Descriptor_Size = desc_size;
@@ -49,7 +49,7 @@ void PIOS_USBHOOK_RegisterDevice(const uint8_t * desc, uint16_t desc_size)
 
 static ONE_DESCRIPTOR Config_Descriptor;
 
-void PIOS_USBHOOK_RegisterConfig(uint8_t config_id, const uint8_t * desc, uint16_t desc_size)
+void PIOS_USBHOOK_RegisterConfig(uint8_t config_id, uint8_t *desc, uint16_t desc_size)
 {
 	Config_Descriptor.Descriptor      = desc;
 	Config_Descriptor.Descriptor_Size = desc_size;
@@ -57,7 +57,7 @@ void PIOS_USBHOOK_RegisterConfig(uint8_t config_id, const uint8_t * desc, uint16
 
 static ONE_DESCRIPTOR String_Descriptor[4];
 
-void PIOS_USBHOOK_RegisterString(enum usb_string_desc string_id, const uint8_t * desc, uint16_t desc_size)
+void PIOS_USBHOOK_RegisterString(enum usb_string_desc string_id, uint8_t *desc, uint16_t desc_size)
 {
 	if (string_id < NELEMENTS(String_Descriptor)) {
 		String_Descriptor[string_id].Descriptor      = desc;
@@ -67,7 +67,7 @@ void PIOS_USBHOOK_RegisterString(enum usb_string_desc string_id, const uint8_t *
 
 static ONE_DESCRIPTOR Hid_Descriptor;
 
-void PIOS_USB_HID_RegisterHidDescriptor(const uint8_t * desc, uint16_t desc_size)
+void PIOS_USB_HID_RegisterHidDescriptor(uint8_t *desc, uint16_t desc_size)
 {
 	Hid_Descriptor.Descriptor      = desc;
 	Hid_Descriptor.Descriptor_Size = desc_size;
@@ -75,7 +75,7 @@ void PIOS_USB_HID_RegisterHidDescriptor(const uint8_t * desc, uint16_t desc_size
 
 static ONE_DESCRIPTOR Hid_Report_Descriptor;
 
-void PIOS_USB_HID_RegisterHidReport(const uint8_t * desc, uint16_t desc_size)
+void PIOS_USB_HID_RegisterHidReport(uint8_t *desc, uint16_t desc_size)
 {
 	Hid_Report_Descriptor.Descriptor      = desc;
 	Hid_Report_Descriptor.Descriptor_Size = desc_size;
@@ -98,9 +98,9 @@ static void PIOS_USBHOOK_Status_Out(void);
 static RESULT PIOS_USBHOOK_Data_Setup(uint8_t RequestNo);
 static RESULT PIOS_USBHOOK_NoData_Setup(uint8_t RequestNo);
 static RESULT PIOS_USBHOOK_Get_Interface_Setting(uint8_t Interface, uint8_t AlternateSetting);
-static const uint8_t *PIOS_USBHOOK_GetDeviceDescriptor(uint16_t Length);
-static const uint8_t *PIOS_USBHOOK_GetConfigDescriptor(uint16_t Length);
-static const uint8_t *PIOS_USBHOOK_GetStringDescriptor(uint16_t Length);
+static uint8_t *PIOS_USBHOOK_GetDeviceDescriptor(uint16_t Length);
+static uint8_t *PIOS_USBHOOK_GetConfigDescriptor(uint16_t Length);
+static uint8_t *PIOS_USBHOOK_GetStringDescriptor(uint16_t Length);
 
 DEVICE_PROP Device_Property = {
 	.Init                        = PIOS_USBHOOK_Init,
@@ -133,9 +133,9 @@ USER_STANDARD_REQUESTS User_Standard_Requests = {
 };
 
 static RESULT PIOS_USBHOOK_SetProtocol(void);
-static const uint8_t *PIOS_USBHOOK_GetProtocolValue(uint16_t Length);
-static const uint8_t *PIOS_USBHOOK_GetReportDescriptor(uint16_t Length);
-static const uint8_t *PIOS_USBHOOK_GetHIDDescriptor(uint16_t Length);
+static uint8_t *PIOS_USBHOOK_GetProtocolValue(uint16_t Length);
+static uint8_t *PIOS_USBHOOK_GetReportDescriptor(uint16_t Length);
+static uint8_t *PIOS_USBHOOK_GetHIDDescriptor(uint16_t Length);
 
 /*******************************************************************************
 * Function Name  : PIOS_USBHOOK_Init.
@@ -453,7 +453,7 @@ static uint8_t *PIOS_USBHOOK_GetDeviceDescriptor(uint16_t Length)
 * Output         : None.
 * Return         : The address of the configuration descriptor.
 *******************************************************************************/
-static const uint8_t *PIOS_USBHOOK_GetConfigDescriptor(uint16_t Length)
+static uint8_t *PIOS_USBHOOK_GetConfigDescriptor(uint16_t Length)
 {
 	return Standard_GetDescriptorData(Length, &Config_Descriptor);
 }
@@ -465,7 +465,7 @@ static const uint8_t *PIOS_USBHOOK_GetConfigDescriptor(uint16_t Length)
 * Output         : None.
 * Return         : The address of the string descriptors.
 *******************************************************************************/
-static const uint8_t *PIOS_USBHOOK_GetStringDescriptor(uint16_t Length)
+static uint8_t *PIOS_USBHOOK_GetStringDescriptor(uint16_t Length)
 {
 	uint8_t wValue0 = pInformation->USBwValue0;
 	if (wValue0 > 4) {
@@ -494,7 +494,7 @@ static uint8_t *PIOS_USBHOOK_GetReportDescriptor(uint16_t Length)
 * Output         : None.
 * Return         : The address of the configuration descriptor.
 *******************************************************************************/
-static const uint8_t *PIOS_USBHOOK_GetHIDDescriptor(uint16_t Length)
+static uint8_t *PIOS_USBHOOK_GetHIDDescriptor(uint16_t Length)
 {
 	return Standard_GetDescriptorData(Length, &Hid_Descriptor);
 }
@@ -539,7 +539,7 @@ static RESULT PIOS_USBHOOK_SetProtocol(void)
 * Output         : None.
 * Return         : address of the protcol value.
 *******************************************************************************/
-static const uint8_t *PIOS_USBHOOK_GetProtocolValue(uint16_t Length)
+static uint8_t *PIOS_USBHOOK_GetProtocolValue(uint16_t Length)
 {
 	if (Length == 0) {
 		pInformation->Ctrl_Info.Usb_wLength = 1;

@@ -182,9 +182,9 @@ typedef struct _DEVICE_PROP
 
   RESULT  (*Class_Get_Interface_Setting)(uint8_t Interface, uint8_t AlternateSetting);
 
-  uint8_t* (*GetDeviceDescriptor)(uint16_t Length);
-  uint8_t* (*GetConfigDescriptor)(uint16_t Length);
-  uint8_t* (*GetStringDescriptor)(uint16_t Length);
+  uint8_t * (*GetDeviceDescriptor)(uint16_t Length);
+  uint8_t * (*GetConfigDescriptor)(uint16_t Length);
+  uint8_t * (*GetStringDescriptor)(uint16_t Length);
 
   /* This field is not used in current library version. It is kept only for 
    compatibility with previous versions */
