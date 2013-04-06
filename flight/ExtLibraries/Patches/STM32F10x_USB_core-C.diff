@@ -1,0 +1,12 @@
+diff --git a/flight/ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/src/usb_core.c b/flight/ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/src/usb_core.c
+index a0c6805..c637285 100644
+--- a/flight/ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/src/usb_core.c
++++ b/flight/ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/src/usb_core.c
+@@ -28,6 +28,7 @@
+ 
+ /* Includes ------------------------------------------------------------------*/
+ #include "usb_lib.h"
++#include <stdbool.h>
+ /* Private typedef -----------------------------------------------------------*/
+ /* Private define ------------------------------------------------------------*/
+ #define ValBit(VAR,Place)    (VAR & (1 << Place))
