@@ -56,8 +56,8 @@ TARGET_2    := ../../ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32
 PATCH_2     := ../../ExtLibraries/Patches/STM32F10x_USB-2.diff
 TARGET_3    := ../../ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_type.h
 PATCH_3     := ../../ExtLibraries/Patches/STM32F10x_USB-3.diff
-TARGET_4    := ../../ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_core.h
-PATCH_4     := ../../ExtLibraries/Patches/STM32F10x_USB_core.diff
+TARGET_4    := ../../ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/src/usb_core.c
+PATCH_4     := ../../ExtLibraries/Patches/STM32F10x_USB_core-C.diff
 
 OPENOCD_JTAG_CONFIG := foss-jtag.revb.cfg
 OPENOCD_CONFIG      := stm32f1x.cfg
