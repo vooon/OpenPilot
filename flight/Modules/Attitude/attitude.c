@@ -281,8 +281,12 @@ static int32_t updateSensors(AccelsData * accels, GyrosData * gyros)
 	}
 
 	// Do not read raw sensor data in simulation mode
-	if (GyrosReadOnly() || AccelsReadOnly())
+	if (GyrosReadOnly() || AccelsReadOnly()) {
+		GyrosGet(gyros);
+		AccelsGet(accels);
 		return 0;
+	}
+
 
 	// No accel data available
 	if(PIOS_ADXL345_FifoElements() == 0)
@@ -384,8 +388,11 @@ static int32_t updateSensorsCC3D(AccelsData * accelsData, GyrosData * gyrosData)
 		return -1;	// Error, no data
 
 	// Do not read raw sensor data in simulation mode
-	if (GyrosReadOnly() || AccelsReadOnly())
+	if (GyrosReadOnly() || AccelsReadOnly()) {
+		GyrosGet(gyrosData);
+		AccelsGet(accelsData);
 		return 0;
+	}
 
 	gyros[0] = mpu6000_data.gyro_x * PIOS_MPU6000_GetScale();
 	gyros[1] = mpu6000_data.gyro_y * PIOS_MPU6000_GetScale();

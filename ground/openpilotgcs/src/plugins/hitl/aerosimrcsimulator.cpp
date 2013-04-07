@@ -209,13 +209,13 @@ void AeroSimRCSimulator::processUpdate(const QByteArray &data)
     out.groundspeed = qSqrt(velX * velX + velY * velY);
 
     /**********************************************************************************************/
-    out.dstN = posY * 100;
-    out.dstE = posX * 100;
-    out.dstD = posZ * -100;
+    out.dstN = posY;
+    out.dstE = posX;
+    out.dstD = -posZ;
 
-    out.velDown = velY * 100;
-    out.velEast = velX * 100;
-    out.velDown = velZ * 100; //WHY ISN'T THIS `-velZ`???
+    out.velNorth = velY;
+    out.velEast = velX;
+    out.velDown = -velZ;
 
     updateUAVOs(out);
 

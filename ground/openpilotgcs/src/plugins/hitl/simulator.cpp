@@ -451,7 +451,7 @@ void Simulator::updateUAVOs(Output2Hardware out){
     groundTruthData.AngleOfSlip=out.angleOfSlip;
 
     groundTruthData.PositionNED[0]=out.dstN-initN;
-    groundTruthData.PositionNED[1]=out.dstE-initD;
+    groundTruthData.PositionNED[1]=out.dstE-initE;
     groundTruthData.PositionNED[2]=out.dstD-initD;
 
     groundTruthData.VelocityNED[0]=out.velNorth;
@@ -682,7 +682,7 @@ void Simulator::updateUAVOs(Output2Hardware out){
             memset(&positionActualData, 0, sizeof(PositionActual::DataFields));
             positionActualData.North = (out.dstN-initN) + noise.positionActualData.North;
             positionActualData.East = (out.dstE-initE) + noise.positionActualData.East;
-            positionActualData.Down = (out.dstD/*-initD*/) + noise.positionActualData.Down;
+            positionActualData.Down = (out.dstD-initD) + noise.positionActualData.Down;
             posActual->setData(positionActualData);
 
             groundTruthTime=groundTruthTime.addMSecs(settings.groundTruthRate);
