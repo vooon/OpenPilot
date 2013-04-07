@@ -25,7 +25,7 @@ MODEL_SUFFIX        := _CC
 
 # RTOS Selection for this board
 RTOS                := FreeRTOS
-RTOSVER             := UNKONOWN
+RTOSVER             := UNKNOWN
 CMSIS               := Libraries/CMSIS
 CMSISVER            := CM3
 CMSISCORE           := CoreSupport

@@ -1,0 +1,13 @@
+diff --git a/flight/ExtLibraries/Patches/hw_config.h b/flight/ExtLibraries/Patches/hw_config.h
+index 6aa9ccd..3c60241 100644
+--- a/flight/ExtLibraries/Patches/hw_config.h
++++ b/flight/ExtLibraries/Patches/hw_config.h
+@@ -31,7 +31,7 @@
+ #define __HW_CONFIG_H
+ 
+ /* Includes ------------------------------------------------------------------*/
+-#include "platform_config.h"
++#include <stm32f30x.h>
+ #include "usb_type.h"
+ 
+ /* Exported types ------------------------------------------------------------*/
