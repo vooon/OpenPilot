@@ -31,7 +31,7 @@
 #define __HW_CONFIG_H
 
 /* Includes ------------------------------------------------------------------*/
-#include "platform_config.h"
+#include <stm32f30x.h>
 #include "usb_type.h"
 
 /* Exported types ------------------------------------------------------------*/

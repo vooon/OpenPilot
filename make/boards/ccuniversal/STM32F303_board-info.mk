@@ -14,23 +14,48 @@ STDPERLIB           := STM32F30x_DSP_StdPeriph_Lib
 STDPLVER            := V1.0.0
 STDPLINC            := Libraries/STM32F30x_StdPeriph_Driver/inc
 STDPLSRC            := Libraries/STM32F30x_StdPeriph_Driver/src
-STDPLCMSIS          := Libraries/CMSIS/Device/ST/STM32F30x
+STDPLCMSIS          := Libraries/CMSIS/Device/ST/STM32F30x/Include
 # Poor naming convention, need filename stub
 STDPLSTB            := stm32f30x_
 CHIP                := STM32F303CCT
 BOARD               := STM32103CB_CC_Rev1
+# Model does not mean much, density is is correct and descriptive
 MODEL               := MD
 MODEL_SUFFIX        := _CC
 
 # RTOS Selection for this board
 RTOS                := FreeRTOS
-RTOSVER             := UNKONOWN
-CMSIS               := CMSIS
-CMSISVER            := 2
+RTOSVER             := UNKNOWN
+CMSIS               := Libraries/CMSIS
+CMSISVER            := Device
+CMSISCORE           := CoreSupport
+
 # Cryptic name due to length, CMSIS VENDOR and VERSION
-CMVEN               := UNKNOWN
+CMVEN               := STMicro
 CMVENVER            := UNKNOWN
 
+# Enable ARM DSP library
+USE_DSP_LIB = NO
+CMSISDEV            := DeviceSupport/ST/STM32F30x/Include
+#CMSISDSP            := Legacy/CMSIS2/DSP_Lib/Source
+
+# USB Drivers
+#USBDIR              := Legacy/STM32_USB-FS-Device_Driver
+USBLIB              := STM32_USB-FS-Device_Lib
+USBVER              := V4.0.0
+USBDVR              := STM32_USB-FS-Device_Driver
+USBINC              := Libraries/STM32_USB-FS-Device_Driver/inc
+USBSRC              := Libraries/STM32_USB-FS-Device_Driver/src
+USBDIR              := $(USBLIB)_$(USBVER)/Libraries/$(USBDVR)
+
+# Patches required, make silliness requires funny numbering. This should actually be XML
+NUMPATCHES  := 1 2 3
+TARGET_1    := ../../ExtLibraries/Patches/hw_config.h
+PATCH_1     := ../../ExtLibraries/Patches/STM32F30x_USB.diff
+TARGET_2    := ../../ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_lib.h
+PATCH_2     := ../../ExtLibraries/Patches/hw_config-location.diff
+TARGET_3    := ../../ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_type.h
+PATCH_3     := ../../ExtLibraries/Patches/STM32F30x_USB-3.diff
 
 OPENOCD_JTAG_CONFIG := foss-jtag.revb.cfg
 OPENOCD_CONFIG      := stm32f1x.cfg
