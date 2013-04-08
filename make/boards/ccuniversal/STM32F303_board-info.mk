@@ -28,7 +28,8 @@ RTOS                := FreeRTOS
 RTOSVER             := UNKNOWN
 CMSIS               := Libraries/CMSIS
 CMSISVER            := Device
-CMSISCORE           := CoreSupport
+CMSISDEV            := Device/ST/STM32F30x/Include
+CMSISCORE           := Include
 
 # Cryptic name due to length, CMSIS VENDOR and VERSION
 CMVEN               := STMicro
@@ -36,7 +37,6 @@ CMVENVER            := UNKNOWN
 
 # Enable ARM DSP library
 USE_DSP_LIB = NO
-CMSISDEV            := DeviceSupport/ST/STM32F30x/Include
 #CMSISDSP            := Legacy/CMSIS2/DSP_Lib/Source
 
 # USB Drivers

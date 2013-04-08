@@ -148,7 +148,8 @@ SRC += $(PIOSCOMMON)/printf-stdarg.c
 SRC += $(FLIGHTLIB)/fifo_buffer.c
 
 ## CMSIS
-SRC += $(CMSISDIR)/$(CMSISCORE)/core_cm3.c
+SRC += $(CMSISDIR)/$(CMSISCORE)
+SRC += $(CMSISDIR)/$(CMSISCORE)/$(CMSISDEV)
 SRC += $(CMSISDIR)/$(CMSISDEV)/system_$(TARGETMCUL).c
 
 ## Used parts of the STM-Library
