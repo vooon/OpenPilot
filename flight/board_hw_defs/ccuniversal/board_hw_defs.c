@@ -44,19 +44,20 @@
     static const struct pios_led pios_leds_cc[] = {
 #endif
 
+ /* The newer StdPerif uses a different methodology from the F1 */
 #if defined(STM32F30X)
-    			[PIOS_LED_HEARTBEAT] = {
-    				.pin = {
-    					.gpio = GPIOA,
-    					.init = {
-    						.GPIO_Pin   = GPIO_Pin_6,
-    						.GPIO_Speed = GPIO_Speed_Level_3,
-    						.GPIO_Mode  = GPIO_Mode_OUT,
-    						.GPIO_OType = GPIO_OType_PP,
-    						.GPIO_PuPd = GPIO_PuPd_UP
-    					},
-    				},
-    			},
+	    [PIOS_LED_HEARTBEAT] = {
+		.pin = {
+			.gpio = GPIOA,
+			.init = {
+				.GPIO_Pin   = GPIO_Pin_6,
+				.GPIO_Speed = GPIO_Speed_Level_3,
+				.GPIO_Mode  = GPIO_Mode_OUT,
+				.GPIO_OType = GPIO_OType_PP,
+				.GPIO_PuPd  = GPIO_PuPd_UP
+			},
+		},
+	},
 
 #else
     	[PIOS_LED_HEARTBEAT] = {
@@ -69,8 +70,10 @@
 			},
 		},
 	},
-};
 #endif
+};
+
+
 /* Test to deal with versioned and legacy StdPeriphLib */
 #if defined(STDPERLIB) && defined(STDPLVER)
     static struct pios_led_cfg pios_led_cfg_cc = {
@@ -89,6 +92,22 @@
 #ifndef STDPLVER
     static const struct pios_led pios_leds_cc3d[] = {
 #endif
+
+#if defined(STM32F30X)
+	    [PIOS_LED_HEARTBEAT] = {
+		.pin = {
+			.gpio = GPIOB,
+			.init = {
+				.GPIO_Pin   = GPIO_Pin_3,
+				.GPIO_Speed = GPIO_Speed_Level_3,
+				.GPIO_Mode  = GPIO_Mode_OUT,
+				.GPIO_OType = GPIO_OType_PP,
+				.GPIO_PuPd  = GPIO_PuPd_UP
+			},
+		},
+	},
+
+#else
     [PIOS_LED_HEARTBEAT] = {
 		.pin = {
 			.gpio = GPIOB,
@@ -100,6 +119,7 @@
 		},
 		.remap = GPIO_Remap_SWJ_JTAGDisable,
 	},
+#endif
 };
 
 /* Test to deal with versioned and legacy StdPeriphLib */
