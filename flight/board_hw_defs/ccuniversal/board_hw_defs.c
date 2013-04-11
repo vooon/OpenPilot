@@ -43,7 +43,23 @@
 #ifndef STDPLVER
     static const struct pios_led pios_leds_cc[] = {
 #endif
-		[PIOS_LED_HEARTBEAT] = {
+
+#if defined(STM32F30X)
+    			[PIOS_LED_HEARTBEAT] = {
+    				.pin = {
+    					.gpio = GPIOA,
+    					.init = {
+    						.GPIO_Pin   = GPIO_Pin_6,
+    						.GPIO_Speed = GPIO_Speed_Level_3,
+    						.GPIO_Mode  = GPIO_Mode_OUT,
+    						.GPIO_OType = GPIO_OType_PP,
+    						.GPIO_PuPd = GPIO_PuPd_UP
+    					},
+    				},
+    			},
+
+#else
+    	[PIOS_LED_HEARTBEAT] = {
 		.pin = {
 			.gpio = GPIOA,
 			.init = {
@@ -54,7 +70,7 @@
 		},
 	},
 };
-
+#endif
 /* Test to deal with versioned and legacy StdPeriphLib */
 #if defined(STDPERLIB) && defined(STDPLVER)
     static struct pios_led_cfg pios_led_cfg_cc = {
