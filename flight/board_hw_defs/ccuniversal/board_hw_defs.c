@@ -876,6 +876,17 @@ static const struct pios_tim_channel pios_tim_rcvrport_all_channels[] = {
 		.timer = TIM2,
 		.timer_chan = TIM_Channel_2,
 		.pin = {
+#if defined(STM32F30X)
+		.gpio = GPIOA,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_1,
+			.GPIO_Speed = GPIO_Speed_Level_2,
+			.GPIO_Mode  = GPIO_Mode_IN,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_DOWN
+			},
+		},
+#else
 			.gpio = GPIOA,
 			.init = {
 				.GPIO_Pin   = GPIO_Pin_1,
@@ -883,6 +894,7 @@ static const struct pios_tim_channel pios_tim_rcvrport_all_channels[] = {
 				.GPIO_Speed = GPIO_Speed_2MHz,
 			},
 		},
+#endif
 	}, 		
 };
 
@@ -891,6 +903,17 @@ static const struct pios_tim_channel pios_tim_servoport_all_pins[] = {
 		.timer = TIM4,
 		.timer_chan = TIM_Channel_4,
 		.pin = {
+#if defined(STM32F30X)
+		.gpio = GPIOB,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_9,
+			.GPIO_Speed = GPIO_Speed_Level_2,
+			.GPIO_Mode  = GPIO_Mode_AF,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_UP
+			},
+		},
+#else
 			.gpio = GPIOB,
 			.init = {
 				.GPIO_Pin   = GPIO_Pin_9,
@@ -898,11 +921,23 @@ static const struct pios_tim_channel pios_tim_servoport_all_pins[] = {
 				.GPIO_Speed = GPIO_Speed_2MHz,
 			},
 		},
+#endif
 	},
 	{
 		.timer = TIM4,
 		.timer_chan = TIM_Channel_3,
 		.pin = {
+#if defined(STM32F30X)
+		.gpio = GPIOB,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_8,
+			.GPIO_Speed = GPIO_Speed_Level_2,
+			.GPIO_Mode  = GPIO_Mode_AF,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_UP
+			},
+		},
+#else
 			.gpio = GPIOB,
 			.init = {
 				.GPIO_Pin   = GPIO_Pin_8,
@@ -910,11 +945,23 @@ static const struct pios_tim_channel pios_tim_servoport_all_pins[] = {
 				.GPIO_Speed = GPIO_Speed_2MHz,
 			},
 		},
+#endif
 	}, 
 	{
 		.timer = TIM4,
 		.timer_chan = TIM_Channel_2,
 		.pin = {
+#if defined(STM32F30X)
+		.gpio = GPIOB,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_7,
+			.GPIO_Speed = GPIO_Speed_Level_2,
+			.GPIO_Mode  = GPIO_Mode_AF,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_UP
+			},
+		},
+#else
 			.gpio = GPIOB,
 			.init = {
 				.GPIO_Pin   = GPIO_Pin_7,
@@ -922,11 +969,23 @@ static const struct pios_tim_channel pios_tim_servoport_all_pins[] = {
 				.GPIO_Speed = GPIO_Speed_2MHz,
 			},
 		},
+#endif
 	}, 
 	{
 		.timer = TIM1,
 		.timer_chan = TIM_Channel_1,
 		.pin = {
+#if defined(STM32F30X)
+		.gpio = GPIOA,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_8,
+			.GPIO_Speed = GPIO_Speed_Level_2,
+			.GPIO_Mode  = GPIO_Mode_AF,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_UP
+			},
+		},
+#else
 			.gpio = GPIOA,
 			.init = {
 				.GPIO_Pin   = GPIO_Pin_8,
@@ -934,11 +993,23 @@ static const struct pios_tim_channel pios_tim_servoport_all_pins[] = {
 				.GPIO_Speed = GPIO_Speed_2MHz,
 			},
 		},
+#endif
 	}, 
 	{
 		.timer = TIM3,
 		.timer_chan = TIM_Channel_1,
 		.pin = {
+#if defined(STM32F30X)
+		.gpio = GPIOB,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_4,
+			.GPIO_Speed = GPIO_Speed_Level_2,
+			.GPIO_Mode  = GPIO_Mode_AF,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_UP
+			},
+		},
+#else
 			.gpio = GPIOB,
 			.init = {
 				.GPIO_Pin   = GPIO_Pin_4,
@@ -946,6 +1017,7 @@ static const struct pios_tim_channel pios_tim_servoport_all_pins[] = {
 				.GPIO_Speed = GPIO_Speed_2MHz,
 			},
 		},
+#endif
 		.remap = GPIO_PartialRemap_TIM3,
 	},  	
 	{
