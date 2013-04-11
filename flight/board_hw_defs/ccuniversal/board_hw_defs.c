@@ -454,13 +454,26 @@ static const struct pios_spi_cfg pios_spi_flash_accel_cfg_cc3d = {
 		}}
 #endif
 	      ,{
-			.gpio = GPIOC,
+#if defined(STM32F30X)
+		.gpio = GPIOC,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_15,
+			.GPIO_Speed = GPIO_Speed_Level_3,
+			.GPIO_Mode  = GPIO_Mode_OUT,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_UP
+			},
+		},
+#else
+	    	.gpio = GPIOC,
 			.init = {
 				.GPIO_Pin   = GPIO_Pin_15,
 				.GPIO_Speed = GPIO_Speed_50MHz,
 				.GPIO_Mode  = GPIO_Mode_Out_PP,
 			},
-		}},
+		}
+#endif
+        },
 };
 
 static const struct pios_spi_cfg pios_spi_flash_accel_cfg_cc = {
@@ -520,6 +533,17 @@ static const struct pios_spi_cfg pios_spi_flash_accel_cfg_cc = {
 		},
 	},
 	.sclk = {
+#if defined(STM32F30X)
+		.gpio = GPIOB,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_13,
+			.GPIO_Speed = GPIO_Speed_Level_1,
+			.GPIO_Mode  = GPIO_Mode_AF,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_UP
+			},
+		},
+#else
 		.gpio = GPIOB,
 		.init = {
 			.GPIO_Pin   = GPIO_Pin_13,
@@ -527,7 +551,19 @@ static const struct pios_spi_cfg pios_spi_flash_accel_cfg_cc = {
 			.GPIO_Mode  = GPIO_Mode_AF_PP,
 		},
 	},
+#endif
 	.miso = {
+#if defined(STM32F30X)
+		.gpio = GPIOB,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_14,
+			.GPIO_Speed = GPIO_Speed_Level_1,
+			.GPIO_Mode  = GPIO_Mode_IN,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_NOPULL
+			},
+		},
+#else
 		.gpio = GPIOB,
 		.init = {
 			.GPIO_Pin   = GPIO_Pin_14,
@@ -535,7 +571,19 @@ static const struct pios_spi_cfg pios_spi_flash_accel_cfg_cc = {
 			.GPIO_Mode  = GPIO_Mode_IN_FLOATING,
 		},
 	},
+#endif
 	.mosi = {
+#if defined(STM32F30X)
+		.gpio = GPIOB,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_15,
+			.GPIO_Speed = GPIO_Speed_Level_1,
+			.GPIO_Mode  = GPIO_Mode_AF,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_UP
+			},
+		},
+#else
 		.gpio = GPIOB,
 		.init = {
 			.GPIO_Pin   = GPIO_Pin_15,
@@ -543,21 +591,48 @@ static const struct pios_spi_cfg pios_spi_flash_accel_cfg_cc = {
 			.GPIO_Mode  = GPIO_Mode_AF_PP,
 		},
 	},
+#endif
 	.slave_count = 2,
 	.ssel = {{
+#if defined(STM32F30X)
+		.gpio = GPIOB,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_12,
+			.GPIO_Speed = GPIO_Speed_Level_3,
+			.GPIO_Mode  = GPIO_Mode_OUT,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_UP
+			},
+		},
+#else
 		.gpio = GPIOB,
 		.init = {
 			.GPIO_Pin   = GPIO_Pin_12,
 			.GPIO_Speed = GPIO_Speed_50MHz,
 			.GPIO_Mode  = GPIO_Mode_Out_PP,
-		}},{
+		}}
+#endif
+	,{
+#if defined(STM32F30X)
+		.gpio = GPIOA,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_7,
+			.GPIO_Speed = GPIO_Speed_Level_3,
+			.GPIO_Mode  = GPIO_Mode_OUT,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_UP
+			},
+		},
+#else
 			.gpio = GPIOA,
 			.init = {
 				.GPIO_Pin   = GPIO_Pin_7,
 				.GPIO_Speed = GPIO_Speed_50MHz,
 				.GPIO_Mode  = GPIO_Mode_Out_PP,
 			},
-		}},
+		}
+#endif
+        },
 };
 
 static uint32_t pios_spi_flash_accel_id;
