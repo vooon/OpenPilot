@@ -1343,6 +1343,17 @@ static const struct pios_usart_cfg pios_usart_generic_main_cfg = {
 		},
 	},
 	.rx   = {
+#if defined(STM32F30X)
+		.gpio = GPIOA,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_10,
+			.GPIO_Speed = GPIO_Speed_Level_2,
+			.GPIO_Mode  = GPIO_Mode_IN,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_UP
+			},
+		},
+#else
 		.gpio = GPIOA,
 		.init = {
 			.GPIO_Pin   = GPIO_Pin_10,
@@ -1350,7 +1361,19 @@ static const struct pios_usart_cfg pios_usart_generic_main_cfg = {
 			.GPIO_Mode  = GPIO_Mode_IPU,
 		},
 	},
+#endif
 	.tx   = {
+#if defined(STM32F30X)
+		.gpio = GPIOA,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_9,
+			.GPIO_Speed = GPIO_Speed_Level_2,
+			.GPIO_Mode  = GPIO_Mode_AF,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_UP
+			},
+		},
+#else
 		.gpio = GPIOA,
 		.init = {
 			.GPIO_Pin   = GPIO_Pin_9,
@@ -1358,6 +1381,7 @@ static const struct pios_usart_cfg pios_usart_generic_main_cfg = {
 			.GPIO_Mode  = GPIO_Mode_AF_PP,
 		},
 	},
+#endif
 };
 
 static const struct pios_usart_cfg pios_usart_generic_flexi_cfg = {
@@ -1379,6 +1403,17 @@ static const struct pios_usart_cfg pios_usart_generic_flexi_cfg = {
 		},
 	},
 	.rx   = {
+#if defined(STM32F30X)
+		.gpio = GPIOB,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_11,
+			.GPIO_Speed = GPIO_Speed_Level_2,
+			.GPIO_Mode  = GPIO_Mode_IN,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_UP
+			},
+		},
+#else
 		.gpio = GPIOB,
 		.init = {
 			.GPIO_Pin   = GPIO_Pin_11,
@@ -1386,7 +1421,19 @@ static const struct pios_usart_cfg pios_usart_generic_flexi_cfg = {
 			.GPIO_Mode  = GPIO_Mode_IPU,
 		},
 	},
+#endif
 	.tx   = {
+#if defined(STM32F30X)
+		.gpio = GPIOB,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_10,
+			.GPIO_Speed = GPIO_Speed_Level_2,
+			.GPIO_Mode  = GPIO_Mode_AF,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_UP
+			},
+		},
+#else
 		.gpio = GPIOB,
 		.init = {
 			.GPIO_Pin   = GPIO_Pin_10,
@@ -1394,6 +1441,7 @@ static const struct pios_usart_cfg pios_usart_generic_flexi_cfg = {
 			.GPIO_Mode  = GPIO_Mode_AF_PP,
 		},
 	},
+#endif
 };
 
 #if defined(PIOS_INCLUDE_DSM)
@@ -1421,6 +1469,17 @@ static const struct pios_usart_cfg pios_usart_dsm_main_cfg = {
 		},
 	},
 	.rx = {
+#if defined(STM32F30X)
+		.gpio = GPIOA,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_10,
+			.GPIO_Speed = GPIO_Speed_Level_2,
+			.GPIO_Mode  = GPIO_Mode_IN,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_UP
+			},
+		},
+#else
 		.gpio = GPIOA,
 		.init = {
 			.GPIO_Pin   = GPIO_Pin_10,
@@ -1428,7 +1487,19 @@ static const struct pios_usart_cfg pios_usart_dsm_main_cfg = {
 			.GPIO_Mode  = GPIO_Mode_IPU,
 		},
 	},
+#endif
 	.tx = {
+#if defined(STM32F30X)
+		.gpio = GPIOA,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_9,
+			.GPIO_Speed = GPIO_Speed_Level_2,
+			.GPIO_Mode  = GPIO_Mode_IN,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_NOPULL
+			},
+		},
+#else
 		.gpio = GPIOA,
 		.init = {
 			.GPIO_Pin   = GPIO_Pin_9,
@@ -1436,10 +1507,22 @@ static const struct pios_usart_cfg pios_usart_dsm_main_cfg = {
 			.GPIO_Mode  = GPIO_Mode_IN_FLOATING,
 		},
 	},
+#endif
 };
 
 static const struct pios_dsm_cfg pios_dsm_main_cfg = {
 	.bind = {
+#if defined(STM32F30X)
+		.gpio = GPIOA,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_10,
+			.GPIO_Speed = GPIO_Speed_Level_2,
+			.GPIO_Mode  = GPIO_Mode_OUT,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_UP
+			},
+		},
+#else
 		.gpio = GPIOA,
 		.init = {
 			.GPIO_Pin   = GPIO_Pin_10,
@@ -1447,6 +1530,7 @@ static const struct pios_dsm_cfg pios_dsm_main_cfg = {
 			.GPIO_Mode  = GPIO_Mode_Out_PP,
 		},
 	},
+#endif
 };
 
 static const struct pios_usart_cfg pios_usart_dsm_flexi_cfg = {
@@ -1468,6 +1552,17 @@ static const struct pios_usart_cfg pios_usart_dsm_flexi_cfg = {
 		},
 	},
 	.rx = {
+#if defined(STM32F30X)
+		.gpio = GPIOB,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_11,
+			.GPIO_Speed = GPIO_Speed_Level_2,
+			.GPIO_Mode  = GPIO_Mode_IN,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_UP
+			},
+		},
+#else
 		.gpio = GPIOB,
 		.init = {
 			.GPIO_Pin   = GPIO_Pin_11,
@@ -1475,7 +1570,19 @@ static const struct pios_usart_cfg pios_usart_dsm_flexi_cfg = {
 			.GPIO_Mode  = GPIO_Mode_IPU,
 		},
 	},
+#endif
 	.tx = {
+#if defined(STM32F30X)
+		.gpio = GPIOB,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_10,
+			.GPIO_Speed = GPIO_Speed_Level_2,
+			.GPIO_Mode  = GPIO_Mode_IN,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_NOPULL
+			},
+		},
+#else
 		.gpio = GPIOB,
 		.init = {
 			.GPIO_Pin   = GPIO_Pin_10,
@@ -1483,10 +1590,22 @@ static const struct pios_usart_cfg pios_usart_dsm_flexi_cfg = {
 			.GPIO_Mode  = GPIO_Mode_IN_FLOATING,
 		},
 	},
+#endif
 };
 
 static const struct pios_dsm_cfg pios_dsm_flexi_cfg = {
 	.bind = {
+#if defined(STM32F30X)
+		.gpio = GPIOB,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_11,
+			.GPIO_Speed = GPIO_Speed_Level_2,
+			.GPIO_Mode  = GPIO_Mode_OUT,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_UP
+			},
+		},
+#else
 		.gpio = GPIOB,
 		.init = {
 			.GPIO_Pin   = GPIO_Pin_11,
@@ -1494,6 +1613,7 @@ static const struct pios_dsm_cfg pios_dsm_flexi_cfg = {
 			.GPIO_Mode  = GPIO_Mode_Out_PP,
 		},
 	},
+#endif
 };
 
 #endif	/* PIOS_INCLUDE_DSM */
@@ -1524,6 +1644,17 @@ static const struct pios_usart_cfg pios_usart_sbus_main_cfg = {
 		  },
 	},
 	.rx = {
+#if defined(STM32F30X)
+		.gpio = GPIOA,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_10,
+			.GPIO_Speed = GPIO_Speed_Level_2,
+			.GPIO_Mode  = GPIO_Mode_IN,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_UP
+			},
+		},
+#else
 		.gpio = GPIOA,
 		.init = {
 			.GPIO_Pin   = GPIO_Pin_10,
@@ -1531,7 +1662,19 @@ static const struct pios_usart_cfg pios_usart_sbus_main_cfg = {
 			.GPIO_Mode  = GPIO_Mode_IPU,
 		},
 	},
+#endif
 	.tx = {
+#if defined(STM32F30X)
+		.gpio = GPIOA,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_9,
+			.GPIO_Speed = GPIO_Speed_Level_2,
+			.GPIO_Mode  = GPIO_Mode_IN,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_NOPULL
+			},
+		},
+#else
 		.gpio = GPIOA,
 		.init = {
 			.GPIO_Pin   = GPIO_Pin_9,
@@ -1539,6 +1682,7 @@ static const struct pios_usart_cfg pios_usart_sbus_main_cfg = {
 			.GPIO_Mode  = GPIO_Mode_IN_FLOATING,
 		},
 	},
+#endif
 };
 
 static const struct pios_sbus_cfg pios_sbus_cfg = {
