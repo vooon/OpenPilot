@@ -215,6 +215,17 @@ static const struct pios_spi_cfg pios_spi_gyro_cfg = {
 		},
 	},
 	.sclk = {
+#if defined(STM32F30X)
+		.gpio = GPIOA,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_5,
+			.GPIO_Speed = GPIO_Speed_Level_3,
+			.GPIO_Mode  = GPIO_Mode_AF,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_UP
+			},
+		},
+#else
 		.gpio = GPIOA,
 		.init = {
 			.GPIO_Pin   = GPIO_Pin_5,
@@ -222,7 +233,20 @@ static const struct pios_spi_cfg pios_spi_gyro_cfg = {
 			.GPIO_Mode  = GPIO_Mode_AF_PP,
 		},
 	},
+#endif
 	.miso = {
+#if defined(STM32F30X)
+			/* IPU is input pullup? */
+		.gpio = GPIOA,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_6,
+			.GPIO_Speed = GPIO_Speed_Level_3,
+			.GPIO_Mode  = GPIO_Mode_IN,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_UP
+			},
+		},
+#else
 		.gpio = GPIOA,
 		.init = {
 			.GPIO_Pin   = GPIO_Pin_6,
@@ -230,7 +254,19 @@ static const struct pios_spi_cfg pios_spi_gyro_cfg = {
 			.GPIO_Mode  = GPIO_Mode_IPU,
 		},
 	},
+#endif
 	.mosi = {
+#if defined(STM32F30X)
+		.gpio = GPIOA,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_7,
+			.GPIO_Speed = GPIO_Speed_Level_3,
+			.GPIO_Mode  = GPIO_Mode_AF,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_UP
+			},
+		},
+#else
 		.gpio = GPIOA,
 		.init = {
 			.GPIO_Pin   = GPIO_Pin_7,
@@ -238,15 +274,30 @@ static const struct pios_spi_cfg pios_spi_gyro_cfg = {
 			.GPIO_Mode  = GPIO_Mode_AF_PP,
 		},
 	},
+#endif
 	.slave_count = 1,
 	.ssel = {{
+#if defined(STM32F30X)
+			/* mode out pull up? */
+		.gpio = GPIOA,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_4,
+			.GPIO_Speed = GPIO_Speed_Level_3,
+			.GPIO_Mode  = GPIO_Mode_OUT,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_UP
+			},
+		},
+#else
 		.gpio = GPIOA,
 		.init = {
 			.GPIO_Pin   = GPIO_Pin_4,
 			.GPIO_Speed = GPIO_Speed_50MHz,
 			.GPIO_Mode  = GPIO_Mode_Out_PP,
 		},
-	}},	
+	}
+#endif
+    },
 };
 
 static uint32_t pios_spi_gyro_id;
