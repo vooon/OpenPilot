@@ -1688,6 +1688,17 @@ static const struct pios_usart_cfg pios_usart_sbus_main_cfg = {
 static const struct pios_sbus_cfg pios_sbus_cfg = {
 	/* Inverter configuration */
 	.inv = {
+#if defined(STM32F30X)
+		.gpio = GPIOB,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_2,
+			.GPIO_Speed = GPIO_Speed_Level_2,
+			.GPIO_Mode  = GPIO_Mode_OUT,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_UP
+			},
+		},
+#else
 		.gpio = GPIOB,
 		.init = {
 			.GPIO_Pin = GPIO_Pin_2,
@@ -1695,6 +1706,7 @@ static const struct pios_sbus_cfg pios_sbus_cfg = {
 			.GPIO_Speed = GPIO_Speed_2MHz,
 		},
 	},
+#endif
 	.gpio_clk_func = RCC_APB2PeriphClockCmd,
 	.gpio_clk_periph = RCC_APB2Periph_GPIOB,
 	.gpio_inv_enable = Bit_SET,
@@ -1868,14 +1880,37 @@ static const struct pios_i2c_adapter_cfg pios_i2c_flexi_adapter_cfg = {
   },
   .transfer_timeout_ms = 50,
   .scl = {
-    .gpio = GPIOB,
+#if defined(STM32F30X)
+		.gpio = GPIOB,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_10,
+			.GPIO_Speed = GPIO_Speed_Level_1,
+			.GPIO_Mode  = GPIO_Mode_AF,
+			.GPIO_OType = GPIO_OType_OD,
+			.GPIO_PuPd  = GPIO_PuPd_DOWN
+			},
+		},
+#else
+	.gpio = GPIOB,
     .init = {
       .GPIO_Pin   = GPIO_Pin_10,
       .GPIO_Speed = GPIO_Speed_10MHz,
       .GPIO_Mode  = GPIO_Mode_AF_OD,
     },
   },
+#endif
   .sda = {
+#if defined(STM32F30X)
+		.gpio = GPIOB,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_11,
+			.GPIO_Speed = GPIO_Speed_Level_1,
+			.GPIO_Mode  = GPIO_Mode_AF,
+			.GPIO_OType = GPIO_OType_OD,
+			.GPIO_PuPd  = GPIO_PuPd_DOWN
+			},
+		},
+#else
     .gpio = GPIOB,
     .init = {
       .GPIO_Pin   = GPIO_Pin_11,
@@ -1883,6 +1918,7 @@ static const struct pios_i2c_adapter_cfg pios_i2c_flexi_adapter_cfg = {
       .GPIO_Mode  = GPIO_Mode_AF_OD,
     },
   },
+#endif
   .event = {
     .flags   = 0,		/* FIXME: check this */
     .init = {
@@ -1946,6 +1982,17 @@ void PIOS_I2C_flexi_adapter_er_irq_handler(void)
 		},
 	},
 	.vsense = {
+#if defined(STM32F30X)
+		.gpio = GPIOC,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_15,
+			.GPIO_Speed = GPIO_Speed_Level_1,
+			.GPIO_Mode  = GPIO_Mode_AF,
+			.GPIO_OType = GPIO_OType_OD,
+			.GPIO_PuPd  = GPIO_PuPd_DOWN
+			},
+		},
+#else
 		.gpio = GPIOC,
 		.init = {
 			.GPIO_Pin   = GPIO_Pin_15,
@@ -1953,6 +2000,7 @@ void PIOS_I2C_flexi_adapter_er_irq_handler(void)
 			.GPIO_Mode  = GPIO_Mode_AF_OD,
 		},
 	}
+#endif
 };
 
 /* Test to deal with versioned and legacy StdPeriphLib */
@@ -1971,6 +2019,17 @@ void PIOS_I2C_flexi_adapter_er_irq_handler(void)
 		},
 	},
 	.vsense = {
+#if defined(STM32F30X)
+		.gpio = GPIOC,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_14,
+			.GPIO_Speed = GPIO_Speed_Level_1,
+			.GPIO_Mode  = GPIO_Mode_AF,
+			.GPIO_OType = GPIO_OType_OD,
+			.GPIO_PuPd  = GPIO_PuPd_DOWN
+			},
+		},
+#else
 		.gpio = GPIOC,
 		.init = {
 			.GPIO_Pin   = GPIO_Pin_14,
@@ -1978,6 +2037,7 @@ void PIOS_I2C_flexi_adapter_er_irq_handler(void)
 			.GPIO_Mode  = GPIO_Mode_AF_OD,
 		},
 	}
+#endif
 };
 
 #include "pios_usb_board_data_priv.h"
