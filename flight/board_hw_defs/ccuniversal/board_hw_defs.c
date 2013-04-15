@@ -29,6 +29,10 @@
 #include <pios_config.h>
 #include <pios_board_info.h>
 
+#if defined(STM32F30X)
+#include "board_hw_gpio_remap.h"
+#endif
+
 #define BOARD_REVISION_CC   1
 #define BOARD_REVISION_CC3D 2
 
