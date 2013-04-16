@@ -26,14 +26,14 @@
 **    Magnus Norddahl
 */
 /*
- * ( c ) 2010-2013  Original developer
+ * ( c ) 2010-2013  Original developer
  * ( c ) 2013 The OpenPilot
  */
 
 #pragma once
 
 
-#include "../System/sharedptr.h"
+#include "../system/sharedptr.h"
 #include <vector>
 
 /// (Internal ClanLib Class)

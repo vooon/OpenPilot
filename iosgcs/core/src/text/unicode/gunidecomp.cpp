@@ -19,7 +19,7 @@
  *   Boston, MA 02111-1307, USA.
  */
 /*
- * ( c ) 2010-2012  Original developer
+ * ( c ) 2010-2012  Original developer
  * ( c ) 2012 The OpenPilot
  */
 
@@ -259,31 +259,31 @@ g_unicode_canonical_decomposition (opuint32 ch,
 }
 
 /* L,V => LV and LV,T => LVT  */
-static bool
-combine_hangul (opuint32 a,
-                opuint32 b,
-                opuint32 *result)
-{
-	int LIndex = a - LBase;
-	int SIndex = a - SBase;
+//static bool
+//combine_hangul (opuint32 a,
+//                opuint32 b,
+//                opuint32 *result)
+//{
+//	int LIndex = a - LBase;
+//	int SIndex = a - SBase;
 	
-	int VIndex = b - VBase;
-	int TIndex = b - TBase;
+//	int VIndex = b - VBase;
+//	int TIndex = b - TBase;
 	
-	if (0 <= LIndex && LIndex < LCount
-		&& 0 <= VIndex && VIndex < VCount)
-    {
-		*result = SBase + (LIndex * VCount + VIndex) * TCount;
-		return true;
-    }
-	else if (0 <= SIndex && SIndex < SCount && (SIndex % TCount) == 0
-			 && 0 < TIndex && TIndex < TCount)
-    {
-		*result = a + TIndex;
-		return true;
-    }
+//	if (0 <= LIndex && LIndex < LCount
+//		&& 0 <= VIndex && VIndex < VCount)
+//    {
+//		*result = SBase + (LIndex * VCount + VIndex) * TCount;
+//		return true;
+//    }
+//	else if (0 <= SIndex && SIndex < SCount && (SIndex % TCount) == 0
+//			 && 0 < TIndex && TIndex < TCount)
+//    {
+//		*result = a + TIndex;
+//		return true;
+//    }
 	
-	return false;
-}
+//	return false;
+//}
 
 #define __G_UNIDECOMP_C__

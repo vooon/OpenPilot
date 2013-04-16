@@ -56,6 +56,7 @@ public:
     opuint32 operator[](int i) const;
     CString left(int size) const;
     CString right(int size) const;
+    CString mid(int start, int num = -1);
     CString trimmed() const;
 
     CString& operator=(const CString& other);
@@ -98,6 +99,7 @@ public:
     bool contains(const char* str) const;
     int  indexOf(const CString& str, int start) const;
     int  lastIndexOf(const CString& str, int start) const;
+    bool startsWith(const CString& str) const;
 
     CString toLower() const;
     CString toUpper() const;
@@ -105,7 +107,7 @@ public:
     CString arg(const CString& argument) const;
     CString arg(opuint64 argument, int width, int base = 10, char fillChar = ' ') const;
 
-    opuint64 toInt64() const;
+    opint64 toInt64(bool* success = 0, int base = 10) const;
     opuint64 toUInt64() const;
     double toDouble() const;
     bool toBool() const;
@@ -136,12 +138,12 @@ bool operator==( const CString& str, const char* str1 );
 const CString operator+(const CString &s1, const CString &s2);
 const CString operator+(const CString &s1, const char* s2);
 
-#ifdef LIB_FOR_QT
+#ifdef QT_PROJECT
 #ifdef _WIN32
 #define TO_QSTRING(x) QString::fromUtf8( x.data() )
 #else
 #define TO_QSTRING(x) QString::fromUtf8( x.data() )
 #endif
-#endif // LIB_FOR_QT
+#endif // QT_PROJECT
 
 #endif /* defined(__OpenPilotGCS__cstring__) */

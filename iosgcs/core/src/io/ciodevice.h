@@ -25,6 +25,7 @@
 #define __OpenPilotGCS_osx__ciodevice__
 
 #include "../optypes.h"
+#include "../signals/signal_v1.h"
 
 class CIODevice
 {
@@ -53,15 +54,25 @@ public:
 	virtual bool open( opuint32 mode );
 	virtual void close();
 	virtual bool isOpen() const;
+    virtual bool isSequential() const;
     
 // io
 	virtual int write( const void* data, int len );
 	virtual int read( void* data, int len ) const;
+    virtual opint64 bytesAvailable() const;
     
 //
 	virtual int seek( opint64 pos );
 	virtual opuint64 pos() const;
 	virtual opuint64 size() const;
+
+// signals
+    CL_Signal_v1<CIODevice*>& signal_readyRead();
+    CL_Signal_v1<CIODevice*>& signal_deviceClosed();
+
+protected:
+    CL_Signal_v1<CIODevice*> m_signalReadyRead;
+    CL_Signal_v1<CIODevice*> m_signalDeviceClosed;
 };
 
 #endif /* defined(__OpenPilotGCS_osx__ciodevice__) */

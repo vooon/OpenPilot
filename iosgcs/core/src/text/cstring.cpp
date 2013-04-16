@@ -256,10 +256,31 @@ CString CString::right(int size) const
 {
     if (length()-size <= 0)
         return *this;
+    if (!d || !d->m_data)
+        return CString();
     int start = length() - size;
     int offset = utf8ByteOffset( d->m_data, start, d->m_length );
     CString str(d->m_data+offset);
     return str;
+}
+
+CString CString::mid(int start, int num /*= -1*/)
+{
+	if( !d )
+		return false;
+	if (!d->m_length || !d->m_data)
+		return false;
+	if (0 > start || start >= this->length())
+		return false;
+    if (-1 == num)
+        num = this->length() - start;
+	if (0 > num || start+num >= this->length()+1 )
+		return false;
+	int end = start+num;
+    const char* ptr = g_utf8_offset_to_pointer(d->m_data, start);
+    const char* ptr_end = g_utf8_offset_to_pointer(d->m_data, end);
+    CString result(ptr, int(ptr_end-ptr));
+    return result;
 }
 
 CString CString::trimmed() const
@@ -382,11 +403,6 @@ CString& CString::operator+=( double val )
 {
 	std::ostringstream ss;
 	ss << val;
-	if (val < 0)
-	{
-		double d = val;
-		d+=1;
-	}
     
 	std::string str = ss.str();
 	return operator+=( str.c_str() );
@@ -619,6 +635,14 @@ int CString::lastIndexOf( const CString& str, int start ) const
 	return lastIndex;
 }
 
+bool CString::startsWith(const CString& str) const
+{
+    if (str.length() == 0)
+        return false;
+    int start = this->find(str);
+    return start == 0 ? true : false;
+}
+
 CString CString::toLower() const
 {
 	CString str = *this;
@@ -665,13 +689,19 @@ CString CString::arg(opuint64 argument, int width, int base /*= 10*/, char fillC
 	return arg( CString(argument, width, base, fillChar) );
 }
 
-opuint64 CString::toInt64() const
+opint64 CString::toInt64(bool* success /*= 0*/, int base /*= 10*/) const
 {
-	char* buffer = makeArrayForIntConvert();
-	if( !buffer )
+	char* buffer = 0;
+    buffer = makeArrayForIntConvert();
+	if( !buffer ) {
+        if (success)
+            *success = false;
 		return 0;
-	long int result = strtol( buffer, 0, 10 );
-	free( buffer );
+    }
+    if (success)
+        *success = true;
+	long int result = strtol(buffer, 0, base);
+    free(buffer);
 	return result;
 }
 
@@ -737,6 +767,8 @@ CString CString::substr( int from, int to /*= -1*/ ) const
 {
 	if( 0 > from || from > this->length() )
 		return CString();
+    if (!d || !d->m_data)
+        return CString();
 	from = (int)g_utf8_pointer_to_offset( d->m_data, d->m_data+from );
 	if( -1 == to )
 		to = this->length();
@@ -818,7 +850,7 @@ RANGE CString::findMinArg() const
 			calc.length = a-calc.location;
 			if( !calc.length )
 				continue;
-			buffer = (opuint32*)malloc( calc.length*sizeof(opuint32) );
+			buffer = new opuint32(calc.length);
 			assert( buffer );
 			if( buffer )
 			{
@@ -836,7 +868,7 @@ RANGE CString::findMinArg() const
 					}
 					free( data );
 				}
-				free( buffer );
+				delete []( buffer );
 			}
 		}
 	}
@@ -874,7 +906,11 @@ char* CString::makeArrayForIntConvert() const
 	{
 		c = g_utf8_get_char( p );
 		if( !isdigit(c) && c != '.' && c != ',' )
-			return 0;
+        {
+            if ((c < 'a' || c > 'f') &&
+                (c < 'A' || c > 'F'))
+                return 0;
+        }
 		p = g_utf8_next_char( p );
 	}
 	char* buffer = (char*)malloc( length+1 );

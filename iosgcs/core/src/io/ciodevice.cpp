@@ -56,6 +56,11 @@ bool CIODevice::isOpen() const
 	return false;
 }
 
+bool CIODevice::isSequential() const
+{
+    return false;
+}
+
 /////////////////////////////////////////////////////////////////////
 //                               io                                //
 /////////////////////////////////////////////////////////////////////
@@ -68,6 +73,11 @@ int CIODevice::write( const void* /*data*/, int /*len*/ )
 int CIODevice::read( void* /*data*/, int /*len*/ ) const
 {
 	return OPERR_INVALIDCALL;
+}
+
+opint64 CIODevice::bytesAvailable() const
+{
+    return 0;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -87,4 +97,18 @@ opuint64 CIODevice::pos() const
 opuint64 CIODevice::size() const
 {
 	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////
+//                             signals                             //
+/////////////////////////////////////////////////////////////////////
+
+CL_Signal_v1<CIODevice*>& CIODevice::signal_readyRead()
+{
+    return m_signalReadyRead;
+}
+
+CL_Signal_v1<CIODevice*>& CIODevice::signal_deviceClosed()
+{
+    return m_signalDeviceClosed;
 }

@@ -237,5 +237,10 @@ private:
 /// \}
 };
 
+template<class Param1>
+void CL_SignalQueue_v1_Impl<Param1>::invoke()
+{
+	m_signal->invoke(m_p1);
+}
 
 /// \}

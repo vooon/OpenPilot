@@ -26,7 +26,7 @@
 **    Magnus Norddahl
 */
 /*
- * ( c ) 2010-2013  Original developer
+ * ( c ) 2010-2013  Original developer
  * ( c ) 2013 The OpenPilot
  */
 
@@ -62,195 +62,195 @@ class CL_SlotContainer
 /// \{
 
 public:
-	/// \brief Connect a slot to a CL_Signal_v0 signal.
-	template<class SigClass>
-	void connect(SigClass &sig, void (*func)())
-	{
-		slots.push_back(sig.connect(func));
-	}
+    /// \brief Connect a slot to a CL_Signal_v0 signal.
+    template<class SigClass>
+    void connect(SigClass &sig, void (*func)())
+    {
+        m_slots.push_back(sig.connect(func));
+    }
 
-	/// \brief Connect a slot to a CL_Signal_v0 signal.
-	template<class SigClass, class Class>
-	void connect(SigClass &sig, Class *self, void(Class::*func)())
-	{
-		slots.push_back(sig.connect(self, func));
-	}
+    /// \brief Connect a slot to a CL_Signal_v0 signal.
+    template<class SigClass, class Class>
+    void connect(SigClass &sig, Class *self, void(Class::*func)())
+    {
+        m_slots.push_back(sig.connect(self, func));
+    }
 
-	/// \brief Connect a slot to a CL_Signal_v0 signal with an user data parameter
-	/// \brief passed along.
-	template<class SigClass, class UserData>
-	void connect(SigClass &sig, void(*func)(UserData), UserData user_data)
-	{
-		slots.push_back(sig.connect(func, user_data));
-	}
+    /// \brief Connect a slot to a CL_Signal_v0 signal with an user data parameter
+    /// \brief passed along.
+    template<class SigClass, class UserData>
+    void connect(SigClass &sig, void(*func)(UserData), UserData user_data)
+    {
+        m_slots.push_back(sig.connect(func, user_data));
+    }
 
-	/// \brief Connect a slot to a CL_Signal_v0 signal with an user data parameter
-	/// \brief passed along.
-	template<class SigClass, class Class, class UserData>
-	void connect(SigClass &sig, Class *self, void(Class::*func)(UserData), UserData user_data)
-	{
-		slots.push_back(sig.connect(self, func, user_data));
-	}
+    /// \brief Connect a slot to a CL_Signal_v0 signal with an user data parameter
+    /// \brief passed along.
+    template<class SigClass, class Class, class UserData>
+    void connect(SigClass &sig, Class *self, void(Class::*func)(UserData), UserData user_data)
+    {
+        m_slots.push_back(sig.connect(self, func, user_data));
+    }
 
-	/// \brief Connect a slot to a CL_Signal_v1 signal.
-	template<class SigClass, class Param1>
-	void connect(SigClass &sig, void(*func)(Param1))
-	{
-		slots.push_back(sig.connect(func));
-	}
+    /// \brief Connect a slot to a CL_Signal_v1 signal.
+    template<class SigClass, class Param1>
+    void connect(SigClass &sig, void(*func)(Param1))
+    {
+        m_slots.push_back(sig.connect(func));
+    }
 
-	/// \brief Connect a slot to a CL_Signal_v1 signal.
-	template<class SigClass, class Class, class Param1>
-	void connect(SigClass &sig, Class *self, void(Class::*func)(Param1))
-	{
-		slots.push_back(sig.connect(self, func));
-	}
+    /// \brief Connect a slot to a CL_Signal_v1 signal.
+    template<class SigClass, class Class, class Param1>
+    void connect(SigClass &sig, Class *self, void(Class::*func)(Param1))
+    {
+        m_slots.push_back(sig.connect(self, func));
+    }
 
-	/// \brief Connect a slot to a CL_Signal_v1 signal with an user data parameter
-	/// \brief passed along.
-	template<class SigClass, class Param1, class UserData>
-	void connect(SigClass &sig, void(*func)(Param1, UserData), UserData user_data)
-	{
-		slots.push_back(sig.connect(func, user_data));
-	}
+    /// \brief Connect a slot to a CL_Signal_v1 signal with an user data parameter
+    /// \brief passed along.
+    template<class SigClass, class Param1, class UserData>
+    void connect(SigClass &sig, void(*func)(Param1, UserData), UserData user_data)
+    {
+        m_slots.push_back(sig.connect(func, user_data));
+    }
 
-	/// \brief Connect a slot to a CL_Signal_v1 signal with an user data parameter
-	/// \brief passed along.
-	template<class SigClass, class Class, class Param1, class UserData>
-	void connect(SigClass &sig, Class *self, void(Class::*func)(Param1, UserData), UserData user_data)
-	{
-		slots.push_back(sig.connect(self, func, user_data));
-	}
+    /// \brief Connect a slot to a CL_Signal_v1 signal with an user data parameter
+    /// \brief passed along.
+    template<class SigClass, class Class, class Param1, class UserData>
+    void connect(SigClass &sig, Class *self, void(Class::*func)(Param1, UserData), UserData user_data)
+    {
+        m_slots.push_back(sig.connect(self, func, user_data));
+    }
 
-	/// \brief Connect a slot to a CL_Signal_v2 signal.
-	template<class SigClass, class Param1, class Param2>
-	void connect(SigClass &sig, void(*func)(Param1, Param2))
-	{
-		slots.push_back(sig.connect(func));
-	}
+    /// \brief Connect a slot to a CL_Signal_v2 signal.
+    template<class SigClass, class Param1, class Param2>
+    void connect(SigClass &sig, void(*func)(Param1, Param2))
+    {
+        m_slots.push_back(sig.connect(func));
+    }
 
-	/// \brief Connect a slot to a CL_Signal_v2 signal.
-	template<class SigClass, class Class, class Param1, class Param2>
-	void connect(SigClass &sig, Class *self, void(Class::*func)(Param1, Param2))
-	{
-		slots.push_back(sig.connect(self, func));
-	}
+    /// \brief Connect a slot to a CL_Signal_v2 signal.
+    template<class SigClass, class Class, class Param1, class Param2>
+    void connect(SigClass &sig, Class *self, void(Class::*func)(Param1, Param2))
+    {
+        m_slots.push_back(sig.connect(self, func));
+    }
 
-	/// \brief Connect a slot to a CL_Signal_v2 signal with an user data parameter
-	/// \brief passed along.
-	template<class SigClass, class Param1, class Param2, class UserData>
-	void connect(SigClass &sig, void(*func)(Param1, Param2, UserData), UserData user_data)
-	{
-		slots.push_back(sig.connect(func, user_data));
-	}
+    /// \brief Connect a slot to a CL_Signal_v2 signal with an user data parameter
+    /// \brief passed along.
+    template<class SigClass, class Param1, class Param2, class UserData>
+    void connect(SigClass &sig, void(*func)(Param1, Param2, UserData), UserData user_data)
+    {
+        m_slots.push_back(sig.connect(func, user_data));
+    }
 
-	/// \brief Connect a slot to a CL_Signal_v2 signal with an user data parameter
-	/// \brief passed along.
-	template<class SigClass, class Class, class Param1, class Param2, class UserData>
-	void connect(SigClass &sig, Class *self, void(Class::*func)(Param1, Param2, UserData), UserData user_data)
-	{
-		slots.push_back(sig.connect(self, func, user_data));
-	}
+    /// \brief Connect a slot to a CL_Signal_v2 signal with an user data parameter
+    /// \brief passed along.
+    template<class SigClass, class Class, class Param1, class Param2, class UserData>
+    void connect(SigClass &sig, Class *self, void(Class::*func)(Param1, Param2, UserData), UserData user_data)
+    {
+        m_slots.push_back(sig.connect(self, func, user_data));
+    }
 
-	/// \brief Connect a slot to a CL_Signal_v3 signal.
-	template<class SigClass, class Param1, class Param2, class Param3>
-	void connect(SigClass &sig, void(*func)(Param1, Param2, Param3))
-	{
-		slots.push_back(sig.connect(func));
-	}
+    /// \brief Connect a slot to a CL_Signal_v3 signal.
+    template<class SigClass, class Param1, class Param2, class Param3>
+    void connect(SigClass &sig, void(*func)(Param1, Param2, Param3))
+    {
+        m_slots.push_back(sig.connect(func));
+    }
 
-	/// \brief Connect a slot to a CL_Signal_v3 signal.
-	template<class SigClass, class Class, class Param1, class Param2, class Param3>
-	void connect(SigClass &sig, Class *self, void(Class::*func)(Param1, Param2, Param3))
-	{
-		slots.push_back(sig.connect(self, func));
-	}
+    /// \brief Connect a slot to a CL_Signal_v3 signal.
+    template<class SigClass, class Class, class Param1, class Param2, class Param3>
+    void connect(SigClass &sig, Class *self, void(Class::*func)(Param1, Param2, Param3))
+    {
+        m_slots.push_back(sig.connect(self, func));
+    }
 
-	/// \brief Connect a slot to a CL_Signal_v3 signal with an user data parameter
-	/// \brief passed along.
-	template<class SigClass, class Param1, class Param2, class Param3, class UserData>
-	void connect(SigClass &sig, void(*func)(Param1, Param2, Param3, UserData), UserData user_data)
-	{
-		slots.push_back(sig.connect(func, user_data));
-	}
+    /// \brief Connect a slot to a CL_Signal_v3 signal with an user data parameter
+    /// \brief passed along.
+    template<class SigClass, class Param1, class Param2, class Param3, class UserData>
+    void connect(SigClass &sig, void(*func)(Param1, Param2, Param3, UserData), UserData user_data)
+    {
+        m_slots.push_back(sig.connect(func, user_data));
+    }
 
-	/// \brief Connect a slot to a CL_Signal_v3 signal with an user data parameter
-	/// \brief passed along.
-	template<class SigClass, class Class, class Param1, class Param2, class Param3, class UserData>
-	void connect(SigClass &sig, Class *self, void(Class::*func)(Param1, Param2, Param3, UserData), UserData user_data)
-	{
-		slots.push_back(sig.connect(self, func, user_data));
-	}
+    /// \brief Connect a slot to a CL_Signal_v3 signal with an user data parameter
+    /// \brief passed along.
+    template<class SigClass, class Class, class Param1, class Param2, class Param3, class UserData>
+    void connect(SigClass &sig, Class *self, void(Class::*func)(Param1, Param2, Param3, UserData), UserData user_data)
+    {
+        m_slots.push_back(sig.connect(self, func, user_data));
+    }
 
-	/// \brief Connect a slot to a CL_Signal_v4 signal.
-	template<class SigClass, class Param1, class Param2, class Param3, class Param4>
-	void connect(SigClass &sig, void(*func)(Param1, Param2, Param3, Param4))
-	{
-		slots.push_back(sig.connect(func));
-	}
+    /// \brief Connect a slot to a CL_Signal_v4 signal.
+    template<class SigClass, class Param1, class Param2, class Param3, class Param4>
+    void connect(SigClass &sig, void(*func)(Param1, Param2, Param3, Param4))
+    {
+        m_slots.push_back(sig.connect(func));
+    }
 
-	/// \brief Connect a slot to a CL_Signal_v4 signal.
-	template<class SigClass, class Class, class Param1, class Param2, class Param3, class Param4>
-	void connect(SigClass &sig, Class *self, void(Class::*func)(Param1, Param2, Param3, Param4))
-	{
-		slots.push_back(sig.connect(self, func));
-	}
+    /// \brief Connect a slot to a CL_Signal_v4 signal.
+    template<class SigClass, class Class, class Param1, class Param2, class Param3, class Param4>
+    void connect(SigClass &sig, Class *self, void(Class::*func)(Param1, Param2, Param3, Param4))
+    {
+        m_slots.push_back(sig.connect(self, func));
+    }
 
-	/// \brief Connect a slot to a CL_Signal_v4 signal with an user data parameter
-	/// \brief passed along.
-	template<class SigClass, class Param1, class Param2, class Param3, class Param4, class UserData>
-	void connect(SigClass &sig, void(*func)(Param1, Param2, Param3, Param4, UserData user_data), UserData user_data)
-	{
-		slots.push_back(sig.connect(func, user_data));
-	}
+    /// \brief Connect a slot to a CL_Signal_v4 signal with an user data parameter
+    /// \brief passed along.
+    template<class SigClass, class Param1, class Param2, class Param3, class Param4, class UserData>
+    void connect(SigClass &sig, void(*func)(Param1, Param2, Param3, Param4, UserData user_data), UserData user_data)
+    {
+        m_slots.push_back(sig.connect(func, user_data));
+    }
 
-	/// \brief Connect a slot to a CL_Signal_v4 signal with an user data parameter
-	/// \brief passed along.
-	template<class SigClass, class Class, class Param1, class Param2, class Param3, class Param4, class UserData>
-	void connect(SigClass &sig, Class *self, void(Class::*func)(Param1, Param2, Param3, Param4, UserData user_data), UserData user_data)
-	{
-		slots.push_back(sig.connect(self, func, user_data));
-	}
+    /// \brief Connect a slot to a CL_Signal_v4 signal with an user data parameter
+    /// \brief passed along.
+    template<class SigClass, class Class, class Param1, class Param2, class Param3, class Param4, class UserData>
+    void connect(SigClass &sig, Class *self, void(Class::*func)(Param1, Param2, Param3, Param4, UserData user_data), UserData user_data)
+    {
+        m_slots.push_back(sig.connect(self, func, user_data));
+    }
 
-	/// \brief Connect a slot to a CL_Signal_v5 signal.
-	template<class SigClass, class Param1, class Param2, class Param3, class Param4, class Param5>
-	void connect(SigClass &sig, void(*func)(Param1, Param2, Param3, Param4, Param5))
-	{
-		slots.push_back(sig.connect(func));
-	}
+    /// \brief Connect a slot to a CL_Signal_v5 signal.
+    template<class SigClass, class Param1, class Param2, class Param3, class Param4, class Param5>
+    void connect(SigClass &sig, void(*func)(Param1, Param2, Param3, Param4, Param5))
+    {
+        m_slots.push_back(sig.connect(func));
+    }
 
-	/// \brief Connect a slot to a CL_Signal_v5 signal.
-	template<class SigClass, class Class, class Param1, class Param2, class Param3, class Param4, class Param5>
-	void connect(SigClass &sig, Class *self, void(Class::*func)(Param1, Param2, Param3, Param4, Param5))
-	{
-		slots.push_back(sig.connect(self, func));
-	}
+    /// \brief Connect a slot to a CL_Signal_v5 signal.
+    template<class SigClass, class Class, class Param1, class Param2, class Param3, class Param4, class Param5>
+    void connect(SigClass &sig, Class *self, void(Class::*func)(Param1, Param2, Param3, Param4, Param5))
+    {
+        m_slots.push_back(sig.connect(self, func));
+    }
 
-	/// \brief Connect a slot to a CL_Signal_v5 signal with an user data parameter
-	/// \brief passed along.
-	template<class SigClass, class Param1, class Param2, class Param3, class Param4, class Param5, class UserData>
-	void connect(SigClass &sig, void(*func)(Param1, Param2, Param3, Param4, Param5, UserData user_data), UserData user_data)
-	{
-		slots.push_back(sig.connect(func, user_data));
-	}
+    /// \brief Connect a slot to a CL_Signal_v5 signal with an user data parameter
+    /// \brief passed along.
+    template<class SigClass, class Param1, class Param2, class Param3, class Param4, class Param5, class UserData>
+    void connect(SigClass &sig, void(*func)(Param1, Param2, Param3, Param4, Param5, UserData user_data), UserData user_data)
+    {
+        m_slots.push_back(sig.connect(func, user_data));
+    }
 
-	/// \brief Connect a slot to a CL_Signal_v5 signal with an user data parameter
-	/// \brief passed along.
-	template<class SigClass, class Class, class Param1, class Param2, class Param3, class Param4, class Param5, class UserData>
-	void connect(SigClass &sig, Class *self, void(Class::*func)(Param1, Param2, Param3, Param4, Param5, UserData user_data), UserData user_data)
-	{
-		slots.push_back(sig.connect(self, func, user_data));
-	}
+    /// \brief Connect a slot to a CL_Signal_v5 signal with an user data parameter
+    /// \brief passed along.
+    template<class SigClass, class Class, class Param1, class Param2, class Param3, class Param4, class Param5, class UserData>
+    void connect(SigClass &sig, Class *self, void(Class::*func)(Param1, Param2, Param3, Param4, Param5, UserData user_data), UserData user_data)
+    {
+        m_slots.push_back(sig.connect(self, func, user_data));
+    }
 
-	/// \brief Connect a functor slot to a signal.
-	template<class SigClass, class Functor>
-	void connect_functor(SigClass &sig, const Functor &functor)
-	{
-		slots.push_back(sig.connect_functor(functor));
-	}
+    /// \brief Connect a functor slot to a signal.
+    template<class SigClass, class Functor>
+    void connect_functor(SigClass &sig, const Functor &functor)
+    {
+        m_slots.push_back(sig.connect_functor(functor));
+    }
 
 private:
-	std::vector<CL_Slot> slots;
+    std::vector<CL_Slot> m_slots;
 /// \}
 };
 

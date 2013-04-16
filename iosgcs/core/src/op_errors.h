@@ -32,7 +32,8 @@ enum OpenPilotErrors
     OPERR_INVALIDDATA    = -3,
     OPER_OUTOFMEMORY     = -4,
     OPERR_NOTIMPLEMENTED = -5,
-    OPERR_INVALIDPARAM   = -6
+    OPERR_INVALIDPARAM   = -6,
+    OPERR_OUTOFMEMORY    = -7
 };
 
 #endif

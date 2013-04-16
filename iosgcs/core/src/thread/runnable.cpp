@@ -25,66 +25,31 @@
 **
 **    Magnus Norddahl
 */
-/*
- * ( c ) 2010-2013  Original developer
- * ( c ) 2013 The OpenPilot
- */
 
-/// \addtogroup clanCore_Signals clanCore Signals
-/// \{
+#include "runnable.h"
+#include "thread.h"
 
-#pragma once
+/////////////////////////////////////////////////////////////////////////////
+// CL_Runnable Construction:
 
-#include "signals_impl.h"
-
-/// \brief CL_Slot
-///
-/// \xmlonly !group=Core/Signals! !header=core.h! \endxmlonly
-class CL_Slot
+CL_Runnable::CL_Runnable()
 {
-/// \name Construction
-/// \{
+}
 
-public:
-    CL_Slot()
-    { return; }
+CL_Runnable::~CL_Runnable()
+{
+}
 
-    CL_Slot(const CL_SharedPtr<CL_SlotCallback> &callback)
-    : impl(new CL_Slot_Impl) { impl->callback = callback; }
+/////////////////////////////////////////////////////////////////////////////
+// CL_Runnable Attributes:
 
+/////////////////////////////////////////////////////////////////////////////
+// CL_Runnable Operations:
 
-/// \}
-/// \name Operations
-/// \{
+void CL_Runnable::set_thread_name(const char *name)
+{
+    CThread::set_thread_name(name);
+}
 
-public:
-    void destroy()
-    {
-        if (impl && impl->callback)
-            impl->callback->valid = false;
-    }
-
-    void enable()
-    {
-        if (impl && impl->callback)
-            impl->callback->enabled = true;
-    }
-
-    void disable()
-    {
-        if (impl && impl->callback)
-            impl->callback->enabled = false;
-    }
-
-
-/// \}
-/// \name Implementation
-/// \{
-
-public:
-    CL_SharedPtr<CL_Slot_Impl> impl;
-/// \}
-};
-
-
-/// \}
+/////////////////////////////////////////////////////////////////////////////
+// CL_Runnable Implementation:

@@ -33,4 +33,16 @@ typedef unsigned int       opuint32;
 typedef long long          opint64;
 typedef unsigned long long opuint64;
 
+#ifndef SAFE_RELEASE
+#define SAFE_RELEASE(x) if(x){(x)->release();x=0;}
+#endif
+
+#ifndef SAFE_DELETE
+#define SAFE_DELETE(x) if(x){ delete x;x=0;}
+#endif
+
+#ifndef SAFE_FREE
+#define SAFE_FREE(x) if(x){ free( x );x=0;}
+#endif
+
 #endif

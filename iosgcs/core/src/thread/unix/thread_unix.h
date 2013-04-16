@@ -30,61 +30,55 @@
  * ( c ) 2013 The OpenPilot
  */
 
-/// \addtogroup clanCore_Signals clanCore Signals
-/// \{
-
 #pragma once
 
-#include "signals_impl.h"
 
-/// \brief CL_Slot
-///
-/// \xmlonly !group=Core/Signals! !header=core.h! \endxmlonly
-class CL_Slot
+#include "../thread_impl.h"
+
+#ifndef WIN32
+#ifndef __USE_UNIX98
+#define __USE_UNIX98
+#endif
+#include <pthread.h>
+#endif
+
+class CL_Thread_Unix : public CL_Thread_Impl
 {
 /// \name Construction
 /// \{
 
 public:
-    CL_Slot()
-    { return; }
+	CL_Thread_Unix();
 
-    CL_Slot(const CL_SharedPtr<CL_SlotCallback> &callback)
-    : impl(new CL_Slot_Impl) { impl->callback = callback; }
+	~CL_Thread_Unix();
 
+/// \}
+/// \name Attributes
+/// \{
+
+public:
 
 /// \}
 /// \name Operations
 /// \{
 
 public:
-    void destroy()
-    {
-        if (impl && impl->callback)
-            impl->callback->valid = false;
-    }
+	void start(CL_Runnable *runnable);
 
-    void enable()
-    {
-        if (impl && impl->callback)
-            impl->callback->enabled = true;
-    }
+	void join();
 
-    void disable()
-    {
-        if (impl && impl->callback)
-            impl->callback->enabled = false;
-    }
-
+	void kill();
 
 /// \}
 /// \name Implementation
 /// \{
 
-public:
-    CL_SharedPtr<CL_Slot_Impl> impl;
+private:
+	static void *thread_main(void *data);
+
+	pthread_t handle;
+
+	bool handle_valid;
 /// \}
 };
 
-
-/// \}

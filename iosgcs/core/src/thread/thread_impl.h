@@ -30,61 +30,40 @@
  * ( c ) 2013 The OpenPilot
  */
 
-/// \addtogroup clanCore_Signals clanCore Signals
-/// \{
-
 #pragma once
 
-#include "signals_impl.h"
 
-/// \brief CL_Slot
-///
-/// \xmlonly !group=Core/Signals! !header=core.h! \endxmlonly
-class CL_Slot
+class CL_Runnable;
+
+class CL_Thread_Impl
 {
 /// \name Construction
 /// \{
 
 public:
-    CL_Slot()
-    { return; }
+	virtual ~CL_Thread_Impl() { return; }
 
-    CL_Slot(const CL_SharedPtr<CL_SlotCallback> &callback)
-    : impl(new CL_Slot_Impl) { impl->callback = callback; }
+/// \}
+/// \name Attributes
+/// \{
 
+public:
 
 /// \}
 /// \name Operations
 /// \{
 
 public:
-    void destroy()
-    {
-        if (impl && impl->callback)
-            impl->callback->valid = false;
-    }
+	virtual void start(CL_Runnable *runnable) = 0;
 
-    void enable()
-    {
-        if (impl && impl->callback)
-            impl->callback->enabled = true;
-    }
+	virtual void join() = 0;
 
-    void disable()
-    {
-        if (impl && impl->callback)
-            impl->callback->enabled = false;
-    }
-
+	virtual void kill() = 0;
 
 /// \}
 /// \name Implementation
 /// \{
 
-public:
-    CL_SharedPtr<CL_Slot_Impl> impl;
+private:
 /// \}
 };
-
-
-/// \}

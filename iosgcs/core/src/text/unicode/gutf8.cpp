@@ -19,7 +19,7 @@
 * Boston, MA 02111-1307, USA.
 */
 /*
-* ( c ) 2010-2012  Original developer
+* ( c ) 2010-2012  Original developer
 * ( c ) 2012 The OpenPilot
 */
 
@@ -223,7 +223,7 @@ g_utf8_strlen (const char *p,
 		
 		p = g_utf8_next_char (p);
 		
-		while (p - start < max && *p)
+        while (size_t(p - start) < max && *p)
         {
 			++len;
 			p = g_utf8_next_char (p);
@@ -232,7 +232,7 @@ g_utf8_strlen (const char *p,
 		/* only do the last len increment if we got a complete
 		 * char (don't count partial chars)
 		 */
-		if (p - start <= max)
+        if (size_t(p - start) <= max)
 			++len;
     }
 	
@@ -736,7 +736,7 @@ g_utf8_to_ucs4 (const char *str,
 				long        len,
 				long       *items_read,
 				long       *items_written,
-				GError     **error)
+                GError     **/*error*/)
 {
 	opuint32 *result = NULL;
 	int n_chars, i;
@@ -816,7 +816,7 @@ g_ucs4_to_utf8 (const opuint32 *str,
 				long           len,
 				long          *items_read,
 				long          *items_written,
-				GError        **error)
+                GError        **/*error*/)
 {
 	int result_length;
 	char *result = NULL;
@@ -899,7 +899,7 @@ g_utf16_to_utf8 (const opuint16  *str,
 				 long             len,
 				 long            *items_read,
 				 long            *items_written,
-				 GError          **error)
+                 GError          **/*error*/)
 {
 	/* This function and g_utf16_to_ucs4 are almost exactly identical - The lines that differ
 	 * are marked.
@@ -996,7 +996,8 @@ g_utf16_to_utf8 (const opuint16  *str,
     }
 	
 	/********** DIFFERENT for UTF8/UCS4 **********/
-	*out = '\0';
+    if (out)
+        *out = '\0';
 	
 	if (items_written)
     /********** DIFFERENT for UTF8/UCS4 **********/
@@ -1039,7 +1040,7 @@ g_utf16_to_ucs4 (const opuint16  *str,
 				 long             len,
 				 long            *items_read,
 				 long            *items_written,
-				 GError          **error)
+                 GError          **/*error*/)
 {
 	const opuint16 *in;
 	char *out;
@@ -1056,13 +1057,13 @@ g_utf16_to_ucs4 (const opuint16  *str,
 	while ((len < 0 || in - str < len) && *in)
     {
 		opuint16 c = *in;
-		opuint32 wc;
+//		opuint32 wc;
 		
 		if (c >= 0xdc00 && c < 0xe000) /* low surrogate */
 		{
 			if (high_surrogate)
 			{
-				wc = SURROGATE_VALUE (high_surrogate, c);
+//				wc = SURROGATE_VALUE (high_surrogate, c);
 				high_surrogate = 0;
 			}
 			else
@@ -1082,8 +1083,8 @@ g_utf16_to_ucs4 (const opuint16  *str,
 				high_surrogate = c;
 				goto next1;
 			}
-			else
-				wc = c;
+//			else
+//				wc = c;
 		}
 		
 		/********** DIFFERENT for UTF8/UCS4 **********/
@@ -1176,7 +1177,7 @@ g_utf8_to_utf16 (const char *str,
 				 long        len,
 				 long       *items_read,
 				 long       *items_written,
-				 GError     **error)
+                 GError     **/*error*/)
 {
 	opuint16 *result = NULL;
 	int n16;
@@ -1280,7 +1281,7 @@ g_ucs4_to_utf16 (const opuint32  *str,
 				 long            len,
 				 long           *items_read,
 				 long           *items_written,
-				 GError         **error)
+                 GError         **/*error*/)
 {
 	opuint16 *result = NULL;
 	int n16;
@@ -1433,9 +1434,9 @@ fast_validate_len (const char *str,
 	opuint32 min = 0;
 	const char *p;
 	
-	assert (max_len >= 0);
+    assert (int (max_len) >= 0);
 	
-	for (p = str; ((p - str) < max_len) && *p; p++)
+    for (p = str; ((p - str) < int (max_len)) && *p; p++)
     {
 		if (*(opuint8 *)p < 128)
 		/* done */;

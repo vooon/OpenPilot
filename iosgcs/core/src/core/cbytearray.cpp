@@ -174,11 +174,13 @@ CByteArray::CByteArray()
 CByteArray::CByteArray(const char* data, opuint32 size)
 {
     d = new CByteArrayPrivate(size, data);
+    d->ref();
 }
 
 CByteArray::CByteArray(const unsigned char* data, opuint32 size)
 {
     d = new CByteArrayPrivate(size, (const char*)data);
+    d->ref();
 }
 
 CByteArray::CByteArray(const CByteArray& data)
@@ -248,6 +250,8 @@ char CByteArray::operator[]( int pos ) const
 
 CByteArray& CByteArray::append(const char* data, opuint32 size)
 {
+	if (!data)
+		return *this;
 	if( d )
 	{
 		if( d->refs() == 1 )
@@ -255,19 +259,22 @@ CByteArray& CByteArray::append(const char* data, opuint32 size)
 			opuint32 oldSize = d->size();
 			if( !d->setSize(oldSize+size) )
 				return *this;
-			memcpy(d->data() + oldSize, data, size);
+            if (d->m_data && data)
+                memcpy(d->data() + oldSize, data, size);
 			return *this;
 		}
 		else
 		{
 			d->deref();
 			d = new CByteArrayPrivate(d->size(), d->data());
+            d->ref();
 			return append(data, size);
 		}
 	}
 	else
 	{
 		d = new CByteArrayPrivate(size, data);
+        d->ref();
 		return *this;
 	}
 }
@@ -304,7 +311,8 @@ CByteArray& CByteArray::insert(opuint32 start, const char* data, opuint32 size)
 	const char* src = d->m_data+oldSize-1;
 	for( int i = 0;i<(int)(oldSize-start);i++ )
 	{
-		*dst = *src;
+		if (dst && src)
+			*dst = *src;
 		dst--;
 		src--;
 	}
@@ -339,6 +347,7 @@ void CByteArray::fromRawData(const char* data, opuint32 size)
 	if( d )
 		d->deref();
 	d = new CByteArrayPrivate(size, data);
+    d->ref();
 }
 
 bool CByteArray::isEmpty() const
@@ -390,7 +399,10 @@ bool CByteArray::isString() const
 bool CByteArray::setSize(opuint32 newSize )
 {
 	if( !d )
+    {
 		d = new CByteArrayPrivate(newSize, 0);
+        d->ref();
+    }
 	else
 	{
 		if( 1 != d->refs() )
@@ -398,6 +410,7 @@ bool CByteArray::setSize(opuint32 newSize )
 			CByteArrayPrivate* old_d = d;
 			d->deref();
 			d = new CByteArrayPrivate(newSize);
+            d->ref();
 			if( newSize && old_d->size() )
 			{
 				opuint32 size = newSize;
@@ -458,12 +471,16 @@ void CByteArray::generateDump(CString& dump, bool addSpacesBetweenBytes /*= fals
 void CByteArray::makeNewDataIfNeed()
 {
 	if( !d )
+    {
 		d = new CByteArrayPrivate((int)0);
+        d->ref();
+    }
 	else if( 1 != d->refs() )
 	{
 		CByteArrayPrivate* new_d = new CByteArrayPrivate(*d);
 		assert(new_d);
 		d->deref();
 		d = new_d;
+        d->ref();
 	}
 }

@@ -74,6 +74,15 @@ public:
 		for (int i = 0; i < pos; ++i, ++it) { }
         return *it;
 	}
+    inline int indexOf(const CString& str) {
+        int ord = 0;
+        for (CStringList::const_iterator it = begin();it!=end();it++, ord++) {
+            if (str == *it) {
+                return ord;
+            }
+        }
+        return -1;
+    }
     
 private:
 };
