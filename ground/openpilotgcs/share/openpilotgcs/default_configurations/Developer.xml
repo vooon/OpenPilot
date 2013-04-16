@@ -7,7 +7,6 @@
     <ExpertMode>true</ExpertMode>
     <LastPreferenceCategory>OPMapGadget</LastPreferenceCategory>
     <LastPreferencePage>default</LastPreferencePage>
-    <OverrideLanguage>en_US</OverrideLanguage>
     <SaveSettingsOnExit>true</SaveSettingsOnExit>
     <SettingsWindowHeight>628</SettingsWindowHeight>
     <SettingsWindowWidth>697</SettingsWindowWidth>
@@ -17,7 +16,7 @@
   <IPconnection>
     <Current>
       <arr_1>
-        <Port>1</Port>
+        <Port>9000</Port>
         <UseTCP>0</UseTCP>
       </arr_1>
       <size>1</size>

@@ -95,7 +95,7 @@ TIM4  |  RC In 1  |  Servo 3  |  Servo 2  |  Servo 1
 #define PIOS_LED_D4     7
 #endif
 
-#define PIOS_LED_HEARTBEAT PIOS_LED_USB
+#define PIOS_LED_HEARTBEAT PIOS_LED_LINK
 #define PIOS_LED_ALARM PIOS_LED_TX
 
 #define USB_LED_ON					PIOS_LED_On(PIOS_LED_USB)
@@ -174,29 +174,24 @@ extern uint32_t pios_i2c_flexi_adapter_id;
 
 extern uint32_t pios_com_telem_usb_id;
 extern uint32_t pios_com_telem_vcp_id;
-extern uint32_t pios_com_telem_uart_telem_id;
+extern uint32_t pios_com_telem_uart_main_id;
 extern uint32_t pios_com_telem_uart_flexi_id;
 extern uint32_t pios_com_telemetry_id;
 extern uint32_t pios_com_rfm22b_id;
 extern uint32_t pios_com_radio_id;
 extern uint32_t pios_ppm_rcvr_id;
 extern uint32_t pios_ppm_out_id;
-#define PIOS_COM_TELEM_USB         (pios_com_telem_usb_id)
-#define PIOS_COM_TELEM_VCP         (pios_com_telem_vcp_id)
+#define PIOS_COM_TELEM_USB_HID     (pios_com_telem_usb_id)
+#define PIOS_COM_TELEM_USB         PIOS_COM_TELEM_USB_HID
+#define PIOS_COM_TELEM_USB_VCP     (pios_com_telem_vcp_id)
+#define PIOS_COM_TELEM_UART_MAIN   (pios_com_telem_uart_main_id)
 #define PIOS_COM_TELEM_UART_FLEXI  (pios_com_telem_uart_flexi_id)
-#define PIOS_COM_TELEM_UART_TELEM  (pios_com_telem_uart_telem_id)
 #define PIOS_COM_TELEMETRY         (pios_com_telemetry_id)
 #define PIOS_COM_RFM22B            (pios_com_rfm22b_id)
 #define PIOS_COM_RADIO             (pios_com_radio_id)
 #define PIOS_PPM_RECEIVER          (pios_ppm_rcvr_id)
 #define PIOS_PPM_OUTPUT            (pios_ppm_out_id)
 
-#define DEBUG_LEVEL 2
-#if DEBUG_LEVEL > 1000
-#define DEBUG_PRINTF(level, ...) {if(level <= DEBUG_LEVEL && PIOS_COM_DEBUG > 0) { PIOS_COM_SendFormattedStringNonBlocking(PIOS_COM_DEBUG, __VA_ARGS__); }}
-#else
-#define DEBUG_PRINTF(...)
-#endif
 #define RFM22_DEBUG 1
 
 //-------------------------
@@ -294,26 +289,12 @@ extern uint32_t pios_rfm22b_id;
 //-------------------------
 // Packet Handler
 //-------------------------
-#if defined(PIOS_INCLUDE_PACKET_HANDLER)
 extern uint32_t pios_packet_handler;
 #define PIOS_PACKET_HANDLER (pios_packet_handler)
 #define PIOS_PH_MAX_PACKET 255
 #define PIOS_PH_WIN_SIZE 3
 #define PIOS_PH_MAX_CONNECTIONS 1
 #define RS_ECC_NPARITY 4
-#endif /* PIOS_INCLUDE_PACKET_HANDLER */
-
-//-------------------------
-// Packet Handler
-//-------------------------
-
-#if defined(PIOS_INCLUDE_PACKET_HANDLER)
-uint32_t pios_packet_handler;
-#define PIOS_PACKET_HANDLER (pios_packet_handler)
-#define PIOS_PH_MAX_PACKET 255
-#define PIOS_PH_WIN_SIZE 3
-#define PIOS_PH_MAX_CONNECTIONS 1
-#endif /* PIOS_INCLUDE_PACKET_HANDLER */
 
 //-------------------------
 // Reed-Solomon ECC

@@ -48,6 +48,7 @@
 #include "taskinfo.h"
 #include "watchdogstatus.h"
 #include "taskmonitor.h"
+#include "hwsettings.h"
 
 //#define DEBUG_THIS_FILE
 
@@ -87,10 +88,11 @@ static bool mallocFailed;
 
 // Private functions
 static void objectUpdatedCb(UAVObjEvent * ev);
+static void hwSettingsUpdatedCb(UAVObjEvent * ev);
 static void updateStats();
 static void updateSystemAlarms();
 static void systemTask(void *parameters);
-#if defined(I2C_WDG_STATS_DIAGNOSTICS)
+#ifdef DIAG_I2C_WDG_STATS
 static void updateI2Cstats();
 static void updateWDGstats();
 #endif
@@ -123,10 +125,10 @@ int32_t SystemModInitialize(void)
 	SystemStatsInitialize();
 	FlightStatusInitialize();
 	ObjectPersistenceInitialize();
-#if defined(DIAG_TASKS)
+#ifdef DIAG_TASKS
 	TaskInfoInitialize();
 #endif
-#if defined(I2C_WDG_STATS_DIAGNOSTICS)
+#ifdef DIAG_I2C_WDG_STATS
 	I2CStatsInitialize();
 	WatchdogStatusInitialize();
 #endif
@@ -169,6 +171,9 @@ static void systemTask(void *parameters)
 	// Listen for SettingPersistance object updates, connect a callback function
 	ObjectPersistenceConnectQueue(objectPersistenceQueue);
 
+	// Whenever the configuration changes, make sure it is safe to fly
+	HwSettingsConnectCallback(hwSettingsUpdatedCb);
+
 	// Main system loop
 	while (1) {
 		// Update the system statistics
@@ -176,12 +181,12 @@ static void systemTask(void *parameters)
 
 		// Update the system alarms
 		updateSystemAlarms();
-#if defined(I2C_WDG_STATS_DIAGNOSTICS)
+#ifdef DIAG_I2C_WDG_STATS
 		updateI2Cstats();
 		updateWDGstats();
 #endif
 
-#if defined(DIAG_TASKS)
+#ifdef DIAG_TASKS
 		// Update the task status object
 		TaskMonitorUpdateAll();
 #endif
@@ -300,7 +305,7 @@ static void objectUpdatedCb(UAVObjEvent * ev)
 		} else if (objper.Operation == OBJECTPERSISTENCE_OPERATION_FULLERASE) {
 			retval = -1;
 #if defined(PIOS_INCLUDE_FLASH_SECTOR_SETTINGS)
-			retval = PIOS_FLASHFS_Format();
+			retval = PIOS_FLASHFS_Format(0);
 #endif
 		}
 		switch(retval) {
@@ -319,9 +324,17 @@ static void objectUpdatedCb(UAVObjEvent * ev)
 }
 
 /**
+ * Called whenever hardware settings changed
+ */
+static void hwSettingsUpdatedCb(UAVObjEvent * ev)
+{
+	AlarmsSet(SYSTEMALARMS_ALARM_BOOTFAULT,SYSTEMALARMS_ALARM_ERROR);
+}
+
+/**
  * Called periodically to update the I2C statistics 
  */
-#if defined(I2C_WDG_STATS_DIAGNOSTICS)
+#ifdef DIAG_I2C_WDG_STATS
 static void updateI2Cstats() 
 {
 #if defined(PIOS_INCLUDE_I2C)
