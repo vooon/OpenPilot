@@ -84,7 +84,7 @@
 		}
 
 		if (led->remap) {
-			GPIO_PinRemapConfig(led->remap, ENABLE);
+			GPIO_PinAFConfig(led->pin.gpio, led->remap, ENABLE);
 		}
 
 		GPIO_Init(led->pin.gpio, &led->pin.init);
