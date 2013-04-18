@@ -70,13 +70,13 @@
 		/* Enable the peripheral clock for the GPIO */
 		switch ((uint32_t)led->pin.gpio) {
 		case (uint32_t) GPIOA:
-			RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+			RCC_APB2PeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
 			break;
 		case (uint32_t) GPIOB:
-			RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
+			RCC_APB2PeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
 			break;
 		case (uint32_t) GPIOC:
-			RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
+			RCC_APB2PeriphClockCmd(RCC_AHBPeriph_GPIOC, ENABLE);
 			break;
 		default:
 			PIOS_Assert(0);
