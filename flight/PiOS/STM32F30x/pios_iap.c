@@ -75,8 +75,8 @@ uint32_t	PIOS_IAP_CheckRequest( void )
 	uint16_t	reg1;
 	uint16_t	reg2;
 
-	reg1 = BKP_ReadBackupRegister( MAGIC_REG_1 );
-	reg2 = BKP_ReadBackupRegister( MAGIC_REG_2 );
+	reg1 = RTC_ReadBackupRegister( MAGIC_REG_1 );
+	reg2 = RTC_ReadBackupRegister( MAGIC_REG_2 );
 
 	if( reg1 == IAP_MAGIC_WORD_1 && reg2 == IAP_MAGIC_WORD_2 ) {
 		// We have a match.
