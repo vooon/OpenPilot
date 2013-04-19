@@ -32,7 +32,7 @@
 #include "pios.h"
 #include "usb_lib.h"
 #include "pios_usb_board_data.h"
-#include "stm32f10x.h"
+#include "stm32f30x.h"
 
 #include "pios_usb.h"
 #include "pios_usb_priv.h"
