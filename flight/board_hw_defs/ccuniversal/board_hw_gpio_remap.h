@@ -120,6 +120,17 @@
 #define GPIO_Remap_TIM12            ((uint32_t)0x80001000)  /*!< TIM12 Alternate Function mapping (only for High density Value line devices) */
 #define GPIO_Remap_MISC             ((uint32_t)0x80002000)  /*!< Miscellaneous Remap (DMA2 Channel5 Position and DAC Trigger remapping,
                                                                  only for High density Value line devices) */
+/* Additional mappings not specific to GPIO compatability */
 
+/** @defgroup Prefetch_Buffer_Enable_Disable
+  * @{
+  */
+
+#define FLASH_PrefetchBuffer_Enable    ((uint32_t)0x00000010)  /*!< FLASH Prefetch Buffer Enable */
+#define FLASH_PrefetchBuffer_Disable   ((uint32_t)0x00000000)  /*!< FLASH Prefetch Buffer Disable */
+#define IS_FLASH_PREFETCHBUFFER_STATE(STATE) (((STATE) == FLASH_PrefetchBuffer_Enable) || \
+                                              ((STATE) == FLASH_PrefetchBuffer_Disable))
+
+// #define FLASH_PrefetchBuffer_Enable    ENABLE
 
 #endif /* BOARD_HW_GPIO_REMAP_H_ */

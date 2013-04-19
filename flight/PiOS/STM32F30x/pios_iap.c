@@ -51,13 +51,13 @@ void PIOS_IAP_Init( void )
 	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_CRC, ENABLE);
 
 	/* Enable PWR and BKP clock */
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR  | OPF_RCC_AHB1Periph_BKPSRAM, ENABLE);
 
 	/* Enable write access to Backup domain */
 	PWR_BackupAccessCmd(ENABLE);
 
 	/* Clear Tamper pin Event(TE) pending flag */
-	BKP_ClearFlag();
+	RTC_ClearFlag(RTC_FLAG_TAMP1F);
 
 }
 

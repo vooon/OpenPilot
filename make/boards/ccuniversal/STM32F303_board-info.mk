@@ -49,13 +49,15 @@ USBSRC              := Libraries/STM32_USB-FS-Device_Driver/src
 USBDIR              := $(USBLIB)_$(USBVER)/Libraries/$(USBDVR)
 
 # Patches required, make silliness requires funny numbering. This should actually be XML
-NUMPATCHES  := 1 2 3
+NUMPATCHES  := 1 2 3 4
 TARGET_1    := ../../ExtLibraries/Patches/hw_config.h
 PATCH_1     := ../../ExtLibraries/Patches/STM32F30x_USB.diff
 TARGET_2    := ../../ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_lib.h
 PATCH_2     := ../../ExtLibraries/Patches/hw_config-location.diff
 TARGET_3    := ../../ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32_USB-FS-Device_Driver/inc/usb_type.h
 PATCH_3     := ../../ExtLibraries/Patches/STM32F30x_USB-3.diff
+TARGET_4    := ../../ExtLibraries/STM32_USB-FS-Device_Lib_V4.0.0/Libraries/STM32F30x_StdPeriph_Driver/inc/stm32f30x_rcc.h
+PATCH_4     := ../../ExtLibraries/Patches/STM32F30x_rcc.diff
 
 OPENOCD_JTAG_CONFIG := foss-jtag.revb.cfg
 OPENOCD_CONFIG      := stm32f1x.cfg
