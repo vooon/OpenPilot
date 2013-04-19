@@ -1,0 +1,20 @@
+diff --git a/flight/ExtLibraries/STM32F30x_DSP_StdPeriph_Lib_V1.0.0/Libraries/STM32F30x_StdPeriph_Driver/inc/stm32f30x_rcc.h b/flight/ExtLibraries/STM32F30x_DSP_StdPeriph_Lib_V1.0.0/Libraries/STM32F30x_StdPeriph_Driver/inc/stm32f30x_rcc.h
+index 277536d..1b9f0f9 100644
+--- a/flight/ExtLibraries/STM32F30x_DSP_StdPeriph_Lib_V1.0.0/Libraries/STM32F30x_StdPeriph_Driver/inc/stm32f30x_rcc.h
++++ b/flight/ExtLibraries/STM32F30x_DSP_StdPeriph_Lib_V1.0.0/Libraries/STM32F30x_StdPeriph_Driver/inc/stm32f30x_rcc.h
+@@ -343,6 +343,15 @@
+ /**
+   * @}
+   */
++
++/** @defgroup OPF Defined RCC_AHB1_Peripherals
++  * @{
++  */
++/* These must be OP defined, they are not normally in Std Periph */
++#define OPF_RCC_AHB1Periph_BKPSRAM           ((uint32_t)0x00040000)
++/**
++  * @}
++  */
+        
+ /** @defgroup RCC_Interrupt_Source 
+   * @{
