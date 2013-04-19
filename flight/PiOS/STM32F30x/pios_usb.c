@@ -191,11 +191,14 @@ int32_t PIOS_USB_Reenumerate()
 	/* Using a "dirty" method to force a re-enumeration: */
 	/* Force DPM (Pin PA12) low for ca. 10 mS before USB Tranceiver will be enabled */
 	/* This overrules the external Pull-Up at PA12, and at least Windows & MacOS will enumerate again */
+
 	GPIO_InitTypeDef GPIO_InitStructure;
 	GPIO_StructInit(&GPIO_InitStructure);
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_Level_3;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 
 	PIOS_DELAY_WaitmS(50);
