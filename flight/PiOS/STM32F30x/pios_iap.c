@@ -97,26 +97,26 @@ uint32_t	PIOS_IAP_CheckRequest( void )
  */
 void	PIOS_IAP_SetRequest1(void)
 {
-	BKP_WriteBackupRegister( MAGIC_REG_1, IAP_MAGIC_WORD_1);
+	RTC_WriteBackupRegister( MAGIC_REG_1, IAP_MAGIC_WORD_1);
 }
 
 void	PIOS_IAP_SetRequest2(void)
 {
-	BKP_WriteBackupRegister( MAGIC_REG_2, IAP_MAGIC_WORD_2);
+	RTC_WriteBackupRegister( MAGIC_REG_2, IAP_MAGIC_WORD_2);
 }
 
 void	PIOS_IAP_ClearRequest(void)
 {
-	BKP_WriteBackupRegister( MAGIC_REG_1, 0);
-	BKP_WriteBackupRegister( MAGIC_REG_2, 0);
+	RTC_WriteBackupRegister( MAGIC_REG_1, 0);
+	RTC_WriteBackupRegister( MAGIC_REG_2, 0);
 }
 
 uint16_t PIOS_IAP_ReadBootCount(void)
 {
-	return BKP_ReadBackupRegister ( IAP_BOOTCOUNT );
+	return RTC_ReadBackupRegister ( IAP_BOOTCOUNT );
 }
 
 void PIOS_IAP_WriteBootCount (uint16_t boot_count)
 {
-	BKP_WriteBackupRegister ( IAP_BOOTCOUNT, boot_count );
+	RTC_WriteBackupRegister ( IAP_BOOTCOUNT, boot_count );
 }
