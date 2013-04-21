@@ -41,7 +41,12 @@
 
 static ONE_DESCRIPTOR Device_Descriptor;
 
+/* The USB const issue */
+#if defined(STDPERLIB) && defined(STDPLVER)
+void PIOS_USBHOOK_RegisterDevice(uint8_t * desc, uint16_t desc_size)
+#else
 void PIOS_USBHOOK_RegisterDevice(const uint8_t * desc, uint16_t desc_size)
+#endif
 {
 	Device_Descriptor.Descriptor      = desc;
 	Device_Descriptor.Descriptor_Size = desc_size;
@@ -49,7 +54,12 @@ void PIOS_USBHOOK_RegisterDevice(const uint8_t * desc, uint16_t desc_size)
 
 static ONE_DESCRIPTOR Config_Descriptor;
 
+/* The USB const issue */
+#if defined(STDPERLIB) && defined(STDPLVER)
+void PIOS_USBHOOK_RegisterConfig(uint8_t config_id, uint8_t * desc, uint16_t desc_size)
+#else
 void PIOS_USBHOOK_RegisterConfig(uint8_t config_id, const uint8_t * desc, uint16_t desc_size)
+#endif
 {
 	Config_Descriptor.Descriptor      = desc;
 	Config_Descriptor.Descriptor_Size = desc_size;
@@ -57,7 +67,12 @@ void PIOS_USBHOOK_RegisterConfig(uint8_t config_id, const uint8_t * desc, uint16
 
 static ONE_DESCRIPTOR String_Descriptor[4];
 
+/* The USB const issue */
+#if defined(STDPERLIB) && defined(STDPLVER)
+void PIOS_USBHOOK_RegisterString(enum usb_string_desc string_id, uint8_t * desc, uint16_t desc_size)
+#else
 void PIOS_USBHOOK_RegisterString(enum usb_string_desc string_id, const uint8_t * desc, uint16_t desc_size)
+#endif
 {
 	if (string_id < NELEMENTS(String_Descriptor)) {
 		String_Descriptor[string_id].Descriptor      = desc;
@@ -67,7 +82,12 @@ void PIOS_USBHOOK_RegisterString(enum usb_string_desc string_id, const uint8_t *
 
 static ONE_DESCRIPTOR Hid_Descriptor;
 
+/* The USB const issue */
+#if defined(STDPERLIB) && defined(STDPLVER)
+void PIOS_USB_HID_RegisterHidDescriptor(uint8_t * desc, uint16_t desc_size)
+#else
 void PIOS_USB_HID_RegisterHidDescriptor(const uint8_t * desc, uint16_t desc_size)
+#endif
 {
 	Hid_Descriptor.Descriptor      = desc;
 	Hid_Descriptor.Descriptor_Size = desc_size;
@@ -75,13 +95,18 @@ void PIOS_USB_HID_RegisterHidDescriptor(const uint8_t * desc, uint16_t desc_size
 
 static ONE_DESCRIPTOR Hid_Report_Descriptor;
 
+/* The USB const issue */
+#if defined(STDPERLIB) && defined(STDPLVER)
+void PIOS_USB_HID_RegisterHidReport(uint8_t * desc, uint16_t desc_size)
+#else
 void PIOS_USB_HID_RegisterHidReport(const uint8_t * desc, uint16_t desc_size)
+#endif
 {
 	Hid_Report_Descriptor.Descriptor      = desc;
 	Hid_Report_Descriptor.Descriptor_Size = desc_size;
 }
 
-#include "stm32f10x.h"		/* __IO */
+#include "stm32f30x.h"		/* __IO */
 __IO uint8_t EXTI_Enable;
 
 uint32_t ProtocolValue;
@@ -98,9 +123,17 @@ static void PIOS_USBHOOK_Status_Out(void);
 static RESULT PIOS_USBHOOK_Data_Setup(uint8_t RequestNo);
 static RESULT PIOS_USBHOOK_NoData_Setup(uint8_t RequestNo);
 static RESULT PIOS_USBHOOK_Get_Interface_Setting(uint8_t Interface, uint8_t AlternateSetting);
+
+/* The USB const issue */
+#if defined(STDPERLIB) && defined(STDPLVER)
+static uint8_t *PIOS_USBHOOK_GetDeviceDescriptor(uint16_t Length);
+static uint8_t *PIOS_USBHOOK_GetConfigDescriptor(uint16_t Length);
+static uint8_t *PIOS_USBHOOK_GetStringDescriptor(uint16_t Length);
+#else
 static const uint8_t *PIOS_USBHOOK_GetDeviceDescriptor(uint16_t Length);
 static const uint8_t *PIOS_USBHOOK_GetConfigDescriptor(uint16_t Length);
 static const uint8_t *PIOS_USBHOOK_GetStringDescriptor(uint16_t Length);
+#endif
 
 DEVICE_PROP Device_Property = {
 	.Init                        = PIOS_USBHOOK_Init,
