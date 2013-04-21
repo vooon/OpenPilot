@@ -410,11 +410,11 @@ static RESULT PIOS_USBHOOK_Data_Setup(uint8_t RequestNo)
 	}
 
 	if (CopyInRoutine != NULL) {
-		pInformation->Ctrl_Info.CopyDataIn = CopyInRoutine;
+		pInformation->Ctrl_Info.CopyData = CopyInRoutine;
 		pInformation->Ctrl_Info.Usb_wOffset = 0;
 		(*CopyInRoutine) (0);
 	} else if (CopyOutRoutine != NULL) {
-		pInformation->Ctrl_Info.CopyDataOut = CopyOutRoutine;
+		pInformation->Ctrl_Info.CopyData = CopyOutRoutine;
 		pInformation->Ctrl_Info.Usb_rOffset = 0;
 		(*CopyOutRoutine) (0);
 	}
