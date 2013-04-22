@@ -149,11 +149,18 @@ SRC += $(FLIGHTLIB)/fifo_buffer.c
 
 ## CMSIS
 SRC += $(CMSISDIR)/$(CMSISCORE)
+## Change in StdPeriph location
+ifeq ($(TARGETMCUL), stm32f30x)
+SRC += $(CMSISDIR)/$(CMSISDEV)
+SRC += $(CMSISDIR)/$(CMSISDEV)/../Source/Templates/system_$(TARGETMCUL).c
+else
 SRC += $(CMSISDIR)/$(CMSISCORE)/$(CMSISDEV)
 SRC += $(CMSISDIR)/$(CMSISDEV)/system_$(TARGETMCUL).c
+endif
+
+
 
 ## Used parts of the STM-Library
-SRC += $(STMSPDSRCDIR)/$(STDPLSTB)bkp.c
 SRC += $(STMSPDSRCDIR)/$(STDPLSTB)crc.c
 SRC += $(STMSPDSRCDIR)/$(STDPLSTB)dma.c
 SRC += $(STMSPDSRCDIR)/$(STDPLSTB)exti.c
@@ -165,8 +172,15 @@ SRC += $(STMSPDSRCDIR)/$(STDPLSTB)rtc.c
 SRC += $(STMSPDSRCDIR)/$(STDPLSTB)spi.c
 SRC += $(STMSPDSRCDIR)/$(STDPLSTB)usart.c
 SRC += $(STMSPDSRCDIR)/$(STDPLSTB)dbgmcu.c
-SRC += $(STMSPDSRCDIR)/misc.c 
+## Change in StdPeriph naming 
+ifeq ($(TARGETMCUL), stm32f30x)
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)misc.c
+else
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)bkp.c
+SRC += $(STMSPDSRCDIR)/misc.c
+endif
 
+#
 ## STM32 USB Library
 SRC += $(STMUSBSRCDIR)/usb_core.c
 SRC += $(STMUSBSRCDIR)/usb_init.c
@@ -372,8 +386,15 @@ LDFLAGS += $(MATH_LIB)
 LDFLAGS += -lc -lgcc 
 
 # Set linker-script name depending on selected submodel name
+## Change in StdPeriph location
+ifeq ($(TARGETMCUL), stm32f30x)
+LDFLAGS += -T$(LINKERSCRIPTPATH)/link_$(CHIPBOARD)_memory.ld
+LDFLAGS += -T$(LINKERSCRIPTPATH)/link_$(CHIPBOARD)_BL_sections.ld
+else
 LDFLAGS += -T$(LINKERSCRIPTPATH)/link_$(BOARD)_memory.ld
 LDFLAGS += -T$(LINKERSCRIPTPATH)/link_$(BOARD)_BL_sections.ld
+endif
+
 
 # Define programs and commands.
 REMOVE    = $(REMOVE_CMD) -f
