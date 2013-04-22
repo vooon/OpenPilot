@@ -148,13 +148,12 @@ SRC += $(PIOSCOMMON)/printf-stdarg.c
 SRC += $(FLIGHTLIB)/fifo_buffer.c
 
 ## CMSIS
-SRC += $(CMSISDIR)/$(CMSISCORE)
-## Change in StdPeriph location
+## Change in CMSIS structure for new device versions
 ifeq ($(TARGETMCUL), stm32f30x)
-SRC += $(CMSISDIR)/$(CMSISDEV)
 SRC += $(CMSISDIR)/$(CMSISDEV)/../Source/Templates/system_$(TARGETMCUL).c
 else
-SRC += $(CMSISDIR)/$(CMSISCORE)/$(CMSISDEV)
+SRC += $(CMSISDIR)/$(CMSISCORE)/core_cm3.c
+## SRC += $(CMSISDIR)/$(CMSISCORE)/$(CMSISDEV)
 SRC += $(CMSISDIR)/$(CMSISDEV)/system_$(TARGETMCUL).c
 endif
 
@@ -217,6 +216,15 @@ ASRCARM =
 
 # List any extra directories to look for include files here.
 #    Each directory must be seperated by a space.
+# The CMSIS structure has changed in newer devices
+## Change in StdPeriph naming 
+ifeq ($(TARGETMCUL), stm32f30x)
+EXTRAINCDIRS  += $(CMSISDIR)/$(CMSISDEV)
+EXTRAINCDIRS  += $(CMSISDIR)/$(CMSISCORE)
+else
+EXTRAINCDIRS  += $(CMSISDIR)/$(CMSISCORE)/$(CMSISDEV)
+endif
+
 EXTRAINCDIRS  += $(OPSYSTEM)
 EXTRAINCDIRS  += $(OPSYSTEMINC)
 EXTRAINCDIRS  += $(OPUAVTALK)
