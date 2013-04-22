@@ -166,9 +166,17 @@ USER_STANDARD_REQUESTS User_Standard_Requests = {
 };
 
 static RESULT PIOS_USBHOOK_SetProtocol(void);
+/* The USB const issue */
+#if defined(STDPERLIB) && defined(STDPLVER)
+static uint8_t *PIOS_USBHOOK_GetProtocolValue(uint16_t Length);
+static uint8_t *PIOS_USBHOOK_GetReportDescriptor(uint16_t Length);
+static uint8_t *PIOS_USBHOOK_GetHIDDescriptor(uint16_t Length);
+#else
 static const uint8_t *PIOS_USBHOOK_GetProtocolValue(uint16_t Length);
 static const uint8_t *PIOS_USBHOOK_GetReportDescriptor(uint16_t Length);
 static const uint8_t *PIOS_USBHOOK_GetHIDDescriptor(uint16_t Length);
+#endif
+
 
 /*******************************************************************************
 * Function Name  : PIOS_USBHOOK_Init.
@@ -332,7 +340,12 @@ extern const uint8_t *PIOS_USB_CDC_GetLineCoding(uint16_t Length);
 static RESULT PIOS_USBHOOK_Data_Setup(uint8_t RequestNo)
 {
 	uint8_t *(*CopyOutRoutine) (uint16_t);
+/* The USB const issue */
+#if defined(STDPERLIB) && defined(STDPLVER)
+	uint8_t *(*CopyInRoutine) (uint16_t);
+#else
 	const uint8_t *(*CopyInRoutine) (uint16_t);
+#endif
 
 	CopyInRoutine = NULL;
 	CopyOutRoutine = NULL;
@@ -474,7 +487,12 @@ static RESULT PIOS_USBHOOK_NoData_Setup(uint8_t RequestNo)
 * Output         : None.
 * Return         : The address of the device descriptor.
 *******************************************************************************/
+/* The USB const issue */
+#if defined(STDPERLIB) && defined(STDPLVER)
+static uint8_t *PIOS_USBHOOK_GetDeviceDescriptor(uint16_t Length)
+#else
 static const uint8_t *PIOS_USBHOOK_GetDeviceDescriptor(uint16_t Length)
+#endif
 {
 	return Standard_GetDescriptorData(Length, &Device_Descriptor);
 }
@@ -486,7 +504,12 @@ static const uint8_t *PIOS_USBHOOK_GetDeviceDescriptor(uint16_t Length)
 * Output         : None.
 * Return         : The address of the configuration descriptor.
 *******************************************************************************/
+/* The USB const issue */
+#if defined(STDPERLIB) && defined(STDPLVER)
+static uint8_t *PIOS_USBHOOK_GetConfigDescriptor(uint16_t Length)
+#else
 static const uint8_t *PIOS_USBHOOK_GetConfigDescriptor(uint16_t Length)
+#endif
 {
 	return Standard_GetDescriptorData(Length, &Config_Descriptor);
 }
@@ -498,7 +521,12 @@ static const uint8_t *PIOS_USBHOOK_GetConfigDescriptor(uint16_t Length)
 * Output         : None.
 * Return         : The address of the string descriptors.
 *******************************************************************************/
+/* The USB const issue */
+#if defined(STDPERLIB) && defined(STDPLVER)
+static uint8_t *PIOS_USBHOOK_GetStringDescriptor(uint16_t Length)
+#else
 static const uint8_t *PIOS_USBHOOK_GetStringDescriptor(uint16_t Length)
+#endif
 {
 	uint8_t wValue0 = pInformation->USBwValue0;
 	if (wValue0 > 4) {
@@ -515,7 +543,12 @@ static const uint8_t *PIOS_USBHOOK_GetStringDescriptor(uint16_t Length)
 * Output         : None.
 * Return         : The address of the configuration descriptor.
 *******************************************************************************/
+/* The USB const issue */
+#if defined(STDPERLIB) && defined(STDPLVER)
+static uint8_t *PIOS_USBHOOK_GetReportDescriptor(uint16_t Length)
+#else
 static const uint8_t *PIOS_USBHOOK_GetReportDescriptor(uint16_t Length)
+#endif
 {
 	return Standard_GetDescriptorData(Length, &Hid_Report_Descriptor);
 }
@@ -527,7 +560,12 @@ static const uint8_t *PIOS_USBHOOK_GetReportDescriptor(uint16_t Length)
 * Output         : None.
 * Return         : The address of the configuration descriptor.
 *******************************************************************************/
+/* The USB const issue */
+#if defined(STDPERLIB) && defined(STDPLVER)
+static uint8_t *PIOS_USBHOOK_GetHIDDescriptor(uint16_t Length)
+#else
 static const uint8_t *PIOS_USBHOOK_GetHIDDescriptor(uint16_t Length)
+#endif
 {
 	return Standard_GetDescriptorData(Length, &Hid_Descriptor);
 }
@@ -572,7 +610,12 @@ static RESULT PIOS_USBHOOK_SetProtocol(void)
 * Output         : None.
 * Return         : address of the protcol value.
 *******************************************************************************/
+/* The USB const issue */
+#if defined(STDPERLIB) && defined(STDPLVER)
+static uint8_t *PIOS_USBHOOK_GetProtocolValue(uint16_t Length)
+#else
 static const uint8_t *PIOS_USBHOOK_GetProtocolValue(uint16_t Length)
+#endif
 {
 	if (Length == 0) {
 		pInformation->Ctrl_Info.Usb_wLength = 1;
