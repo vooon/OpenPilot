@@ -28,11 +28,12 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-/* Project Includes */
 #include "pios.h"
+
+#ifdef PIOS_INCLUDE_PWM
+
 #include "pios_pwm_priv.h"
 
-#if defined(PIOS_INCLUDE_PWM)
 
 /* Provide a RCVR driver */
 static int32_t PIOS_PWM_Get(uint32_t rcvr_id, uint8_t channel);
@@ -170,11 +171,12 @@ out_fail:
 }
 
 /**
-* Get the value of an input channel
-* \param[in] Channel Number of the channel desired
-* \output -1 Channel not available
-* \output >0 Channel value
-*/
+ * Get the value of an input channel
+ * \param[in] channel Number of the channel desired (zero based)
+ * \output PIOS_RCVR_INVALID channel not available
+ * \output PIOS_RCVR_TIMEOUT failsafe condition or missing receiver
+ * \output >=0 channel value
+ */
 static int32_t PIOS_PWM_Get(uint32_t rcvr_id, uint8_t channel)
 {
 	struct pios_pwm_dev * pwm_dev = (struct pios_pwm_dev *)rcvr_id;
@@ -274,7 +276,7 @@ static void PIOS_PWM_tim_edge_cb (uint32_t tim_id, uint32_t context, uint8_t cha
 	
 }
 
-#endif
+#endif /* PIOS_INCLUDE_PWM */
 
 /** 
   * @}

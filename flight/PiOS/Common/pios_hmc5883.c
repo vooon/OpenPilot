@@ -28,10 +28,9 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-/* Project Includes */
 #include "pios.h"
 
-#if defined(PIOS_INCLUDE_HMC5883)
+#ifdef PIOS_INCLUDE_HMC5883
 
 /* Global Variables */
 
@@ -54,8 +53,10 @@ void PIOS_HMC5883_Init(const struct pios_hmc5883_cfg * cfg)
 {
 	dev_cfg = cfg; // store config before enabling interrupt
 
+#ifdef PIOS_HMC5883_HAS_GPIOS
 	PIOS_EXTI_Init(cfg->exti_cfg);
-	
+#endif
+
 	int32_t val = PIOS_HMC5883_Config(cfg);
 	
 	PIOS_Assert(val == 0);
@@ -393,7 +394,7 @@ int32_t PIOS_HMC5883_Test(void)
  */
 bool PIOS_HMC5883_IRQHandler(void)
 {
-	pios_hmc5883_data_ready = true
+	pios_hmc5883_data_ready = true;
 	
 	return false;
 }

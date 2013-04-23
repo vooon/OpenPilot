@@ -1,7 +1,7 @@
 #ifndef DOWNLOADPAGE_H
 #define DOWNLOADPAGE_H
 
-#include <Qt/QtNetwork>
+#include <QtNetwork>
 #include <QDebug>
 
 

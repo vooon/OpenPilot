@@ -38,7 +38,7 @@
  */
 #include <pios.h>
 
-#if defined(PIOS_INCLUDE_SPI)
+#ifdef PIOS_INCLUDE_SPI
 
 #include <pios_spi_priv.h>
 
@@ -53,7 +53,7 @@ static bool PIOS_SPI_validate(struct pios_spi_dev * com_dev)
 #if defined(PIOS_INCLUDE_FREERTOS)
 static struct pios_spi_dev * PIOS_SPI_alloc(void)
 {
-	return (malloc(sizeof(struct pios_spi_dev)));
+	return (pvPortMalloc(sizeof(struct pios_spi_dev)));
 }
 #else
 static struct pios_spi_dev pios_spi_devs[PIOS_SPI_MAX_DEVS];
@@ -275,8 +275,9 @@ int32_t PIOS_SPI_ClaimBusISR(uint32_t spi_id)
 	bool valid = PIOS_SPI_validate(spi_dev);
 	PIOS_Assert(valid)
 	
-	if (xQueueGenericReceive(( xQueueHandle ) spi_dev->busy, NULL, 0x0000 , pdFALSE ) != pdTRUE)
+	if (xSemaphoreTakeFromISR(spi_dev->busy, NULL) != pdTRUE){
 		return -1;
+	}
 #endif
 	return 0;
 }
@@ -298,6 +299,24 @@ int32_t PIOS_SPI_ReleaseBus(uint32_t spi_id)
 	xSemaphoreGive(spi_dev->busy);
 #endif
 	return 0;
+}
+
+/**
+ * Release the SPI bus semaphore from ISR.  Calling the SPI functions does not require this
+ * \param[in] spi SPI number (0 or 1)
+ * \return 0 if no error
+ */
+int32_t PIOS_SPI_ReleaseBusISR(uint32_t spi_id)
+{
+#if defined(PIOS_INCLUDE_FREERTOS)
+    struct pios_spi_dev * spi_dev = (struct pios_spi_dev *)spi_id;
+
+    bool valid = PIOS_SPI_validate(spi_dev);
+    PIOS_Assert(valid)
+
+    xSemaphoreGiveFromISR(spi_dev->busy, NULL);
+#endif
+    return 0;
 }
 
 /**
@@ -659,7 +678,7 @@ void PIOS_SPI_IRQ_Handler(uint32_t spi_id)
 	}
 }
 
-#endif
+#endif /* PIOS_INCLUDE_SPI */
 
 /**
   * @}

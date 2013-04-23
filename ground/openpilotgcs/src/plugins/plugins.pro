@@ -144,6 +144,12 @@ plugin_qmlview.depends = plugin_coreplugin
 plugin_qmlview.depends += plugin_uavobjects
 SUBDIRS += plugin_qmlview
 
+# PathAction Editor gadget
+plugin_pathactioneditor.subdir = pathactioneditor
+plugin_pathactioneditor.depends = plugin_coreplugin
+plugin_pathactioneditor.depends += plugin_uavobjects
+SUBDIRS += plugin_pathactioneditor
+
 # Primary Flight Display (PFD) gadget, QML version
 plugin_pfdqml.subdir = pfdqml
 plugin_pfdqml.depends = plugin_coreplugin
@@ -199,6 +205,15 @@ plugin_uavobjectutil.depends = plugin_coreplugin
 plugin_uavobjectutil.depends += plugin_uavobjects
 SUBDIRS += plugin_uavobjectutil
 
+# OSG Earth View plugin
+OSG {
+    plugin_osgearthview.subdir = osgearthview
+    plugin_osgearthview.depends = plugin_coreplugin
+    plugin_osgearthview.depends += plugin_uavobjects
+    plugin_osgearthview.depends += plugin_uavobjectwidgetutils
+    SUBDIRS += plugin_osgearthview
+}
+
 # Magic Waypoint gadget
 plugin_magicwaypoint.subdir = magicwaypoint
 plugin_magicwaypoint.depends = plugin_coreplugin
@@ -238,6 +253,8 @@ SUBDIRS += plugin_setupwizard
 # UpdateGadget - for updating firmware and so on ..
 plugin_updategadget.subdir = updategadget
 plugin_updategadget.depends = plugin_coreplugin
+plugin_updategadget.depends += plugin_uavobjectutil
+plugin_updategadget.depends += plugin_uavtalk
 SUBDIRS += plugin_updategadget
 
 

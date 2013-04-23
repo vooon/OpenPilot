@@ -28,15 +28,14 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-/* Project Includes */
 #include "pios.h"
 
-#if defined(PIOS_INCLUDE_COM)
+#ifdef PIOS_INCLUDE_COM
 
 #include "fifo_buffer.h"
 #include <pios_com_priv.h>
 
-#if !defined(PIOS_INCLUDE_FREERTOS)
+#ifndef PIOS_INCLUDE_FREERTOS
 #include "pios_delay.h"		/* PIOS_DELAY_WaitmS */
 #endif
 
@@ -197,9 +196,7 @@ static uint16_t PIOS_COM_RxInCallback(uint32_t context, uint8_t * buf, uint16_t 
 	PIOS_Assert(valid);
 	PIOS_Assert(com_dev->has_rx);
 
-	PIOS_IRQ_Disable();
 	uint16_t bytes_into_fifo = fifoBuf_putData(&com_dev->rx, buf, buf_len);
-	PIOS_IRQ_Enable();
 
 	if (bytes_into_fifo > 0) {
 		/* Data has been added to the buffer */
@@ -223,9 +220,7 @@ static uint16_t PIOS_COM_TxOutCallback(uint32_t context, uint8_t * buf, uint16_t
 	PIOS_Assert(buf_len);
 	PIOS_Assert(com_dev->has_tx);
 
-	PIOS_IRQ_Disable();
 	uint16_t bytes_from_fifo = fifoBuf_getData(&com_dev->tx, buf, buf_len);
-	PIOS_IRQ_Enable();
 
 	if (bytes_from_fifo > 0) {
 		/* More space has been made in the buffer */
@@ -289,9 +284,7 @@ int32_t PIOS_COM_SendBufferNonBlocking(uint32_t com_id, const uint8_t *buffer, u
 		return -2;
 	}
 
-	PIOS_IRQ_Disable();
 	uint16_t bytes_into_fifo = fifoBuf_putData(&com_dev->tx, buffer, len);
-	PIOS_IRQ_Enable();
 
 	if (bytes_into_fifo > 0) {
 		/* More data has been put in the tx buffer, make sure the tx is started */
@@ -469,6 +462,7 @@ uint16_t PIOS_COM_ReceiveBuffer(uint32_t com_id, uint8_t * buf, uint16_t buf_len
 {
 	PIOS_Assert(buf);
 	PIOS_Assert(buf_len);
+	uint16_t bytes_from_fifo;
 
 	struct pios_com_dev * com_dev = (struct pios_com_dev *)com_id;
 
@@ -479,9 +473,7 @@ uint16_t PIOS_COM_ReceiveBuffer(uint32_t com_id, uint8_t * buf, uint16_t buf_len
 	PIOS_Assert(com_dev->has_rx);
 
  check_again:
-	PIOS_IRQ_Disable();
-	uint16_t bytes_from_fifo = fifoBuf_getData(&com_dev->rx, buf, buf_len);
-	PIOS_IRQ_Enable();
+	bytes_from_fifo = fifoBuf_getData(&com_dev->rx, buf, buf_len);
 
 	if (bytes_from_fifo == 0) {
 		/* No more bytes in receive buffer */
@@ -510,7 +502,28 @@ uint16_t PIOS_COM_ReceiveBuffer(uint32_t com_id, uint8_t * buf, uint16_t buf_len
 	return (bytes_from_fifo);
 }
 
-#endif
+/**
+ * Query if a com port is available for use.  That can be
+ * used to check a link is established even if the device
+ * is valid.
+ */
+bool PIOS_COM_Available(uint32_t com_id)
+{
+	struct pios_com_dev * com_dev = (struct pios_com_dev *)com_id;
+
+	if (!PIOS_COM_validate(com_dev)) {
+		return false;
+	}
+
+	// If a driver does not provide a query method assume always
+	// available if valid
+	if (com_dev->driver->available == NULL)
+		return true;
+
+	return (com_dev->driver->available)(com_dev->lower_id);
+}
+
+#endif /* PIOS_INCLUDE_COM */
 
 /**
  * @}

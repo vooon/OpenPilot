@@ -31,8 +31,6 @@
 #ifndef PIOS_SDCARD_H
 #define PIOS_SDCARD_H
 
-#if defined(PIOS_INCLUDE_SDCARD)
-
 /* Public Functions */
 typedef struct {
 	uint8_t CSDStruct;	/* CSD structure */
@@ -80,17 +78,17 @@ typedef struct {
 	uint16_t OEM_AppliID;	/* OEM/Application ID */
 	char ProdName[6];	/* Product Name */
 	uint8_t ProdRev;	/* Product Revision */
-	u32 ProdSN;		/* Product Serial Number */
+	uint32_t ProdSN;		/* Product Serial Number */
 	uint8_t Reserved1;	/* Reserved1 */
 	uint16_t ManufactDate;	/* Manufacturing Date */
 	uint8_t msd_CRC;	/* CRC */
 	uint8_t Reserved2;	/* always 1 */
 } SDCARDCidTypeDef;
-
+#ifndef USE_SIM_POSIX
 /* Global Variables */
 extern VOLINFO PIOS_SDCARD_VolInfo;
 extern uint8_t PIOS_SDCARD_Sector[SECTOR_SIZE];
-
+#endif
 /* Prototypes */
 extern int32_t PIOS_SDCARD_Init(uint32_t spi_id);
 extern int32_t PIOS_SDCARD_PowerOn(void);
@@ -106,12 +104,11 @@ extern int32_t PIOS_SDCARD_StartupLog(void);
 extern int32_t PIOS_SDCARD_IsMounted();
 extern int32_t PIOS_SDCARD_MountFS(uint32_t StartupLog);
 extern int32_t PIOS_SDCARD_GetFree(void);
-
+#ifndef USE_SIM_POSIX
 extern int32_t PIOS_SDCARD_ReadBuffer(PFILEINFO fileinfo, uint8_t * buffer, uint32_t len);
 extern int32_t PIOS_SDCARD_ReadLine(PFILEINFO fileinfo, uint8_t * buffer, uint32_t max_len);
+#endif
 extern int32_t PIOS_SDCARD_FileCopy(char *Source, char *Destination);
 extern int32_t PIOS_SDCARD_FileDelete(char *Filename);
-
-#endif
 
 #endif /* PIOS_SDCARD_H */

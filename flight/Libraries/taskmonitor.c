@@ -47,7 +47,7 @@ int32_t TaskMonitorInitialize(void)
 	lock = xSemaphoreCreateRecursiveMutex();
 	memset(handles, 0, sizeof(xTaskHandle)*TASKINFO_RUNNING_NUMELEM);
 	lastMonitorTime = 0;
-#if defined(DIAG_TASKS)
+#ifdef DIAG_TASKS
 	lastMonitorTime = portGET_RUN_TIME_COUNTER_VALUE();
 #endif
 	return 0;
@@ -90,11 +90,21 @@ int32_t TaskMonitorRemove(TaskInfoRunningElem task)
 }
 
 /**
+ * Query if a task is running
+ */
+bool TaskMonitorQueryRunning(TaskInfoRunningElem task)
+{
+	if (task < TASKINFO_RUNNING_NUMELEM && handles[task] != 0)
+		return true;
+	return false;
+}
+
+/**
  * Update the status of all tasks
  */
 void TaskMonitorUpdateAll(void)
 {
-#if defined(DIAG_TASKS)
+#ifdef DIAG_TASKS
 	TaskInfoData data;
 	int n;
 
@@ -125,10 +135,10 @@ void TaskMonitorUpdateAll(void)
 			data.StackRemaining[n] = 10000;
 #else
 			data.StackRemaining[n] = uxTaskGetStackHighWaterMark(handles[n]) * 4;
+#endif
 #if ( configGENERATE_RUN_TIME_STATS == 1 )
 			/* Generate run time stats */
 			data.RunningTime[n] = uxTaskGetRunTime(handles[n]) / deltaTime;
-#endif
 #endif
 			
 		}

@@ -28,10 +28,11 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-/* Project Includes */
 #include "pios.h"
 
-#if defined(PIOS_INCLUDE_GCSRCVR)
+#ifdef PIOS_INCLUDE_GCSRCVR
+
+#include "uavobjectmanager.h"
 
 #include "pios_gcsrcvr_priv.h"
 
@@ -73,7 +74,7 @@ static struct pios_gcsrcvr_dev *PIOS_gcsrcvr_alloc(void)
 	if (!gcsrcvr_dev) return(NULL);
 
 	gcsrcvr_dev->magic = PIOS_GCSRCVR_DEV_MAGIC;
-	gcsrcvr_dev->Fresh = FALSE;
+	gcsrcvr_dev->Fresh = false;
 	gcsrcvr_dev->supv_timer = 0;
 
 	/* The update callback cannot receive the device pointer, so set it in a global */
@@ -94,7 +95,7 @@ static struct pios_gcsrcvr_dev *PIOS_gcsrcvr_alloc(void)
 
 	gcsrcvr_dev = &pios_gcsrcvr_devs[pios_gcsrcvr_num_devs++];
 	gcsrcvr_dev->magic = PIOS_GCSRCVR_DEV_MAGIC;
-	gcsrcvr_dev->Fresh = FALSE;
+	gcsrcvr_dev->Fresh = false;
 	gcsrcvr_dev->supv_timer = 0;
 
 	global_gcsrcvr_dev = gcsrcvr_dev;
@@ -108,7 +109,7 @@ static void gcsreceiver_updated(UAVObjEvent * ev)
 	struct pios_gcsrcvr_dev *gcsrcvr_dev = global_gcsrcvr_dev;
 	if (ev->obj == GCSReceiverHandle()) {
 		GCSReceiverGet(&gcsreceiverdata);
-		gcsrcvr_dev->Fresh = TRUE;
+		gcsrcvr_dev->Fresh = true;
 	}
 }
 
@@ -121,6 +122,11 @@ extern int32_t PIOS_GCSRCVR_Init(uint32_t *gcsrcvr_id)
 	if (!gcsrcvr_dev)
 		return -1;
 
+	for (uint8_t i = 0; i < GCSRECEIVER_CHANNEL_NUMELEM; i++) {
+		/* Flush channels */
+		gcsreceiverdata.Channel[i] = PIOS_RCVR_TIMEOUT;
+	}
+
 	/* Register uavobj callback */
 	GCSReceiverConnectCallback (gcsreceiver_updated);
 
@@ -132,11 +138,18 @@ extern int32_t PIOS_GCSRCVR_Init(uint32_t *gcsrcvr_id)
 	return 0;
 }
 
+/**
+ * Get the value of an input channel
+ * \param[in] channel Number of the channel desired (zero based)
+ * \output PIOS_RCVR_INVALID channel not available
+ * \output PIOS_RCVR_TIMEOUT failsafe condition or missing receiver
+ * \output >=0 channel value
+ */
 static int32_t PIOS_GCSRCVR_Get(uint32_t rcvr_id, uint8_t channel)
 {
 	if (channel >= GCSRECEIVER_CHANNEL_NUMELEM) {
 		/* channel is out of range */
-		return -1;
+		return PIOS_RCVR_INVALID;
 	}
 
 	return (gcsreceiverdata.Channel[channel]);
@@ -163,10 +176,10 @@ static void PIOS_gcsrcvr_Supervisor(uint32_t gcsrcvr_id) {
 		for (int32_t i = 0; i < GCSRECEIVER_CHANNEL_NUMELEM; i++)
 			gcsreceiverdata.Channel[i] = PIOS_RCVR_TIMEOUT;
 
-	gcsrcvr_dev->Fresh = FALSE;
+	gcsrcvr_dev->Fresh = false;
 }
 
-#endif	/* PIOS_INCLUDE_GCSRCVR */
+#endif /* PIOS_INCLUDE_GCSRCVR */
 
 /** 
   * @}

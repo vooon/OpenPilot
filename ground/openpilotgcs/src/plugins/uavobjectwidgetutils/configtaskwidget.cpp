@@ -233,6 +233,11 @@ ConfigTaskWidget::~ConfigTaskWidget()
         if(oTw)
             delete oTw;
     }
+    if(timeOut)
+    {
+        delete timeOut;
+        timeOut = NULL;
+    }
 }
 
 void ConfigTaskWidget::saveObjectToSD(UAVObject *obj)
@@ -265,6 +270,28 @@ double ConfigTaskWidget::listMean(QList<double> list)
     for(int i = 0; i < list.size(); i++)
         accum += list[i];
     return accum / list.size();
+}
+
+/**
+ * Utility function which calculates the Variance value of a list of values
+ * @param list list of double values
+ * @returns Variance of the list of parameter values
+ */
+double ConfigTaskWidget::listVar(QList<double> list)
+{
+    double mean_accum = 0;
+    double var_accum = 0;
+    double mean;
+
+    for(int i = 0; i < list.size(); i++)
+        mean_accum += list[i];
+    mean = mean_accum / list.size();
+
+    for(int i = 0; i < list.size(); i++)
+        var_accum += (list[i] - mean) * (list[i] - mean);
+
+    // Use unbiased estimator
+    return var_accum / (list.size() - 1);
 }
 
 // ************************************
@@ -430,11 +457,11 @@ void ConfigTaskWidget::forceShadowUpdates()
     {
         foreach (shadow * sh, oTw->shadowsList)
         {
-            disconnectWidgetUpdatesToSlot((QWidget*)sh->widget,SLOT(widgetsContentsChanged()));
-            checkWidgetsLimits(sh->widget,oTw->field,oTw->index,sh->isLimited,getVariantFromWidget(oTw->widget,oTw->scale),sh->scale);
-            setWidgetFromVariant(sh->widget,getVariantFromWidget(oTw->widget,oTw->scale),sh->scale);
+            disconnectWidgetUpdatesToSlot((QWidget*)sh->widget, SLOT(widgetsContentsChanged()));
+            checkWidgetsLimits(sh->widget, oTw->field, oTw->index, sh->isLimited, getVariantFromWidget(oTw->widget, oTw->scale, oTw->getUnits()), sh->scale);
+            setWidgetFromVariant(sh->widget, getVariantFromWidget(oTw->widget, oTw->scale, oTw->getUnits()), sh->scale);
             emit widgetContentsChanged((QWidget*)sh->widget);
-            connectWidgetUpdatesToSlot((QWidget*)sh->widget,SLOT(widgetsContentsChanged()));
+            connectWidgetUpdatesToSlot((QWidget*)sh->widget, SLOT(widgetsContentsChanged()));
 
         }
     }
@@ -453,7 +480,7 @@ void ConfigTaskWidget::widgetsContentsChanged()
         if(oTw->widget==(QWidget*)sender())
         {
             scale=oTw->scale;
-            checkWidgetsLimits((QWidget*)sender(),oTw->field,oTw->index,oTw->isLimited,getVariantFromWidget((QWidget*)sender(),oTw->scale),oTw->scale);
+            checkWidgetsLimits((QWidget*)sender(), oTw->field, oTw->index, oTw->isLimited, getVariantFromWidget((QWidget*)sender(), oTw->scale, oTw->getUnits()), oTw->scale);
         }
         else
         {
@@ -462,25 +489,25 @@ void ConfigTaskWidget::widgetsContentsChanged()
                 if(sh->widget==(QWidget*)sender())
                 {
                     scale=sh->scale;
-                    checkWidgetsLimits((QWidget*)sender(),oTw->field,oTw->index,sh->isLimited,getVariantFromWidget((QWidget*)sender(),scale),scale);
+                    checkWidgetsLimits((QWidget*)sender(), oTw->field, oTw->index, sh->isLimited, getVariantFromWidget((QWidget*)sender(), scale, oTw->getUnits()), scale);
                 }
             }
         }
         if(oTw->widget!=(QWidget *)sender())
         {
-            disconnectWidgetUpdatesToSlot((QWidget*)oTw->widget,SLOT(widgetsContentsChanged()));
-            checkWidgetsLimits(oTw->widget,oTw->field,oTw->index,oTw->isLimited,getVariantFromWidget((QWidget*)sender(),scale),oTw->scale);
-            setWidgetFromVariant(oTw->widget,getVariantFromWidget((QWidget*)sender(),scale),oTw->scale);
+            disconnectWidgetUpdatesToSlot((QWidget*)oTw->widget, SLOT(widgetsContentsChanged()));
+            checkWidgetsLimits(oTw->widget, oTw->field, oTw->index, oTw->isLimited, getVariantFromWidget((QWidget*)sender(), scale, oTw->getUnits()), oTw->scale);
+            setWidgetFromVariant(oTw->widget, getVariantFromWidget((QWidget*)sender(), scale, oTw->getUnits()), oTw->scale);
             emit widgetContentsChanged((QWidget*)oTw->widget);
-            connectWidgetUpdatesToSlot((QWidget*)oTw->widget,SLOT(widgetsContentsChanged()));
+            connectWidgetUpdatesToSlot((QWidget*)oTw->widget, SLOT(widgetsContentsChanged()));
         }
         foreach (shadow * sh, oTw->shadowsList)
         {
             if(sh->widget!=(QWidget*)sender())
             {
                 disconnectWidgetUpdatesToSlot((QWidget*)sh->widget,SLOT(widgetsContentsChanged()));
-                checkWidgetsLimits(sh->widget,oTw->field,oTw->index,sh->isLimited,getVariantFromWidget((QWidget*)sender(),scale),sh->scale);
-                setWidgetFromVariant(sh->widget,getVariantFromWidget((QWidget*)sender(),scale),sh->scale);
+                checkWidgetsLimits(sh->widget, oTw->field, oTw->index, sh->isLimited, getVariantFromWidget((QWidget*)sender(), scale, oTw->getUnits()), sh->scale);
+                setWidgetFromVariant(sh->widget, getVariantFromWidget((QWidget*)sender(), scale, oTw->getUnits()), sh->scale);
                 emit widgetContentsChanged((QWidget*)sh->widget);
                 connectWidgetUpdatesToSlot((QWidget*)sh->widget,SLOT(widgetsContentsChanged()));
             }
@@ -1007,7 +1034,7 @@ bool ConfigTaskWidget::setFieldFromWidget(QWidget * widget,UAVObjectField * fiel
 {
     if(!widget || !field)
         return false;
-    QVariant ret=getVariantFromWidget(widget,scale);
+    QVariant ret = getVariantFromWidget(widget, scale, field->getUnits());
     if(ret.isValid())
     {
         field->setValue(ret,index);
@@ -1024,7 +1051,7 @@ bool ConfigTaskWidget::setFieldFromWidget(QWidget * widget,UAVObjectField * fiel
  * @param scale scale to be used on the assignement
  * @return returns the value of the widget times the scale
  */
-QVariant ConfigTaskWidget::getVariantFromWidget(QWidget * widget,double scale)
+QVariant ConfigTaskWidget::getVariantFromWidget(QWidget *widget, double scale, QString units)
 {
     if(QComboBox * cb=qobject_cast<QComboBox *>(widget))
     {
@@ -1048,7 +1075,13 @@ QVariant ConfigTaskWidget::getVariantFromWidget(QWidget * widget,double scale)
     }
     else if(QLineEdit * cb=qobject_cast<QLineEdit *>(widget))
     {
-        return (QString)cb->displayText();
+        QString value = (QString)cb->displayText();
+        if(units == "hex") {
+            bool ok;
+            return value.toUInt(&ok, 16);
+        } else {
+            return value;
+        }
     }
     else
         return QVariant();
@@ -1056,13 +1089,14 @@ QVariant ConfigTaskWidget::getVariantFromWidget(QWidget * widget,double scale)
 /**
  * Sets a widget from a variant
  * @param widget pointer for the widget to set
- * @param scale scale to be used on the assignement
  * @param value value to be used on the assignement
+ * @param scale scale to be used on the assignement
+ * @param units the units for the value
  * @return returns true if the assignement was successfull
  */
-bool ConfigTaskWidget::setWidgetFromVariant(QWidget *widget, QVariant value, double scale)
+bool ConfigTaskWidget::setWidgetFromVariant(QWidget *widget, QVariant value, double scale, QString units)
 {
-    if(QComboBox * cb=qobject_cast<QComboBox *>(widget))
+   if(QComboBox * cb=qobject_cast<QComboBox *>(widget))
     {
         cb->setCurrentIndex(cb->findText(value.toString()));
         return true;
@@ -1098,15 +1132,33 @@ bool ConfigTaskWidget::setWidgetFromVariant(QWidget *widget, QVariant value, dou
     }
     else if(QLineEdit * cb=qobject_cast<QLineEdit *>(widget))
     {
-        if(scale==0)
-            cb->setText(value.toString());
-        else
+	if ((scale== 0) || (scale == 1)) {
+            if(units == "hex") {
+                cb->setText(QString::number(value.toUInt(), 16).toUpper());
+            } else {
+                cb->setText(value.toString());
+            }
+        } else {
             cb->setText(QString::number((value.toDouble()/scale)));
+        }
         return true;
     }
     else
         return false;
 }
+
+/**
+ * Sets a widget from a variant
+ * @param widget pointer for the widget to set
+ * @param value value to be used on the assignement
+ * @param scale scale to be used on the assignement
+ * @return returns true if the assignement was successfull
+ */
+bool ConfigTaskWidget::setWidgetFromVariant(QWidget *widget, QVariant value, double scale)
+{
+    return setWidgetFromVariant(widget, value, scale, QString(""));
+}
+
 /**
  * Sets a widget from a UAVObject field
  * @param widget pointer to the widget to set
@@ -1127,7 +1179,7 @@ bool ConfigTaskWidget::setWidgetFromField(QWidget * widget,UAVObjectField * fiel
     }
     QVariant var=field->getValue(index);
     checkWidgetsLimits(widget,field,index,hasLimits,var,scale);
-    bool ret=setWidgetFromVariant(widget,var,scale);
+    bool ret = setWidgetFromVariant(widget, var, scale, field->getUnits());
     if(ret)
         return true;
     else

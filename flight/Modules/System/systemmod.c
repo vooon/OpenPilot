@@ -38,16 +38,25 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "openpilot.h"
-#include "systemmod.h"
-#include "objectpersistence.h"
-#include "flightstatus.h"
-#include "systemstats.h"
-#include "systemsettings.h"
-#include "i2cstats.h"
-#include "taskinfo.h"
-#include "watchdogstatus.h"
-#include "taskmonitor.h"
+#include <openpilot.h>
+
+// private includes
+#include "inc/systemmod.h"
+
+// UAVOs
+#include <objectpersistence.h>
+#include <flightstatus.h>
+#include <systemstats.h>
+#include <systemsettings.h>
+#include <i2cstats.h>
+#include <taskinfo.h>
+#include <watchdogstatus.h>
+#include <taskmonitor.h>
+#include <hwsettings.h>
+
+// Flight Libraries
+#include <sanitycheck.h>
+
 
 //#define DEBUG_THIS_FILE
 
@@ -63,8 +72,8 @@
 
 #ifndef IDLE_COUNTS_PER_SEC_AT_NO_LOAD
 #define IDLE_COUNTS_PER_SEC_AT_NO_LOAD 995998	// calibrated by running tests/test_cpuload.c
-											  // must be updated if the FreeRTOS or compiler
-											  // optimisation options are changed.
+						// must be updated if the FreeRTOS or compiler
+						// optimisation options are changed.
 #endif
 
 #if defined(PIOS_SYSTEM_STACK_SIZE)
@@ -84,13 +93,15 @@ static xTaskHandle systemTaskHandle;
 static xQueueHandle objectPersistenceQueue;
 static bool stackOverflow;
 static bool mallocFailed;
+static HwSettingsData bootHwSettings;
 
 // Private functions
 static void objectUpdatedCb(UAVObjEvent * ev);
+static void hwSettingsUpdatedCb(UAVObjEvent * ev);
 static void updateStats();
 static void updateSystemAlarms();
 static void systemTask(void *parameters);
-#if defined(I2C_WDG_STATS_DIAGNOSTICS)
+#ifdef DIAG_I2C_WDG_STATS
 static void updateI2Cstats();
 static void updateWDGstats();
 #endif
@@ -123,10 +134,10 @@ int32_t SystemModInitialize(void)
 	SystemStatsInitialize();
 	FlightStatusInitialize();
 	ObjectPersistenceInitialize();
-#if defined(DIAG_TASKS)
+#ifdef DIAG_TASKS
 	TaskInfoInitialize();
 #endif
-#if defined(I2C_WDG_STATS_DIAGNOSTICS)
+#ifdef DIAG_I2C_WDG_STATS
 	I2CStatsInitialize();
 	WatchdogStatusInitialize();
 #endif
@@ -169,6 +180,11 @@ static void systemTask(void *parameters)
 	// Listen for SettingPersistance object updates, connect a callback function
 	ObjectPersistenceConnectQueue(objectPersistenceQueue);
 
+	// Load a copy of HwSetting active at boot time
+	HwSettingsGet(&bootHwSettings);
+	// Whenever the configuration changes, make sure it is safe to fly
+	HwSettingsConnectCallback(hwSettingsUpdatedCb);
+
 	// Main system loop
 	while (1) {
 		// Update the system statistics
@@ -176,12 +192,12 @@ static void systemTask(void *parameters)
 
 		// Update the system alarms
 		updateSystemAlarms();
-#if defined(I2C_WDG_STATS_DIAGNOSTICS)
+#ifdef DIAG_I2C_WDG_STATS
 		updateI2Cstats();
 		updateWDGstats();
 #endif
 
-#if defined(DIAG_TASKS)
+#ifdef DIAG_TASKS
 		// Update the task status object
 		TaskMonitorUpdateAll();
 #endif
@@ -230,8 +246,19 @@ static void objectUpdatedCb(UAVObjEvent * ev)
 		ObjectPersistenceGet(&objper);
 
 		int retval = 1;
-		// Execute action
-		if (objper.Operation == OBJECTPERSISTENCE_OPERATION_LOAD) {
+		FlightStatusData flightStatus;
+		FlightStatusGet(&flightStatus);
+
+		// When this is called because of this method don't do anything
+		if (objper.Operation == OBJECTPERSISTENCE_OPERATION_ERROR ||
+			objper.Operation == OBJECTPERSISTENCE_OPERATION_COMPLETED) {
+			return;
+		}
+
+		// Execute action if disarmed
+		if(flightStatus.Armed != FLIGHTSTATUS_ARMED_DISARMED) {
+			retval = -1;
+		} else if (objper.Operation == OBJECTPERSISTENCE_OPERATION_LOAD) {
 			if (objper.Selection == OBJECTPERSISTENCE_SELECTION_SINGLEOBJECT) {
 				// Get selected object
 				obj = UAVObjGetByID(objper.ObjectID);
@@ -287,9 +314,10 @@ static void objectUpdatedCb(UAVObjEvent * ev)
 				retval = UAVObjDeleteMetaobjects();
 			}
 		} else if (objper.Operation == OBJECTPERSISTENCE_OPERATION_FULLERASE) {
-			retval = -1;
 #if defined(PIOS_INCLUDE_FLASH_SECTOR_SETTINGS)
-			retval = PIOS_FLASHFS_Format();
+			retval = PIOS_FLASHFS_Format(0);
+#else
+			retval = -1;
 #endif
 		}
 		switch(retval) {
@@ -308,9 +336,22 @@ static void objectUpdatedCb(UAVObjEvent * ev)
 }
 
 /**
+ * Called whenever hardware settings changed
+ */
+static void hwSettingsUpdatedCb(UAVObjEvent * ev)
+{
+    HwSettingsData currentHwSettings;
+    HwSettingsGet(&currentHwSettings);
+    // check whether the Hw Configuration has changed from the one used at boot time
+    if (memcmp(&bootHwSettings, &currentHwSettings, sizeof(HwSettingsData)) != 0) {
+        ExtendedAlarmsSet(SYSTEMALARMS_ALARM_BOOTFAULT, SYSTEMALARMS_ALARM_ERROR, SYSTEMALARMS_EXTENDEDALARMSTATUS_REBOOTREQUIRED, 0);
+    }
+}
+
+/**
  * Called periodically to update the I2C statistics 
  */
-#if defined(I2C_WDG_STATS_DIAGNOSTICS)
+#ifdef DIAG_I2C_WDG_STATS
 static void updateI2Cstats() 
 {
 #if defined(PIOS_INCLUDE_I2C)
@@ -419,7 +460,7 @@ static void updateStats()
 	idleCounterClear = 1;
 	
 #if defined(PIOS_INCLUDE_ADC) && defined(PIOS_ADC_USE_TEMP_SENSOR)
-	float temp_voltage = 3.3 * PIOS_ADC_PinGet(0) / ((1 << 12) - 1);
+	float temp_voltage = 3.3f * PIOS_ADC_PinGet(0) / ((float)((1 << 12) - 1));
 	const float STM32_TEMP_V25 = 1.43; /* V */
 	const float STM32_TEMP_AVG_SLOPE = 4.3; /* mV/C */
 	stats.CPUTemp = (temp_voltage-STM32_TEMP_V25) * 1000 / STM32_TEMP_AVG_SLOPE + 25;

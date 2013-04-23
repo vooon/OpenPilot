@@ -28,13 +28,13 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-/* Project Includes */
 #include "pios.h"
+
+#ifdef PIOS_INCLUDE_DSM
+
 #include "pios_dsm_priv.h"
 
-#if defined(PIOS_INCLUDE_DSM)
-
-#if !defined(PIOS_INCLUDE_RTC)
+#ifndef PIOS_INCLUDE_RTC
 #error PIOS_INCLUDE_RTC must be used to use DSM
 #endif
 
@@ -349,7 +349,7 @@ static uint16_t PIOS_DSM_RxInCallback(uint32_t context,
  * \param[in] channel Number of the channel desired (zero based)
  * \output PIOS_RCVR_INVALID channel not available
  * \output PIOS_RCVR_TIMEOUT failsafe condition or missing receiver
- * \output >0 channel value
+ * \output >=0 channel value
  */
 static int32_t PIOS_DSM_Get(uint32_t rcvr_id, uint8_t channel)
 {
@@ -401,7 +401,7 @@ static void PIOS_DSM_Supervisor(uint32_t dsm_id)
 	}
 }
 
-#endif	/* PIOS_INCLUDE_DSM */
+#endif /* PIOS_INCLUDE_DSM */
 
 /** 
  * @}
