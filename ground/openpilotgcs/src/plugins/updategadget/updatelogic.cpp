@@ -5,6 +5,8 @@
 #include <QList>
 #include "devicedescriptorstruct.h"
 #include "infodialog.h"
+#include "uavtalk/telemetrymanager.h"
+
 
 UpdateLogic::UpdateLogic()
 {
@@ -77,10 +79,21 @@ void UpdateLogic::parseXML(QByteArray response){
     // execute (open) the dialog
     infoDialog.exec();
 
+//    ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
+//    UAVObjectUtilManager* utilMngr = pm->getObject<UAVObjectUtilManager>();
+//    QString serial = utilMngr->getBoardCPUSerial().toHex();
+//    qDebug()<<serial;
+
     ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
-    UAVObjectUtilManager* utilMngr = pm->getObject<UAVObjectUtilManager>();
-    QString serial = utilMngr->getBoardCPUSerial().toHex();
-    qDebug()<<serial;
+    TelemetryManager* telMngr = pm->getObject<TelemetryManager>();
+    if (telMngr->isConnected())
+    {
+        UAVObjectUtilManager *utilMngr = pm->getObject<UAVObjectUtilManager>();
+        deviceDescriptorStruct boardDescription = utilMngr->getBoardDescriptionStruct();
+        qDebug()<<"boardType"<<boardDescription.boardType;
+        qDebug()<<"uavoHash"<<boardDescription.uavoHash;
+        qDebug()<<"fwHash"<<boardDescription.fwHash;
+    }
 }
 
 void UpdateLogic::printName(QString name)
