@@ -22,11 +22,11 @@ endif
 
 # Paths
 TOPDIR		= .
-OPSYSTEM	= $(TOPDIR)/System
+OPSYSTEM	= $(TOPDIR)
+BOARDINC	= $(TOPDIR)/..
 OPSYSTEMINC	= $(OPSYSTEM)/inc
 PIOSINC		= $(PIOS)/inc
 PIOSCOMMON	= $(PIOS)/Common
-PIOSBOARDS	= $(PIOS)/Boards
 FLIGHTLIBINC	= $(FLIGHTLIB)/inc
 
 ## UAVTalk and UAVObject manager
@@ -75,6 +75,7 @@ SRC += $(PIOSCOMMON)/pios_video.c
 SRC += $(PIOSCOMMON)/pios_wavplay.c
 
 ## PIOS Hardware (Common)
+SRC += $(PIOSCOMMON)/pios_iap.c
 SRC += $(PIOSCOMMON)/pios_com.c
 SRC += $(PIOSCOMMON)/pios_com_msg.c
 SRC += $(PIOSCOMMON)/pios_crc.c
@@ -102,8 +103,8 @@ SRC += $(MATHLIB)/sin_lookup.c
 SRC += $(MATHLIB)/pid.c
 
 ## Modules
-SRC += $(foreach mod, $(MODULES), $(wildcard $(OPMODULEDIR)/$(mod)/*.c))
-SRC += $(foreach mod, $(OPTMODULES), $(wildcard $(OPMODULEDIR)/$(mod)/*.c))
+SRC += $(foreach mod, $(MODULES), $(sort $(wildcard $(OPMODULEDIR)/$(mod)/*.c)))
+SRC += $(foreach mod, $(OPTMODULES), $(sort $(wildcard $(OPMODULEDIR)/$(mod)/*.c)))
 
 # Declare all non-optional modules as built-in to force inclusion.
 # Built-in modules are always enabled and cannot be disabled.
@@ -139,10 +140,9 @@ ASRCARM +=
 #    Each directory must be seperated by a space.
 EXTRAINCDIRS += $(PIOS)
 EXTRAINCDIRS += $(PIOSINC)
+EXTRAINCDIRS += $(BOARDINC)
 EXTRAINCDIRS += $(FLIGHTLIBINC)
 EXTRAINCDIRS += $(PIOSCOMMON)
-EXTRAINCDIRS += $(PIOSBOARDS)
-EXTRAINCDIRS += $(HWDEFSINC)
 EXTRAINCDIRS += $(OPSYSTEMINC)
 EXTRAINCDIRS += $(MATHLIBINC)
 EXTRAINCDIRS += $(OPUAVOBJINC)
@@ -176,3 +176,6 @@ ifeq ($(MCU),cortex-m3)
 else ifeq ($(MCU),cortex-m4)
     LDFLAGS += $(addprefix -T,$(LINKER_SCRIPTS_APP))
 endif
+
+# Add jtag targets (program and wipe)
+$(eval $(call JTAG_TEMPLATE,$(OUTDIR)/$(TARGET).bin,$(FW_BANK_BASE),$(FW_BANK_SIZE),$(OPENOCD_JTAG_CONFIG),$(OPENOCD_CONFIG)))
