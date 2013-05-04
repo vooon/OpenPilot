@@ -21,7 +21,7 @@ ifndef OPENPILOT_IS_COOL
 endif
 
 # Set to YES to compile for debugging
-DEBUG ?= NO
+DEBUG ?= YES
 
 # Set to YES to use the Servo output pins for debugging via scope or logic analyser
 ENABLE_DEBUG_PINS	?= NO
@@ -43,7 +43,7 @@ DIAG_ALL		?= NO
 # 0 = turn off optimization. s = optimize for size.
 # Note: 3 is not always the best optimization level.
 ifeq ($(DEBUG), YES)
-    OPT = 0
+    OPT = s
 else
     OPT = s
 endif

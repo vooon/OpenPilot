@@ -115,9 +115,9 @@ uint16_t PIOS_BKP_ReadRegister(uint32_t regnumber)
 	if(PIOS_BKP_REGISTERS_COUNT < regnumber)
 	{
 		PIOS_Assert(0);
-	} else {
-		return (uint16_t) BKP_ReadBackupRegister(pios_bkp_registers_map[regnumber]);
 	}
+
+	return (uint16_t) BKP_ReadBackupRegister(pios_bkp_registers_map[regnumber]);
 }
 
 void PIOS_BKP_WriteRegister(uint32_t regnumber,uint16_t data)
@@ -125,9 +125,9 @@ void PIOS_BKP_WriteRegister(uint32_t regnumber,uint16_t data)
 	if(PIOS_BKP_REGISTERS_COUNT < regnumber)
 	{
 		PIOS_Assert(0);
-	} else {
-		BKP_WriteBackupRegister(pios_bkp_registers_map[regnumber],(uint32_t)data);
 	}
+
+	BKP_WriteBackupRegister(pios_bkp_registers_map[regnumber],(uint32_t)data);
 }
 
 void PIOS_BKP_EnableWrite(void)

@@ -151,10 +151,8 @@ uint32_t PIOS_IAP_ReadBootCmd(uint8_t number)
 	{
 		PIOS_Assert(0);
 	}
-	else
-	{
-		return PIOS_BKP_ReadRegister(pios_iap_cmd_list[number]);
-	}	
+
+	return PIOS_BKP_ReadRegister(pios_iap_cmd_list[number]);
 }
 
 /**
@@ -168,10 +166,8 @@ void PIOS_IAP_WriteBootCmd(uint8_t number, uint32_t value)
 	{
 		PIOS_Assert(0);
 	}
-	else
-	{
-		PIOS_BKP_WriteRegister(pios_iap_cmd_list[number], value);
-	}	
+
+	PIOS_BKP_WriteRegister(pios_iap_cmd_list[number], value);
 }
 
 #endif /* PIOS_INCLUDE_IAP */

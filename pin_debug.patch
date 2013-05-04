@@ -1,0 +1,171 @@
+diff --git a/flight/PiOS/STM32F10x/pios_debug.c b/flight/PiOS/STM32F10x/pios_debug.c
+index f7c9d6c..863e708 100644
+--- a/flight/PiOS/STM32F10x/pios_debug.c
++++ b/flight/PiOS/STM32F10x/pios_debug.c
+@@ -7,7 +7,7 @@
+  * @{
+  *
+  * @file       pios_debug.c
+- * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2010.
++ * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2012.
+  * @brief      Debugging Functions
+  * @see        The GNU Public License (GPL) Version 3
+  * 
+@@ -60,13 +60,13 @@ void PIOS_DEBUG_Init(const struct pios_tim_channel * channels, uint8_t num_chann
+ 		GPIO_StructInit(&GPIO_InitStructure);
+ 		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+ 		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+-		GPIO_InitStructure.GPIO_Pin = chan->init->GPIO_Pin;
++		GPIO_InitStructure.GPIO_Pin = chan->pin.init.GPIO_Pin;
+ 
+ 		/* Initialize the GPIO */
+-		GPIO_Init(chan->init->port, &GPIO_InitStructure);
++		GPIO_Init(chan->pin.gpio, &GPIO_InitStructure);
+ 
+ 		/* Set the pin low */
+-		GPIO_WriteBit(chan->init->port, chan->init->GPIO_Pin, Bit_RESET);
++		GPIO_WriteBit(chan->pin.gpio, chan->pin.init.GPIO_Pin, Bit_RESET);
+ 	}
+ #endif // PIOS_ENABLE_DEBUG_PINS
+ }
+@@ -84,7 +84,7 @@ void PIOS_DEBUG_PinHigh(uint8_t pin)
+ 
+ 	const struct pios_tim_channel * chan = &debug_channels[pin];
+ 
+-	GPIO_WriteBit(chan->init->port, chan->init->GPIO_Pin, Bit_Set);
++	GPIO_WriteBit(chan->pin.gpio, chan->pin.init.GPIO_Pin, Bit_SET);
+ 
+ #endif // PIOS_ENABLE_DEBUG_PINS
+ }
+@@ -102,7 +102,7 @@ void PIOS_DEBUG_PinLow(uint8_t pin)
+ 
+ 	const struct pios_tim_channel * chan = &debug_channels[pin];
+ 
+-	GPIO_WriteBit(chan->init->port, chan->init->GPIO_Pin, Bit_RESET);
++	GPIO_WriteBit(chan->pin.gpio, chan->pin.init.GPIO_Pin, Bit_RESET);
+ 
+ #endif // PIOS_ENABLE_DEBUG_PINS
+ }
+@@ -124,8 +124,8 @@ void PIOS_DEBUG_PinValue8Bit(uint8_t value)
+ 	 * This is sketchy since it assumes a particular ordering
+ 	 * and bitwise layout of the channels provided to the debug code.
+ 	 */
+-	debug_channels[0].init.port->BSRR = bsrr_l;
+-	debug_channels[4].init.port->BSRR = bsrr_h;
++	debug_channels[0].pin.gpio->BSRR = bsrr_l;
++	debug_channels[4].pin.gpio->BSRR = bsrr_h;
+ 
+ 	PIOS_IRQ_Enable();
+ #endif // PIOS_ENABLE_DEBUG_PINS
+@@ -143,7 +143,7 @@ void PIOS_DEBUG_PinValue4BitL(uint8_t value)
+ 	 * and bitwise layout of the channels provided to the debug code.
+ 	 */
+ 	uint32_t bsrr_l = ((~(value & 0x0F)<<(16+6))) | ((value & 0x0F)<<6);
+-	debug_channels[0].init.port->BSRR = bsrr_l;
++	debug_channels[0].pin.gpio->BSRR = bsrr_l;
+ #endif // PIOS_ENABLE_DEBUG_PINS
+ }
+ 
+diff --git a/flight/PiOS/STM32F4xx/pios_debug.c b/flight/PiOS/STM32F4xx/pios_debug.c
+index 51efbc1..863e708 100644
+--- a/flight/PiOS/STM32F4xx/pios_debug.c
++++ b/flight/PiOS/STM32F4xx/pios_debug.c
+@@ -60,13 +60,13 @@ void PIOS_DEBUG_Init(const struct pios_tim_channel * channels, uint8_t num_chann
+ 		GPIO_StructInit(&GPIO_InitStructure);
+ 		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+ 		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+-		GPIO_InitStructure.GPIO_Pin = chan->init->GPIO_Pin;
++		GPIO_InitStructure.GPIO_Pin = chan->pin.init.GPIO_Pin;
+ 
+ 		/* Initialize the GPIO */
+-		GPIO_Init(chan->init->port, &GPIO_InitStructure);
++		GPIO_Init(chan->pin.gpio, &GPIO_InitStructure);
+ 
+ 		/* Set the pin low */
+-		GPIO_WriteBit(chan->init->port, chan->init->GPIO_Pin, Bit_RESET);
++		GPIO_WriteBit(chan->pin.gpio, chan->pin.init.GPIO_Pin, Bit_RESET);
+ 	}
+ #endif // PIOS_ENABLE_DEBUG_PINS
+ }
+@@ -84,7 +84,7 @@ void PIOS_DEBUG_PinHigh(uint8_t pin)
+ 
+ 	const struct pios_tim_channel * chan = &debug_channels[pin];
+ 
+-	GPIO_WriteBit(chan->init->port, chan->init->GPIO_Pin, Bit_Set);
++	GPIO_WriteBit(chan->pin.gpio, chan->pin.init.GPIO_Pin, Bit_SET);
+ 
+ #endif // PIOS_ENABLE_DEBUG_PINS
+ }
+@@ -102,7 +102,7 @@ void PIOS_DEBUG_PinLow(uint8_t pin)
+ 
+ 	const struct pios_tim_channel * chan = &debug_channels[pin];
+ 
+-	GPIO_WriteBit(chan->init->port, chan->init->GPIO_Pin, Bit_RESET);
++	GPIO_WriteBit(chan->pin.gpio, chan->pin.init.GPIO_Pin, Bit_RESET);
+ 
+ #endif // PIOS_ENABLE_DEBUG_PINS
+ }
+@@ -124,8 +124,8 @@ void PIOS_DEBUG_PinValue8Bit(uint8_t value)
+ 	 * This is sketchy since it assumes a particular ordering
+ 	 * and bitwise layout of the channels provided to the debug code.
+ 	 */
+-	debug_channels[0].init.port->BSRR = bsrr_l;
+-	debug_channels[4].init.port->BSRR = bsrr_h;
++	debug_channels[0].pin.gpio->BSRR = bsrr_l;
++	debug_channels[4].pin.gpio->BSRR = bsrr_h;
+ 
+ 	PIOS_IRQ_Enable();
+ #endif // PIOS_ENABLE_DEBUG_PINS
+@@ -143,7 +143,7 @@ void PIOS_DEBUG_PinValue4BitL(uint8_t value)
+ 	 * and bitwise layout of the channels provided to the debug code.
+ 	 */
+ 	uint32_t bsrr_l = ((~(value & 0x0F)<<(16+6))) | ((value & 0x0F)<<6);
+-	debug_channels[0].init.port->BSRR = bsrr_l;
++	debug_channels[0].pin.gpio->BSRR = bsrr_l;
+ #endif // PIOS_ENABLE_DEBUG_PINS
+ }
+ 
+diff --git a/flight/targets/CopterControl/System/pios_board.c b/flight/targets/CopterControl/System/pios_board.c
+index 2cd4cde..1bfe13f 100644
+--- a/flight/targets/CopterControl/System/pios_board.c
++++ b/flight/targets/CopterControl/System/pios_board.c
+@@ -774,7 +774,7 @@ void PIOS_Board_Init(void) {
+ 	/* Remap AFIO pin for PB4 (Servo 5 Out)*/
+ 	GPIO_PinRemapConfig( GPIO_Remap_SWJ_NoJTRST, ENABLE);
+ 
+-#ifndef PIOS_DEBUG_ENABLE_DEBUG_PINS
++#ifndef PIOS_ENABLE_DEBUG_PINS
+ 	switch (hwsettings_rcvrport) {
+ 		case HWSETTINGS_CC_RCVRPORT_DISABLED:
+ 		case HWSETTINGS_CC_RCVRPORT_PWM:
+@@ -788,7 +788,7 @@ void PIOS_Board_Init(void) {
+ 			break;
+ 	}
+ #else
+-	PIOS_DEBUG_Init(&pios_tim_servo_all_channels, NELEMENTS(pios_tim_servo_all_channels));
++	PIOS_DEBUG_Init(pios_tim_servoport_all_pins , NELEMENTS(pios_tim_servoport_all_pins));
+ #endif	/* PIOS_DEBUG_ENABLE_DEBUG_PINS */
+ 
+ 	switch(bdinfo->board_rev) {
+diff --git a/flight/targets/Revolution/System/pios_board.c b/flight/targets/Revolution/System/pios_board.c
+index 5cbdb46..0f6884e 100644
+--- a/flight/targets/Revolution/System/pios_board.c
++++ b/flight/targets/Revolution/System/pios_board.c
+@@ -825,7 +825,7 @@ void PIOS_Board_Init(void) {
+ 	pios_rcvr_group_map[MANUALCONTROLSETTINGS_CHANNELGROUPS_GCS] = pios_gcsrcvr_rcvr_id;
+ #endif	/* PIOS_INCLUDE_GCSRCVR */
+ 	
+-#ifndef PIOS_DEBUG_ENABLE_DEBUG_PINS
++#ifndef PIOS_ENABLE_DEBUG_PINS
+ 	switch (hwsettings_rcvrport) {
+ 		case HWSETTINGS_RV_RCVRPORT_DISABLED:
+ 		case HWSETTINGS_RV_RCVRPORT_PWM:
+@@ -841,7 +841,7 @@ void PIOS_Board_Init(void) {
+ 			break;
+ 	}
+ #else
+-	PIOS_DEBUG_Init(&pios_tim_servo_all_channels, NELEMENTS(pios_tim_servo_all_channels));
++    PIOS_DEBUG_Init(pios_tim_servoport_all_pins , NELEMENTS(pios_tim_servoport_all_pins));
+ #endif
+ 	
+ 	if (PIOS_I2C_Init(&pios_i2c_mag_adapter_id, &pios_i2c_mag_adapter_cfg)) {

@@ -1,0 +1,153 @@
+diff --git a/flight/libraries/rscode/ecc.h b/flight/libraries/rscode/ecc.h
+index bf56a0b..0a6316d 100644
+--- a/flight/libraries/rscode/ecc.h
++++ b/flight/libraries/rscode/ecc.h
+@@ -66,7 +66,7 @@ extern int pBytes[MAXDEG];
+ extern int synBytes[MAXDEG];
+ 
+ /* print debugging info */
+-extern int DEBUG;
++//extern int DEBUG;
+ 
+ /* Reed Solomon encode/decode routines */
+ void initialize_ecc (void);
+diff --git a/flight/libraries/rscode/rs.c b/flight/libraries/rscode/rs.c
+index 39c0147..62fd023 100644
+--- a/flight/libraries/rscode/rs.c
++++ b/flight/libraries/rscode/rs.c
+@@ -38,7 +38,7 @@ int synBytes[MAXDEG];
+ /* generator polynomial */
+ int genPoly[MAXDEG*2];
+ 
+-int DEBUG = FALSE;
++//int DEBUG = FALSE;
+ 
+ static void
+ compute_genpoly (int nbytes, int genpoly[]);
+diff --git a/flight/pios/common/pios_iap.c b/flight/pios/common/pios_iap.c
+index 77a18b0..162c38e 100644
+--- a/flight/pios/common/pios_iap.c
++++ b/flight/pios/common/pios_iap.c
+@@ -151,10 +151,8 @@ uint32_t PIOS_IAP_ReadBootCmd(uint8_t number)
+ 	{
+ 		PIOS_Assert(0);
+ 	}
+-	else
+-	{
+-		return PIOS_BKP_ReadRegister(pios_iap_cmd_list[number]);
+-	}	
++
++	return PIOS_BKP_ReadRegister(pios_iap_cmd_list[number]);
+ }
+ 
+ /**
+@@ -168,10 +166,8 @@ void PIOS_IAP_WriteBootCmd(uint8_t number, uint32_t value)
+ 	{
+ 		PIOS_Assert(0);
+ 	}
+-	else
+-	{
+-		PIOS_BKP_WriteRegister(pios_iap_cmd_list[number], value);
+-	}	
++
++	PIOS_BKP_WriteRegister(pios_iap_cmd_list[number], value);
+ }
+ 
+ #endif /* PIOS_INCLUDE_IAP */
+diff --git a/flight/pios/stm32f10x/pios_bkp.c b/flight/pios/stm32f10x/pios_bkp.c
+index b35e917..31a88a0 100644
+--- a/flight/pios/stm32f10x/pios_bkp.c
++++ b/flight/pios/stm32f10x/pios_bkp.c
+@@ -115,9 +115,9 @@ uint16_t PIOS_BKP_ReadRegister(uint32_t regnumber)
+ 	if(PIOS_BKP_REGISTERS_COUNT < regnumber)
+ 	{
+ 		PIOS_Assert(0);
+-	} else {
+-		return (uint16_t) BKP_ReadBackupRegister(pios_bkp_registers_map[regnumber]);
+ 	}
++
++	return (uint16_t) BKP_ReadBackupRegister(pios_bkp_registers_map[regnumber]);
+ }
+ 
+ void PIOS_BKP_WriteRegister(uint32_t regnumber,uint16_t data)
+@@ -125,9 +125,9 @@ void PIOS_BKP_WriteRegister(uint32_t regnumber,uint16_t data)
+ 	if(PIOS_BKP_REGISTERS_COUNT < regnumber)
+ 	{
+ 		PIOS_Assert(0);
+-	} else {
+-		BKP_WriteBackupRegister(pios_bkp_registers_map[regnumber],(uint32_t)data);
+ 	}
++
++	BKP_WriteBackupRegister(pios_bkp_registers_map[regnumber],(uint32_t)data);
+ }
+ 
+ void PIOS_BKP_EnableWrite(void)
+diff --git a/flight/pios/stm32f10x/pios_tim.c b/flight/pios/stm32f10x/pios_tim.c
+index 28a1873..d9e90dc 100644
+--- a/flight/pios/stm32f10x/pios_tim.c
++++ b/flight/pios/stm32f10x/pios_tim.c
+@@ -187,7 +187,7 @@ static void PIOS_TIM_generic_irq_handler(TIM_TypeDef * timer)
+ 			}
+ 
+ 			/* Figure out which interrupt bit we should be looking at */
+-			uint16_t timer_it;
++			uint16_t timer_it = 0;
+ 			switch (chan->timer_chan) {
+ 			case TIM_Channel_1:
+ 				timer_it = TIM_IT_CC1;
+@@ -207,7 +207,7 @@ static void PIOS_TIM_generic_irq_handler(TIM_TypeDef * timer)
+ 			}
+ 
+ 			bool edge_event;
+-			uint16_t edge_count;
++			uint16_t edge_count = 0;
+ 			if (TIM_GetITStatus(chan->timer, timer_it) == SET) {
+ 				TIM_ClearITPendingBit(chan->timer, timer_it);
+ 
+diff --git a/flight/pios/stm32f4xx/pios_tim.c b/flight/pios/stm32f4xx/pios_tim.c
+index 4f3828d..04c44b0 100644
+--- a/flight/pios/stm32f4xx/pios_tim.c
++++ b/flight/pios/stm32f4xx/pios_tim.c
+@@ -170,7 +170,7 @@ int32_t PIOS_TIM_InitChannels(uint32_t * tim_id, const struct pios_tim_channel *
+ */ // commented out for now as f4 starts all clocks
+ 		GPIO_Init(chan->pin.gpio, &chan->pin.init);
+ 
+-		PIOS_DEBUG_Assert(chan->remaP);
++		//PIOS_DEBUG_Assert(chan->remaP);
+ 			
+ 		// Second parameter should technically be PinSource but they are numerically the same
+ 		GPIO_PinAFConfig(chan->pin.gpio, chan->pin.pin_source,chan->remap);
+diff --git a/make/apps-defs.mk b/make/apps-defs.mk
+index 59b22ce..935d6dc 100644
+--- a/make/apps-defs.mk
++++ b/make/apps-defs.mk
+@@ -97,6 +97,7 @@ SRC += $(FLIGHTLIB)/fifo_buffer.c
+ SRC += $(FLIGHTLIB)/taskmonitor.c
+ SRC += $(FLIGHTLIB)/sanitycheck.c
+ SRC += $(FLIGHTLIB)/CoordinateConversions.c
++SRC += $(FLIGHTLIB)/printf2.c
+ SRC += $(MATHLIB)/sin_lookup.c
+ SRC += $(MATHLIB)/pid.c
+ 
+diff --git a/make/common-defs.mk b/make/common-defs.mk
+index 67fd307..ebba24e 100644
+--- a/make/common-defs.mk
++++ b/make/common-defs.mk
+@@ -21,7 +21,7 @@ ifndef OPENPILOT_IS_COOL
+ endif
+ 
+ # Set to YES to compile for debugging
+-DEBUG ?= NO
++DEBUG ?= YES
+ 
+ # Set to YES to use the Servo output pins for debugging via scope or logic analyser
+ ENABLE_DEBUG_PINS	?= NO
+@@ -43,7 +43,7 @@ DIAG_ALL		?= NO
+ # 0 = turn off optimization. s = optimize for size.
+ # Note: 3 is not always the best optimization level.
+ ifeq ($(DEBUG), YES)
+-    OPT = 0
++    OPT = s
+ else
+     OPT = s
+ endif
