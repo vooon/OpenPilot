@@ -21,7 +21,7 @@ ifndef OPENPILOT_IS_COOL
 endif
 
 # Set to YES to compile for debugging
-DEBUG ?= YES
+DEBUG ?= NO
 
 # Set to YES to use the Servo output pins for debugging via scope or logic analyser
 ENABLE_DEBUG_PINS	?= NO
