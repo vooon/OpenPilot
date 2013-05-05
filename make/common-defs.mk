@@ -95,6 +95,11 @@ endif
 #ADEFS = -DUSE_IRQ_ASM_WRAPPER
 ADEFS = -D__ASSEMBLY__
 
+# Provide board-specific defines
+CDEFS += -DFW_BANK_BASE=$(FW_BANK_BASE)
+CDEFS += -DFW_BANK_SIZE=$(FW_BANK_SIZE)
+CDEFS += -DFW_DESC_SIZE=$(FW_DESC_SIZE)
+
 # Compiler flag to set the C Standard level.
 # c89   - "ANSI" C
 # gnu89 - c89 plus GCC extensions
@@ -122,7 +127,7 @@ CFLAGS += -Wall
 CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS)) -I.
 CFLAGS += -Wa,-adhlns=$(addprefix $(OUTDIR)/, $(notdir $(addsuffix .lst, $(basename $<))))
 
-# FIXME: STM32F4xx library raises strict aliasing and const qualifier warnings
+# FIXME: stm32f4xx library raises strict aliasing and const qualifier warnings
 ifneq ($(MCU),cortex-m4)
     CFLAGS += -Werror
 endif
@@ -153,7 +158,7 @@ ASFLAGS += -Wa,-adhlns=$(addprefix $(OUTDIR)/, $(notdir $(addsuffix .lst, $(base
 #    -Map:      create map file
 #    --cref:    add cross reference to  map file
 LDFLAGS += -nostartfiles
-LDFLAGS += -Wl,--warn-common,--fatal-warnings,--gc-sections
+LDFLAGS += -Wl,--warn-common,--fatal-warnings,--sort-common,--sort-section=alignment,--gc-sections
 LDFLAGS += -Wl,-Map=$(OUTDIR)/$(TARGET).map,--cref
 LDFLAGS += $(patsubst %,-L%,$(EXTRA_LIBDIRS))
 LDFLAGS += $(patsubst %,-l%,$(EXTRA_LIBS))
@@ -239,10 +244,6 @@ opfw: $(OUTDIR)/$(TARGET).opfw
 
 # Display sizes of sections.
 $(eval $(call SIZE_TEMPLATE, $(OUTDIR)/$(TARGET).elf))
-
-# Generate Doxygen documents
-docs:
-	doxygen  $(DOXYGENDIR)/doxygen.cfg
 
 # Target: clean project
 clean:

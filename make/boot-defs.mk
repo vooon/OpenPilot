@@ -26,7 +26,7 @@ OPSYSTEM	= $(TOPDIR)
 BOARDINC	= $(TOPDIR)/..
 OPSYSTEMINC	= $(OPSYSTEM)/inc
 PIOSINC		= $(PIOS)/inc
-PIOSCOMMON	= $(PIOS)/Common
+PIOSCOMMON	= $(PIOS)/common
 FLIGHTLIBINC	= $(FLIGHTLIB)/inc
 
 # ARM DSP library
@@ -34,9 +34,9 @@ override USE_DSP_LIB := NO
 
 ## PIOS Hardware
 ifeq ($(MCU),cortex-m3)
-    include $(PIOS)/STM32F10x/library.mk
+    include $(PIOS)/stm32f10x/library.mk
 else ifeq ($(MCU),cortex-m4)
-    include $(PIOS)/STM32F4xx/library.mk
+    include $(PIOS)/stm32f4xx/library.mk
 else
     $(error Unsupported MCU: $(MCU))
 endif
@@ -112,9 +112,6 @@ BLONLY_CDEFS += -DBOARD_TYPE=$(BOARD_TYPE)
 BLONLY_CDEFS += -DBOARD_REVISION=$(BOARD_REVISION)
 BLONLY_CDEFS += -DHW_TYPE=$(HW_TYPE)
 BLONLY_CDEFS += -DBOOTLOADER_VERSION=$(BOOTLOADER_VERSION)
-BLONLY_CDEFS += -DFW_BANK_BASE=$(FW_BANK_BASE)
-BLONLY_CDEFS += -DFW_BANK_SIZE=$(FW_BANK_SIZE)
-BLONLY_CDEFS += -DFW_DESC_SIZE=$(FW_DESC_SIZE)
 
 # Compiler flags
 CDEFS += $(BLONLY_CDEFS)

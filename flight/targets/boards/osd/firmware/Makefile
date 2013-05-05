@@ -37,6 +37,9 @@ MODULES += Telemetry
 
 OPTMODULES =
 
+# Some diagnostics
+CDEFS += -DDIAG_TASKS
+
 # Misc options
 CFLAGS += -ffast-math
 
@@ -52,6 +55,7 @@ ifndef TESTAPP
     SRC += $(OPUAVTALK)/uavtalk.c
     SRC += $(OPUAVOBJ)/uavobjectmanager.c
     SRC += $(OPUAVOBJ)/eventdispatcher.c
+    SRC += $(OPUAVOBJ)/callbackscheduler.c
 
     ## OSD fonts
     SRC += $(OPSYSTEM)/fonts.c
@@ -96,9 +100,12 @@ else
     SRC += $(OPTESTS)/$(TESTAPP).c
 endif
 
+CDEFS += -DEE_BANK_BASE=$(EE_BANK_BASE)
+CDEFS += -DEE_BANK_SIZE=$(EE_BANK_SIZE)
+
 	
 # Optional component libraries
-include $(PIOS)/Common/Libraries/dosfs/library.mk
+include $(PIOS)/common/libraries/dosfs/library.mk
 
 include $(ROOT_DIR)/make/apps-defs.mk
 include $(ROOT_DIR)/make/common-defs.mk

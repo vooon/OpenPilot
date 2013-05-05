@@ -125,7 +125,8 @@ all: uavobjects all_ground all_flight
 
 .PHONY: all_clean
 all_clean:
-	[ ! -d "$(BUILD_DIR)" ] || $(RM) -rf "$(BUILD_DIR)"
+	@$(ECHO) " CLEAN      $(call toprel, $(BUILD_DIR))"
+	$(V1) [ ! -d "$(BUILD_DIR)" ] || $(RM) -rf "$(BUILD_DIR)"
 
 $(DL_DIR):
 	$(MKDIR) -p $@
@@ -176,7 +177,7 @@ uavobjects_test: $(UAVOBJ_OUT_DIR) uavobjgenerator
 	$(V1) $(UAVOBJGENERATOR) -v -none $(UAVOBJ_XML_DIR) $(ROOT_DIR)
 
 uavobjects_clean:
-	$(V0) @$(ECHO) " CLEAN      $@"
+	@$(ECHO) " CLEAN      $(call toprel, $(UAVOBJ_OUT_DIR))"
 	$(V1) [ ! -d "$(UAVOBJ_OUT_DIR)" ] || $(RM) -r "$(UAVOBJ_OUT_DIR)"
 
 ##############################
@@ -187,12 +188,11 @@ uavobjects_clean:
 
 # Define some pointers to the various important pieces of the flight code
 # to prevent these being repeated in every sub makefile
-export PIOS          := $(ROOT_DIR)/flight/PiOS
-export FLIGHTLIB     := $(ROOT_DIR)/flight/Libraries
-export OPMODULEDIR   := $(ROOT_DIR)/flight/Modules
+export PIOS          := $(ROOT_DIR)/flight/pios
+export FLIGHTLIB     := $(ROOT_DIR)/flight/libraries
+export OPMODULEDIR   := $(ROOT_DIR)/flight/modules
 export OPUAVOBJ      := $(ROOT_DIR)/flight/uavobjects
 export OPUAVTALK     := $(ROOT_DIR)/flight/uavtalk
-export DOXYGENDIR    := $(ROOT_DIR)/flight/Doc/Doxygen
 export OPUAVSYNTHDIR := $(BUILD_DIR)/uavobject-synthetics/flight
 export OPGCSSYNTHDIR := $(BUILD_DIR)/openpilotgcs-synthetics
 
@@ -262,9 +262,9 @@ fw_$(1)_%: uavobjects_flight
 	$(V1) $(MKDIR) -p $(BUILD_DIR)/fw_$(1)/dep
 	$(V1) cd $(ROOT_DIR)/flight/targets/boards/$(1)/firmware && \
 		$$(MAKE) -r --no-print-directory \
+		BUILD_TYPE=fw \
 		BOARD_NAME=$(1) \
 		BOARD_SHORT_NAME=$(2) \
-		BUILD_TYPE=fw \
 		TOPDIR=$(ROOT_DIR)/flight/targets/boards/$(1)/firmware \
 		OUTDIR=$(BUILD_DIR)/fw_$(1) \
 		TARGET=fw_$(1) \
@@ -273,7 +273,7 @@ fw_$(1)_%: uavobjects_flight
 .PHONY: $(1)_clean
 $(1)_clean: fw_$(1)_clean
 fw_$(1)_clean:
-	$(V0) @$(ECHO) " CLEAN      $$@"
+	@$(ECHO) " CLEAN      $(call toprel, $(BUILD_DIR)/fw_$(1))"
 	$(V1) $(RM) -fr $(BUILD_DIR)/fw_$(1)
 endef
 
@@ -289,9 +289,9 @@ bl_$(1)_%:
 	$(V1) $(MKDIR) -p $(BUILD_DIR)/bl_$(1)/dep
 	$(V1) cd $(ROOT_DIR)/flight/targets/boards/$(1)/bootloader && \
 		$$(MAKE) -r --no-print-directory \
+		BUILD_TYPE=bl \
 		BOARD_NAME=$(1) \
 		BOARD_SHORT_NAME=$(2) \
-		BUILD_TYPE=bl \
 		TOPDIR=$(ROOT_DIR)/flight/targets/boards/$(1)/bootloader \
 		OUTDIR=$(BUILD_DIR)/bl_$(1) \
 		TARGET=bl_$(1) \
@@ -313,7 +313,7 @@ $(if $(filter-out undefined,$(origin UNBRICK_TTY)),
 
 .PHONY: bl_$(1)_clean
 bl_$(1)_clean:
-	$(V0) @$(ECHO) " CLEAN      $$@"
+	@$(ECHO) " CLEAN      $(call toprel, $(BUILD_DIR)/bl_$(1))"
 	$(V1) $(RM) -fr $(BUILD_DIR)/bl_$(1)
 endef
 
@@ -327,9 +327,9 @@ bu_$(1)_%: bl_$(1)_bino
 	$(V1) $(MKDIR) -p $(BUILD_DIR)/bu_$(1)/dep
 	$(V1) cd $(ROOT_DIR)/flight/targets/common/bootloader_updater && \
 		$$(MAKE) -r --no-print-directory \
+		BUILD_TYPE=bu \
 		BOARD_NAME=$(1) \
 		BOARD_SHORT_NAME=$(2) \
-		BUILD_TYPE=bu \
 		TOPDIR=$(ROOT_DIR)/flight/targets/common/bootloader_updater \
 		OUTDIR=$(BUILD_DIR)/bu_$(1) \
 		TARGET=bu_$(1) \
@@ -337,7 +337,7 @@ bu_$(1)_%: bl_$(1)_bino
 
 .PHONY: bu_$(1)_clean
 bu_$(1)_clean:
-	$(V0) @$(ECHO) " CLEAN      $$@"
+	@$(ECHO) " CLEAN      $(call toprel, $(BUILD_DIR)/bu_$(1))"
 	$(V1) $(RM) -fr $(BUILD_DIR)/bu_$(1)
 endef
 
@@ -351,9 +351,9 @@ ef_$(1)_%: bl_$(1)_bin fw_$(1)_opfw
 	$(V1) $(MKDIR) -p $(BUILD_DIR)/ef_$(1)
 	$(V1) cd $(ROOT_DIR)/flight/targets/common/entire_flash && \
 		$$(MAKE) -r --no-print-directory \
+		BUILD_TYPE=ef \
 		BOARD_NAME=$(1) \
 		BOARD_SHORT_NAME=$(2) \
-		BUILD_TYPE=ef \
 		DFU_CMD="$(DFUUTIL_DIR)/bin/dfu-util" \
 		TOPDIR=$(ROOT_DIR)/flight/targets/common/entire_flash \
 		OUTDIR=$(BUILD_DIR)/ef_$(1) \
@@ -362,7 +362,7 @@ ef_$(1)_%: bl_$(1)_bin fw_$(1)_opfw
 
 .PHONY: ef_$(1)_clean
 ef_$(1)_clean:
-	$(V0) @$(ECHO) " CLEAN      $$@"
+	@$(ECHO) " CLEAN      $(call toprel, $(BUILD_DIR)/ef_$(1))"
 	$(V1) $(RM) -fr $(BUILD_DIR)/ef_$(1)
 endef
 
@@ -463,7 +463,7 @@ openpilotgcs: uavobjects_gcs
 
 .PHONY: openpilotgcs_clean
 openpilotgcs_clean:
-	$(V0) @$(ECHO) " CLEAN      $@"
+	@$(ECHO) " CLEAN      $(call toprel, $(BUILD_DIR)/openpilotgcs_$(GCS_BUILD_CONF))"
 	$(V1) [ ! -d "$(BUILD_DIR)/openpilotgcs_$(GCS_BUILD_CONF)" ] || $(RM) -r "$(BUILD_DIR)/openpilotgcs_$(GCS_BUILD_CONF)"
 
 ################################
@@ -506,7 +506,7 @@ androidgcs: uavo-collections_java
 
 .PHONY: androidgcs_clean
 androidgcs_clean:
-	$(V0) @$(ECHO) " CLEAN      $@"
+	@$(ECHO) " CLEAN      $(call toprel, $(ANDROIDGCS_OUT_DIR))"
 	$(V1) [ ! -d "$(ANDROIDGCS_OUT_DIR)" ] || $(RM) -r "$(ANDROIDGCS_OUT_DIR)"
 
 # We want to take snapshots of the UAVOs at each point that they change
@@ -617,7 +617,7 @@ uavo-collections: uavo-collections_java
 
 .PHONY: uavo-collections_clean
 uavo-collections_clean:
-	$(V0) @$(ECHO) " CLEAN  $(UAVO_COLLECTION_DIR)"
+	@$(ECHO) " CLEAN      $(call toprel, $(UAVO_COLLECTION_DIR))"
 	$(V1) [ ! -d "$(UAVO_COLLECTION_DIR)" ] || $(RM) -r $(UAVO_COLLECTION_DIR)
 
 ##############################
@@ -644,7 +644,7 @@ all_ut_run: $(addsuffix _run, $(addprefix ut_, $(ALL_UNITTESTS)))
 
 .PHONY: all_ut_clean
 all_ut_clean:
-	$(V0) @$(ECHO) " CLEAN      $@"
+	@$(ECHO) " CLEAN      $(call toprel, $(UT_OUT_DIR))"
 	$(V1) [ ! -d "$(UT_OUT_DIR)" ] || $(RM) -r "$(UT_OUT_DIR)"
 
 # $(1) = Unit test name
@@ -657,25 +657,14 @@ ut_$(1)_%: $$(UT_OUT_DIR)
 	$(V1) cd $(ROOT_DIR)/flight/tests/$(1) && \
 		$$(MAKE) -r --no-print-directory \
 		BUILD_TYPE=ut \
-		BOARD_SHORT_NAME=$(1) \
-		TCHAIN_PREFIX="" \
-		REMOVE_CMD="$(RM)" \
-		\
-		TARGET=$(1) \
+		TOPDIR=$(ROOT_DIR)/flight/tests/$(1) \
 		OUTDIR="$(UT_OUT_DIR)/$(1)" \
-		\
-		PIOS=$(PIOS) \
-		OPUAVOBJ=$(OPUAVOBJ) \
-		OPUAVTALK=$(OPUAVTALK) \
-		FLIGHTLIB=$(FLIGHTLIB) \
-		\
-		GTEST_DIR=$(GTEST_DIR) \
-		\
+		TARGET=$(1) \
 		$$*
 
 .PHONY: ut_$(1)_clean
 ut_$(1)_clean:
-	$(V0) @$(ECHO) " CLEAN      $(1)"
+	@$(ECHO) " CLEAN      $(call toprel, $(UT_OUT_DIR)/$(1))"
 	$(V1) [ ! -d "$(UT_OUT_DIR)/$(1)" ] || $(RM) -r "$(UT_OUT_DIR)/$(1)"
 endef
 
@@ -786,6 +775,8 @@ package: all_fw all_ground uavobjects_matlab
 #
 ##############################
 
+UNCRUSTIFY_TARGETS := flight ground
+
 # $(1) = Uncrustify target (e.g flight or ground)
 # $(2) = Target root directory
 define UNCRUSTIFY_TEMPLATE
@@ -793,14 +784,50 @@ define UNCRUSTIFY_TEMPLATE
 .PHONY: uncrustify_$(1)
 uncrustify_$(1):
 	@$(ECHO) "Auto-formatting $(1) source code"
-	$(V1) UNCRUSTIFY_CONFIG="make/templates/uncrustify.cfg" $(SHELL) make/scripts/uncrustify.sh $(call toprel, $(2))
+	$(V1) UNCRUSTIFY_CONFIG="$(ROOT_DIR)/make/uncrustify/uncrustify.cfg" $(SHELL) make/scripts/uncrustify.sh $(call toprel, $(2))
 endef
 
-$(eval $(call UNCRUSTIFY_TEMPLATE,flight,$(ROOT_DIR)/flight))
-$(eval $(call UNCRUSTIFY_TEMPLATE,ground,$(ROOT_DIR)/ground))
+$(foreach uncrustify_targ, $(UNCRUSTIFY_TARGETS), $(eval $(call UNCRUSTIFY_TEMPLATE,$(uncrustify_targ),$(ROOT_DIR)/$(uncrustify_targ))))
 
 .PHONY: uncrustify_all
-uncrustify_all: $(addprefix uncrustify_,flight ground)
+uncrustify_all: $(addprefix uncrustify_,$(UNCRUSTIFY_TARGETS))
+
+##############################
+#
+# Doxygen documentation
+#
+# Each target should have own Doxyfile.$(target) with build directory build/docs/$(target),
+# proper source directory (e.g. $(target)) and appropriate other doxygen options.
+#
+##############################
+
+DOCS_TARGETS := flight ground uavobjects
+
+# $(1) = Doxygen target (e.g flight or ground)
+define DOXYGEN_TEMPLATE
+
+.PHONY: docs_$(1)
+docs_$(1): docs_$(1)_clean
+	@$(ECHO) "Generating $(1) documentation"
+	$(V1) $(MKDIR) -p $(BUILD_DIR)/docs/$(1)
+	$(V1) $(DOXYGEN) $(ROOT_DIR)/make/doxygen/Doxyfile.$(1)
+
+.PHONY: docs_$(1)_clean
+docs_$(1)_clean:
+	@$(ECHO) " CLEAN      $(call toprel, $(BUILD_DIR)/docs/$(1))"
+	$(V1) [ ! -d "$(BUILD_DIR)/docs/$(1)" ] || $(RM) -r "$(BUILD_DIR)/docs/$(1)"
+
+endef
+
+$(foreach docs_targ, $(DOCS_TARGETS), $(eval $(call DOXYGEN_TEMPLATE,$(docs_targ))))
+
+.PHONY: docs_all
+docs_all: $(addprefix docs_,$(DOCS_TARGETS))
+
+.PHONY: docs_all_clean
+docs_all_clean:
+	@$(ECHO) " CLEAN      $(call toprel, $(BUILD_DIR)/docs)"
+	$(V1) [ ! -d "$(BUILD_DIR)/docs" ] || $(RM) -rf "$(BUILD_DIR)/docs"
 
 ##############################
 #
@@ -810,6 +837,7 @@ uncrustify_all: $(addprefix uncrustify_,flight ground)
 
 .PHONY: build-info
 build-info:
+	@$(ECHO) " BUILD-INFO $(call toprel, $(BUILD_DIR)/$@.txt)"
 	$(V1) $(MKDIR) -p $(BUILD_DIR)
 	$(V1) $(VERSION_INFO) \
 		--uavodir=$(ROOT_DIR)/shared/uavobjectdefinition \
@@ -828,7 +856,8 @@ build-info:
 help:
 	@$(ECHO)
 	@$(ECHO) "   This Makefile is known to work on Linux and Mac in a standard shell environment."
-	@$(ECHO) "   It also works on Windows by following the instructions in make/winx86/README.txt."
+	@$(ECHO) "   It also works on Windows by following the instructions given on this wiki page:"
+	@$(ECHO) "       http://wiki.openpilot.org/display/Doc/Windows%3A+Building+and+Packaging"
 	@$(ECHO)
 	@$(ECHO) "   Here is a summary of the available targets:"
 	@$(ECHO)
@@ -837,12 +866,18 @@ help:
 	@$(ECHO) "     qt_sdk_install       - Install the QT development tools"
 	@$(ECHO) "     mingw_install        - Install the MinGW toolchain (Windows only)"
 	@$(ECHO) "     python_install       - Install the Python interpreter (Windows only)"
+	@$(ECHO) "     nsis_install         - Install the NSIS Unicode (Windows only)"
 	@$(ECHO) "     uncrustify_install   - Install the Uncrustify source code beautifier"
+	@$(ECHO) "     doxygen_install      - Install the Doxygen documentation generator"
+	@$(ECHO) "     gtest_install        - Install the GoogleTest framework"
+	@$(ECHO) "   These targets are not updated yet and are probably broken:"
 	@$(ECHO) "     openocd_install      - Install the OpenOCD JTAG daemon"
 	@$(ECHO) "     stm32flash_install   - Install the stm32flash tool for unbricking F1-based boards"
 	@$(ECHO) "     dfuutil_install      - Install the dfu-util tool for unbricking F4-based boards"
 	@$(ECHO) "     android_sdk_install  - Install the Android SDK tools"
+	@$(ECHO) "   Install all available tools:"
 	@$(ECHO) "     all_sdk_install      - Install all of above (platform-dependent)"
+	@$(ECHO) "     build_sdk_install    - Install only essential for build tools (platform-dependent)"
 	@$(ECHO)
 	@$(ECHO) "   Other tool options are:"
 	@$(ECHO) "     <tool>_version       - Display <tool> version"
@@ -871,32 +906,32 @@ help:
 	@$(ECHO)
 	@$(ECHO) "   [Firmware]"
 	@$(ECHO) "     <board>              - Build firmware for <board>"
-	@$(ECHO) "                            supported boards are ($(ALL_BOARDS))"
+	@$(ECHO) "                            Supported boards are ($(ALL_BOARDS))"
 	@$(ECHO) "     fw_<board>           - Build firmware for <board>"
-	@$(ECHO) "                            supported boards are ($(FW_BOARDS))"
+	@$(ECHO) "                            Supported boards are ($(FW_BOARDS))"
 	@$(ECHO) "     fw_<board>_clean     - Remove firmware for <board>"
 	@$(ECHO) "     fw_<board>_program   - Use OpenOCD + JTAG to write firmware to <board>"
 	@$(ECHO)
 	@$(ECHO) "   [Bootloader]"
 	@$(ECHO) "     bl_<board>           - Build bootloader for <board>"
-	@$(ECHO) "                            supported boards are ($(BL_BOARDS))"
+	@$(ECHO) "                            Supported boards are ($(BL_BOARDS))"
 	@$(ECHO) "     bl_<board>_clean     - Remove bootloader for <board>"
 	@$(ECHO) "     bl_<board>_program   - Use OpenOCD + JTAG to write bootloader to <board>"
 	@$(ECHO)
 	@$(ECHO) "   [Entire Flash]"
 	@$(ECHO) "     ef_<board>           - Build entire flash image for <board>"
-	@$(ECHO) "                            supported boards are ($(EF_BOARDS))"
+	@$(ECHO) "                            Supported boards are ($(EF_BOARDS))"
 	@$(ECHO) "     ef_<board>_clean     - Remove entire flash image for <board>"
 	@$(ECHO) "     ef_<board>_program   - Use OpenOCD + JTAG to write entire flash image to <board>"
 	@$(ECHO)
 	@$(ECHO) "   [Bootloader Updater]"
 	@$(ECHO) "     bu_<board>           - Build bootloader updater for <board>"
-	@$(ECHO) "                            supported boards are ($(BU_BOARDS))"
+	@$(ECHO) "                            Supported boards are ($(BU_BOARDS))"
 	@$(ECHO) "     bu_<board>_clean     - Remove bootloader updater for <board>"
 	@$(ECHO)
 	@$(ECHO) "   [Unbrick a board]"
 	@$(ECHO) "     unbrick_<board>      - Use the STM32's built in boot ROM to write a bootloader to <board>"
-	@$(ECHO) "                            supported boards are ($(BL_BOARDS))"
+	@$(ECHO) "                            Supported boards are ($(BL_BOARDS))"
 	@$(ECHO) "   [Unittests]"
 	@$(ECHO) "     ut_<test>            - Build unit test <test>"
 	@$(ECHO) "     ut_<test>_xml        - Run test and capture XML output into a file"
@@ -905,14 +940,14 @@ help:
 	@$(ECHO) "   [Simulation]"
 	@$(ECHO) "     sim_osx              - Build OpenPilot simulation firmware for OSX"
 	@$(ECHO) "     sim_osx_clean        - Delete all build output for the osx simulation"
-	@$(ECHO) "     sim_win32            - Build OpenPilot simulation firmware for"
-	@$(ECHO) "                            Windows using mingw and msys"
+	@$(ECHO) "     sim_win32            - Build OpenPilot simulation firmware for Windows"
+	@$(ECHO) "                            using mingw and msys"
 	@$(ECHO) "     sim_win32_clean      - Delete all build output for the win32 simulation"
 	@$(ECHO)
 	@$(ECHO) "   [GCS]"
 	@$(ECHO) "     gcs                  - Build the Ground Control System (GCS) application (debug|release)"
 	@$(ECHO) "     gcs_clean            - Remove the Ground Control System (GCS) application (debug|release)"
-	@$(ECHO) "                            supported build configurations: GCS_BUILD_CONF=debug|release (default is $(GCS_BUILD_CONF))"
+	@$(ECHO) "                            Supported build configurations: GCS_BUILD_CONF=debug|release (default is $(GCS_BUILD_CONF))"
 	@$(ECHO) "     gcs_all_clean        - Remove the Ground Control System (GCS) application (all build confgurations)"
 	@$(ECHO)
 	@$(ECHO) "   [AndroidGCS]"
@@ -923,22 +958,35 @@ help:
 	@$(ECHO)
 	@$(ECHO) "   [UAVObjects]"
 	@$(ECHO) "     uavobjects           - Generate source files from the UAVObject definition XML files"
-	@$(ECHO) "     uavobjects_test      - parse xml-files - check for valid, duplicate ObjId's, ... "
+	@$(ECHO) "     uavobjects_test      - Parse xml-files - check for valid, duplicate ObjId's, ..."
 	@$(ECHO) "     uavobjects_<group>   - Generate source files from a subset of the UAVObject definition XML files"
-	@$(ECHO) "                            supported groups are ($(UAVOBJ_TARGETS))"
+	@$(ECHO) "                            Supported groups are ($(UAVOBJ_TARGETS))"
 	@$(ECHO)
 	@$(ECHO) "   [Packaging]"
-	@$(ECHO) "     opfw_resource        - Generate resources to embed firmware binaries into the GCS"
 	@$(ECHO) "     clean_package        - Clean, build and package the OpenPilot platform-dependent package"
-	@$(ECHO) "     package              - Build and package the OpenPilot platform-dependent package"
+	@$(ECHO) "     package              - Build and package the OpenPilot platform-dependent package (no clean)"
+	@$(ECHO) "     opfw_resource        - Generate resources to embed firmware binaries into the GCS"
 	@$(ECHO)
 	@$(ECHO) "   [Code Formatting]"
-	@$(ECHO) "     uncrustify_<source>  - Reformat <source> code. <source> can be flight or ground"
+	@$(ECHO) "     uncrustify_<source>  - Reformat <source> code according to the project's standards"
+	@$(ECHO) "                            Supported sources are ($(UNCRUSTIFY_TARGETS))"
 	@$(ECHO) "     uncrustify_all       - Reformat all source code"
+	@$(ECHO)
+	@$(ECHO) "   [Code Documentation]"
+	@$(ECHO) "     docs_<source>        - Generate HTML documentation for <source>"
+	@$(ECHO) "                            Supported sources are ($(DOCS_TARGETS))"
+	@$(ECHO) "     docs_all             - Generate HTML documentation for all"
+	@$(ECHO) "     docs_<source>_clean  - Delete generated documentation for <source>"
+	@$(ECHO) "     docs_all_clean       - Delete all generated documentation"
 	@$(ECHO)
 	@$(ECHO) "   Hint: Add V=1 to your command line to see verbose build output."
 	@$(ECHO)
-	@$(ECHO) "   Notes: All tool distribution files will be downloaded into $(DL_DIR)"
-	@$(ECHO) "          All tools will be installed into $(TOOLS_DIR)"
-	@$(ECHO) "          All build output will be placed in $(BUILD_DIR)"
+	@$(ECHO) "  Notes: All tool distribution files will be downloaded into $(DL_DIR)"
+	@$(ECHO) "         All tools will be installed into $(TOOLS_DIR)"
+	@$(ECHO) "         All build output will be placed in $(BUILD_DIR)"
+	@$(ECHO)
+	@$(ECHO) "  Tool download and install directories can be changed using environment variables:"
+	@$(ECHO) "         OPENPILOT_DL_DIR        full path to downloads directory [downloads if not set]"
+	@$(ECHO) "         OPENPILOT_TOOLS_DIR     full path to installed tools directory [tools if not set]"
+	@$(ECHO) "  More info: http://wiki.openpilot.org/display/Doc/OpenPilot+Build+System+Overview"
 	@$(ECHO)
