@@ -791,29 +791,7 @@ int32_t UAVObjSaveToFile(UAVObjHandle obj_handle, uint16_t instId,
 int32_t UAVObjSave(UAVObjHandle obj_handle, uint16_t instId)
 {
 	PIOS_Assert(obj_handle);
-#if defined(PIOS_INCLUDE_FLASH_EEPROM)
-	if(UAVObjGetID(obj_handle) == 0xDADD7AC8)
-	{
-		struct UAVOData * uavo;
-		InstanceHandle instEntry;
 
-		// Cast to object
-		uavo = (struct UAVOData *) obj_handle;
-
-		// Get the instance information
-		instEntry = getInstance(uavo, instId);
-		if (instEntry == NULL) {
-			return -1;
-		}
-		// Write the data and check that the write was successful
-
-		int32_t ret = PIOS_EEPROM_Save(InstanceData(instEntry), uavo->instance_size);
-		if (ret != 0)
-			return -1;
-	}
-	else
-		return -1;
-#endif
 #if defined(PIOS_INCLUDE_FLASH_SECTOR_SETTINGS)
 	if (UAVObjIsMetaobject(obj_handle)) {
 		if (instId != 0)
@@ -967,17 +945,7 @@ UAVObjHandle UAVObjLoadFromFile(FILEINFO * file)
 int32_t UAVObjLoad(UAVObjHandle obj_handle, uint16_t instId)
 {
 	PIOS_Assert(obj_handle);
-#if defined(PIOS_INCLUDE_FLASH_EEPROM)
-	if(UAVObjGetID(obj_handle) == 0xDADD7AC8)
-	{
-		InstanceHandle instEntry = getInstance( (struct UAVOData *)obj_handle, instId);
-		if (instEntry == NULL)
-			return -1;
-		// Load the settings.
-		if (PIOS_EEPROM_Load(InstanceData(instEntry), ((struct UAVOData *)obj_handle)->instance_size) != 0)
-			return -1;
-	}
-#endif
+
 #if defined(PIOS_INCLUDE_FLASH_SECTOR_SETTINGS)
 	if (UAVObjIsMetaobject(obj_handle)) {
 		if (instId != 0)

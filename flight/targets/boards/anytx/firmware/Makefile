@@ -44,6 +44,7 @@ ifndef TESTAPP
 	SRC += $(OPUAVTALK)/uavtalk.c
 	SRC += $(OPUAVOBJ)/uavobjectmanager.c
 	SRC += $(OPUAVOBJ)/eventdispatcher.c
+    SRC += $(OPUAVOBJ)/callbackscheduler.c
 	SRC += $(OPSYSTEM)/protocol/devo.c
 	SRC += $(OPSYSTEM)/protocol/dsm2.c
 	SRC += $(OPSYSTEM)/protocol/wk2x01.c
@@ -75,6 +76,9 @@ else
     SRC += $(OPTESTS)/test_common.c
     SRC += $(OPTESTS)/$(TESTAPP).c
 endif
+
+CDEFS += -DEE_BANK_BASE=$(EE_BANK_BASE)
+CDEFS += -DEE_BANK_SIZE=$(EE_BANK_SIZE)
 
 # Optional component libraries
 include $(ROOT_DIR)/make/apps-defs.mk
