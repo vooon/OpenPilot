@@ -258,7 +258,7 @@ PIOS_FLASHFS_Logfs_Init(&fs_id, &flashfs_internal_cfg, &pios_internal_flash_driv
 	// ADC
 #if defined(PIOS_INCLUDE_ADC)
 	PIOS_ADC_Init(&pios_adc_cfg);
-	PIOS_ADC_Config((PIOS_ADC_RATE / 1000.0f) * 5);
+	PIOS_ADC_Config((PIOS_ADC_RATE / 1000.0f) * 5.0f);
 #endif
 
  	PIOS_GPIO_Init();

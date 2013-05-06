@@ -126,7 +126,7 @@ MODULE_INITCALL(AnyTXControlInitialize, AnyTXControlStart)
 /**
  * Module task
  */
-static void anytxControlTask(void *parameters)
+static void anytxControlTask(__attribute__((unused)) void *parameters)
 {
 	AnyTXControlSettingsData settings;
 	ManualControlCommandData cmd;
@@ -201,7 +201,7 @@ static void anytxControlTask(void *parameters)
 				
 				// If a channel has timed out this is not valid data and we shouldn't update anything
 				// until we decide to go to failsafe
-				if(cmd.Channel[n] == PIOS_RCVR_TIMEOUT)
+				if(cmd.Channel[n] == (uint16_t) PIOS_RCVR_TIMEOUT)
 					valid_input_detected = false;
 				else
 					scaledChannel[n] = scaleChannel(cmd.Channel[n], settings.ChannelMax[n],	settings.ChannelMin[n], settings.ChannelNeutral[n]);
@@ -294,16 +294,16 @@ static void anytxControlTask(void *parameters)
 				//flightMode         = scaledChannel[ANYTXCONTROLSETTINGS_CHANNELGROUPS_FLIGHTMODE];
 
 				// Apply deadband for Roll/Pitch/Yaw stick inputs
-				if (settings.Deadband) {
+				if (settings.Deadband > 0.0f) {
 					applyDeadband(&cmd.Roll, settings.Deadband);
 					applyDeadband(&cmd.Pitch, settings.Deadband);
 					applyDeadband(&cmd.Yaw, settings.Deadband);
 				}
 
-				if(cmd.Channel[ANYTXCONTROLSETTINGS_CHANNELGROUPS_COLLECTIVE] != PIOS_RCVR_INVALID &&
-				   cmd.Channel[ANYTXCONTROLSETTINGS_CHANNELGROUPS_COLLECTIVE] != PIOS_RCVR_NODRIVER &&
-				   cmd.Channel[ANYTXCONTROLSETTINGS_CHANNELGROUPS_COLLECTIVE] != PIOS_RCVR_TIMEOUT)
-					cmd.Collective = scaledChannel[ANYTXCONTROLSETTINGS_CHANNELGROUPS_COLLECTIVE];
+				if(cmd.Channel[ANYTXCONTROLSETTINGS_CHANNELGROUPS_COLLECTIVE] != (uint16_t) PIOS_RCVR_INVALID
+				        && cmd.Channel[ANYTXCONTROLSETTINGS_CHANNELGROUPS_COLLECTIVE] != (uint16_t) PIOS_RCVR_NODRIVER
+				        && cmd.Channel[ANYTXCONTROLSETTINGS_CHANNELGROUPS_COLLECTIVE] != (uint16_t) PIOS_RCVR_TIMEOUT)
+                    cmd.Collective = scaledChannel[ANYTXCONTROLSETTINGS_CHANNELGROUPS_COLLECTIVE];
 				   
 				AccessoryDesiredData accessory;
 				// Set Accessory 0
@@ -493,30 +493,31 @@ group_completed:
  */
 static float scaleChannel(int16_t value, int16_t max, int16_t min, int16_t neutral)
 {
-	float valueScaled;
+    float valueScaled;
 
-	// Scale
-	if ((max > min && value >= neutral) || (min > max && value <= neutral))
-	{
-		if (max != neutral)
-			valueScaled = (float)(value - neutral) / (float)(max - neutral);
-		else
-			valueScaled = 0;
-	}
-	else
-	{
-		if (min != neutral)
-			valueScaled = (float)(value - neutral) / (float)(neutral - min);
-		else
-			valueScaled = 0;
-	}
+    // Scale
+    if ((max > min && value >= neutral) || (min > max && value <= neutral)) {
+        if (max != neutral) {
+            valueScaled = (float) (value - neutral) / (float) (max - neutral);
+        } else {
+            valueScaled = 0;
+        }
+    } else {
+        if (min != neutral) {
+            valueScaled = (float) (value - neutral) / (float) (neutral - min);
+        } else {
+            valueScaled = 0;
+        }
+    }
 
-	// Bound
-	if (valueScaled >  1.0) valueScaled =  1.0;
-	else
-	if (valueScaled < -1.0) valueScaled = -1.0;
+    // Bound
+    if (valueScaled > 1.0f) {
+        valueScaled = 1.0f;
+    } else if (valueScaled < -1.0f) {
+        valueScaled = -1.0f;
+    }
 
-	return valueScaled;
+    return valueScaled;
 }
 
 static uint32_t timeDifferenceMs(portTickType start_time, portTickType end_time) {
@@ -546,7 +547,7 @@ bool validInputRange(int16_t min, int16_t max, uint16_t value)
  */
 static void applyDeadband(float *value, float deadband)
 {
-	if (fabs(*value) < deadband)
+	if (fabsf(*value) < deadband)
 		*value = 0.0f;
 	else
 		if (*value > 0.0f)

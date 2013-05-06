@@ -29,7 +29,7 @@ static const struct pios_led_cfg pios_led_cfg = {
 	.num_leds = NELEMENTS(pios_leds),
 };
 
-const struct pios_led_cfg * PIOS_BOARD_HW_DEFS_GetLedCfg (uint32_t board_revision)
+const struct pios_led_cfg * PIOS_BOARD_HW_DEFS_GetLedCfg (__attribute__((unused)) uint32_t board_revision)
 {
 	return &pios_led_cfg;
 }
@@ -451,7 +451,6 @@ static const struct pios_cyrf6936_cfg pios_cyrf_cfg = {
 				.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_16,
 			},
 			.use_crc = false,
-			.dma = {},
 			.sclk = {
 				.gpio = GPIOA,
 				.init = {

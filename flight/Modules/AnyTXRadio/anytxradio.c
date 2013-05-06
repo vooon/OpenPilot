@@ -111,7 +111,7 @@ MODULE_INITCALL(AnyTXRadioInitialize, AnyTXRadioStart)
 /**
  * System task, periodically executes every SYSTEM_UPDATE_PERIOD_MS
  */
-static void anytxradioTask(void *parameters)
+static void anytxradioTask(__attribute__((unused)) void *parameters)
 {
 	uint16_t timer;
 	ManualControlCommandData cmd;
@@ -190,9 +190,9 @@ static void anytxradioTask(void *parameters)
 					}
 					//timer = devo_cb();
 					timer = devo_telemetry_cb();
-					battery.Voltage = Telemetry.volt[0]/10.0;
-					battery.Current = Telemetry.volt[1]/10.0;
-					battery.PeakCurrent = Telemetry.volt[2]/10.0;
+					battery.Voltage = Telemetry.volt[0]/10.0f;
+					battery.Current = Telemetry.volt[1]/10.0f;
+					battery.PeakCurrent = Telemetry.volt[2]/10.0f;
 					FlightBatteryStateSet(&battery);
 				}  else if(settings.Protocol == ANYTXCONTROLSETTINGS_PROTOCOL_WK2401 || settings.Protocol == ANYTXCONTROLSETTINGS_PROTOCOL_WK2601 || settings.Protocol == ANYTXCONTROLSETTINGS_PROTOCOL_WK2801) {
 					Channels[2]=cmd.Throttle * 10000 *
