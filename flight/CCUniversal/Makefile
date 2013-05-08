@@ -135,6 +135,8 @@ MATHLIB = ../Libraries/math
 MATHLIBINC = ../Libraries/math
 PIOS = ../PiOS
 PIOSINC = $(PIOS)/inc
+PIOSTARGETMCU = $(PIOS)/$(TARGETMCU)
+# Depreciate
 PIOSSTM32F10X = $(PIOS)/STM32F10x
 PIOSCOMMON = $(PIOS)/Common
 PIOSBOARDS = $(PIOS)/Boards
