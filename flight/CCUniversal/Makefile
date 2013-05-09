@@ -484,7 +484,8 @@ DEBUGF = dwarf-2
 
 # Place project-specific -D (define) and/or
 # -U options for C here.
-CDEFS += -DSTM32F10X_$(MODEL)
+CDEFS += -D$(TARGETMCUC)
+CDEFS += -D$(TARGETMCUC)_$(MCUDENSITY)
 CDEFS += -DUSE_STDPERIPH_DRIVER
 CDEFS += -DUSE_$(BOARD)
 ifeq ($(ENABLE_DEBUG_PINS), YES)
