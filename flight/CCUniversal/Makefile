@@ -252,8 +252,8 @@ SRC += $(OPUAVSYNTHDIR)/airspeedactual.c
 
 endif
 
-## PIOS Hardware (STM32F10x)
-include $(PIOS)/STM32F10x/library.mk
+## PIOS Hardware pulls in target mcu dynamically
+include $(PIOS)/$(PIOSTARGETMCU)/library.mk
 SRC += $(PIOSTARGETMCU)/pios_sys.c
 SRC += $(PIOSTARGETMCU)/pios_led.c
 SRC += $(PIOSTARGETMCU)/pios_delay.c
