@@ -309,8 +309,14 @@ SRC += $(MATHLIB)/sin_lookup.c
 SRC += $(MATHLIB)/pid.c
 
 ## CMSIS for STM32
-SRC += $(CMSISDIR)/core_cm3.c
-SRC += $(CMSISDIR)/system_stm32f10x.c
+## Change in CMSIS structure for new device versions
+ifeq ($(TARGETMCUL), stm32f30x)
+SRC += $(CMSISDIR)/$(CMSISDEV)/../Source/Templates/system_$(TARGETMCUL).c
+else
+SRC += $(CMSISDIR)/$(CMSISCORE)/core_cm3.c
+## SRC += $(CMSISDIR)/$(CMSISCORE)/$(CMSISDEV)
+SRC += $(CMSISDIR)/$(CMSISDEV)/system_$(TARGETMCUL).c
+endif
 
 ## Used parts of the STM-Library
 SRC += $(STMSPDSRCDIR)/stm32f10x_adc.c
