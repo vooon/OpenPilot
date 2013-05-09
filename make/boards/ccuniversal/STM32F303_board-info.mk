@@ -18,6 +18,7 @@ STDPLCMSIS          := Libraries/CMSIS/Device/ST/STM32F30x/Include
 # Poor naming convention, need filename stub
 STDPLSTB            := stm32f30x_
 CHIP                := STM32F303CCT
+CHIPBOARD           := STM32F303CCT_CC_Rev1
 BOARD               := STM32103CB_CC_Rev1
 # Model does not mean much, density is is correct and descriptive
 MODEL               := MD
@@ -34,6 +35,9 @@ CMSISCORE           := Include
 # Cryptic name due to length, CMSIS VENDOR and VERSION
 CMVEN               := STMicro
 CMVENVER            := UNKNOWN
+
+# Set the actual crystal frequency, defaults to 8MHz if unset
+HSE_VALUE = 16000000
 
 # Enable ARM DSP library
 USE_DSP_LIB = NO

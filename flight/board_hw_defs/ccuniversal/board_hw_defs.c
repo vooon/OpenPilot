@@ -1178,7 +1178,7 @@ static const struct pios_tim_channel pios_tim_servoport_rcvrport_pins[] = {
 		.timer_chan = TIM_Channel_3,
 		.pin = {
 #if defined(STM32F30X)
-		.gpio = GPIOB,
+		.gpio = GPIOA,
 		.init = {
 			.GPIO_Pin   = GPIO_Pin_2,
 			.GPIO_Speed = GPIO_Speed_Level_2,

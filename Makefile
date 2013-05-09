@@ -744,6 +744,7 @@ fw_$(1)_%: uavobjects_flight
 		$$(MAKE) -r --no-print-directory \
 		BOARD_NAME=$(1) \
 		BOARD_SHORT_NAME=$(3) \
+		BOARD_SHORT_MCU=$(TARGET_MCU) \
 		BUILD_TYPE=fw \
 		TCHAIN_PREFIX="$(ARM_SDK_PREFIX)" \
 		REMOVE_CMD="$(RM)" OOCD_EXE="$(OPENOCD)" \
