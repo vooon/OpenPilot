@@ -8,6 +8,6 @@
 CDEFS				+= -DARM_MATH_CM3
 
 #
-# CMSIS for the F1
+# CMSIS for the F1, not F3
 #
-include $(PIOSCOMMONLIB)/CMSIS2/library.mk
+# include $(PIOSCOMMONLIB)/CMSIS2/library.mk
