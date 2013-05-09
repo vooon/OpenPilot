@@ -318,25 +318,30 @@ SRC += $(CMSISDIR)/$(CMSISCORE)/core_cm3.c
 SRC += $(CMSISDIR)/$(CMSISDEV)/system_$(TARGETMCUL).c
 endif
 
-## Used parts of the STM-Library
-SRC += $(STMSPDSRCDIR)/stm32f10x_adc.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_bkp.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_crc.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_dac.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_dma.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_exti.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_flash.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_gpio.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_i2c.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_pwr.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_rcc.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_rtc.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_spi.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_tim.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_usart.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_iwdg.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_dbgmcu.c
+## Used parts of the STM Std Peripherial Library
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)adc.c
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)crc.c
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)dac.c
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)dma.c
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)exti.c
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)flash.c
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)gpio.c
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)i2c.c
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)pwr.c
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)rcc.c
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)rtc.c
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)spi.c
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)tim.c
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)usart.c
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)iwdg.c
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)dbgmcu.c
+## Change in StdPeriph naming 
+ifeq ($(TARGETMCUL), stm32f30x)
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)misc.c
+else
+SRC += $(STMSPDSRCDIR)/$(STDPLSTB)bkp.c
 SRC += $(STMSPDSRCDIR)/misc.c
+endif
 
 ## STM32 USB Library
 SRC += $(STMUSBSRCDIR)/usb_core.c
