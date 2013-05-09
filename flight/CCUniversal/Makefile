@@ -624,8 +624,14 @@ LDFLAGS += $(MATH_LIB)
 LDFLAGS += -lc -lgcc
 
 # Set linker-script name depending on selected submodel name
+## Change in StdPeriph location
+ifeq ($(TARGETMCUL), stm32f30x)
+LDFLAGS += -T$(LINKERSCRIPTPATH)/link_$(CHIPBOARD)_memory.ld
+LDFLAGS += -T$(LINKERSCRIPTPATH)/link_$(CHIPBOARD)_sections.ld
+else
 LDFLAGS += -T$(LINKERSCRIPTPATH)/link_$(BOARD)_memory.ld
 LDFLAGS += -T$(LINKERSCRIPTPATH)/link_$(BOARD)_sections.ld
+endif
 
 # Define programs and commands.
 REMOVE  = $(REMOVE_CMD) -f
