@@ -26,7 +26,7 @@ MODEL_SUFFIX        := _CC
 
 # RTOS Selection for this board
 RTOS                := FreeRTOS
-RTOSVER             := UNKNOWN
+RTOSVER             := V7.4.2
 CMSIS               := Libraries/CMSIS
 CMSISVER            := Device
 CMSISDEV            := Device/ST/STM32F30x/Include
