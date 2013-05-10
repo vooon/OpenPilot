@@ -455,9 +455,10 @@ static const struct pios_spi_cfg pios_spi_flash_accel_cfg_cc3d = {
 			.GPIO_Pin   = GPIO_Pin_12,
 			.GPIO_Speed = GPIO_Speed_50MHz,
 			.GPIO_Mode  = GPIO_Mode_Out_PP,
-		}}
+		},
+	},
 #endif
-	      ,{
+	      {
 #if defined(STM32F30X)
 		.gpio = GPIOC,
 		.init = {
@@ -614,9 +615,10 @@ static const struct pios_spi_cfg pios_spi_flash_accel_cfg_cc = {
 			.GPIO_Pin   = GPIO_Pin_12,
 			.GPIO_Speed = GPIO_Speed_50MHz,
 			.GPIO_Mode  = GPIO_Mode_Out_PP,
-		}}
+		},
+	},
 #endif
-	,{
+	{
 #if defined(STM32F30X)
 		.gpio = GPIOA,
 		.init = {
