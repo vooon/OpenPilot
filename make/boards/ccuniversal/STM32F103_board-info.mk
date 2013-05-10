@@ -4,6 +4,7 @@ BOOTLOADER_VERSION  := 0x03
 HW_TYPE             := 0x01
 
 MCU                 := cortex-m3
+MCUCORE             := ARM_CM3
 # Target MCU upper and lowercase names
 TARGETMCU           := STM32F10x
 TARGETMCUL          := stm32f10x
@@ -29,6 +30,8 @@ RTOSVER             := UNKNOWN
 CMSIS               := Libraries/CMSIS
 CMSISVER            := CM3
 CMSISCORE           := CoreSupport
+# Compiler corresponds to the FreeRTOS portable compiler directory being used
+COMPILER            := GCC
 
 # Enable ARM DSP library
 USE_DSP_LIB = NO

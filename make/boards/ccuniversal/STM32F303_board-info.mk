@@ -4,6 +4,7 @@ BOOTLOADER_VERSION  := 0x03
 HW_TYPE             := 0x01
 
 MCU                 := cortex-m3
+MCUCORE             := ARM_CM3
 # Target MCU upper and lowercase names
 TARGETMCU           := STM32F30x
 TARGETMCUL          := stm32f30x
@@ -31,6 +32,8 @@ CMSIS               := Libraries/CMSIS
 CMSISVER            := Device
 CMSISDEV            := Device/ST/STM32F30x/Include
 CMSISCORE           := Include
+# Compiler corresponds to the FreeRTOS portable compiler directory being used
+COMPILER            := GCC
 
 # Cryptic name due to length, CMSIS VENDOR and VERSION
 CMVEN               := STMicro
