@@ -138,10 +138,11 @@ PIOSINC = $(PIOS)/inc
 PIOSTARGETMCU = $(PIOS)/$(TARGETMCU)
 PIOSCOMMON = $(PIOS)/Common
 PIOSBOARDS = $(PIOS)/Boards
-PIOSCOMMONLIB = $(PIOSCOMMON)/Libraries
+
+#PIOSCOMMONLIB = $(PIOSCOMMON)/Libraries
 
 # New Vesioned Periph
-EXTLIBS = ../../ExtLibraries
+EXTLIBS = ../ExtLibraries
 
 # Depreciating in favor of versioning and MCU agnostic
 STMSPDDIR = $(EXTLIBS)/$(STDPERLIB)_$(STDPLVER)
