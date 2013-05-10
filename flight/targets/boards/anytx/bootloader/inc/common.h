@@ -1,7 +1,7 @@
 /**
  ******************************************************************************
- * @addtogroup OpenPilotBL OpenPilot BootLoader
- * @brief These files contain the code to the OpenPilot MB Bootloader.
+ * @addtogroup AnyTXBL AnyTX BootLoader
+ * @brief These files contain the code to the AnyTX Bootloader.
  *
  * @{
  * @file       common.c

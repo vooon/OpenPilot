@@ -23,10 +23,9 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include <pios.h>
+#include "inc/openpilot.h"
 #include <pios_udp_priv.h>
 #include <pios_com_priv.h>
-#include <openpilot.h>
 #include <uavobjectsinit.h>
 
 /**
@@ -36,21 +35,26 @@
  */
 void PIOS_Board_Init(void) {
 
-	/* Delay system */
-	PIOS_DELAY_Init();
+    /* Delay system */
+    PIOS_DELAY_Init();
 
-	/* Initialize UAVObject libraries */
-	EventDispatcherInitialize();
-	UAVObjInitialize();
+    /* Initialize UAVObject libraries */
+    EventDispatcherInitialize();
+    UAVObjInitialize();
 
-	/* Initialize the alarms library */
-	AlarmsInitialize();
+    /* Initialize the alarms library */
+    AlarmsInitialize();
 
-	/* Initialize the task monitor library */
-	TaskMonitorInitialize();
+    /* Initialize the task monitor */
+    if (PIOS_TASK_MONITOR_Initialize(TASKINFO_RUNNING_NUMELEM)) {
+        PIOS_Assert(0);
+    }
 
-	/* Initialize the PiOS library */
-	PIOS_COM_Init();
+    /* Initialize the delayed callback library */
+    CallbackSchedulerInitialize();
+
+    /* Initialize the PiOS library */
+    PIOS_COM_Init();
 
 }
 

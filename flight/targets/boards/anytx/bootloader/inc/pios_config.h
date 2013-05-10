@@ -1,6 +1,7 @@
 /**
  ******************************************************************************
- * @addtogroup OpenPilotBL OpenPilot BootLoader
+ * @addtogroup AnyTXBL AnyTX BootLoader
+ * @brief These files contain the code to the AnyTX Bootloader.
  * @{
  * @file       pios_config.h  
  * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2010.

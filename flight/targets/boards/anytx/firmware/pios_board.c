@@ -32,6 +32,7 @@
 #include <pios_board_info.h>
 #include "../board_hw_defs.c"
 #include "protocol/interface.h"
+#include <taskinfo.h>
 
 #include <anytxcontrolsettings.h>
 #include <hwsettings.h>
@@ -143,8 +144,10 @@ PIOS_FLASHFS_Logfs_Init(&fs_id, &flashfs_internal_cfg, &pios_internal_flash_driv
     AnyTXControlSettingsGet(&anytxSettings);
 #endif /* PIOS_INCLUDE_FLASH_EEPROM */
 
-	/* Initialize the task monitor library */
-	TaskMonitorInitialize();
+    /* Initialize the task monitor */
+    if (PIOS_TASK_MONITOR_Initialize(TASKINFO_RUNNING_NUMELEM)) {
+        PIOS_Assert(0);
+    }
 
     /* Initialize the delayed callback library */
     CallbackSchedulerInitialize();

@@ -46,6 +46,7 @@
 #include "accessorydesired.h"
 #include "anytxcontrolsettings.h"
 #include "flightbatterystate.h"
+#include "taskinfo.h"
 
 s16 Channels[NUM_CHANNELS] = {0};
 // Private constants
@@ -86,7 +87,7 @@ int32_t AnyTXRadioStart(void)
 	vSemaphoreCreateBinary(anytxSemaphore);
 	xTaskCreate(anytxradioTask, (signed char *)"AnyTXRadio", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &systemTaskHandle);
 	// Register task
-	TaskMonitorAdd(TASKINFO_RUNNING_ACTUATOR, systemTaskHandle);
+    PIOS_TASK_MONITOR_RegisterTask(TASKINFO_RUNNING_ACTUATOR, systemTaskHandle);
 
 	return 0;
 }

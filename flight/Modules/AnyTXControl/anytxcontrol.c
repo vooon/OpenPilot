@@ -29,13 +29,14 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "openpilot.h"
+#include <openpilot.h>
 #include "anytxcontrol.h"
 #include "anytxcontrolsettings.h"
 #include "manualcontrolcommand.h"
 #include "flighttelemetrystats.h"
 #include "receiveractivity.h"
 #include "accessorydesired.h"
+#include "taskinfo.h"
 
 #if defined(PIOS_INCLUDE_USB_RCTX)
 #include "pios_usb_rctx.h"
@@ -101,7 +102,7 @@ int32_t AnyTXControlStart()
 {
 	// Start main task
 	xTaskCreate(anytxControlTask, (signed char *)"ManualControl", STACK_SIZE_BYTES/4, NULL, TASK_PRIORITY, &taskHandle);
-	TaskMonitorAdd(TASKINFO_RUNNING_MANUALCONTROL, taskHandle);
+    PIOS_TASK_MONITOR_RegisterTask(TASKINFO_RUNNING_MANUALCONTROL, taskHandle);
 	PIOS_WDG_RegisterFlag(PIOS_WDG_MANUAL);
 
 	return 0;

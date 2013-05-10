@@ -1,7 +1,7 @@
 /**
  ******************************************************************************
- * @addtogroup OpenPilotBL OpenPilot BootLoader
- * @brief These files contain the code to the OpenPilot MB Bootloader.
+ * @addtogroup AnyTXBL AnyTX BootLoader
+ * @brief These files contain the code to the AnyTX Bootloader.
  *
  * @{
  * @file       main.c
@@ -25,14 +25,15 @@
  * with this program; if not, write to the Free Software Foundation, Inc., 
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-/* Bootloader Includes */
+
 #include <pios.h>
 #include <pios_board_info.h>
-#include "op_dfu.h"
-#include "usb_lib.h"
-#include "pios_iap.h"
-#include "fifo_buffer.h"
-#include "pios_com_msg.h"
+#include <op_dfu.h>
+#include <usb_lib.h>
+#include <pios_iap.h>
+#include <fifo_buffer.h>
+#include <pios_com_msg.h>
+
 /* Prototype of PIOS_Board_Init() function */
 extern void PIOS_Board_Init(void);
 extern void FLASH_Download();
@@ -155,8 +156,7 @@ int main() {
 
 		if (stopwatch > 50 * 1000 * 1000)
 			stopwatch = 0;
-		if ((stopwatch > 6 * 1000 * 1000) && (DeviceState
-				== BLidle))
+        if ((stopwatch > 6 * 1000 * 1000) && ((DeviceState == BLidle) || (DeviceState == DFUidle && !USB_connected)))
 			JumpToApp = TRUE;
 
 		processRX();
