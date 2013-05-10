@@ -1704,6 +1704,8 @@ static const struct pios_sbus_cfg pios_sbus_cfg = {
 			.GPIO_PuPd  = GPIO_PuPd_UP
 			},
 		},
+		.gpio_clk_func = RCC_AHBPeriphClockCmd,
+		.gpio_clk_periph = RCC_AHBPeriph_GPIOB,
 #else
 		.gpio = GPIOB,
 		.init = {
@@ -1712,9 +1714,9 @@ static const struct pios_sbus_cfg pios_sbus_cfg = {
 			.GPIO_Speed = GPIO_Speed_2MHz,
 		},
 	},
-#endif
 	.gpio_clk_func = RCC_APB2PeriphClockCmd,
 	.gpio_clk_periph = RCC_APB2Periph_GPIOB,
+#endif
 	.gpio_inv_enable = Bit_SET,
 };
 
