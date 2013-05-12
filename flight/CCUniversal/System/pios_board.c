@@ -83,6 +83,17 @@ static const struct pios_exti_cfg pios_exti_mpu6000_cfg __exti_config = {
 	.vector = PIOS_MPU6000_IRQHandler,
 	.line = EXTI_Line3,
 	.pin = {
+#if defined(STM32F30X)
+		.gpio = GPIOA,
+		.init = {
+			.GPIO_Pin   = GPIO_Pin_3,
+			.GPIO_Speed = GPIO_Speed_Level_1,
+			.GPIO_Mode  = GPIO_Mode_IN,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd  = GPIO_PuPd_NOPULL
+		},
+	},
+#else
 		.gpio = GPIOA,
 		.init = {
 			.GPIO_Pin   = GPIO_Pin_3,
@@ -90,6 +101,7 @@ static const struct pios_exti_cfg pios_exti_mpu6000_cfg __exti_config = {
 			.GPIO_Mode  = GPIO_Mode_IN_FLOATING,
 		},
 	},
+#endif
 	.irq = {
 		.init = {
 			.NVIC_IRQChannel = EXTI3_IRQn,
