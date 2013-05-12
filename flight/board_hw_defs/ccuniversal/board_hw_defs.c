@@ -1739,11 +1739,19 @@ static const struct pios_sbus_cfg pios_sbus_cfg = {
 void PIOS_RTC_IRQ_Handler (void);
 void RTC_IRQHandler() __attribute__ ((alias ("PIOS_RTC_IRQ_Handler")));
 static const struct pios_rtc_cfg pios_rtc_main_cfg = {
+#if defined(STM32F30X)
+	.clksrc = RCC_RTCCLKSource_HSE_Div32,
+#else
 	.clksrc = RCC_RTCCLKSource_HSE_Div128,
+#endif
 	.prescaler = 100,
 	.irq = {
 		.init = {
+#if defined(STM32F30X)
+			.NVIC_IRQChannel                   = RTC_WKUP_IRQn,
+#else
 			.NVIC_IRQChannel                   = RTC_IRQn,
+#endif
 			.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_MID,
 			.NVIC_IRQChannelSubPriority        = 0,
 			.NVIC_IRQChannelCmd                = ENABLE,

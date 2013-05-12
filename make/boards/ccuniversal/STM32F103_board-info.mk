@@ -33,6 +33,9 @@ CMSISCORE           := CoreSupport
 # Compiler corresponds to the FreeRTOS portable compiler directory being used
 COMPILER            := GCC
 
+# Set the actual crystal frequency, defaults to 8MHz if unset
+HSE_VALUE = 8000000
+
 # Enable ARM DSP library
 USE_DSP_LIB = NO
 CMSISDEV            := DeviceSupport/ST/STM32F10x

@@ -133,4 +133,8 @@
 
 // #define FLASH_PrefetchBuffer_Enable    ENABLE
 
+/**
+  * @}
+  */
+
 #endif /* BOARD_HW_GPIO_REMAP_H_ */
