@@ -790,7 +790,11 @@ void PIOS_Board_Init(void) {
 #endif	/* PIOS_INCLUDE_GCSRCVR */
 
 	/* Remap AFIO pin for PB4 (Servo 5 Out)*/
+#if defined(STM32F30X)
+    GPIO_PinAFConfig(GPIOB, GPIO_PinSource4, GPIO_AF_2);
+#else
 	GPIO_PinRemapConfig( GPIO_Remap_SWJ_NoJTRST, ENABLE);
+#endif
 
 #ifndef PIOS_DEBUG_ENABLE_DEBUG_PINS
 	switch (hwsettings_rcvrport) {
@@ -821,7 +825,20 @@ void PIOS_Board_Init(void) {
 			break;
 		case BOARD_REVISION_CC3D:
 			// Revision 2 with L3GD20 gyros, start a SPI interface and connect to it
+#if defined(STM32F30X)
+			/* Poor STM descriptor, new AF config method
+			 * CC JTAG was PA13, 14, 15, PB3, NRST
+			 * SWD is PA13, 14, NRST
+			 * PA15 is NC
+			 * PB3 is Blue LED
+			 */
+            GPIO_PinAFConfig(GPIOA, GPIO_PinSource13, GPIO_AF_0);
+            GPIO_PinAFConfig(GPIOA, GPIO_PinSource14, GPIO_AF_0);
+            /* NJTRST is not properly implemented, NRST is used instead and does not need a remap */
+            //GPIO_PinAFConfig(GPIOB, GPIO_PinSource4, GPIO_AF_0);
+#else
 			GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE);
+#endif
 
 #if defined(PIOS_INCLUDE_MPU6000)
 			// Set up the SPI interface to the serial flash 
