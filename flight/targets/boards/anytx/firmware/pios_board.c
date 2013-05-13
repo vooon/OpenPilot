@@ -269,7 +269,7 @@ PIOS_FLASHFS_Logfs_Init(&fs_id, &flashfs_internal_cfg, &pios_internal_flash_driv
  	// CYRF
  	CYRF_Initialize(&pios_cyrf_cfg);
  	// PROTOCOL
-	Model.tx_power = TXPOWER_150mW;
+	Model.tx_power = anytxSettings.TransmitPower;
 	Model.fixed_id = 0;
 	Model.num_channels = 8;
 
