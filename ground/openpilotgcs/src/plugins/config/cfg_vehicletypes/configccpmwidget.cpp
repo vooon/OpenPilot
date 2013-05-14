@@ -125,8 +125,8 @@ ConfigCcpmWidget::ConfigCcpmWidget(QWidget *parent) :
     SwashLvlConfigurationInProgress = 0;
     SwashLvlState = 0;
     SwashLvlServoInterlock = 0;
-    updatingFromHardware = FALSE;
-    updatingToHardware = FALSE;
+    updatingFromHardware = false;
+    updatingToHardware = false;
 
     // Initialization of the swashplaye widget
     m_aircraft->SwashplateImage->setScene(new QGraphicsScene(this));
@@ -796,7 +796,7 @@ QString ConfigCcpmWidget::updateConfigObjects()
     bool useCCPM;
     bool useCyclic;
 
-    if (updatingFromHardware == TRUE)
+    if (updatingFromHardware == true)
         return airframeType;
 
     updatingFromHardware = true;
@@ -884,7 +884,7 @@ void ConfigCcpmWidget::getMixer()
     if (SwashLvlConfigurationInProgress)return;
     if (updatingToHardware)return;
 
-    updatingFromHardware = TRUE;
+    updatingFromHardware = true;
     
     UAVDataObject* mixer = dynamic_cast<UAVDataObject*>(getObjectManager()->getObject(QString("MixerSettings")));
     Q_ASSERT(mixer);
