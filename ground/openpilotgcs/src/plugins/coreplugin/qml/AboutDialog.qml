@@ -41,71 +41,122 @@
  import QtQuick 1.1
  
  
- // This is a tabbed pane element. Add a nested Rectangle to add a tab.
- TabWidget {
-	 	// Define AuthorsModel as type
-	 	property AuthorsModel authors: AuthorsModel {}
-	 
-	 	id: tabs
-		width: 640; height: 480
-		// This  tab is for the GCS version information
-		Rectangle {
-			property string title: "OpenPilot GCS"
-			anchors.fill: parent
-			color: "#e3e3e3"
-			
-			Rectangle {
-				anchors.fill: parent; anchors.margins: 20
-				color: "#e3e3e3"
-				Image {
-					source: "../images/openpilot_logo_128.png"
-					x: 0; y: 0; z: 100
-					fillMode: Image.PreserveAspectFit
-				}
-                Flickable  {
-					anchors.fill: parent
-					anchors.centerIn: parent
-                   Text {
-					   id: versionLabel
-					   x: 156; y: 0
-					   width: 430; height: 379
-					   horizontalAlignment: Qt.AlignLeft
-					   font.pixelSize: 12
-					   wrapMode: Text.WordWrap
-					// @var version exposed in authorsdialog.cpp
-					   text: version
-                   }
-                }
+ Rectangle { 
+ 	id:mainWindow
+ 	width: 640; height: 540
+ 	Rectangle {
+ 		color: "#e3e3e3"
+ 		width: parent.width; height: 60
+ 		anchors.bottom: parent.bottom;
+ 	}
+ 	Rectangle {
+             id: closeButton
+             x: 550
+             y: 453
+             border.color: "#000000"
+             anchors.rightMargin: 20
+             anchors.bottomMargin: 20
+             width: 75; height: 30
+             radius: 6
+             gradient: Gradient {
+                 GradientStop {
+                     position: 0
+                     color: "#eeeeee"
+                 }
+
+                 GradientStop {
+                     position: 1
+                     color: "#b1b1b1"
+                 }
+             }
+             anchors.right: parent.right
+             anchors.bottom: parent.bottom
+             Text{
+                 id: buttonLabel
+                 anchors.centerIn: parent
+                 text: "Close"
+             }
+             signal buttonClick()
+             onButtonClick: {
+                console.log(dialog.done())
+             }
+             MouseArea{
+                 onClicked: buttonClick()
+                 hoverEnabled: true
+                 onEntered: parent.border.color = "#ffffff"
+                 onExited:  parent.border.color = "#000000"
+             }
+
+             //determines the color of the button by using the conditional operator
+             color: buttonMouseArea.pressed ? Qt.darker(buttonColor, 1.5) : buttonColor
             }
-        }
-		//  This tab is for the authors/contributors/credits
-        Rectangle {
-			property string title: "Authors"
-			anchors.fill: parent; color: "#e3e3e3"
+	// This is a tabbed pane element. Add a nested Rectangle to add a tab.
+	 TabWidget {
+		 	// Define AuthorsModel as type
+		 	property AuthorsModel authors: AuthorsModel {}
+		 
+		 	id: tabs
+			width: 640; height: 480
+			// This  tab is for the GCS version information
 			Rectangle {
-				anchors.fill: parent; anchors.margins: 20
+				property string title: "OpenPilot GCS"
+				anchors.fill: parent
 				color: "#e3e3e3"
-				Text {
-					id: description
-					text: "<h4>These people have been key contributors to the OpenPilot project. Without the work of the people in this list, OpenPilot would not be what it is today.</h4><p>This list is sorted alphabetically by name</p>"
-					width: 600
-					wrapMode: Text.WordWrap
-					
-				}
-				ListView {
-					id: authorsView
-					y: description.y + description.height + 20
-					width: parent.width; height: parent.height - description.height - 20
-					spacing: 3
-					model: authors
-					delegate: Text {
-						text: name
+				
+				Rectangle {
+					anchors.fill: parent; anchors.margins: 20
+					color: "#e3e3e3"
+					Image {
+						source: "../images/openpilot_logo_128.png"
+						x: 0; y: 0; z: 100
+						fillMode: Image.PreserveAspectFit
 					}
-					clip: true
-				}
-				ScrollDecorator {
-					flickableItem: authorsView
+	                Flickable  {
+						anchors.fill: parent
+						anchors.centerIn: parent
+	                   Text {
+						   id: versionLabel
+						   x: 156; y: 0
+						   width: 430; height: 379
+						   horizontalAlignment: Qt.AlignLeft
+						   font.pixelSize: 12
+						   wrapMode: Text.WordWrap
+						// @var version exposed in authorsdialog.cpp
+						   text: version
+	                   }
+	                }
+	            }
+	        }
+			//  This tab is for the authors/contributors/credits
+	        Rectangle {
+				property string title: "Authors"
+				anchors.fill: parent; color: "#e3e3e3"
+				Rectangle {
+					anchors.fill: parent; anchors.margins: 20
+					color: "#e3e3e3"
+					Text {
+						id: description
+						text: "<h4>These people have been key contributors to the OpenPilot project. Without the work of the people in this list, OpenPilot would not be what it is today.</h4><p>This list is sorted alphabetically by name</p>"
+						width: 600
+						wrapMode: Text.WordWrap
+						
+					}
+					ListView {
+						id: authorsView
+						y: description.y + description.height + 20
+						width: parent.width; height: parent.height - description.height - 20
+						spacing: 3
+						model: authors
+						delegate: Text {
+							text: name
+						}
+						clip: true
+					}
+					ScrollDecorator {
+						flickableItem: authorsView
+					}
 				}
 			}
-		}
-}
+	}
+ }
+ 

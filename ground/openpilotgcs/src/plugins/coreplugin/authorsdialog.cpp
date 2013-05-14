@@ -129,5 +129,5 @@ AuthorsDialog::AuthorsDialog(QWidget *parent)
      );
   // Expose the version description to the QML doc
 	view->rootContext()->setContextProperty("version", description);
- 
+  view->rootContext()->setContextProperty("dialog", this);
 }
