@@ -84,7 +84,7 @@
 #include <QtWidgets/QToolButton>
 #include <QtWidgets/QMessageBox>
 #include <QDesktopServices>
-#include "dialogs/importsettings.h"
+#include <QElapsedTimer>
 #include <QDir>
 #include <QMimeData>
 
@@ -268,55 +268,40 @@ void MainWindow::modeChanged(Core::IMode */*mode*/)
 void MainWindow::extensionsInitialized()
 {
     QSettings *qs = m_settings;
-    QSettings *settings;
-    QString commandLine;
-    if ( ! qs->allKeys().count() ) {
-        foreach(QString str, qApp->arguments()) {
-            if(str.contains("configfile")) {
-                qDebug() << "ass";
-                commandLine = str.split("=").at(1);
-                qDebug() << commandLine;
-            }
-        }
-        QDir directory(QCoreApplication::applicationDirPath());
-#ifdef Q_OS_MAC
-            directory.cdUp();
-            directory.cd("Resources");
-#else
-            directory.cdUp();
-            directory.cd("share");
-            directory.cd("openpilotgcs");
-#endif
-        directory.cd("default_configurations");
 
-        qDebug() << "Looking for default config files in: " + directory.absolutePath();
-        bool showDialog = true;
-        QString filename;
-        if(!commandLine.isEmpty()) {
-            if(QFile::exists(directory.absolutePath() + QDir::separator()+commandLine)) {
-                filename = directory.absolutePath() + QDir::separator()+commandLine;
-                qDebug() << "Load configuration from command line";
-                settings = new QSettings(filename, XmlConfig::XmlSettingsFormat);
-                showDialog = false;
-            }
-        }
-        if(showDialog) {
-            importSettings *dialog = new importSettings(this);
-            dialog->loadFiles(directory.absolutePath());
-            dialog->exec();
-            filename = dialog->choosenConfig();
-            settings = new QSettings(filename, XmlConfig::XmlSettingsFormat);
-            delete dialog;
-        }
-        qs = settings;
-        qDebug() << "Load default config from resource " << filename;
-    }
     qs->beginGroup("General");
-    m_config_description=qs->value("Description", "none").toString();
-    m_config_details=qs->value("Details", "none").toString();
-    m_config_stylesheet=qs->value("StyleSheet", "none").toString();
-    loadStyleSheet(m_config_stylesheet);
+
+    m_config_description = qs->value("Description", "none").toString();
+    m_config_details = qs->value("Details", "none").toString();
+    m_config_stylesheet = qs->value("StyleSheet", "none").toString();
+
+    qDebug() << "Configured style sheet:" << m_config_stylesheet;
+    if (m_config_stylesheet == "wide") {
+        // OP-869 just in case some user configuration still references the now obsolete "wide" style sheet
+        m_config_stylesheet = "default";
+    }
+
+    // Load common style sheet
+    QString style = loadStyleSheet(m_config_stylesheet + ".qss");
+
+    // Load and concatenate platform specific style sheet
+    QString fileName = m_config_stylesheet;
+#ifdef Q_OS_MAC
+    fileName += "_macos.qss";
+#elif defined(Q_OS_LINUX)
+    fileName += "_linux.qss";
+#else
+    fileName += "_windows.qss";
+#endif
+    style += loadStyleSheet(fileName);
+
+    // We'll use qApp macro to get the QApplication pointer
+    // and set the style sheet application wide.
+    qDebug() << "Setting application style sheet to:" << style;
+    qApp->setStyleSheet(style);
+
     qs->endGroup();
+
     m_uavGadgetInstanceManager = new UAVGadgetInstanceManager(this);
     m_uavGadgetInstanceManager->readSettings(qs);
 
@@ -330,53 +315,45 @@ void MainWindow::extensionsInitialized()
     emit m_coreImpl->coreOpened();
 }
 
-void MainWindow::loadStyleSheet(QString name) {
-    /* Let's use QFile and point to a resource... */
-    QDir directory(QCoreApplication::applicationDirPath());
+QString MainWindow::loadStyleSheet(QString fileName) {
+    // Let's use QFile and point to a resource...
+    QDir dir(QCoreApplication::applicationDirPath());
 #ifdef Q_OS_MAC
-    directory.cdUp();
-    directory.cd("Resources");
+    dir.cdUp();
+    dir.cd("Resources");
 #else
-    directory.cdUp();
-    directory.cd("share");
-    directory.cd("openpilotgcs");
+    dir.cdUp();
+    dir.cd("share");
+    dir.cd("openpilotgcs");
 #endif
-    directory.cd("stylesheets");
-#ifdef Q_OS_MAC
-    QFile data(directory.absolutePath()+QDir::separator()+name+"_macos.qss");
-#elif defined(Q_OS_LINUX)
-    QFile data(directory.absolutePath()+QDir::separator()+name+"_linux.qss");
-#else
-    QFile data(directory.absolutePath()+QDir::separator()+name+"_windows.qss");
-#endif
+    dir.cd("stylesheets");
     QString style;
-    /* ...to open the file */
-    if(data.open(QFile::ReadOnly)) {
-        /* QTextStream... */
-        QTextStream styleIn(&data);
-        /* ...read file to a string. */
-        style = styleIn.readAll();
-        data.close();
-        /* We'll use qApp macro to get the QApplication pointer
-         * and set the style sheet application wide. */
-        qApp->setStyleSheet(style);
-        qDebug()<<"Loaded stylesheet:"<<style;
+    // ...to open the file
+    QFile file(dir.absolutePath() + QDir::separator() + fileName);
+    qDebug() << "Loading style sheet file" << file.fileName();
+    if (file.open(QFile::ReadOnly)) {
+        // QTextStream...
+        QTextStream textStream(&file);
+        // ...read file to a string.
+        style = textStream.readAll();
+        file.close();
     }
-    else
-        qDebug()<<"Failed to openstylesheet file"<<directory.absolutePath()<<name;
+    else {
+        qDebug() << "Failed to open style sheet file" << file.fileName();
+    }
+    return style;
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    if ( !m_generalSettings->saveSettingsOnExit() ){
+    if (!m_generalSettings->saveSettingsOnExit()) {
         m_dontSaveSettings = true;
     }
-    if ( !m_dontSaveSettings ){
+    if (!m_dontSaveSettings) {
         emit m_coreImpl->saveSettingsRequested();
     }
 
-    const QList<ICoreListener *> listeners =
-        ExtensionSystem::PluginManager::instance()->getObjects<ICoreListener>();
+    const QList<ICoreListener *> listeners = ExtensionSystem::PluginManager::instance()->getObjects<ICoreListener>();
     foreach (ICoreListener *listener, listeners) {
         if (!listener->coreAboutToClose()) {
             event->ignore();
@@ -386,7 +363,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
     emit m_coreImpl->coreAboutToClose();
 
-    if ( !m_dontSaveSettings ){
+    if (!m_dontSaveSettings) {
         saveSettings(m_settings);
         m_uavGadgetInstanceManager->saveSettings(m_settings);
     }
@@ -394,7 +371,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
 }
 
 // Check for desktop file manager file drop events
-
 static bool isDesktopFileManagerDrop(const QMimeData *d, QStringList *files = 0)
 {
     if (files)
@@ -516,9 +492,7 @@ void MainWindow::registerDefaultContainers()
     ac->appendGroup(Constants::G_HELP_ABOUT);
 }
 
-static Command *createSeparator(ActionManager *am, QObject *parent,
-                                const QString &name,
-                                const QList<int> &context)
+static Command *createSeparator(ActionManager *am, QObject *parent, const QString &name, const QList<int> &context)
 {
     QAction *tmpaction = new QAction(parent);
     tmpaction->setSeparator(true);
@@ -796,15 +770,13 @@ void MainWindow::registerDefaultActions()
 
     // About GCS Action
 #ifdef Q_WS_MAC
-    tmpaction = new QAction(QIcon(Constants::ICON_OPENPILOT), tr("About &OpenPilot GCS"), this); // it's convention not to add dots to the about menu
+
 #else
-    tmpaction = new QAction(QIcon(Constants::ICON_OPENPILOT), tr("About &OpenPilot GCS..."), this);
+
 #endif
-    cmd = am->registerAction(tmpaction, Constants::ABOUT_OPENPILOTGCS, m_globalContext);
-    mhelp->addAction(cmd, Constants::G_HELP_ABOUT);
-    tmpaction->setEnabled(true);
+
 #ifdef Q_WS_MAC
-    cmd->action()->setMenuRole(QAction::ApplicationSpecificRole);
+
 #endif
     connect(tmpaction, SIGNAL(triggered()), this,  SLOT(aboutOpenPilotGCS()));
 
@@ -819,7 +791,7 @@ void MainWindow::registerDefaultActions()
     connect(tmpaction, SIGNAL(triggered()), this,  SLOT(aboutPlugins()));
 
     //Credits Action
-    tmpaction = new QAction(QIcon(Constants::ICON_PLUGIN), tr("About &Authors..."), this);
+    tmpaction = new QAction(QIcon(Constants::ICON_PLUGIN), tr("About &OpenPilot..."), this);
     cmd = am->registerAction(tmpaction, Constants::ABOUT_AUTHORS, m_globalContext);
     mhelp->addAction(cmd, Constants::G_HELP_ABOUT);
     tmpaction->setEnabled(true);
@@ -880,13 +852,12 @@ void MainWindow::setFocusToEditor()
 
 }
 
-bool MainWindow::showOptionsDialog(const QString &category,
-                                   const QString &page,
-                                   QWidget *parent)
+bool MainWindow::showOptionsDialog(const QString &category, const QString &page, QWidget *parent)
 {
     emit m_coreImpl->optionsDialogRequested();
-    if (!parent)
+    if (!parent) {
         parent = this;
+    }
     SettingsDialog dlg(parent, category, page);
     return dlg.execDialog();
 }
@@ -1155,13 +1126,18 @@ void MainWindow::createWorkspaces(QSettings* qs, bool diffOnly) {
     } else {
         m_uavGadgetManagers.clear();
     }
-    for (int i = start; i < newWorkspacesNo; ++i) {
 
-        const QString name     = m_workspaceSettings->name(i);
+    QElapsedTimer totalTimer;
+    totalTimer.start();
+    for (int i = start; i < newWorkspacesNo; ++i) {
+        QElapsedTimer timer;
+        timer.start();
+
+        const QString name = m_workspaceSettings->name(i);
         const QString iconName = m_workspaceSettings->iconName(i);
         const QString modeName = m_workspaceSettings->modeName(i);
-        uavGadgetManager = new Core::UAVGadgetManager(CoreImpl::instance(), name,
-                                                      QIcon(iconName), 90-i+1, modeName, this);
+        uavGadgetManager = new Core::UAVGadgetManager(CoreImpl::instance(), name, QIcon(iconName), 90 - i + 1, modeName,
+                this);
 
         connect(uavGadgetManager, SIGNAL(showUavGadgetMenus(bool, bool)), this, SLOT(showUavGadgetMenus(bool, bool)));
 
@@ -1175,7 +1151,9 @@ void MainWindow::createWorkspaces(QSettings* qs, bool diffOnly) {
         pm->addObject(uavGadgetManager);
         m_uavGadgetManagers.append(uavGadgetManager);
         uavGadgetManager->readSettings(qs);
+        qDebug() << "MainWindow::createWorkspaces - creating workspace" << name << "took" << timer.elapsed() << "ms";
     }
+    qDebug() << "MainWindow::createWorkspaces - creating workspaces took" << totalTimer.elapsed() << "ms";
 }
 
 static const char *settingsGroup = "MainWindow";
@@ -1187,7 +1165,7 @@ static const char *modePriorities = "ModePriorities";
 
 void MainWindow::readSettings(QSettings* qs, bool workspaceDiffOnly)
 {
-    if ( !qs ){
+    if (!qs) {
         qs = m_settings;
     }
 
@@ -1209,8 +1187,9 @@ void MainWindow::readSettings(QSettings* qs, bool workspaceDiffOnly)
     } else {
         resize(750, 400);
     }
-    if (qs->value(QLatin1String(maxKey), false).toBool())
+    if (qs->value(QLatin1String(maxKey), false).toBool()) {
         setWindowState(Qt::WindowMaximized);
+    }
     setFullScreen(qs->value(QLatin1String(fullScreenKey), false).toBool());
 
     qs->endGroup();
@@ -1235,9 +1214,11 @@ void MainWindow::readSettings(QSettings* qs, bool workspaceDiffOnly)
 
 void MainWindow::saveSettings(QSettings* qs)
 {
-    if ( m_dontSaveSettings ) return;
+    if (m_dontSaveSettings) {
+        return;
+    }
 
-    if ( !qs ){
+    if (!qs) {
         qs = m_settings;
     }
 
@@ -1281,7 +1262,7 @@ void MainWindow::saveSettings(QSettings* qs)
 
 void MainWindow::readSettings(IConfigurablePlugin* plugin, QSettings* qs)
 {
-    if ( !qs ){
+    if (!qs) {
         qs = m_settings;
     }
 
@@ -1304,8 +1285,11 @@ void MainWindow::readSettings(IConfigurablePlugin* plugin, QSettings* qs)
 
 void MainWindow::saveSettings(IConfigurablePlugin* plugin, QSettings* qs)
 {
-    if ( m_dontSaveSettings ) return;
-    if ( !qs ){
+    if (m_dontSaveSettings) {
+        return;
+    }
+
+    if (!qs) {
         qs = m_settings;
     }
 

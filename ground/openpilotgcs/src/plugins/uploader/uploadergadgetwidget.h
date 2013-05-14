@@ -97,6 +97,7 @@ private:
      void connectSignalSlot(QWidget * widget);
      int autoUpdateConnectTimeout;
      FlightStatus * getFlightStatus();
+     void bootButtonsSetEnable(bool enabled);
 private slots:
     void onPhisicalHWConnect();
     void versionMatchCheck();
@@ -107,7 +108,8 @@ private slots:
     void systemReset();
     void systemBoot();
     void systemSafeBoot();
-    void commonSystemBoot(bool = false);
+	void systemEraseBoot();
+	void commonSystemBoot(bool safeboot = false, bool erase = false);
     void systemRescue();
     void getSerialPorts();
     void perform();
@@ -115,7 +117,8 @@ private slots:
     void cancel();
     void uploadStarted();
     void uploadEnded(bool succeed);
-
+    void downloadStarted();
+    void downloadEnded(bool succeed);
 };
 
 #endif // UPLOADERGADGETWIDGET_H

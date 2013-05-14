@@ -36,12 +36,13 @@
 #include "pages/surfacepage.h"
 #include "pages/inputpage.h"
 #include "pages/outputpage.h"
-#include "pages/levellingpage.h"
+#include "pages/biascalibrationpage.h"
 #include "pages/summarypage.h"
 #include "pages/savepage.h"
 #include "pages/notyetimplementedpage.h"
 #include "pages/rebootpage.h"
 #include "pages/outputcalibrationpage.h"
+#include "pages/revocalibrationpage.h"
 #include "extensionsystem/pluginmanager.h"
 #include "vehicleconfigurationhelper.h"
 #include "actuatorsettings.h"
@@ -51,7 +52,7 @@
 SetupWizard::SetupWizard(QWidget *parent) : QWizard(parent), VehicleConfigurationSource(),
     m_controllerType(CONTROLLER_UNKNOWN),
     m_vehicleType(VEHICLE_UNKNOWN), m_inputType(INPUT_UNKNOWN), m_escType(ESC_UNKNOWN),
-    m_levellingPerformed(false), m_restartNeeded(false), m_connectionManager(0)
+    m_calibrationPerformed(false), m_restartNeeded(false), m_connectionManager(0)
 {
     setWindowTitle(tr("OpenPilot Setup Wizard"));
     setOption(QWizard::IndependentPages, false);
@@ -81,9 +82,9 @@ int SetupWizard::nextId() const
             {
                 case CONTROLLER_CC:
                 case CONTROLLER_CC3D:
-                    return PAGE_INPUT;
                 case CONTROLLER_REVO:
-                case CONTROLLER_PIPX:
+                    return PAGE_INPUT;
+                case CONTROLLER_OPLINK:
                 default:
                     return PAGE_NOTYETIMPLEMENTED;
             }
@@ -117,12 +118,24 @@ int SetupWizard::nextId() const
             return PAGE_VEHICLES;
         case PAGE_OUTPUT:
             return PAGE_SUMMARY;
-        case PAGE_LEVELLING:
-            return PAGE_CALIBRATION;
-        case PAGE_CALIBRATION:
+        case PAGE_BIAS_CALIBRATION:
+            return PAGE_OUTPUT_CALIBRATION;
+        //case PAGE_REVO_CALIBRATION:
+        //    return PAGE_OUTPUT_CALIBRATION;
+        case PAGE_OUTPUT_CALIBRATION:
             return PAGE_SAVE;
         case PAGE_SUMMARY:
-            return PAGE_LEVELLING;
+        {
+            switch(getControllerType())
+            {
+                case CONTROLLER_CC:
+                case CONTROLLER_CC3D:
+                case CONTROLLER_REVO:
+                    return PAGE_BIAS_CALIBRATION;
+                default:
+                    return PAGE_NOTYETIMPLEMENTED;
+            }
+        }
         case PAGE_SAVE:
             return PAGE_END;
         case PAGE_NOTYETIMPLEMENTED:
@@ -147,7 +160,7 @@ QString SetupWizard::getSummaryText()
         case CONTROLLER_REVO:
             summary.append(tr("OpenPilot Revolution"));
             break;
-        case CONTROLLER_PIPX:
+        case CONTROLLER_OPLINK:
             summary.append(tr("OpenPilot OPLink Radio Modem"));
             break;
         default:
@@ -275,8 +288,9 @@ void SetupWizard::createPages()
     setPage(PAGE_SURFACE, new SurfacePage(this));
     setPage(PAGE_INPUT, new InputPage(this));
     setPage(PAGE_OUTPUT, new OutputPage(this));
-    setPage(PAGE_LEVELLING, new LevellingPage(this));
-    setPage(PAGE_CALIBRATION, new OutputCalibrationPage(this));
+    setPage(PAGE_BIAS_CALIBRATION, new BiasCalibrationPage(this));
+    //setPage(PAGE_REVO_CALIBRATION, new RevoCalibrationPage(this));
+    setPage(PAGE_OUTPUT_CALIBRATION, new OutputCalibrationPage(this));
     setPage(PAGE_SUMMARY, new SummaryPage(this));
     setPage(PAGE_SAVE, new SavePage(this));
     setPage(PAGE_REBOOT, new RebootPage(this));
@@ -295,7 +309,7 @@ void SetupWizard::createPages()
 
 void SetupWizard::customBackClicked()
 {
-    if(currentId() == PAGE_CALIBRATION) {
+    if(currentId() == PAGE_OUTPUT_CALIBRATION) {
         static_cast<OutputCalibrationPage*>(currentPage())->customBackClicked();
     }
     else {
