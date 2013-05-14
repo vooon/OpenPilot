@@ -1,7 +1,7 @@
 /**
  ******************************************************************************
  *
- * @file       startpage.cpp
+ * @file       opstartpage.cpp
  * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2012.
  * @addtogroup GCSPlugins GCS Plugins
  * @{
@@ -24,8 +24,8 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-#ifndef STARTPAGE_H
-#define STARTPAGE_H
+#ifndef OPSTARTPAGE_H
+#define OPSTARTPAGE_H
 
 #include "abstractwizardpage.h"
 
@@ -45,4 +45,4 @@ private:
     Ui::OPStartPage *ui;
 };
 
-#endif // STARTPAGE_H
+#endif // OPSTARTPAGE_H

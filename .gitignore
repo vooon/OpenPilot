@@ -55,8 +55,6 @@ openpilotgcs-build-desktop
 /.cproject
 /.project
 /.metadata
-<<<<<<< HEAD
-=======
 
 # Ignore Eclipse temp folder, git plugin based?
 RemoteSystemsTempFiles
@@ -65,4 +63,3 @@ RemoteSystemsTempFiles
 *.rej
 *.orig
 *.diff~
->>>>>>> origin/next

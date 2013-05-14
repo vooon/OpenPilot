@@ -1,7 +1,7 @@
 /**
  ******************************************************************************
  *
- * @file       endpage.cpp
+ * @file       opendpage.cpp
  * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2012.
  * @addtogroup GCSPlugins GCS Plugins
  * @{
@@ -29,7 +29,7 @@
 #include <coreplugin/modemanager.h>
 #include <extensionsystem/pluginmanager.h>
 #include <configgadgetfactory.h>
-#include <QtWidgets/QMessageBox>
+#include <QMessageBox>
 
 OPEndPage::OPEndPage(SetupWizard *wizard, QWidget *parent) :
     AbstractWizardPage(wizard, parent),

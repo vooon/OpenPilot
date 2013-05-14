@@ -30,6 +30,7 @@ equals(copydata, 1) {
                   icudt49.dll \
                   libstdc++-6.dll \
                   icuuc49.dll \
+                  D3DCompiler_43.dll \
                   libwinpthread-1.dll
         for(dll, QT_DLLS) {
             data_copy.commands += $(COPY_FILE) $$targetPath(\"$$[QT_INSTALL_BINS]/$$dll\") $$targetPath(\"$$GCS_APP_PATH/$$dll\") $$addNewline()
@@ -37,7 +38,7 @@ equals(copydata, 1) {
 
         # copy MinGW DLLs
         MINGW_DLLS = libgcc_s_sjlj-1.dll
-#libgcc_s_dw2-1.dll \
+        #           libgcc_s_dw2-1.dll \
         #             mingwm10.dll
         for(dll, MINGW_DLLS) {
             data_copy.commands += $(COPY_FILE) $$targetPath(\"$$(QTMINGW)/$$dll\") $$targetPath(\"$$GCS_APP_PATH/$$dll\") $$addNewline()
