@@ -51,7 +51,7 @@ const uint32_t   embedded_image_size  = (uint32_t)   &(_binary_size);
 int main()
 {
 
-    PIOS_SYS_Init();
+    PIOS_SYS_Init(true);
     PIOS_Board_Init();
     PIOS_LED_On(PIOS_LED_HEARTBEAT);
     PIOS_DELAY_WaitmS(3000);
