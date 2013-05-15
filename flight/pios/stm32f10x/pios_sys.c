@@ -47,8 +47,10 @@ void SysTick_Handler(void);
 */
 void PIOS_SYS_Init(void)
 {
+#ifndef PIOS_CUSTOM_SYSTEM_INIT
 	/* Setup STM32 system (RCC, clock, PLL and Flash configuration) - CMSIS Function */
 	SystemInit();
+#endif
 
 	/* Init the delay system */
 	PIOS_DELAY_Init();
