@@ -93,7 +93,7 @@ int main()
 	/* Any new initialization functions should be added in OpenPilotInit() */
 
 	/* Brings up System using CMSIS functions, enables the LEDs. */
-	PIOS_SYS_Init(true);
+	PIOS_SYS_Init();
 	
 	/* For Revolution we use a FreeRTOS task to bring up the system so we can */
 	/* always rely on FreeRTOS primitive */

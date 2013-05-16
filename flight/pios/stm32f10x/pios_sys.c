@@ -45,13 +45,8 @@ void SysTick_Handler(void);
 /**
 * Initialises all system peripherals
 */
-void PIOS_SYS_Init(bool do_CMIS_INIT)
+void PIOS_SYS_Init_No_CMSIS_Init()
 {
-	/* Setup STM32 system (RCC, clock, PLL and Flash configuration) - CMSIS Function */
-        if (do_CMIS_INIT) {
-                SystemInit();
-        }
-
 	/* Init the delay system */
 	PIOS_DELAY_Init();
 
@@ -71,6 +66,18 @@ void PIOS_SYS_Init(bool do_CMIS_INIT)
 	/* Initialise Basic NVIC */
 	NVIC_Configuration();
 
+}
+
+/**
+* Perform the CMSIS init and nitialises all system peripherals
+*/
+void PIOS_SYS_Init()
+{
+	/* Setup STM32 system (RCC, clock, PLL and Flash configuration) - CMSIS Function */
+        SystemInit();
+
+        /* Perform the reset of the initialization */
+        PIOS_SYS_Init_No_CMSIS_Init();
 }
 
 /**

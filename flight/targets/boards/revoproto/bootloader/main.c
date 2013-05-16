@@ -73,7 +73,7 @@ uint8_t processRX();
 void jump_to_app();
 
 int main() {
-	PIOS_SYS_Init(true);
+	PIOS_SYS_Init();
 	PIOS_Board_Init();
 	PIOS_IAP_Init();
 

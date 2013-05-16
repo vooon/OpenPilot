@@ -59,7 +59,7 @@ int main()
 	/* Any new initialization functions should be added in OpenPilotInit() */
 
 	/* Brings up System using CMSIS functions, enables the LEDs. */
-	PIOS_SYS_Init(true);
+	PIOS_SYS_Init();
 
 	/* Architecture dependant Hardware and
 	 * core subsystem initialisation
