@@ -35,8 +35,6 @@
 #define PIOS_SYS_SERIAL_NUM_BINARY_LEN 12
 #define PIOS_SYS_SERIAL_NUM_ASCII_LEN (PIOS_SYS_SERIAL_NUM_BINARY_LEN * 2)
 
-#include <stdbool.h>
-
 /* Public Functions */
 extern void PIOS_SYS_Init_No_CMSIS_Init();
 extern void PIOS_SYS_Init();
