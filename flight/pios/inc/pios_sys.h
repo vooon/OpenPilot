@@ -36,8 +36,7 @@
 #define PIOS_SYS_SERIAL_NUM_ASCII_LEN (PIOS_SYS_SERIAL_NUM_BINARY_LEN * 2)
 
 /* Public Functions */
-extern void PIOS_SYS_Init_No_CMSIS_Init();
-extern void PIOS_SYS_Init();
+extern void PIOS_SYS_Init(void);
 extern int32_t PIOS_SYS_Reset(void);
 extern uint32_t PIOS_SYS_getCPUFlashSize(void);
 extern int32_t PIOS_SYS_SerialNumberGetBinary(uint8_t array[PIOS_SYS_SERIAL_NUM_BINARY_LEN]);
