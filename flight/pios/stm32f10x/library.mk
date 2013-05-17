@@ -25,7 +25,6 @@ SRC			+= $(sort $(wildcard $(PIOS_DEVLIB)*.c))
 include $(PIOS)/common/libraries/CMSIS2/library.mk
 CMSIS_DIR		= $(PIOS_DEVLIB)libraries/CMSIS/Core/CM3
 SRC			+= $(CMSIS_DIR)/core_cm3.c
-SRC			+= $(CMSIS_DIR)/system_stm32f10x.c
 EXTRAINCDIRS		+= $(CMSIS_DIR)
 
 # ST Peripheral library

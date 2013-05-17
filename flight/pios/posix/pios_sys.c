@@ -43,7 +43,7 @@ void SysTick_Handler(void);
 /**
 * Initialises all system peripherals
 */
-void PIOS_SYS_Init()
+void PIOS_SYS_Init(void)
 {
 
 	/**

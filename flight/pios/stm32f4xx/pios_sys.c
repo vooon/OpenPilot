@@ -43,10 +43,12 @@ void SysTick_Handler(void);
 #define MEM32(addr)  (*((volatile uint32_t  *)(addr)))
 
 /**
-* Initialises all system peripherals
-*/
-void PIOS_SYS_Init_No_CMSIS_Init()
+ * Initialises all system peripherals
+ */
+void PIOS_SYS_Init(void)
 {
+    /* Setup STM32 system (RCC, clock, PLL and Flash configuration) - CMSIS Function */
+    SystemInit();
     SystemCoreClockUpdate(); /* update SystemCoreClock for use elsewhere */
 
     /*
@@ -171,18 +173,6 @@ void PIOS_SYS_Init_No_CMSIS_Init()
     GPIO_Init(GPIOG, &GPIO_InitStructure);
     GPIO_Init(GPIOH, &GPIO_InitStructure);
     GPIO_Init(GPIOI, &GPIO_InitStructure);
-}
-
-/**
-* Perform the CMSIS init and nitialises all system peripherals
-*/
-void PIOS_SYS_Init()
-{
-	/* Setup STM32 system (RCC, clock, PLL and Flash configuration) - CMSIS Function */
-        SystemInit();
-
-        /* Perform the reset of the initialization */
-        PIOS_SYS_Init_No_CMSIS_Init();
 }
 
 /**
