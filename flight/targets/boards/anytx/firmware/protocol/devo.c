@@ -197,27 +197,27 @@ static s32 float_to_int(u8 *ptr)
     }
     return value;
 }
-static void parse_telemetry_packet(u8 *packet)
+static void parse_telemetry_packet(u8 *lpacket)
 {
-    if((packet[0] & 0xF0) != 0x30)
+    if((lpacket[0] & 0xF0) != 0x30)
         return;
     scramble_pkt(); //This will unscramble the packet
-    //if (packet[0] < 0x37) {
-    //    memcpy(Telemetry.line[packet[0]-0x30], packet+1, 12);
+    //if (lpacket[0] < 0x37) {
+    //    memcpy(Telemetry.line[lpacket[0]-0x30], lpacket+1, 12);
     //}
-    if (packet[0] == TELEMETRY_ENABLE) {
-        Telemetry.volt[0] = packet[1]; //In 1/10 of Volts
-        Telemetry.volt[1] = packet[3]; //In 1/10 of Volts
-        Telemetry.volt[2] = packet[5]; //In 1/10 of Volts
-        Telemetry.rpm[0]  = packet[7] * 120; //In RPM
-        Telemetry.rpm[1]  = packet[9] * 120; //In RPM
+    if (lpacket[0] == TELEMETRY_ENABLE) {
+        Telemetry.volt[0] = lpacket[1]; //In 1/10 of Volts
+        Telemetry.volt[1] = lpacket[3]; //In 1/10 of Volts
+        Telemetry.volt[2] = lpacket[5]; //In 1/10 of Volts
+        Telemetry.rpm[0]  = lpacket[7] * 120; //In RPM
+        Telemetry.rpm[1]  = lpacket[9] * 120; //In RPM
         //Telemetry.time[0] = CLOCK_getms();
     }
-    if (packet[0] == 0x31) {
-        Telemetry.temp[0] = packet[1] == 0xff ? 0 : packet[1] - 20; //In degrees-C
-        Telemetry.temp[1] = packet[2] == 0xff ? 0 : packet[2] - 20; //In degrees-C
-        Telemetry.temp[2] = packet[3] == 0xff ? 0 : packet[3] - 20; //In degrees-C
-        Telemetry.temp[3] = packet[3] == 0xff ? 0 : packet[4] - 20; //In degrees-C
+    if (lpacket[0] == 0x31) {
+        Telemetry.temp[0] = lpacket[1] == 0xff ? 0 : lpacket[1] - 20; //In degrees-C
+        Telemetry.temp[1] = lpacket[2] == 0xff ? 0 : lpacket[2] - 20; //In degrees-C
+        Telemetry.temp[2] = lpacket[3] == 0xff ? 0 : lpacket[3] - 20; //In degrees-C
+        Telemetry.temp[3] = lpacket[3] == 0xff ? 0 : lpacket[4] - 20; //In degrees-C
         //Telemetry.time[1] = CLOCK_getms();
     }
     /* GPS Data
@@ -227,40 +227,40 @@ static void parse_telemetry_packet(u8 *packet)
        35: 000000000000302e30300000  = 0.00 (probably speed)
        36: 313832353532313531303132  = 2012-10-15 18:25:52 (UTC)
     */
-    if (packet[0] == 0x32) {
+    if (lpacket[0] == 0x32) {
         //Telemetry.time[2] = CLOCK_getms();
-        Telemetry.gps.longitude = ((packet[1]-'0') * 100 + (packet[2]-'0') * 10 + (packet[3]-'0')) * 3600000
-                                  + ((packet[4]-'0') * 10 + (packet[5]-'0')) * 60000
-                                  + ((packet[7]-'0') * 1000 + (packet[8]-'0') * 100
-                                     + (packet[9]-'0') * 10 + (packet[10]-'0')) * 6;
-        if (packet[11] == 'W')
+        Telemetry.gps.longitude = ((lpacket[1]-'0') * 100 + (lpacket[2]-'0') * 10 + (lpacket[3]-'0')) * 3600000
+                                  + ((lpacket[4]-'0') * 10 + (lpacket[5]-'0')) * 60000
+                                  + ((lpacket[7]-'0') * 1000 + (lpacket[8]-'0') * 100
+                                     + (lpacket[9]-'0') * 10 + (lpacket[10]-'0')) * 6;
+        if (lpacket[11] == 'W')
             Telemetry.gps.longitude *= -1;
     }
-    if (packet[0] == 0x33) {
+    if (lpacket[0] == 0x33) {
         //Telemetry.time[2] = CLOCK_getms();
-        Telemetry.gps.latitude = ((packet[1]-'0') * 10 + (packet[2]-'0')) * 3600000
-                                  + ((packet[3]-'0') * 10 + (packet[4]-'0')) * 60000
-                                  + ((packet[6]-'0') * 1000 + (packet[7]-'0') * 100
-                                     + (packet[8]-'0') * 10 + (packet[9]-'0')) * 6;
-        if (packet[10] == 'S')
+        Telemetry.gps.latitude = ((lpacket[1]-'0') * 10 + (lpacket[2]-'0')) * 3600000
+                                  + ((lpacket[3]-'0') * 10 + (lpacket[4]-'0')) * 60000
+                                  + ((lpacket[6]-'0') * 1000 + (lpacket[7]-'0') * 100
+                                     + (lpacket[8]-'0') * 10 + (lpacket[9]-'0')) * 6;
+        if (lpacket[10] == 'S')
             Telemetry.gps.latitude *= -1;
     }
-    if (packet[0] == 0x34) {
+    if (lpacket[0] == 0x34) {
         //Telemetry.time[2] = CLOCK_getms();
-        Telemetry.gps.altitude = float_to_int(packet+1);
+        Telemetry.gps.altitude = float_to_int(lpacket+1);
     }
-    if (packet[0] == 0x35) {
+    if (lpacket[0] == 0x35) {
         //Telemetry.time[2] = CLOCK_getms();
-        Telemetry.gps.velocity = float_to_int(packet+7);
+        Telemetry.gps.velocity = float_to_int(lpacket+7);
     }
-    if (packet[0] == 0x36) {
+    if (lpacket[0] == 0x36) {
         //Telemetry.time[2] = CLOCK_getms();
-        u8 hour  = (packet[1]-'0') * 10 + (packet[2]-'0');
-        u8 min   = (packet[3]-'0') * 10 + (packet[4]-'0');
-        u8 sec   = (packet[5]-'0') * 10 + (packet[6]-'0');
-        u8 day   = (packet[7]-'0') * 10 + (packet[8]-'0');
-        u8 month = (packet[9]-'0') * 10 + (packet[10]-'0');
-        u8 year  = (packet[11]-'0') * 10 + (packet[12]-'0'); // + 2000
+        u8 hour  = (lpacket[1]-'0') * 10 + (lpacket[2]-'0');
+        u8 min   = (lpacket[3]-'0') * 10 + (lpacket[4]-'0');
+        u8 sec   = (lpacket[5]-'0') * 10 + (lpacket[6]-'0');
+        u8 day   = (lpacket[7]-'0') * 10 + (lpacket[8]-'0');
+        u8 month = (lpacket[9]-'0') * 10 + (lpacket[10]-'0');
+        u8 year  = (lpacket[11]-'0') * 10 + (lpacket[12]-'0'); // + 2000
         Telemetry.gps.time = ((year & 0x3F) << 26)
                            | ((month & 0x0F) << 22)
                            | ((day & 0x1F) << 17)

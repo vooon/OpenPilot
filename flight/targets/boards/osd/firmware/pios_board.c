@@ -105,6 +105,8 @@ uint32_t pios_com_gps_id;
 uint32_t pios_com_telem_usb_id;
 uint32_t pios_com_telem_rf_id;
 
+uintptr_t pios_uavo_settings_fs_id;
+
 /**
  * TIM3 is triggered by the HSYNC signal into its ETR line and will divide the 
  *  APB1_CLOCK to generate a pixel clock that is used by the SPI CLK lines.
@@ -162,11 +164,10 @@ void PIOS_Board_Init(void) {
 #endif
 #endif /* PIOS_INCLUDE_SPI */
 
-#ifdef PIOS_INCLUDE_FLASH_SECTOR_SETTINGS
+#ifdef PIOS_INCLUDE_FLASH_LOGFS_SETTINGS
 uintptr_t flash_id;
-uintptr_t fs_id;
 PIOS_Flash_Internal_Init(&flash_id, &flash_internal_cfg);
-PIOS_FLASHFS_Logfs_Init(&fs_id, &flashfs_internal_cfg, &pios_internal_flash_driver, flash_id);
+PIOS_FLASHFS_Logfs_Init(&pios_uavo_settings_fs_id, &flashfs_internal_cfg, &pios_internal_flash_driver, flash_id);
 #elif !defined(PIOS_USE_SETTINGS_ON_SDCARD)
 #error No setting storage specified. (define PIOS_USE_SETTINGS_ON_SDCARD or INCLUDE_FLASH_SECTOR_SETTINGS)
 #endif
@@ -343,10 +344,10 @@ PIOS_FLASHFS_Logfs_Init(&fs_id, &flashfs_internal_cfg, &pios_internal_flash_driv
 		PIOS_Assert(0);
 	}
 
-	uint8_t * rx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_GPS_RX_BUF_LEN);
-	PIOS_Assert(rx_buffer);
+	uint8_t *gps_rx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_GPS_RX_BUF_LEN);
+	PIOS_Assert(gps_rx_buffer);
 	if (PIOS_COM_Init(&pios_com_gps_id, &pios_usart_com_driver, pios_usart_gps_id,
-					  rx_buffer, PIOS_COM_GPS_RX_BUF_LEN,
+					  gps_rx_buffer, PIOS_COM_GPS_RX_BUF_LEN,
 					  NULL, 0)) {
 		PIOS_Assert(0);
 	}
@@ -361,14 +362,14 @@ PIOS_FLASHFS_Logfs_Init(&fs_id, &flashfs_internal_cfg, &pios_internal_flash_driv
 			PIOS_DEBUG_Assert(0);
 		}
 
-		uint8_t * rx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_AUX_RX_BUF_LEN);
-		uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_AUX_TX_BUF_LEN);
-		PIOS_Assert(rx_buffer);
-		PIOS_Assert(tx_buffer);
+		uint8_t *aux_rx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_AUX_RX_BUF_LEN);
+		uint8_t *aux_tx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_AUX_TX_BUF_LEN);
+		PIOS_Assert(aux_rx_buffer);
+		PIOS_Assert(aux_tx_buffer);
 
 		if (PIOS_COM_Init(&pios_com_aux_id, &pios_usart_com_driver, pios_usart_aux_id,
-						  rx_buffer, PIOS_COM_AUX_RX_BUF_LEN,
-						  tx_buffer, PIOS_COM_AUX_TX_BUF_LEN)) {
+						  aux_rx_buffer, PIOS_COM_AUX_RX_BUF_LEN,
+						  aux_tx_buffer, PIOS_COM_AUX_TX_BUF_LEN)) {
 			PIOS_DEBUG_Assert(0);
 		}
 	}
@@ -383,13 +384,13 @@ PIOS_FLASHFS_Logfs_Init(&fs_id, &flashfs_internal_cfg, &pios_internal_flash_driv
 			PIOS_Assert(0);
 		}
 
-		uint8_t * rx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_TELEM_RF_RX_BUF_LEN);
-		uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_TELEM_RF_TX_BUF_LEN);
-		PIOS_Assert(rx_buffer);
-		PIOS_Assert(tx_buffer);
+		uint8_t *telem_rx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_TELEM_RF_RX_BUF_LEN);
+		uint8_t *telem_tx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_TELEM_RF_TX_BUF_LEN);
+		PIOS_Assert(telem_rx_buffer);
+		PIOS_Assert(telem_tx_buffer);
 		if (PIOS_COM_Init(&pios_com_telem_rf_id, &pios_usart_com_driver, pios_usart_telem_rf_id,
-						  rx_buffer, PIOS_COM_TELEM_RF_RX_BUF_LEN,
-						  tx_buffer, PIOS_COM_TELEM_RF_TX_BUF_LEN)) {
+						  telem_rx_buffer, PIOS_COM_TELEM_RF_RX_BUF_LEN,
+						  telem_tx_buffer, PIOS_COM_TELEM_RF_TX_BUF_LEN)) {
 			PIOS_Assert(0);
 		}
 	}

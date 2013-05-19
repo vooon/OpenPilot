@@ -1,9 +1,9 @@
 /**
  ******************************************************************************
  *
- * @file       pios_flash_internal.c
+ * @file       pios_flash_internal.c  
  * @author     The OpenPilot Team, http://www.openpilot.org Copyright (C) 2013.
- * @brief      brief goes here.
+ * @brief      brief goes here. 
  *             --
  * @see        The GNU Public License (GPL) Version 3
  *

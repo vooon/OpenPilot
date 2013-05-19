@@ -99,6 +99,29 @@ const struct pios_led_cfg * PIOS_BOARD_HW_DEFS_GetLedCfg (__attribute__((unused)
 
 #endif	/* PIOS_INCLUDE_LED */
 
+#if defined(PIOS_INCLUDE_FLASH)
+#include "pios_flashfs_logfs_priv.h"
+#include "pios_flash_internal_priv.h"
+
+static const struct pios_flash_internal_cfg flash_internal_cfg = {
+};
+
+static const struct flashfs_logfs_cfg flashfs_internal_cfg = {
+    .fs_magic = 0x99abcfef,
+    .total_fs_size = EE_BANK_SIZE, /* 2K bytes (2x1KB sectors) */
+    .arena_size = 0x00002000, /* 4 * slot size = 1K bytes = 1 sector */
+    .slot_size = 0x00000100, /* 256 bytes */
+
+    .start_offset = EE_BANK_BASE, /* start after the bootloader */
+    .sector_size = 0x00000400, /* 1K bytes */
+    .page_size = 0x00000400, /* 1K bytes */
+};
+
+#include "pios_flash.h"
+
+#endif /* PIOS_INCLUDE_FLASH */
+
+
 #if defined(PIOS_INCLUDE_SPI)
 
 #include <pios_spi_priv.h>
@@ -582,8 +605,6 @@ const struct pios_ppm_cfg pios_ppm_main_cfg = {
 #if defined(PIOS_INCLUDE_PPM_OUT)
 #include <pios_ppm_out_priv.h>
 
-uint32_t pios_ppm_id;
-
 static const struct pios_tim_channel pios_tim_ppmout[] = {
 	{
 		.timer = TIM2,
@@ -640,7 +661,8 @@ static const struct pios_usb_cfg pios_usb_main_cfg = {
 			.GPIO_Speed = GPIO_Speed_10MHz,
 			.GPIO_Mode  = GPIO_Mode_AF_OD,
 		},
-	}
+        },
+        .vsense_active_low = false
 };
 
 #include "pios_usb_board_data_priv.h"

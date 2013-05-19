@@ -76,6 +76,8 @@ uint32_t pios_rfm22b_id = 0;
 
 uint32_t pios_spi_port_id = 0;
 
+uintptr_t pios_uavo_settings_fs_id;
+
 /**
  * PIOS_Board_Init()
  * initializes all the core subsystems on this specific hardware
@@ -86,13 +88,10 @@ void PIOS_Board_Init(void) {
 	/* Delay system */
 	PIOS_DELAY_Init();
 
-#ifdef PIOS_INCLUDE_FLASH_SECTOR_SETTINGS
-uintptr_t flash_id;
-uintptr_t fs_id;
-PIOS_Flash_Internal_Init(&flash_id, &flash_internal_cfg);
-PIOS_FLASHFS_Logfs_Init(&fs_id, &flashfs_internal_cfg, &pios_internal_flash_driver, flash_id);
-#elif !defined(PIOS_USE_SETTINGS_ON_SDCARD)
-#error No setting storage specified. (define PIOS_USE_SETTINGS_ON_SDCARD or INCLUDE_FLASH_SECTOR_SETTINGS)
+#ifdef PIOS_INCLUDE_FLASH_LOGFS_SETTINGS
+    uintptr_t flash_id;
+    PIOS_Flash_Internal_Init(&flash_id, &flash_internal_cfg);
+    PIOS_FLASHFS_Logfs_Init(&pios_uavo_settings_fs_id, &flashfs_internal_cfg, &pios_internal_flash_driver, flash_id);
 #endif
 
 	/* Initialize UAVObject libraries */
@@ -123,7 +122,7 @@ PIOS_FLASHFS_Logfs_Init(&fs_id, &flashfs_internal_cfg, &pios_internal_flash_driv
        PIOS_IAP_ReadBootCmd(1) == PIOS_IAP_CLEAR_FLASH_CMD_1 &&
        PIOS_IAP_ReadBootCmd(2) == PIOS_IAP_CLEAR_FLASH_CMD_2)
     {
-        PIOS_FLASHFS_Format(fs_id);
+        PIOS_FLASHFS_Format(pios_uavo_settings_fs_id);
         PIOS_IAP_WriteBootCmd(0,0);
         PIOS_IAP_WriteBootCmd(1,0);
         PIOS_IAP_WriteBootCmd(2,0);
@@ -237,7 +236,6 @@ PIOS_FLASHFS_Logfs_Init(&fs_id, &flashfs_internal_cfg, &pios_internal_flash_driv
 	uint32_t pios_ppm_id;
 	PIOS_PPM_Init(&pios_ppm_id, &pios_ppm_cfg);
 
-	uint32_t pios_ppm_rcvr_id;
 	if (PIOS_RCVR_Init(&pios_ppm_rcvr_id, &pios_ppm_rcvr_driver, pios_ppm_id)) {
 		PIOS_Assert(0);
 	}

@@ -36,3 +36,5 @@ EE_BANK_BASE        := 0x0801F000  # EEPROM storage area
 EE_BANK_SIZE        := 0x00001000  # Size of EEPROM storage area
 
 FW_DESC_SIZE        := 0x00000064
+
+OSCILLATOR_FREQ     := 8000000

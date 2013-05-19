@@ -120,6 +120,7 @@ CFLAGS += -mapcs-frame
 CFLAGS += -fomit-frame-pointer
 CFLAGS += -Wall -Wextra
 CFLAGS += -Wfloat-equal -Wunsuffixed-float-constants -Wdouble-promotion
+CFLAGS += -Wshadow
 CFLAGS += -Werror
 CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS)) -I.
 CFLAGS += -Wa,-adhlns=$(addprefix $(OUTDIR)/, $(notdir $(addsuffix .lst, $(basename $<))))
@@ -136,7 +137,10 @@ BOARD_CDEFS += -DFW_DESC_SIZE=$(FW_DESC_SIZE)
 BOARD_CDEFS += -DBL_BANK_BASE=$(BL_BANK_BASE)
 BOARD_CDEFS += -DBL_BANK_SIZE=$(BL_BANK_SIZE)
 BOARD_CDEFS += -DBL_DESC_SIZE=$(BL_DESC_SIZE)
-
+ifdef EE_BANK_BASE
+BOARD_CDEFS += -DEE_BANK_BASE=$(EE_BANK_BASE)
+BOARD_CDEFS += -DEE_BANK_SIZE=$(EE_BANK_SIZE)
+endif
 CDEFS += $(BOARD_CDEFS)
 
 ifeq ($(DEBUG), YES)
