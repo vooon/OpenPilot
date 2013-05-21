@@ -1,4 +1,4 @@
- /**
+/**
  ******************************************************************************
  * @addtogroup Radio Protocol hardware abstraction layer
  * @{
@@ -15,18 +15,18 @@
  *****************************************************************************/
 
 /*
- This project is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
+   This project is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
 
- Deviation is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+   Deviation is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with Deviation.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU General Public License
+   along with Deviation.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef _INTERFACE_H_
@@ -57,12 +57,12 @@ extern u16 j6pro_cb();
 
 #endif
 
-#define NUM_CHANNELS 12
+#define NUM_CHANNELS    12
 #define CHAN_MULTIPLIER 100
 #define PCT_TO_RANGE(x) ((s16)(x) * CHAN_MULTIPLIER)
 #define RANGE_TO_PCT(x) ((s16)(x) / CHAN_MULTIPLIER)
-#define CHAN_MAX_VALUE (100 * CHAN_MULTIPLIER)
-#define CHAN_MIN_VALUE (-100 * CHAN_MULTIPLIER)
+#define CHAN_MAX_VALUE  (100 * CHAN_MULTIPLIER)
+#define CHAN_MIN_VALUE  (-100 * CHAN_MULTIPLIER)
 extern s16 Channels[NUM_CHANNELS];
 
 /* Protocol */
@@ -96,7 +96,7 @@ enum TxPower {
     TXPOWER_10mW,
     TXPOWER_30mW,
     TXPOWER_100mW,
-    TXPOWER_150mW, //+4dBm
+    TXPOWER_150mW, // +4dBm
     TXPOWER_LAST,
 };
 
@@ -106,14 +106,14 @@ struct Model {
     char icon[20];
     enum ModelType type;
     enum Protocols protocol;
-    u8 num_channels;
-    u32 fixed_id;
+    u8   num_channels;
+    u32  fixed_id;
     enum TxPower tx_power;
     u8 template[NUM_CHANNELS];
 };
 extern struct Model Model;
 
-#define NUM_TELEM 9
+#define NUM_TELEM        9
 #define TELEM_ERROR_TIME 5000
 #define TELEM_NUM_ALARMS 6
 
@@ -143,8 +143,8 @@ enum {
 };
 
 enum {
-    TELEMUNIT_FEET   = 0x40,
-    TELEMUNIT_FAREN  = 0x80,
+    TELEMUNIT_FEET  = 0x40,
+    TELEMUNIT_FAREN = 0x80,
 };
 struct gps {
     s32 latitude;
@@ -156,10 +156,10 @@ struct gps {
 
 struct Telemetry {
     u16 volt[3];
-    u8 temp[4];
+    u8  temp[4];
     u16 rpm[2];
     struct gps gps;
     u32 time[3];
 };
 extern struct Telemetry Telemetry;
-#endif //_INTERFACE_H_
+#endif // _INTERFACE_H_

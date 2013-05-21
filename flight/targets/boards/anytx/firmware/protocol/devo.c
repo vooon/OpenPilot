@@ -1,4 +1,4 @@
- /**
+/**
  ******************************************************************************
  * @addtogroup Radio Protocol hardware abstraction layer
  * @{
@@ -15,18 +15,18 @@
  *****************************************************************************/
 
 /*
- This project is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
+   This project is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
 
- Deviation is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+   Deviation is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with Deviation.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU General Public License
+   along with Deviation.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <pios.h>
@@ -34,16 +34,16 @@
 
 #ifdef PROTO_HAS_CYRF6936
 
-//For Debug
-//#define NO_SCRAMBLE
+// For Debug
+// #define NO_SCRAMBLE
 
 #define PKTS_PER_CHANNEL 4
 
 #ifdef EMULATOR
 #include <stdlib.h>
-#define BIND_COUNT 4
+#define BIND_COUNT       4
 #else
-#define BIND_COUNT 0x1388
+#define BIND_COUNT       0x1388
 #endif
 
 #define TELEMETRY_ENABLE 0x30
@@ -66,16 +66,16 @@ enum PktState {
 
 static const u8 sopcodes[][8] = {
     /* Note these are in order transmitted (LSB 1st) */
-    /* 0 */ {0x3C,0x37,0xCC,0x91,0xE2,0xF8,0xCC,0x91}, //0x91CCF8E291CC373C
-    /* 1 */ {0x9B,0xC5,0xA1,0x0F,0xAD,0x39,0xA2,0x0F}, //0x0FA239AD0FA1C59B
-    /* 2 */ {0xEF,0x64,0xB0,0x2A,0xD2,0x8F,0xB1,0x2A}, //0x2AB18FD22AB064EF
-    /* 3 */ {0x66,0xCD,0x7C,0x50,0xDD,0x26,0x7C,0x50}, //0x507C26DD507CCD66
-    /* 4 */ {0x5C,0xE1,0xF6,0x44,0xAD,0x16,0xF6,0x44}, //0x44F616AD44F6E15C
-    /* 5 */ {0x5A,0xCC,0xAE,0x46,0xB6,0x31,0xAE,0x46}, //0x46AE31B646AECC5A
-    /* 6 */ {0xA1,0x78,0xDC,0x3C,0x9E,0x82,0xDC,0x3C}, //0x3CDC829E3CDC78A1
-    /* 7 */ {0xB9,0x8E,0x19,0x74,0x6F,0x65,0x18,0x74}, //0x7418656F74198EB9
-    /* 8 */ {0xDF,0xB1,0xC0,0x49,0x62,0xDF,0xC1,0x49}, //0x49C1DF6249C0B1DF
-    /* 9 */ {0x97,0xE5,0x14,0x72,0x7F,0x1A,0x14,0x72}, //0x72141A7F7214E597
+    /* 0 */ { 0x3C, 0x37, 0xCC, 0x91, 0xE2, 0xF8, 0xCC, 0x91 }, // 0x91CCF8E291CC373C
+    /* 1 */ { 0x9B, 0xC5, 0xA1, 0x0F, 0xAD, 0x39, 0xA2, 0x0F }, // 0x0FA239AD0FA1C59B
+    /* 2 */ { 0xEF, 0x64, 0xB0, 0x2A, 0xD2, 0x8F, 0xB1, 0x2A }, // 0x2AB18FD22AB064EF
+    /* 3 */ { 0x66, 0xCD, 0x7C, 0x50, 0xDD, 0x26, 0x7C, 0x50 }, // 0x507C26DD507CCD66
+    /* 4 */ { 0x5C, 0xE1, 0xF6, 0x44, 0xAD, 0x16, 0xF6, 0x44 }, // 0x44F616AD44F6E15C
+    /* 5 */ { 0x5A, 0xCC, 0xAE, 0x46, 0xB6, 0x31, 0xAE, 0x46 }, // 0x46AE31B646AECC5A
+    /* 6 */ { 0xA1, 0x78, 0xDC, 0x3C, 0x9E, 0x82, 0xDC, 0x3C }, // 0x3CDC829E3CDC78A1
+    /* 7 */ { 0xB9, 0x8E, 0x19, 0x74, 0x6F, 0x65, 0x18, 0x74 }, // 0x7418656F74198EB9
+    /* 8 */ { 0xDF, 0xB1, 0xC0, 0x49, 0x62, 0xDF, 0xC1, 0x49 }, // 0x49C1DF6249C0B1DF
+    /* 9 */ { 0x97, 0xE5, 0x14, 0x72, 0x7F, 0x1A, 0x14, 0x72 }, // 0x72141A7F7214E597
 };
 
 
@@ -97,9 +97,10 @@ static void scramble_pkt()
 {
 #ifdef NO_SCRAMBLE
     return;
+
 #else
     u8 i;
-    for(i = 0; i < 15; i++) {
+    for (i = 0; i < 15; i++) {
         packet[i + 1] ^= cyrfmfg_id[i % 4];
     }
 #endif
@@ -108,6 +109,7 @@ static void scramble_pkt()
 static void add_pkt_suffix()
 {
     u8 bind_state;
+
     if (use_fixed_id) {
         if (bind_counter > 0) {
             bind_state = 0xc0;
@@ -120,7 +122,7 @@ static void add_pkt_suffix()
     packet[10] = bind_state | (PKTS_PER_CHANNEL - pkt_num - 1);
     packet[11] = *(radio_ch_ptr + 1);
     packet[12] = *(radio_ch_ptr + 2);
-    packet[13] = fixed_id  & 0xff;
+    packet[13] = fixed_id & 0xff;
     packet[14] = (fixed_id >> 8) & 0xff;
     packet[15] = (fixed_id >> 16) & 0xff;
 }
@@ -146,8 +148,8 @@ static void build_bind_pkt()
     packet[8] = cyrfmfg_id[2];
     packet[9] = cyrfmfg_id[3];
     add_pkt_suffix();
-    //The fixed-id portion is scrambled in the bind packet
-    //I assume it is ignored
+    // The fixed-id portion is scrambled in the bind packet
+    // I assume it is ignored
     packet[13] ^= cyrfmfg_id[0];
     packet[14] ^= cyrfmfg_id[1];
     packet[15] ^= cyrfmfg_id[2];
@@ -156,11 +158,12 @@ static void build_bind_pkt()
 static void build_data_pkt()
 {
     u8 i;
+
     packet[0] = (num_channels << 4) | (0x0b + ch_idx);
     u8 sign = 0x0b;
     for (i = 0; i < 4; i++) {
         s32 value = (s32)Channels[ch_idx * 4 + i] * 0x640 / CHAN_MAX_VALUE;
-        if(value < 0) {
+        if (value < 0) {
             value = -value;
             sign |= 1 << (7 - i);
         }
@@ -168,9 +171,10 @@ static void build_data_pkt()
         packet[2 * i + 2] = (value >> 8) & 0xff;
     }
     packet[9] = sign;
-    ch_idx = ch_idx + 1;
-    if (ch_idx * 4 >= num_channels)
+    ch_idx    = ch_idx + 1;
+    if (ch_idx * 4 >= num_channels) {
         ch_idx = 0;
+    }
     add_pkt_suffix();
 }
 
@@ -178,19 +182,22 @@ static s32 float_to_int(u8 *ptr)
 {
     s32 value = 0;
     int seen_decimal = 0;
-    for(int i = 0; i < 7; i++) {
-        if(ptr[i] == '.') {
+
+    for (int i = 0; i < 7; i++) {
+        if (ptr[i] == '.') {
             value *= 1000;
             seen_decimal = 100;
             continue;
         }
-        if(ptr[i] == 0)
+        if (ptr[i] == 0) {
             break;
-        if(seen_decimal) {
+        }
+        if (seen_decimal) {
             value += (ptr[i] - '0') * seen_decimal;
             seen_decimal /= 10;
-            if(! seen_decimal)
+            if (!seen_decimal) {
                 break;
+            }
         } else {
             value = value * 10 + (ptr[i] - '0');
         }
@@ -199,26 +206,27 @@ static s32 float_to_int(u8 *ptr)
 }
 static void parse_telemetry_packet(u8 *lpacket)
 {
-    if((lpacket[0] & 0xF0) != 0x30)
+    if ((lpacket[0] & 0xF0) != 0x30) {
         return;
-    scramble_pkt(); //This will unscramble the packet
-    //if (lpacket[0] < 0x37) {
-    //    memcpy(Telemetry.line[lpacket[0]-0x30], lpacket+1, 12);
-    //}
+    }
+    scramble_pkt(); // This will unscramble the packet
+    // if (lpacket[0] < 0x37) {
+    // memcpy(Telemetry.line[lpacket[0]-0x30], lpacket+1, 12);
+    // }
     if (lpacket[0] == TELEMETRY_ENABLE) {
-        Telemetry.volt[0] = lpacket[1]; //In 1/10 of Volts
-        Telemetry.volt[1] = lpacket[3]; //In 1/10 of Volts
-        Telemetry.volt[2] = lpacket[5]; //In 1/10 of Volts
-        Telemetry.rpm[0]  = lpacket[7] * 120; //In RPM
-        Telemetry.rpm[1]  = lpacket[9] * 120; //In RPM
-        //Telemetry.time[0] = CLOCK_getms();
+        Telemetry.volt[0] = lpacket[1]; // In 1/10 of Volts
+        Telemetry.volt[1] = lpacket[3]; // In 1/10 of Volts
+        Telemetry.volt[2] = lpacket[5]; // In 1/10 of Volts
+        Telemetry.rpm[0]  = lpacket[7] * 120; // In RPM
+        Telemetry.rpm[1]  = lpacket[9] * 120; // In RPM
+        // Telemetry.time[0] = CLOCK_getms();
     }
     if (lpacket[0] == 0x31) {
-        Telemetry.temp[0] = lpacket[1] == 0xff ? 0 : lpacket[1] - 20; //In degrees-C
-        Telemetry.temp[1] = lpacket[2] == 0xff ? 0 : lpacket[2] - 20; //In degrees-C
-        Telemetry.temp[2] = lpacket[3] == 0xff ? 0 : lpacket[3] - 20; //In degrees-C
-        Telemetry.temp[3] = lpacket[3] == 0xff ? 0 : lpacket[4] - 20; //In degrees-C
-        //Telemetry.time[1] = CLOCK_getms();
+        Telemetry.temp[0] = lpacket[1] == 0xff ? 0 : lpacket[1] - 20; // In degrees-C
+        Telemetry.temp[1] = lpacket[2] == 0xff ? 0 : lpacket[2] - 20; // In degrees-C
+        Telemetry.temp[2] = lpacket[3] == 0xff ? 0 : lpacket[3] - 20; // In degrees-C
+        Telemetry.temp[3] = lpacket[3] == 0xff ? 0 : lpacket[4] - 20; // In degrees-C
+        // Telemetry.time[1] = CLOCK_getms();
     }
     /* GPS Data
        32: 30333032302e3832373045fb  = 030°20.8270E
@@ -226,58 +234,61 @@ static void parse_telemetry_packet(u8 *lpacket)
        34: 31322e380000004d4d4e45fb  = 12.8 MMNE (altitude maybe)?
        35: 000000000000302e30300000  = 0.00 (probably speed)
        36: 313832353532313531303132  = 2012-10-15 18:25:52 (UTC)
-    */
+     */
     if (lpacket[0] == 0x32) {
-        //Telemetry.time[2] = CLOCK_getms();
-        Telemetry.gps.longitude = ((lpacket[1]-'0') * 100 + (lpacket[2]-'0') * 10 + (lpacket[3]-'0')) * 3600000
-                                  + ((lpacket[4]-'0') * 10 + (lpacket[5]-'0')) * 60000
-                                  + ((lpacket[7]-'0') * 1000 + (lpacket[8]-'0') * 100
-                                     + (lpacket[9]-'0') * 10 + (lpacket[10]-'0')) * 6;
-        if (lpacket[11] == 'W')
+        // Telemetry.time[2] = CLOCK_getms();
+        Telemetry.gps.longitude = ((lpacket[1] - '0') * 100 + (lpacket[2] - '0') * 10 + (lpacket[3] - '0')) * 3600000
+                                  + ((lpacket[4] - '0') * 10 + (lpacket[5] - '0')) * 60000
+                                  + ((lpacket[7] - '0') * 1000 + (lpacket[8] - '0') * 100
+                                     + (lpacket[9] - '0') * 10 + (lpacket[10] - '0')) * 6;
+        if (lpacket[11] == 'W') {
             Telemetry.gps.longitude *= -1;
+        }
     }
     if (lpacket[0] == 0x33) {
-        //Telemetry.time[2] = CLOCK_getms();
-        Telemetry.gps.latitude = ((lpacket[1]-'0') * 10 + (lpacket[2]-'0')) * 3600000
-                                  + ((lpacket[3]-'0') * 10 + (lpacket[4]-'0')) * 60000
-                                  + ((lpacket[6]-'0') * 1000 + (lpacket[7]-'0') * 100
-                                     + (lpacket[8]-'0') * 10 + (lpacket[9]-'0')) * 6;
-        if (lpacket[10] == 'S')
+        // Telemetry.time[2] = CLOCK_getms();
+        Telemetry.gps.latitude = ((lpacket[1] - '0') * 10 + (lpacket[2] - '0')) * 3600000
+                                 + ((lpacket[3] - '0') * 10 + (lpacket[4] - '0')) * 60000
+                                 + ((lpacket[6] - '0') * 1000 + (lpacket[7] - '0') * 100
+                                    + (lpacket[8] - '0') * 10 + (lpacket[9] - '0')) * 6;
+        if (lpacket[10] == 'S') {
             Telemetry.gps.latitude *= -1;
+        }
     }
     if (lpacket[0] == 0x34) {
-        //Telemetry.time[2] = CLOCK_getms();
-        Telemetry.gps.altitude = float_to_int(lpacket+1);
+        // Telemetry.time[2] = CLOCK_getms();
+        Telemetry.gps.altitude = float_to_int(lpacket + 1);
     }
     if (lpacket[0] == 0x35) {
-        //Telemetry.time[2] = CLOCK_getms();
-        Telemetry.gps.velocity = float_to_int(lpacket+7);
+        // Telemetry.time[2] = CLOCK_getms();
+        Telemetry.gps.velocity = float_to_int(lpacket + 7);
     }
     if (lpacket[0] == 0x36) {
-        //Telemetry.time[2] = CLOCK_getms();
-        u8 hour  = (lpacket[1]-'0') * 10 + (lpacket[2]-'0');
-        u8 min   = (lpacket[3]-'0') * 10 + (lpacket[4]-'0');
-        u8 sec   = (lpacket[5]-'0') * 10 + (lpacket[6]-'0');
-        u8 day   = (lpacket[7]-'0') * 10 + (lpacket[8]-'0');
-        u8 month = (lpacket[9]-'0') * 10 + (lpacket[10]-'0');
-        u8 year  = (lpacket[11]-'0') * 10 + (lpacket[12]-'0'); // + 2000
+        // Telemetry.time[2] = CLOCK_getms();
+        u8 hour  = (lpacket[1] - '0') * 10 + (lpacket[2] - '0');
+        u8 min   = (lpacket[3] - '0') * 10 + (lpacket[4] - '0');
+        u8 sec   = (lpacket[5] - '0') * 10 + (lpacket[6] - '0');
+        u8 day   = (lpacket[7] - '0') * 10 + (lpacket[8] - '0');
+        u8 month = (lpacket[9] - '0') * 10 + (lpacket[10] - '0');
+        u8 year  = (lpacket[11] - '0') * 10 + (lpacket[12] - '0'); // + 2000
         Telemetry.gps.time = ((year & 0x3F) << 26)
-                           | ((month & 0x0F) << 22)
-                           | ((day & 0x1F) << 17)
-                           | ((hour & 0x1F) << 12)
-                           | ((min & 0x3F) << 6)
-                           | ((sec & 0x3F) << 0);
+                             | ((month & 0x0F) << 22)
+                             | ((day & 0x1F) << 17)
+                             | ((hour & 0x1F) << 12)
+                             | ((min & 0x3F) << 6)
+                             | ((sec & 0x3F) << 0);
     }
-
 }
 
 static void cyrf_set_bound_sop_code()
 {
     /* crc == 0 isn't allowed, so use 1 if the math results in 0 */
     u8 crc = (cyrfmfg_id[0] + (cyrfmfg_id[1] >> 6) + cyrfmfg_id[2]);
-    if(! crc)
+
+    if (!crc) {
         crc = 1;
-    u8 sopidx = (0xff &((cyrfmfg_id[0] << 2) + cyrfmfg_id[1] + cyrfmfg_id[2])) % 10;
+    }
+    u8 sopidx = (0xff & ((cyrfmfg_id[0] << 2) + cyrfmfg_id[1] + cyrfmfg_id[2])) % 10;
     CYRF_ConfigRxTx(1);
     CYRF_ConfigCRCSeed((crc << 8) + crc);
     CYRF_ConfigSOPCode(sopcodes[sopidx]);
@@ -313,55 +324,56 @@ static void cyrf_init()
 
 static void set_radio_channels()
 {
-    //int i;
+    // int i;
     CYRF_FindBestChannels(radio_ch, 3, 4, 4, 80);
     /*printf("Radio Channels:");
-    for (i = 0; i < 3; i++) {
+       for (i = 0; i < 3; i++) {
         printf(" %02x", radio_ch[i]);
-    }
-    printf("\n");*/
-    //Makes code a little easier to duplicate these here
+       }
+       printf("\n");*/
+    // Makes code a little easier to duplicate these here
     radio_ch[3] = radio_ch[0];
     radio_ch[4] = radio_ch[1];
 }
 
 void DEVO_BuildPacket()
 {
-    switch(state) {
-        case DEVO_BIND:
-            bind_counter--;
-            build_bind_pkt();
-            state = DEVO_BIND_SENDCH;
-            break;
-        case DEVO_BIND_SENDCH:
-            bind_counter--;
-            build_data_pkt();
-            scramble_pkt();
-            state = (bind_counter <= 0) ? DEVO_BOUND : DEVO_BIND;
-            break;
-        case DEVO_BOUND:
-        case DEVO_BOUND_1:
-        case DEVO_BOUND_2:
-        case DEVO_BOUND_3:
-        case DEVO_BOUND_4:
-        case DEVO_BOUND_5:
-        case DEVO_BOUND_6:
-        case DEVO_BOUND_7:
-        case DEVO_BOUND_8:
-        case DEVO_BOUND_9:
-            build_data_pkt();
-            scramble_pkt();
-            state++;
-            break;
-        case DEVO_BOUND_10:
-            build_beacon_pkt();
-            scramble_pkt();
-            state = DEVO_BOUND_1;
-            break;
+    switch (state) {
+    case DEVO_BIND:
+        bind_counter--;
+        build_bind_pkt();
+        state = DEVO_BIND_SENDCH;
+        break;
+    case DEVO_BIND_SENDCH:
+        bind_counter--;
+        build_data_pkt();
+        scramble_pkt();
+        state = (bind_counter <= 0) ? DEVO_BOUND : DEVO_BIND;
+        break;
+    case DEVO_BOUND:
+    case DEVO_BOUND_1:
+    case DEVO_BOUND_2:
+    case DEVO_BOUND_3:
+    case DEVO_BOUND_4:
+    case DEVO_BOUND_5:
+    case DEVO_BOUND_6:
+    case DEVO_BOUND_7:
+    case DEVO_BOUND_8:
+    case DEVO_BOUND_9:
+        build_data_pkt();
+        scramble_pkt();
+        state++;
+        break;
+    case DEVO_BOUND_10:
+        build_beacon_pkt();
+        scramble_pkt();
+        state = DEVO_BOUND_1;
+        break;
     }
     pkt_num++;
-    if(pkt_num == PKTS_PER_CHANNEL)
+    if (pkt_num == PKTS_PER_CHANNEL) {
         pkt_num = 0;
+    }
 }
 
 u16 devo_telemetry_cb()
@@ -374,45 +386,47 @@ u16 devo_telemetry_cb()
     }
     int delay = 100;
     if (txState == 1) {
-        while(! (CYRF_ReadRegister(0x04) & 0x02))
+        while (!(CYRF_ReadRegister(0x04) & 0x02)) {
             ;
+        }
         if (state == DEVO_BOUND) {
             /* exit binding state */
             state = DEVO_BOUND_3;
             cyrf_set_bound_sop_code();
         }
-        if(pkt_num == 0 || bind_counter > 0) {
-            delay = 1500;
+        if (pkt_num == 0 || bind_counter > 0) {
+            delay   = 1500;
             txState = 15;
         } else {
-            CYRF_ConfigRxTx(0); //Receive mode
-            CYRF_WriteRegister(0x07, 0x80); //Prepare to receive
-            CYRF_WriteRegister(CYRF_05_RX_CTRL, 0x87); //Prepare to receive
+            CYRF_ConfigRxTx(0); // Receive mode
+            CYRF_WriteRegister(0x07, 0x80); // Prepare to receive
+            CYRF_WriteRegister(CYRF_05_RX_CTRL, 0x87); // Prepare to receive
         }
     } else {
-        if(CYRF_ReadRegister(0x07) & 0x20) { // this won't be true in emulator so we need to simulate it somehow
+        if (CYRF_ReadRegister(0x07) & 0x20) { // this won't be true in emulator so we need to simulate it somehow
             CYRF_ReadDataPacket(packet);
             parse_telemetry_packet(packet);
-            delay = 100 * (16 - txState);
+            delay   = 100 * (16 - txState);
             txState = 15;
         }
 #ifdef EMULATOR
         u8 telem_bit = rand() % 7; // random number in [0, 7)
-        packet[0] =  TELEMETRY_ENABLE + telem_bit; // allow emulator to simulate telemetry parsing to prevent future bugs in the telemetry monitor
-        //printf("telem 1st packet: 0x%x\n", packet[0]);
-        for(int i = 1; i < 13; i++)
+        packet[0] = TELEMETRY_ENABLE + telem_bit; // allow emulator to simulate telemetry parsing to prevent future bugs in the telemetry monitor
+        // printf("telem 1st packet: 0x%x\n", packet[0]);
+        for (int i = 1; i < 13; i++) {
             packet[i] = rand() % 256;
+        }
         parse_telemetry_packet(packet);
-        Telemetry.time[0] =  Telemetry.time[1] =  Telemetry.time[2] = CLOCK_getms();
-        delay = 100 * (16 - txState);
+        Telemetry.time[0] = Telemetry.time[1] = Telemetry.time[2] = CLOCK_getms();
+        delay   = 100 * (16 - txState);
         txState = 15;
 #endif
     }
     txState++;
-    if(txState == 16) { //2.3msec have passed
-        CYRF_ConfigRxTx(1); //Write mode
-        if(pkt_num == 0) {
-            //Keep tx power updated
+    if (txState == 16) { // 2.3msec have passed
+        CYRF_ConfigRxTx(1); // Write mode
+        if (pkt_num == 0) {
+            // Keep tx power updated
             CYRF_WriteRegister(CYRF_03_TX_CFG, 0x08 | Model.tx_power);
             radio_ch_ptr = radio_ch_ptr == &radio_ch[2] ? radio_ch : radio_ch_ptr + 1;
             CYRF_ConfigRFChannel(*radio_ch_ptr);
@@ -431,15 +445,16 @@ u16 devo_cb()
         return 1200;
     }
     txState = 0;
-    while(! (CYRF_ReadRegister(0x04) & 0x02))
+    while (!(CYRF_ReadRegister(0x04) & 0x02)) {
         ;
+    }
     if (state == DEVO_BOUND) {
         /* exit binding state */
         state = DEVO_BOUND_3;
         cyrf_set_bound_sop_code();
     }
-    if(pkt_num == 0) {
-        //Keep tx power updated
+    if (pkt_num == 0) {
+        // Keep tx power updated
         CYRF_WriteRegister(CYRF_03_TX_CFG, 0x08 | Model.tx_power);
         radio_ch_ptr = radio_ch_ptr == &radio_ch[2] ? radio_ch : radio_ch_ptr + 1;
         CYRF_ConfigRFChannel(*radio_ch_ptr);
@@ -449,7 +464,7 @@ u16 devo_cb()
 
 void DEVO_Initialize()
 {
-    //CLOCK_StopTimer();
+    // CLOCK_StopTimer();
     CYRF_Reset();
     cyrf_init();
     CYRF_GetMfgData(cyrfmfg_id);
@@ -461,26 +476,26 @@ void DEVO_Initialize()
     failsafe_pkt = 0;
     radio_ch_ptr = radio_ch;
     CYRF_ConfigRFChannel(*radio_ch_ptr);
-    //FIXME: Properly setnumber of channels;
+    // FIXME: Properly setnumber of channels;
     num_channels = 8;
     pkt_num = 0;
-    ch_idx = 0;
+    ch_idx  = 0;
     txState = 0;
 
-    if(! Model.fixed_id) {
-        fixed_id = ((u32)(radio_ch[0] ^ cyrfmfg_id[0] ^ cyrfmfg_id[3]) << 16)
-                 | ((u32)(radio_ch[1] ^ cyrfmfg_id[1] ^ cyrfmfg_id[4]) << 8)
-                 | ((u32)(radio_ch[2] ^ cyrfmfg_id[2] ^ cyrfmfg_id[5]) << 0);
-        fixed_id = fixed_id % 1000000;
+    if (!Model.fixed_id) {
+        fixed_id     = ((u32)(radio_ch[0] ^ cyrfmfg_id[0] ^ cyrfmfg_id[3]) << 16)
+                       | ((u32)(radio_ch[1] ^ cyrfmfg_id[1] ^ cyrfmfg_id[4]) << 8)
+                       | ((u32)(radio_ch[2] ^ cyrfmfg_id[2] ^ cyrfmfg_id[5]) << 0);
+        fixed_id     = fixed_id % 1000000;
         bind_counter = 0x1388;
         state = DEVO_BIND;
     } else {
-        fixed_id = Model.fixed_id;
+        fixed_id     = Model.fixed_id;
         use_fixed_id = 0;
         state = DEVO_BOUND_1;
         bind_counter = 0;
     }
-    //CLOCK_StartTimer(2400, devo_cb);
+    // CLOCK_StartTimer(2400, devo_cb);
 }
 
-#endif
+#endif /* ifdef PROTO_HAS_CYRF6936 */

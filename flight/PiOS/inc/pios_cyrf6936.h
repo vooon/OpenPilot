@@ -1,4 +1,3 @@
-
 #ifndef PIOS_CYRF6936_H
 #define PIOS_CYRF6936_H
 
@@ -10,14 +9,13 @@
 
 
 struct pios_cyrf6936_cfg {
-	const struct pios_spi_cfg cyrf_spi;
-	const struct pios_exti_cfg * cyrf_irq;
-	struct stm32_gpio cyrf_rs;
-	struct stm32_gpio cyrf_cs;
+    const struct pios_spi_cfg  cyrf_spi;
+    const struct pios_exti_cfg *cyrf_irq;
+    struct stm32_gpio cyrf_rs;
+    struct stm32_gpio cyrf_cs;
 /*	TIM_TimeBaseInitTypeDef tim_base_init;
-	TIM_OCInitTypeDef tim_oc_init;
-	const struct pios_tim_channel * channels;*/
-
+        TIM_OCInitTypeDef tim_oc_init;
+        const struct pios_tim_channel * channels;*/
 };
 
 
@@ -39,7 +37,7 @@ enum {
     CYRF_10_FRAMING_CFG    = 0x10,
     CYRF_11_DATA32_THOLD   = 0x11,
     CYRF_12_DATA64_THOLD   = 0x12,
-    CYRF_13_RSSI           = 0x13,
+    CYRF_13_RSSI = 0x13,
     CYRF_14_EOP_CTRL       = 0x14,
     CYRF_1B_TX_OFFSET_LSB  = 0x1B,
     CYRF_1C_TX_OFFSET_MSB  = 0x1C,
@@ -61,11 +59,8 @@ enum CYRF_PWR {
 };
 
 
-
-
-
 /* SPI CYRF6936 */
-extern void CYRF_Initialize(const struct pios_cyrf6936_cfg * cfg);
+extern void CYRF_Initialize(const struct pios_cyrf6936_cfg *cfg);
 extern void CYRF_Reset();
 extern void CYRF_GetMfgData(u8 data[]);
 
@@ -91,6 +86,6 @@ extern void PIOS_CYRFTMR_Stop();
 extern void PIOS_CYRFTMR_Start();
 extern void PIOS_CYRFTMR_Set(u16 timer);
 
-#endif
+#endif // if defined(PIOS_INCLUDE_CYRF6936)
 
 #endif /* PIOS_CYRF6936_H */
