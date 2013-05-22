@@ -64,30 +64,25 @@ void GpsDisplayGadget::loadConfiguration(IUAVGadgetConfiguration* config)
     GpsDisplayGadgetConfiguration *gpsDisplayConfig = qobject_cast< GpsDisplayGadgetConfiguration*>(config);
 
     if (gpsDisplayConfig->connectionMode() == "Serial") {
-        PortSettings portsettings;
+        /*PortSettings portsettings;
         portsettings.BaudRate=gpsDisplayConfig->speed();
         portsettings.DataBits=gpsDisplayConfig->dataBits();
         portsettings.FlowControl=gpsDisplayConfig->flow();
         portsettings.Parity=gpsDisplayConfig->parity();
         portsettings.StopBits=gpsDisplayConfig->stopBits();
-        portsettings.Timeout_Millisec=gpsDisplayConfig->timeOut();
+        portsettings.Timeout_Millisec=gpsDisplayConfig->timeOut();*/
 
         // In case we find no port, buttons disabled
         m_widget->connectButton->setEnabled(false);
         m_widget->disconnectButton->setEnabled(false);
 
-        QList<QextPortInfo> ports = QextSerialEnumerator::getPorts();
-        foreach( QextPortInfo nport, ports ) {
-            if(nport.friendName == gpsDisplayConfig->port())
+        QList<QSerialPortInfo> ports = QSerialPortInfo::availablePorts();
+        foreach( QSerialPortInfo nport, ports ) {
+            if(nport.portName() == gpsDisplayConfig->port())
             {
                 qDebug() << "Using Serial parser";
                 parser = new NMEAParser();
-
-#ifdef Q_OS_WIN
-                port=new QextSerialPort(nport.portName,portsettings,QextSerialPort::EventDriven);
-#else
-                port=new QextSerialPort(nport.physName,portsettings,QextSerialPort::EventDriven);
-#endif
+                port=new QSerialPort(nport);
                 m_widget->connectButton->setEnabled(true);
                 m_widget->disconnectButton->setEnabled(false);
                 m_widget->connectButton->setHidden(false);
@@ -130,8 +125,14 @@ void GpsDisplayGadget::onConnect() {
         bool isOpen =  port->open(QIODevice::ReadWrite);
         qDebug() <<  "Open: " << isOpen;
         if(isOpen) {
-            m_widget->connectButton->setEnabled(false);
-            m_widget->disconnectButton->setEnabled(true);
+            if (port->setBaudRate(57600)
+                    && port->setDataBits(QSerialPort::Data8)
+                    && port->setParity(QSerialPort::NoParity)
+                    && port->setStopBits(QSerialPort::OneStop)
+                    && port->setFlowControl(QSerialPort::NoFlowControl)) {
+                m_widget->connectButton->setEnabled(false);
+                m_widget->disconnectButton->setEnabled(true);
+            }
         }
     } else {
         qDebug() << "Port undefined or invalid.";

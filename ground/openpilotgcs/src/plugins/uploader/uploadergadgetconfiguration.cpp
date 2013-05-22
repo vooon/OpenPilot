@@ -26,7 +26,8 @@
  */
 
 #include "uploadergadgetconfiguration.h"
-#include <qextserialport/src/qextserialport.h>
+#include <QtSerialPort/QSerialPort>
+#include <QtSerialPort/QSerialPortInfo>
 
 /**
  * Loads a saved configuration or defaults if non exist.
@@ -34,23 +35,23 @@
  */
 UploaderGadgetConfiguration::UploaderGadgetConfiguration(QString classId, QSettings* qSettings, QObject *parent) :
     IUAVGadgetConfiguration(classId, parent),
-    m_defaultPort("Unknown"),
-    m_defaultSpeed(BAUD19200),
+    m_defaultPort("Unknown")
+    /*m_defaultSpeed(BAUD19200),
     m_defaultDataBits(DATA_8),
     m_defaultFlow(FLOW_OFF),
     m_defaultParity(PAR_NONE),
     m_defaultStopBits(STOP_1),
-    m_defaultTimeOut(5000)
+    m_defaultTimeOut(5000)*/
 
 {
     //if a saved configuration exists load it
     if(qSettings != 0) {
-        BaudRateType speed;
+        /*BaudRateType speed;
         DataBitsType databits;
         FlowType flow;
         ParityType parity;
         StopBitsType stopbits;
-
+*/
         int ispeed = qSettings->value("defaultSpeed").toInt();
         int idatabits = qSettings->value("defaultDataBits").toInt();
         int iflow = qSettings->value("defaultFlow").toInt();
@@ -58,7 +59,7 @@ UploaderGadgetConfiguration::UploaderGadgetConfiguration(QString classId, QSetti
         int istopbits = qSettings->value("defaultStopBits").toInt();
         QString port = qSettings->value("defaultPort").toString();
 
-        databits=(DataBitsType) idatabits;
+        /*databits=(DataBitsType) idatabits;
         flow=(FlowType)iflow;
         parity=(ParityType)iparity;
         stopbits=(StopBitsType)istopbits;
@@ -68,7 +69,7 @@ UploaderGadgetConfiguration::UploaderGadgetConfiguration(QString classId, QSetti
         m_defaultDataBits=databits;
         m_defaultFlow=flow;
         m_defaultParity=parity;
-        m_defaultStopBits=stopbits;
+        m_defaultStopBits=stopbits;*/
 
     }
 
@@ -82,12 +83,12 @@ IUAVGadgetConfiguration *UploaderGadgetConfiguration::clone()
 {
     UploaderGadgetConfiguration *m = new UploaderGadgetConfiguration(this->classId());
 
-    m->m_defaultSpeed=m_defaultSpeed;
+    /*m->m_defaultSpeed=m_defaultSpeed;
     m->m_defaultDataBits=m_defaultDataBits;
     m->m_defaultFlow=m_defaultFlow;
     m->m_defaultParity=m_defaultParity;
     m->m_defaultStopBits=m_defaultStopBits;
-    m->m_defaultPort=m_defaultPort;
+    m->m_defaultPort=m_defaultPort;*/
     return m;
 }
 
@@ -96,10 +97,10 @@ IUAVGadgetConfiguration *UploaderGadgetConfiguration::clone()
  *
  */
 void UploaderGadgetConfiguration::saveConfig(QSettings* qSettings) const {
-    qSettings->setValue("defaultSpeed", m_defaultSpeed);
+   /* qSettings->setValue("defaultSpeed", m_defaultSpeed);
     qSettings->setValue("defaultDataBits", m_defaultDataBits);
     qSettings->setValue("defaultFlow", m_defaultFlow);
     qSettings->setValue("defaultParity", m_defaultParity);
     qSettings->setValue("defaultStopBits", m_defaultStopBits);
-    qSettings->setValue("defaultPort", m_defaultPort);
+    qSettings->setValue("defaultPort", m_defaultPort);*/
 }

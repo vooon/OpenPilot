@@ -28,8 +28,8 @@
 #ifndef GPSDISPLAYGADGET_H_
 #define GPSDISPLAYGADGET_H_
 
-#include <qextserialport/src/qextserialport.h>
-#include <qextserialport/src/qextserialenumerator.h>
+#include <QtSerialPort/QSerialPort>
+#include <QtSerialPort/QSerialPortInfo>
 #include <coreplugin/iuavgadget.h>
 #include "gpsdisplaywidget.h"
 #include "nmeaparser.h"
@@ -63,7 +63,7 @@ private slots:
 
 private:
     QPointer<GpsDisplayWidget> m_widget;
-    QPointer<QextSerialPort> port;
+    QPointer<QSerialPort> port;
     QPointer<GPSParser> parser;
     bool connected;
     void processNewSerialData(QByteArray serialData);

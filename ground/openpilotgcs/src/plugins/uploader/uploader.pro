@@ -2,8 +2,8 @@ TEMPLATE = lib
 TARGET = Uploader
 DEFINES += UPLOADER_LIBRARY
 QT += svg
+QT += serialport
 include(uploader_dependencies.pri)
-INCLUDEPATH += ../../libs/qextserialport/src
 macx {
     QMAKE_CXXFLAGS  += -fpermissive
 }

@@ -156,9 +156,9 @@ FlowTypeString
         <<"FLOW_HARDWARE"
         <<"FLOW_XONXOFF";
 }
-bool sortPorts(QextPortInfo const& s1,QextPortInfo const& s2)
+bool sortPorts(QSerialPortInfo const& s1,QSerialPortInfo const& s2)
 {
-return s1.portName<s2.portName;
+    return s1.portName()<s2.portName();
 }
 
 
@@ -173,11 +173,11 @@ QWidget *GpsDisplayGadgetOptionsPage::createPage(QWidget *parent)
 
 
     // PORTS
-    QList<QextPortInfo> ports = QextSerialEnumerator::getPorts();
+    QList<QSerialPortInfo> ports = QSerialPortInfo::availablePorts();
     qSort(ports.begin(), ports.end(),sortPorts);
-    foreach( QextPortInfo port, ports ) {
-        qDebug() << "Adding port: " << port.friendName << " (" << port.portName << ")";
-        options_page->portComboBox->addItem(port.friendName, port.friendName);
+    foreach( QSerialPortInfo port, ports ) {
+        qDebug() << "Adding port: " << port.systemLocation() << " (" << port.portName() << ")";
+        options_page->portComboBox->addItem(port.systemLocation(), port.portName());
     }
 
     int portIndex = options_page->portComboBox->findData(m_config->port());
@@ -185,7 +185,7 @@ QWidget *GpsDisplayGadgetOptionsPage::createPage(QWidget *parent)
         qDebug() << "createPage(): port is " << m_config->port();
         options_page->portComboBox->setCurrentIndex(portIndex);
     }
-
+/*
     // BAUDRATES
     options_page->portSpeedComboBox->addItems(BaudRateTypeString);
 
@@ -225,7 +225,7 @@ QWidget *GpsDisplayGadgetOptionsPage::createPage(QWidget *parent)
     if(parityIndex != -1){
        options_page->parityComboBox->setCurrentIndex(parityIndex);
     }
-
+*/
     // TIMEOUT
     options_page->timeoutSpinBox->setValue(m_config->timeOut());
 
@@ -252,11 +252,11 @@ void GpsDisplayGadgetOptionsPage::apply()
     m_config->setPort(options_page->portComboBox->itemData(portIndex).toString());
     qDebug() << "apply(): port is " << m_config->port();
 
-    m_config->setSpeed((BaudRateType)BaudRateTypeStringALL.indexOf(options_page->portSpeedComboBox->currentText()));
+/*    m_config->setSpeed((BaudRateType)BaudRateTypeStringALL.indexOf(options_page->portSpeedComboBox->currentText()));
     m_config->setFlow((FlowType)FlowTypeString.indexOf(options_page->flowControlComboBox->currentText()));
     m_config->setDataBits((DataBitsType)DataBitsTypeStringALL.indexOf(options_page->dataBitsComboBox->currentText()));
     m_config->setStopBits((StopBitsType)StopBitsTypeStringALL.indexOf(options_page->stopBitsComboBox->currentText()));
-    m_config->setParity((ParityType)ParityTypeStringALL.indexOf(options_page->parityComboBox->currentText()));
+    m_config->setParity((ParityType)ParityTypeStringALL.indexOf(options_page->parityComboBox->currentText()));*/
     m_config->setTimeOut( options_page->timeoutSpinBox->value());
     m_config->setConnectionMode(options_page->connectionMode->currentText());
 

@@ -28,7 +28,8 @@
 #ifndef GPSDISPLAYGADGETOPTIONSPAGE_H
 #define GPSDISPLAYGADGETOPTIONSPAGE_H
 
-#include <qextserialport/src/qextserialenumerator.h>
+#include <QtSerialPort/QSerialPort>
+#include <QtSerialPort/QSerialPortInfo>
 #include "coreplugin/dialogs/ioptionspage.h"
 #include "QString"
 #include <QStringList>

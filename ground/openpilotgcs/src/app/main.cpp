@@ -489,8 +489,8 @@ int main(int argc, char **argv)
     if (!appOptionValues.contains(NO_SPLASH_OPTION)) {
         splash = new GCSSplashScreen();
         // show splash
-        splash->showProgressMessage(QObject::tr("Application starting..."));
-        splash->show();
+        //splash->showProgressMessage(QObject::tr("Application starting..."));
+        //splash->show();
         // connect to track progress of plugin manager
         QObject::connect(&pluginManager, SIGNAL(pluginAboutToBeLoaded(ExtensionSystem::PluginSpec*)), splash,
                 SLOT(showPluginLoadingProgress(ExtensionSystem::PluginSpec*)));

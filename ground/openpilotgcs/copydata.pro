@@ -24,12 +24,12 @@ equals(copydata, 1) {
                   Qt5Concurrent.dll \
                   Qt5Widgets.dll \
                   Qt5PrintSupport.dll \
-                  libEGL.dll \
-                  libGLESv2.dll \
-                  icuin49.dll \
-                  icudt49.dll \
+                  Qt5OpenGL.dll \
+                  Qt5SerialPort.dll \
+                  icuin51.dll \
+                  icudt51.dll \
                   libstdc++-6.dll \
-                  icuuc49.dll \
+                  icuuc51.dll \
                   D3DCompiler_43.dll \
                   libwinpthread-1.dll
         for(dll, QT_DLLS) {

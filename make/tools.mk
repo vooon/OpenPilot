@@ -83,7 +83,7 @@ GTEST_URL := http://wiki.openpilot.org/download/attachments/18612236/gtest-1.6.0
 
 # Changing PYTHON_DIR, also update it in ground\openpilotgcs\src\app\gcsversioninfo.pri
 ARM_SDK_DIR     := $(TOOLS_DIR)/gcc-arm-none-eabi-4_7-2013q1
-QT_SDK_DIR      := $(TOOLS_DIR)/qt-4.8.4
+QT_SDK_DIR      := $(TOOLS_DIR)/Qt5.1.0/5.1.0-beta1/gcc_64
 MINGW_DIR       := $(TOOLS_DIR)/mingw-4.4.0
 PYTHON_DIR      := $(TOOLS_DIR)/python-2.7.4
 NSIS_DIR        := $(TOOLS_DIR)/nsis-2.46-unicode
