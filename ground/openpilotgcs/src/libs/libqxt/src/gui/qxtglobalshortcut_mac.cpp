@@ -27,7 +27,7 @@
 #include <QMap>
 #include <QHash>
 #include <QtDebug>
-#include <QApplication>
+#include <QtWidgets/QApplication>
 
 typedef QPair<uint, uint> Identifier;
 static QMap<quint32, EventHotKeyRef> keyRefs;

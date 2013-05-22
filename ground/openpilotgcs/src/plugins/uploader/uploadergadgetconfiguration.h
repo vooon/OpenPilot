@@ -49,14 +49,35 @@ public:
        void setPort(QString port){m_defaultPort=port;}
        void setTimeOut(long timeout){m_defaultTimeOut=timeout;}
 
-       //get port configuration functions
-       BaudRateType Speed() {return m_defaultSpeed;}
-       DataBitsType DataBits() {return m_defaultDataBits;}
-       FlowType Flow() {return m_defaultFlow;}
-       ParityType Parity() {return m_defaultParity;}
-       StopBitsType StopBits() {return m_defaultStopBits;}
-       QString Port(){return m_defaultPort;}
-       long TimeOut(){return m_defaultTimeOut;}
+       // get port configuration functions
+       BaudRateType Speed()
+       {
+        return m_defaultSpeed;
+       }
+       DataBitsType DataBits()
+       {
+        return m_defaultDataBits;
+       }
+       FlowType Flow()
+       {
+        return m_defaultFlow;
+       }
+       ParityType Parity()
+       {
+        return m_defaultParity;
+       }
+       StopBitsType StopBits()
+       {
+        return m_defaultStopBits;
+       }
+       QString Port()
+       {
+        return m_defaultPort;
+       }
+       long TimeOut()
+       {
+        return m_defaultTimeOut;
+       }
      */
     void saveConfig(QSettings *settings) const;
     IUAVGadgetConfiguration *clone();

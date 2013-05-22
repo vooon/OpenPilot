@@ -29,11 +29,11 @@
 #include "extensionsystem/pluginmanager.h"
 #include <QDebug>
 #include <QStringList>
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QTextEdit>
-#include <QtWidgets/QVBoxLayout>
-#include <QtWidgets/QPushButton>
-#include <QtWidgets/QMessageBox>
+#include <QWidget>
+#include <QTextEdit>
+#include <QVBoxLayout>
+#include <QPushButton>
+#include <QMessageBox>
 #include <QMouseEvent>
 #include <QtGlobal>
 

@@ -28,7 +28,7 @@
 
 #include "treewidgetcolumnstretcher.h"
 #include <QTreeWidget>
-#include <QtGui/QHideEvent>
+#include <QHideEvent>
 #include <QHeaderView>
 using namespace Utils;
 

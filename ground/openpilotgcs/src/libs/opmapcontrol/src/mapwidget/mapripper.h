@@ -31,7 +31,7 @@
 #include "../internals/core.h"
 #include "mapripform.h"
 #include <QObject>
-#include <QtWidgets/QMessageBox>
+#include <QMessageBox>
 namespace mapcontrol {
 class MapRipper : public QThread {
     Q_OBJECT

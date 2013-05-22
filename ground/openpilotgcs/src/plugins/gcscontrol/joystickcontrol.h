@@ -28,7 +28,7 @@
 #ifndef JOYSTICKCONTROL_H
 #define JOYSTICKCONTROL_H
 
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include <QGraphicsView>
 #include <QtSvg/QSvgRenderer>
 #include <QtSvg/QGraphicsSvgItem>

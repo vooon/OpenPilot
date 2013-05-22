@@ -39,10 +39,10 @@
 
 #include <QtCore/QDebug>
 #include <QtCore/QtPlugin>
-#include <QtWidgets/QAction>
-#include <QtWidgets/QMenu>
-#include <QtWidgets/QMessageBox>
-#include <QtWidgets/QPushButton>
+#include <QAction>
+#include <QMenu>
+#include <QMessageBox>
+#include <QPushButton>
 
 using namespace Welcome::Internal;
 

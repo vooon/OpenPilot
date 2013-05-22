@@ -36,10 +36,10 @@
 
 #include <QtCore/QDebug>
 #include <QtCore/QSettings>
-#include <QtWidgets/QMenu>
-#include <QtWidgets/QAction>
-#include <QtWidgets/QShortcut>
-#include <QtWidgets/QMenuBar>
+#include <QMenu>
+#include <QAction>
+#include <QShortcut>
+#include <QMenuBar>
 
 namespace {
 enum { warnAboutFindFailures = 0 };

@@ -28,7 +28,7 @@
 
 #include "styleanimator.h"
 
-#include <QtWidgets/QStyleOption>
+#include <QStyleOption>
 
 Animation *StyleAnimator::widgetAnimation(const QWidget *widget) const
 {

@@ -32,11 +32,11 @@
 #include "uavobjectmanager.h"
 #include "uavobject.h"
 #include "objectpersistence.h"
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include <QList>
 #include <QTextBrowser>
 #include "utils/pathutils.h"
-#include <QtWidgets/QMessageBox>
+#include <QMessageBox>
 #include "utils/mytabbedstackwidget.h"
 #include "../uavobjectwidgetutils/configtaskwidget.h"
 

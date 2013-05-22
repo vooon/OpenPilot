@@ -33,9 +33,9 @@
 #include "uavmetaobject.h"
 #include "uavobjectfield.h"
 #include "extensionsystem/pluginmanager.h"
-#include <QtGui/QColor>
-// #include <QtGui/QIcon>
-#include <QtWidgets/QMessageBox>
+#include <QColor>
+// #include <QIcon>
+#include <QMessageBox>
 #include <QtCore/QSignalMapper>
 #include <QtCore/QDebug>
 #include "waypoint.h"

@@ -4,6 +4,7 @@ DEFINES += UPLOADER_LIBRARY
 QT += svg
 QT += serialport
 include(uploader_dependencies.pri)
+include(../../libs/version_info/version_info.pri)
 macx {
     QMAKE_CXXFLAGS  += -fpermissive
 }

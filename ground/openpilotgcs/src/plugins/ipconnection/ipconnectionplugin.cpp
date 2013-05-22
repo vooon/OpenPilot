@@ -35,8 +35,8 @@
 #include "ipconnection_internal.h"
 
 #include <QtCore/QtPlugin>
-#include <QtWidgets/QMainWindow>
-#include <QtWidgets/QMessageBox>
+#include <QMainWindow>
+#include <QMessageBox>
 #include <QtNetwork/QAbstractSocket>
 #include <QtNetwork/QTcpSocket>
 #include <QtNetwork/QUdpSocket>

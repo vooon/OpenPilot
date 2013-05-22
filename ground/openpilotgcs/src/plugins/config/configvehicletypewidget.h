@@ -38,7 +38,7 @@
 #include <QStringList>
 #include <QWidget>
 
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include <QList>
 #include <QItemDelegate>
 

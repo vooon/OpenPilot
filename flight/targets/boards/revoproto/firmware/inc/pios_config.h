@@ -68,7 +68,7 @@
 /* PIOS USB functions */
 #define PIOS_INCLUDE_USB
 #define PIOS_INCLUDE_USB_HID
-/* #define PIOS_INCLUDE_USB_CDC */
+#define PIOS_INCLUDE_USB_CDC
 /* #define PIOS_INCLUDE_USB_RCTX */
 
 /* PIOS sensor interfaces */
@@ -107,7 +107,8 @@
 /* #define PIOS_INCLUDE_SDCARD */
 /* #define LOG_FILENAME "startup.log" */
 #define PIOS_INCLUDE_FLASH
-#define PIOS_INCLUDE_FLASH_SECTOR_SETTINGS
+#define PIOS_INCLUDE_FLASH_INTERNAL
+#define PIOS_INCLUDE_FLASH_LOGFS_SETTINGS
 #define FLASH_FREERTOS
 /* #define PIOS_INCLUDE_FLASH_EEPROM */
 

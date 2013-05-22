@@ -35,10 +35,10 @@
 #include <QtCore/QDebug>
 #include <QtCore/QEvent>
 #include <QtCore/QSettings>
-#include <QtWidgets/QLayout>
-#include <QtWidgets/QToolBar>
-#include <QtWidgets/QAction>
-#include <QtWidgets/QToolButton>
+#include <QLayout>
+#include <QToolBar>
+#include <QAction>
+#include <QToolButton>
 
 using namespace Core;
 using namespace Core::Internal;

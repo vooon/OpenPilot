@@ -31,7 +31,7 @@
 
 #include <coreplugin/dialogs/ioptionspage.h>
 #include <QtCore/QPointer>
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include <QSettings>
 
 namespace Core {

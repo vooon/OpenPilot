@@ -26,7 +26,7 @@
 #include "qxtconfigdialog.h"
 #include "qxtconfigwidget.h"
 #include <QDialogButtonBox>
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include <QVBoxLayout>
 
 void QxtConfigDialogPrivate::init( QxtConfigWidget::IconPosition pos )

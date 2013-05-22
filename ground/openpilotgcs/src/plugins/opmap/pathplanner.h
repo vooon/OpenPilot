@@ -28,7 +28,7 @@
 #ifndef PATHPLANNER_H
 #define PATHPLANNER_H
 
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include "flightdatamodel.h"
 #include "opmap_edit_waypoint_dialog.h"
 namespace Ui {

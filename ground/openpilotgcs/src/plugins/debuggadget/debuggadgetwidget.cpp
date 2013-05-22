@@ -28,15 +28,15 @@
 
 #include <QDebug>
 #include <QStringList>
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QTextEdit>
-#include <QtWidgets/QVBoxLayout>
-#include <QtWidgets/QPushButton>
+#include <QWidget>
+#include <QTextEdit>
+#include <QVBoxLayout>
+#include <QPushButton>
 #include "qxtlogger.h"
 #include "debugengine.h"
 #include <QFile>
 #include <QFileDialog>
-#include <QtWidgets/QMessageBox>
+#include <QMessageBox>
 #include <QScrollBar>
 #include <QTime>
 DebugGadgetWidget::DebugGadgetWidget(QWidget *parent) : QLabel(parent)

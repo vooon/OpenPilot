@@ -26,7 +26,7 @@
 #define QXTCONFIRMATIONMESSAGE_H
 
 #include <QSettings>
-#include <QtWidgets/QMessageBox>
+#include <QMessageBox>
 #include "qxtglobal.h"
 
 class QxtConfirmationMessagePrivate;

@@ -31,15 +31,15 @@
 
 #include <QDebug>
 #include <QStringList>
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QTextEdit>
-#include <QtWidgets/QVBoxLayout>
-#include <QtWidgets/QPushButton>
+#include <QWidget>
+#include <QTextEdit>
+#include <QVBoxLayout>
+#include <QPushButton>
 #include <QDesktopServices>
 #include <QUrl>
-#include <QtWidgets/QMessageBox>
+#include <QMessageBox>
 #include <utils/stylehelper.h>
-#include <QtWidgets/QMessageBox>
+#include <QMessageBox>
 
 #include <extensionsystem/pluginmanager.h>
 #include <coreplugin/generalsettings.h>

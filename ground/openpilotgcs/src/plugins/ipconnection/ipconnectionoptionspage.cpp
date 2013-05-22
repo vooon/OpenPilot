@@ -27,13 +27,13 @@
 
 #include "ipconnectionoptionspage.h"
 #include "ipconnectionconfiguration.h"
-#include <QtWidgets/QLabel>
-#include <QtWidgets/QComboBox>
-#include <QtWidgets/QSpinBox>
-#include <QtWidgets/QDoubleSpinBox>
+#include <QLabel>
+#include <QComboBox>
+#include <QSpinBox>
+#include <QDoubleSpinBox>
 #include <QRadioButton>
-#include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QVBoxLayout>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
 
 #include "ui_ipconnectionoptionspage.h"
 

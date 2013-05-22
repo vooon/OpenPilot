@@ -35,9 +35,9 @@
 #include "configuration.h"
 #include <QObject>
 #include <QtOpenGL/QGLWidget>
-#include <QGraphicsView>
 #include "waypointitem.h"
 #include "QtSvg/QGraphicsSvgItem"
+#include "QGraphicsView"
 #include "uavitem.h"
 #include "gpsitem.h"
 #include "homeitem.h"

@@ -30,11 +30,11 @@
 #include "ui_opmap_widget.h"
 
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QVBoxLayout>
-#include <QtWidgets/QInputDialog>
-#include <QtGui/QClipboard>
-#include <QtWidgets/QMenu>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QInputDialog>
+#include <QClipboard>
+#include <QMenu>
 #include <QStringList>
 #include <QDir>
 #include <QFile>

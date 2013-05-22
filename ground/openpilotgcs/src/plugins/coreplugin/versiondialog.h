@@ -29,9 +29,7 @@
 #ifndef VERSIONDIALOG_H
 #define VERSIONDIALOG_H
 
-#include "../../gcs_version_info.h"
-
-#include <QtWidgets/QDialog>
+#include <QDialog>
 
 namespace Core {
 namespace Internal {

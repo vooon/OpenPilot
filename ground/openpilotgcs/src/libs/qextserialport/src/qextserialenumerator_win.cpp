@@ -267,23 +267,25 @@ bool QextSerialEnumeratorPrivate::setUpNotifications_sys(bool setup)
     if (setup && notificationWidget) { // already setup
         return true;
     }
-    notificationWidget = new QextSerialRegistrationWidget(this);
+}
+notificationWidget = new QextSerialRegistrationWidget(this);
 
-    DEV_BROADCAST_DEVICEINTERFACE dbh;
-    ::ZeroMemory(&dbh, sizeof(dbh));
-    dbh.dbcc_size = sizeof(dbh);
-    dbh.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
-    // dbh.dbcc_classguid = GUID_DEVCLASS_PORTS; //Ignored in such case
-    DWORD flags = DEVICE_NOTIFY_WINDOW_HANDLE | DEVICE_NOTIFY_ALL_INTERFACE_CLASSES;
-    if (::RegisterDeviceNotification((HWND)notificationWidget->winId(), &dbh, flags) == NULL) {
-        QESP_WARNING() << "RegisterDeviceNotification failed:" << GetLastError();
-        return false;
-    }
-    // setting up notifications doesn't tell us about devices already connected
-    // so get those manually
-    foreach(QextPortInfo port, getPorts_sys())
-    Q_EMIT q->deviceDiscovered(port);
-    return true;
+DEV_BROADCAST_DEVICEINTERFACE dbh;
+::ZeroMemory(&dbh, sizeof(dbh));
+dbh.dbcc_size = sizeof(dbh);
+dbh.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
+// dbh.dbcc_classguid = GUID_DEVCLASS_PORTS; //Ignored in such case
+DWORD flags = DEVICE_NOTIFY_WINDOW_HANDLE | DEVICE_NOTIFY_ALL_INTERFACE_CLASSES;
+if (::RegisterDeviceNotification((HWND)notificationWidget->winId(), &dbh, flags) == NULL) {
+    QESP_WARNING() << "RegisterDeviceNotification failed:" << GetLastError();
+    return false;
+}
+}
+// setting up notifications doesn't tell us about devices already connected
+// so get those manually
+foreach(QextPortInfo port, getPorts_sys())
+Q_EMIT q->deviceDiscovered(port);
+return true;
 
 #endif // QT_GUI_LIB
 }
@@ -331,10 +333,11 @@ bool QextSerialEnumeratorPrivate::matchAndDispatchChangedDevice(const QString &d
                 } else if (wParam == DBT_DEVICEREMOVECOMPLETE) {
                     Q_EMIT q->deviceRemoved(info);
                 }
-                break;
             }
+            break;
         }
-        SetupDiDestroyDeviceInfoList(devInfo);
     }
-    return rv;
+    SetupDiDestroyDeviceInfoList(devInfo);
+}
+return rv;
 }

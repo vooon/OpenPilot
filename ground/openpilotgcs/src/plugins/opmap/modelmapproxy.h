@@ -26,7 +26,7 @@
  */
 #ifndef MODELMAPPROXY_H
 #define MODELMAPPROXY_H
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include "opmapcontrol/opmapcontrol.h"
 #include "pathaction.h"
 #include "waypoint.h"

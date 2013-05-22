@@ -32,11 +32,11 @@
 #include <QtCore/QList>
 #include <QtCore/QString>
 #include <QtCore/QSettings>
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QAction>
-#include <QtWidgets/QSplitter>
-#include <QtWidgets/QVBoxLayout>
-#include <QtWidgets/QStackedLayout>
+#include <QWidget>
+#include <QAction>
+#include <QSplitter>
+#include <QVBoxLayout>
+#include <QStackedLayout>
 #include <QtCore/QPointer>
 
 

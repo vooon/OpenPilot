@@ -31,7 +31,7 @@
 
 #include "extensionsystem_global.h"
 
-#include <QtWidgets/QWidget>
+#include <QWidget>
 
 namespace ExtensionSystem {
 class PluginSpec;

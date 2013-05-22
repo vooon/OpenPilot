@@ -31,9 +31,9 @@
 #include <QtCore/QEvent>
 #include <QtCore/QDebug>
 #include <QtCore/QString>
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include <QMenu>
-#include <QtGui/QMouseEvent>
+#include <QMouseEvent>
 #include <QLabel>
 
 enum { margin = 6 };

@@ -190,7 +190,7 @@ QWidget *GpsDisplayGadgetOptionsPage::createPage(QWidget *parent)
     options_page->portSpeedComboBox->addItems(BaudRateTypeString);
 
     int portSpeedIndex = options_page->portSpeedComboBox->findText(BaudRateTypeStringALL.at((int)m_config->speed()));
-    if(portSpeedIndex != -1){
+    if (portSpeedIndex != -1) {
        options_page->portSpeedComboBox->setCurrentIndex(portSpeedIndex);
     }
 
@@ -198,7 +198,7 @@ QWidget *GpsDisplayGadgetOptionsPage::createPage(QWidget *parent)
     options_page->flowControlComboBox->addItems(FlowTypeString);
 
     int flowControlIndex = options_page->flowControlComboBox->findText(FlowTypeString.at((int)m_config->flow()));
-    if(flowControlIndex != -1){
+    if (flowControlIndex != -1) {
        options_page->flowControlComboBox->setCurrentIndex(flowControlIndex);
     }
 
@@ -206,7 +206,7 @@ QWidget *GpsDisplayGadgetOptionsPage::createPage(QWidget *parent)
     options_page->dataBitsComboBox->addItems(DataBitsTypeString);
 
     int dataBitsIndex = options_page->dataBitsComboBox->findText(DataBitsTypeStringALL.at((int)m_config->dataBits()));
-    if(dataBitsIndex != -1){
+    if (dataBitsIndex != -1) {
        options_page->dataBitsComboBox->setCurrentIndex(dataBitsIndex);
     }
 
@@ -214,7 +214,7 @@ QWidget *GpsDisplayGadgetOptionsPage::createPage(QWidget *parent)
     options_page->stopBitsComboBox->addItems(StopBitsTypeString);
 
     int stopBitsIndex = options_page->stopBitsComboBox->findText(StopBitsTypeStringALL.at((int)m_config->stopBits()));
-    if(stopBitsIndex != -1){
+    if (stopBitsIndex != -1) {
        options_page->stopBitsComboBox->setCurrentIndex(stopBitsIndex);
     }
 
@@ -222,7 +222,7 @@ QWidget *GpsDisplayGadgetOptionsPage::createPage(QWidget *parent)
     options_page->parityComboBox->addItems(ParityTypeString);
 
     int parityIndex = options_page->parityComboBox->findText(ParityTypeStringALL.at((int)m_config->parity()));
-    if(parityIndex != -1){
+    if (parityIndex != -1) {
        options_page->parityComboBox->setCurrentIndex(parityIndex);
     }
  */

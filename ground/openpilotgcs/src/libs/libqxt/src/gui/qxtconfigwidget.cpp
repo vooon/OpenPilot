@@ -25,7 +25,7 @@
 #include "qxtconfigwidget.h"
 #include "qxtconfigwidget_p.h"
 #include <QStackedWidget>
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include <QTableWidget>
 #include <QHeaderView>
 #include <QVBoxLayout>

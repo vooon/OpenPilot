@@ -29,10 +29,10 @@
 
 #include <QDebug>
 #include <QStringList>
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QTextEdit>
-#include <QtWidgets/QVBoxLayout>
-#include <QtWidgets/QPushButton>
+#include <QWidget>
+#include <QTextEdit>
+#include <QVBoxLayout>
+#include <QPushButton>
 #include <loggingplugin.h>
 
 LoggingGadgetWidget::LoggingGadgetWidget(QWidget *parent) : QLabel(parent)

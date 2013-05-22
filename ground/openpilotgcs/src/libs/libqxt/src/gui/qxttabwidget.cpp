@@ -25,7 +25,7 @@
 #include "qxttabwidget.h"
 #include "qxttabwidget_p.h"
 #include <QContextMenuEvent>
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include <QTabBar>
 #include <QAction>
 #include <QMovie>

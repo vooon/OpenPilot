@@ -202,7 +202,7 @@ void QextSerialPortPrivate::setDataBits(DataBitsType dataBits, bool update)
         if (settings.StopBits == STOP_1_5) {
             QESP_WARNING("QextSerialPort: 7 Data bits cannot be used with 1.5 stop bits.");
         } else
-#endif
+#endif // ifdef Q_OS_WIN
         {
             settings.DataBits   = dataBits;
             settingsDirtyFlags |= DFE_DataBits;

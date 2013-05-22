@@ -25,7 +25,7 @@
 #ifndef QXTWINDOWSYSTEM_H
 #define QXTWINDOWSYSTEM_H
 
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include "qxtglobal.h"
 
 typedef QList<WId> WindowList;

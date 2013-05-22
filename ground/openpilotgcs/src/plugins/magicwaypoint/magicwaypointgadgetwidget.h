@@ -28,7 +28,7 @@
 #ifndef MagicWaypointGADGETWIDGET_H_
 #define MagicWaypointGADGETWIDGET_H_
 
-#include <QtWidgets/QLabel>
+#include <QLabel>
 #include "pathdesired.h"
 #include "positionactual.h"
 

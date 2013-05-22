@@ -26,7 +26,6 @@
  */
 #include "homeitem.h"
 #include <QGraphicsSceneMouseEvent>
-
 namespace mapcontrol {
 HomeItem::HomeItem(MapGraphicItem *map, OPMapWidget *parent) : safe(true), map(map), mapwidget(parent),
     showsafearea(true), toggleRefresh(true), safearea(1000), altitude(0), isDragging(false)

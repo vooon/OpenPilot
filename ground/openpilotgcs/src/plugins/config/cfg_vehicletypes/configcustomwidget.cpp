@@ -29,7 +29,7 @@
 
 #include <QDebug>
 #include <QStringList>
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include <QTextEdit>
 #include <QVBoxLayout>
 #include <QPushButton>

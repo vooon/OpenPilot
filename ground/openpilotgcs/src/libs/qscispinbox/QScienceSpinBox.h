@@ -4,9 +4,9 @@
 #ifndef __QScienceSpinBox_H__
 #define __QScienceSpinBox_H__
 
-#include <QtWidgets/QDoubleSpinBox>
+#include <QDoubleSpinBox>
 #include <QDoubleValidator>
-#include <QtWidgets/QLineEdit>
+#include <QLineEdit>
 #include <QtCore/QVariant>
 #include <QtCore/QDebug>
 #include <QtCore/QString>

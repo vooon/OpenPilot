@@ -33,7 +33,7 @@
 #include <QtCore/QStack>
 #include <QLabel>
 #include <QGridLayout>
-#include <QtGui/QPainter>
+#include <QPainter>
 
 using namespace Utils;
 

@@ -33,8 +33,8 @@
 #include "imode.h"
 
 #include <QtCore/QObject>
-#include <QtWidgets/QWidget>
-#include <QtGui/QIcon>
+#include <QWidget>
+#include <QIcon>
 
 namespace Core {
 class CORE_EXPORT BaseMode

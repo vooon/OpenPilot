@@ -29,8 +29,8 @@
 #include "qtsingleapplication.h"
 #include "qtlocalpeer.h"
 
-#include <QtWidgets/QWidget>
-#include <QtGui/QFileOpenEvent>
+#include <QWidget>
+#include <QFileOpenEvent>
 
 namespace SharedTools {
 void QtSingleApplication::sysInit(const QString &appId)

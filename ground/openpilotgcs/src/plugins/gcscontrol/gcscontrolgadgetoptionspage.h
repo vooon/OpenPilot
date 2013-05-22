@@ -35,9 +35,9 @@
 
 #include <QDebug>
 #include <QCheckBox>
-#include <QtWidgets/QComboBox>
-#include <QtWidgets/QDoubleSpinBox>
-#include <QtWidgets/QLabel>
+#include <QComboBox>
+#include <QDoubleSpinBox>
+#include <QLabel>
 
 namespace Core {
 class IUAVGadgetConfiguration;

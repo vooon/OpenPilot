@@ -167,6 +167,20 @@ void PIOS_USBHOOK_RegisterEpOutCallback(uint8_t epnum, uint16_t max_len, pios_us
     /*
      * FIXME do not hardcode endpoint type
      */
+
+    /*
+     * Make sure we refuse OUT transactions until we explicitly
+     * connect a receive buffer with PIOS_USBHOOK_EndpointRx().
+     *
+     * Without this, the ST USB code will receive on this endpoint
+     * and blindly write the data to a NULL pointer which will
+     * have the side effect of placing the internal flash into an
+     * errored state.  Address 0x0000_0000 is aliased into internal
+     * flash via the "Section 2.4 Boot configuration" BOOT0/1 pins.
+     */
+    DCD_SetEPStatus(&pios_usb_otg_core_handle,
+                    epnum,
+                    USB_OTG_EP_RX_NAK);
 }
 
 extern void PIOS_USBHOOK_DeRegisterEpOutCallback(uint8_t epnum)
@@ -341,7 +355,7 @@ static uint8_t PIOS_USBHOOK_CLASS_Setup(__attribute__((unused)) void *pdev, USB_
             (usb_if_table[ifnum].ifops && usb_if_table[ifnum].ifops->setup)) {
             usb_if_table[ifnum].ifops->setup(usb_if_table[ifnum].context,
                                              (struct usb_setup_request *)req);
-            if (req->bmRequest & 0x80 && req->wLength > 0) {
+            if (!(req->bmRequest & 0x80) && req->wLength > 0) {
                 /* Request is a host-to-device data setup packet, keep track of the request details for the EP0_RxReady call */
                 usb_ep0_active_req.bmRequestType = req->bmRequest;
                 usb_ep0_active_req.bRequest = req->bRequest;
@@ -384,9 +398,6 @@ static uint8_t PIOS_USBHOOK_CLASS_EP0_RxReady(__attribute__((unused)) void *pdev
 
 static uint8_t PIOS_USBHOOK_CLASS_DataIn(void *pdev, uint8_t epnum)
 {
-    /* Make sure the previous transfer has completed before starting a new one */
-    DCD_EP_Flush(pdev, epnum); /* NOT SURE IF THIS IS REQUIRED */
-
     /* Remove the direction bit so we can use this as an index */
     uint8_t epnum_idx = epnum & 0x7F;
 

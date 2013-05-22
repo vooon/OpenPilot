@@ -34,7 +34,7 @@
 #include <QLineEdit>
 #include <QToolButton>
 #include <QCompleter>
-#include <QtGui/QIcon>
+#include <QIcon>
 #include <QToolBar>
 
 #include <QtCore/QList>

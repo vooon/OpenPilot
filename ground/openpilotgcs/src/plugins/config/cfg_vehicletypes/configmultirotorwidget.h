@@ -36,7 +36,7 @@
 #include "uavtalk/telemetrymanager.h"
 
 #include <QtCore/QList>
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include <QItemDelegate>
 
 class Ui_Widget;

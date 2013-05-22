@@ -2,8 +2,8 @@
 #define POPUPWIDGET_H
 
 #include <QtGui>
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QHBoxLayout>
+#include <QWidget>
+#include <QHBoxLayout>
 #include <QDialog>
 
 

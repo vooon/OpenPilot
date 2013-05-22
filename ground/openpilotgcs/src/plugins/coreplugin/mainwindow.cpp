@@ -75,14 +75,14 @@
 #include <QtCore/QUrl>
 
 #include <QtWidgets/QApplication>
-#include <QtGui/QCloseEvent>
-#include <QtWidgets/QMenu>
-#include <QtGui/QPixmap>
-#include <QtWidgets/QShortcut>
-#include <QtWidgets/QStatusBar>
-#include <QtWidgets/QWizard>
-#include <QtWidgets/QToolButton>
-#include <QtWidgets/QMessageBox>
+#include <QCloseEvent>
+#include <QMenu>
+#include <QPixmap>
+#include <QShortcut>
+#include <QStatusBar>
+#include <QWizard>
+#include <QToolButton>
+#include <QMessageBox>
 #include <QDesktopServices>
 #include <QElapsedTimer>
 #include <QDir>

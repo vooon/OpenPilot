@@ -26,7 +26,7 @@
 #include "qxtitemdelegate_p.h"
 #include <QTextDocument>
 #include <QPixmapCache>
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include <QTreeView>
 #include <QPainter>
 #include <QTimer>

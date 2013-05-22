@@ -38,10 +38,10 @@
 #include <utils/treewidgetcolumnstretcher.h>
 
 
-#include <QtGui/QKeyEvent>
-#include <QtWidgets/QShortcut>
-#include <QtWidgets/QHeaderView>
-#include <QtWidgets/QFileDialog>
+#include <QKeyEvent>
+#include <QShortcut>
+#include <QHeaderView>
+#include <QFileDialog>
 #include <QtDebug>
 
 Q_DECLARE_METATYPE(Core::Internal::ShortcutItem *)

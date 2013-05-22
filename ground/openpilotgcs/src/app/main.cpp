@@ -96,10 +96,10 @@
 #include <QtCore/QSettings>
 #include <QtCore/QVariant>
 
-#include <QtWidgets/QMessageBox>
+#include <QMessageBox>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QMainWindow>
-#include <QtWidgets/QSplashScreen>
+#include <QMainWindow>
+#include <QSplashScreen>
 
 namespace {
 typedef QList<ExtensionSystem::PluginSpec *> PluginSpecSet;

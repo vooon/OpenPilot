@@ -34,11 +34,11 @@
 #include <coreplugin/icorelistener.h>
 #include <coreplugin/imode.h>
 
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include <QtCore/QList>
 #include <QtCore/QPointer>
 #include <QtCore/QSettings>
-#include <QtGui/QIcon>
+#include <QIcon>
 
 QT_BEGIN_NAMESPACE
 class QModelIndex;

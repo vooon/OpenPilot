@@ -36,7 +36,7 @@
 
 #include <QtCore/QTimer>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QGridLayout>
+#include <QGridLayout>
 
 
 #include <osg/Notify>

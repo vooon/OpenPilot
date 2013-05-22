@@ -48,7 +48,7 @@
 
 // for file dialog and error messages
 #include <QFileDialog>
-#include <QtWidgets/QMessageBox>
+#include <QMessageBox>
 
 UAVSettingsImportExportPlugin::UAVSettingsImportExportPlugin()
 {

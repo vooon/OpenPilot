@@ -31,7 +31,7 @@
 #include <coreplugin/icore.h>
 
 #include <QtCore/QtPlugin>
-#include <QtWidgets/QMainWindow>
+#include <QMainWindow>
 
 #include <QDebug>
 

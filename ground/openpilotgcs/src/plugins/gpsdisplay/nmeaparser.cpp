@@ -31,9 +31,9 @@
 #include <math.h>
 #include <QDebug>
 #include <QStringList>
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QVBoxLayout>
-#include <QtWidgets/QPushButton>
+#include <QWidget>
+#include <QVBoxLayout>
+#include <QPushButton>
 
 // Message Codes
 #define NMEA_NODATA    0       // No data. Packet not available, bad, or not decoded

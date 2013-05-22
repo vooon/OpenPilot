@@ -30,7 +30,7 @@
 #include "filewizardpage.h"
 #include "ui_projectintropage.h"
 
-#include <QtWidgets/QMessageBox>
+#include <QMessageBox>
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
 

@@ -1,10 +1,10 @@
 #include "popupwidget.h"
 
 #include <QtGui>
-#include <QtWidgets/QVBoxLayout>
-#include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QPushButton>
-#include <QtWidgets/QGroupBox>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QPushButton>
+#include <QGroupBox>
 
 PopupWidget::PopupWidget(QWidget *parent) :
     QDialog(parent)

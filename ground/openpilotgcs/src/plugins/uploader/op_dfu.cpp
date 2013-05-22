@@ -29,7 +29,7 @@
 #include <cmath>
 #include <qwaitcondition.h>
 #include <QMetaType>
-#include <QApplication>
+#include <QtWidgets/QApplication>
 
 using namespace OP_DFU;
 

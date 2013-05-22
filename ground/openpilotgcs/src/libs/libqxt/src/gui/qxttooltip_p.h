@@ -26,7 +26,7 @@
 #define QXTTOOLTIP_P_H
 
 #include <QPointer>
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include <QHash>
 #include "qxttooltip.h"
 

@@ -29,7 +29,7 @@
 #include "qtcolorbutton.h"
 
 #include <QtCore/QMimeData>
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include <QColorDialog>
 #include <QDragEnterEvent>
 #include <QDrag>

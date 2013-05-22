@@ -37,10 +37,10 @@
 #include <QDebug>
 #include <QStringList>
 #include <QTimer>
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QTextEdit>
-#include <QtWidgets/QVBoxLayout>
-#include <QtWidgets/QPushButton>
+#include <QWidget>
+#include <QTextEdit>
+#include <QVBoxLayout>
+#include <QPushButton>
 #include <math.h>
 #include <QDesktopServices>
 #include <QUrl>

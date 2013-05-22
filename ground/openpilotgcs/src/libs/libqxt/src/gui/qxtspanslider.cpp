@@ -26,7 +26,7 @@
 #include "qxtspanslider_p.h"
 #include <QKeyEvent>
 #include <QMouseEvent>
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include <QStylePainter>
 #include <QStyleOptionSlider>
 

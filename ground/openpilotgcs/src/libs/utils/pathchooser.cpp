@@ -36,7 +36,7 @@
 #include <QtCore/QFileInfo>
 #include <QtCore/QSettings>
 
-#include <QtGui/QDesktopServices>
+#include <QDesktopServices>
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include <QLineEdit>

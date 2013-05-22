@@ -11,7 +11,7 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDebug>
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include <QKeyEvent>
 #include "qxtgroupbox.h"
 

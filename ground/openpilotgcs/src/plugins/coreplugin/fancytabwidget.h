@@ -29,9 +29,9 @@
 #ifndef FANCYTABWIDGET_H
 #define FANCYTABWIDGET_H
 
-#include <QtWidgets/QPushButton>
-#include <QtWidgets/QTabBar>
-#include <QtWidgets/QStyleOptionTabV2>
+#include <QPushButton>
+#include <QTabBar>
+#include <QStyleOptionTabV2>
 #include <QtCore/QTimeLine>
 
 QT_BEGIN_NAMESPACE

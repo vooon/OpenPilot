@@ -25,7 +25,7 @@
 #include "qxtscreen.h"
 #include "qxtscreen_p.h"
 #include <QDesktopWidget>
-#include <QApplication>
+#include <QtWidgets/QApplication>
 
 QxtScreenPrivate::QxtScreenPrivate() :
     currReso(),

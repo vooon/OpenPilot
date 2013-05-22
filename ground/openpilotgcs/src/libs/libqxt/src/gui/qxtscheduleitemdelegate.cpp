@@ -26,7 +26,7 @@
 #include <QModelIndex>
 #include <QPixmap>
 #include <QPainter>
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include <QSize>
 #include <QFontMetrics>
 #include <QIcon>

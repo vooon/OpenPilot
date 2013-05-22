@@ -25,8 +25,8 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 #include "configtaskwidget.h"
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QLineEdit>
+#include <QWidget>
+#include <QLineEdit>
 #include "uavsettingsimportexport/uavsettingsimportexportfactory.h"
 
 /**

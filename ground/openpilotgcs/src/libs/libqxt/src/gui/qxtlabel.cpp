@@ -27,7 +27,7 @@
 #include <QEvent>
 #include <QPainter>
 #include <QFontMetrics>
-#include <QApplication>
+#include <QtWidgets/QApplication>
 
 static const int Vertical_Mask = 0x02;
 

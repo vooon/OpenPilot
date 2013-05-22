@@ -35,7 +35,7 @@
 #include "objectpersistence.h"
 
 
-#include <QtWidgets/QMessageBox>
+#include <QMessageBox>
 
 
 class ConfigGadgetFactory;

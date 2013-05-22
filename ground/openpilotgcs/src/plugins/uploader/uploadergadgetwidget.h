@@ -45,11 +45,11 @@
 #include "coreplugin/connectionmanager.h"
 
 #include "rawhid/rawhidplugin.h"
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include <QLabel>
 #include <QLineEdit>
 #include <QThread>
-#include <QtWidgets/QMessageBox>
+#include <QMessageBox>
 #include <QTimer>
 #include "devicedescriptorstruct.h"
 #include <QProgressDialog>
@@ -117,6 +117,10 @@ private slots:
     void uploadEnded(bool succeed);
     void downloadStarted();
     void downloadEnded(bool succeed);
+    void startAutoUpdate();
+    void finishAutoUpdate();
+    void closeAutoUpdate();
+    void autoUpdateStatus(uploader::AutoUpdateStep status, QVariant value);
 };
 
 #endif // UPLOADERGADGETWIDGET_H

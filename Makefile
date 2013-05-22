@@ -59,9 +59,9 @@ GOOGLE_API_VERSION	:= 14
 define SANITIZE_VAR
 $(if $(filter-out undefined,$(origin $(1))),
     $(info $(EMPTY) NOTE        Sanitized $(2) variable '$(1)' from $(origin $(1)))
-  MAKEOVERRIDES = $(filter-out $(1)=%,$(MAKEOVERRIDES))
-  override $(1) :=
-  unexport $(1)
+    MAKEOVERRIDES = $(filter-out $(1)=%,$(MAKEOVERRIDES))
+    override $(1) :=
+    unexport $(1)
 )
 endef
 
@@ -451,11 +451,11 @@ else
 endif
 
 .PHONY: openpilotgcs
-openpilotgcs:  uavobjects_gcs
+openpilotgcs: uavobjects_gcs
 	$(V1) $(MKDIR) -p $(BUILD_DIR)/$@_$(GCS_BUILD_CONF)
 	$(V1) ( cd $(BUILD_DIR)/$@_$(GCS_BUILD_CONF) && \
-	  $(QMAKE) $(ROOT_DIR)/ground/openpilotgcs/openpilotgcs.pro -spec $(QT_SPEC) -r CONFIG+="$(GCS_BUILD_CONF) $(GCS_SILENT)" $(GCS_QMAKE_OPTS) && \
-	  $(MAKE) -w ; \
+	    $(QMAKE) $(ROOT_DIR)/ground/openpilotgcs/openpilotgcs.pro -spec $(QT_SPEC) -r CONFIG+="$(GCS_BUILD_CONF) $(GCS_SILENT)" $(GCS_QMAKE_OPTS) && \
+	    $(MAKE) -w ; \
 	)
 
 .PHONY: openpilotgcs_clean
@@ -585,10 +585,10 @@ $$(UAVO_COLLECTION_DIR)/$(1)/java-build/uavobjects.jar: $$(UAVO_COLLECTION_DIR)/
 		HASH=$$$$(cat $$(UAVO_COLLECTION_DIR)/$(1)/uavohash) && \
 		cd $$(UAVO_COLLECTION_DIR)/$(1)/java-build && \
 		$(JAVAC) java/*.java \
-		   $$(ROOT_DIR)/androidgcs/src/org/openpilot/uavtalk/UAVDataObject.java \
-		   $$(ROOT_DIR)/androidgcs/src/org/openpilot/uavtalk/UAVObject*.java \
-		   $$(ROOT_DIR)/androidgcs/src/org/openpilot/uavtalk/UAVMetaObject.java \
-		   -d . && \
+			$$(ROOT_DIR)/androidgcs/src/org/openpilot/uavtalk/UAVDataObject.java \
+			$$(ROOT_DIR)/androidgcs/src/org/openpilot/uavtalk/UAVObject*.java \
+			$$(ROOT_DIR)/androidgcs/src/org/openpilot/uavtalk/UAVMetaObject.java \
+			-d . && \
 		find ./org/openpilot/uavtalk/uavobjects -type f -name '*.class' > classlist.txt && \
 		$(JAR) cf tmp_uavobjects.jar @classlist.txt && \
 		$$(ANDROID_DX) \

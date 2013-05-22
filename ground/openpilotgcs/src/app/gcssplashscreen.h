@@ -28,12 +28,10 @@
 #ifndef GCSSPLASHSCREEN_H
 #define GCSSPLASHSCREEN_H
 
-#include <QtWidgets/QSplashScreen>
+#include <QSplashScreen>
 #include <QPixmap>
 #include <QPainter>
 #include <extensionsystem/pluginspec.h>
-
-#include "../gcs_version_info.h"
 
 class GCSSplashScreen : public QSplashScreen {
     Q_OBJECT

@@ -31,7 +31,7 @@
 
 #include "utils_global.h"
 
-#include <QtWidgets/QWidget>
+#include <QWidget>
 
 namespace Utils {
 class QTCREATOR_UTILS_EXPORT StyledBar : public QWidget {

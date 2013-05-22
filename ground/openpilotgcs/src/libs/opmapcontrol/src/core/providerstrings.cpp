@@ -43,7 +43,7 @@ ProviderStrings::ProviderStrings()
 // VersionGoogleTerrain = "t@125,r@132";
     // Google version strings
     VersionGoogleMap       = "m@132";
-    VersionGoogleSatellite = "128";
+    VersionGoogleSatellite = "71";
     VersionGoogleLabels    = "h@132";
     VersionGoogleTerrain   = "t@125,r@132";
     SecGoogleWord = "Galileo";

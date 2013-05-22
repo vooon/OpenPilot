@@ -47,9 +47,9 @@
 #include <QDebug>
 #include <QColor>
 #include <QStringList>
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QVBoxLayout>
-#include <QtWidgets/QPushButton>
+#include <QWidget>
+#include <QVBoxLayout>
+#include <QPushButton>
 #include <QMutexLocker>
 #include <QWheelEvent>
 

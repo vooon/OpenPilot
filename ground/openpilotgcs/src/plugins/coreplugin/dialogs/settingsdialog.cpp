@@ -36,9 +36,9 @@
 
 #include <QtCore/QDebug>
 #include <QtCore/QSettings>
-#include <QtWidgets/QHeaderView>
-#include <QtWidgets/QLabel>
-#include <QtWidgets/QPushButton>
+#include <QHeaderView>
+#include <QLabel>
+#include <QPushButton>
 
 namespace {
 struct PageData {

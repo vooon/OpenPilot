@@ -55,7 +55,7 @@
 
 #define PICTUREFLOW_QT4
 
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include <QCache>
 #include <QHash>
 #include <QImage>
@@ -64,7 +64,7 @@
 #include <QPixmap>
 #include <QTimer>
 #include <QVector>
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include <QAbstractItemModel>
 #include <QPersistentModelIndex>
 #include <QList>

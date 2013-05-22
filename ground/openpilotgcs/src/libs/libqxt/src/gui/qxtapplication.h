@@ -25,7 +25,7 @@
 #ifndef QXTAPPLICATION_H
 #define QXTAPPLICATION_H
 
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include "qxtglobal.h"
 
 class QxtApplicationPrivate;

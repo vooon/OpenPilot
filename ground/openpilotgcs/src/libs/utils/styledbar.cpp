@@ -31,8 +31,8 @@
 #include "stylehelper.h"
 
 #include <QtCore/QVariant>
-#include <QtGui/QPainter>
-#include <QtGui/QPixmapCache>
+#include <QPainter>
+#include <QPixmapCache>
 #include <QStyle>
 #include <QStyleOption>
 

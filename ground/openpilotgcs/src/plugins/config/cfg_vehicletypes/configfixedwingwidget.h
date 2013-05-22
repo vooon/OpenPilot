@@ -34,7 +34,7 @@
 #include "uavobjectmanager.h"
 #include "uavobject.h"
 #include "uavtalk/telemetrymanager.h"
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include <QList>
 #include <QItemDelegate>
 

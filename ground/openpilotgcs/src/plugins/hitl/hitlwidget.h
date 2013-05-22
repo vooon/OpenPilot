@@ -28,7 +28,7 @@
 #ifndef HITLWIDGET_H
 #define HITLWIDGET_H
 
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include <QProcess>
 #include "simulator.h"
 

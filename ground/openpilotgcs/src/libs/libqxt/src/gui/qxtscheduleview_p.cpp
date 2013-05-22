@@ -30,10 +30,10 @@
 #include <QBrush>
 #include <QMouseEvent>
 #include <QDebug>
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include <QTimer>
 #include <QStringList>
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include <QList>
 #include <QListIterator>
 #include <QMutableLinkedListIterator>

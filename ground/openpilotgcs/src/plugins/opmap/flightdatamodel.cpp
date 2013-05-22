@@ -26,7 +26,7 @@
  */
 
 #include "flightdatamodel.h"
-#include <QtWidgets/QMessageBox>
+#include <QMessageBox>
 #include <QDomDocument>
 flightDataModel::flightDataModel(QObject *parent) : QAbstractTableModel(parent)
 {}

@@ -32,14 +32,14 @@
 
 #include <QDebug>
 #include <QStringList>
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QTextEdit>
-#include <QtWidgets/QVBoxLayout>
-#include <QtWidgets/QPushButton>
-#include <QtWidgets/QComboBox>
+#include <QWidget>
+#include <QTextEdit>
+#include <QVBoxLayout>
+#include <QPushButton>
+#include <QComboBox>
 #include <QBrush>
 #include <math.h>
-#include <QtWidgets/QMessageBox>
+#include <QMessageBox>
 
 const QString ConfigMultiRotorWidget::CHANNELBOXNAME = QString("multiMotorChannelBox");
 

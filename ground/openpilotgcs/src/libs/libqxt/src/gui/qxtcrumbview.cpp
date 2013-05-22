@@ -25,7 +25,7 @@
 
 #include "qxtcrumbview.h"
 #include "qxtcrumbview_p.h"
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include <QPaintEvent>
 #include <QListView>
 #include <QToolButton>

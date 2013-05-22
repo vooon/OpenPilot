@@ -206,7 +206,8 @@ void AntennaTrackWidget::calcAntennaPosition(void)
         if (azimuth_old != azimuth || elevation != elevation_old) {
             port->write(str3.toLatin1());
         }
-        azimuth_old   = azimuth;
-        elevation_old = elevation;
     }
+    azimuth_old   = azimuth;
+    elevation_old = elevation;
+}
 }

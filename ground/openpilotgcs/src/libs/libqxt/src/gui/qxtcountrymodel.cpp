@@ -28,7 +28,7 @@
 #include "qxtlocale.h"
 #include <QIcon>
 #include <QLocale>
-#include <QApplication>
+#include <QtWidgets/QApplication>
 
 class QxtCountry;
 typedef QList<QxtCountry> QxtCountryList;

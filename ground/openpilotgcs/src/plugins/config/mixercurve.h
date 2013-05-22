@@ -28,7 +28,7 @@
 #define MIXERCURVE_H
 
 #include <QFrame>
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include <QList>
 #include <QTableWidget>
 

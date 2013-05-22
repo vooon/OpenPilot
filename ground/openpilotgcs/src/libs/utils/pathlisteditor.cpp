@@ -34,8 +34,8 @@
 #include <QToolButton>
 #include <QSpacerItem>
 #include <QFileDialog>
-#include <QtGui/QTextCursor>
-#include <QtGui/QTextBlock>
+#include <QTextCursor>
+#include <QTextBlock>
 #include <QMenu>
 #include <QAction>
 

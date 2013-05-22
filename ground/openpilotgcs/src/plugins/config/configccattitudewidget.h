@@ -32,7 +32,7 @@
 #include "extensionsystem/pluginmanager.h"
 #include "uavobjectmanager.h"
 #include "uavobject.h"
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include <QTimer>
 
 class Ui_Widget;

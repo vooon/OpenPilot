@@ -30,10 +30,10 @@
 #include <QDebug>
 #include <QString>
 #include <QStringList>
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QTextEdit>
-#include <QtWidgets/QVBoxLayout>
-#include <QtWidgets/QPushButton>
+#include <QWidget>
+#include <QTextEdit>
+#include <QVBoxLayout>
+#include <QPushButton>
 
 #include "uavobject.h"
 #include "uavobjectmanager.h"

@@ -27,7 +27,7 @@
 
 #include "uavgadgetdecorator.h"
 #include "iuavgadgetconfiguration.h"
-#include <QtWidgets/QComboBox>
+#include <QComboBox>
 #include <QtCore/QByteArray>
 #include <QtCore/QDebug>
 

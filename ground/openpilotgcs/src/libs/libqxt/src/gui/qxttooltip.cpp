@@ -27,7 +27,7 @@
 #include <QStyleOptionFrame>
 #include <QDesktopWidget>
 #include <QStylePainter>
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include <QVBoxLayout>
 #include <QMouseEvent>
 #include <QKeyEvent>

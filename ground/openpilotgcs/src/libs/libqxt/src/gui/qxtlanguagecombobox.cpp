@@ -26,7 +26,7 @@
 #include "qxtlanguagecombobox.h"
 #include "qxtlanguagecombobox_p.h"
 #include <QDir>
-#include <QApplication>
+#include <QtWidgets/QApplication>
 
 class Language;
 typedef QList<Language> LanguageList;

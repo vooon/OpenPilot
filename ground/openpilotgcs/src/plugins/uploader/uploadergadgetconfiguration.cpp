@@ -42,7 +42,6 @@ UploaderGadgetConfiguration::UploaderGadgetConfiguration(QString classId, QSetti
        m_defaultParity(PAR_NONE),
        m_defaultStopBits(STOP_1),
        m_defaultTimeOut(5000)*/
-
 {
     // if a saved configuration exists load it
     if (qSettings != 0) {

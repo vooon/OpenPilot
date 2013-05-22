@@ -28,7 +28,7 @@
 
 #include "reloadpromptutils.h"
 
-#include <QtWidgets/QMessageBox>
+#include <QMessageBox>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDir>
 

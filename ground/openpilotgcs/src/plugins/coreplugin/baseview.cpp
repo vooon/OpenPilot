@@ -28,7 +28,7 @@
 
 #include "baseview.h"
 
-#include <QtWidgets/QWidget>
+#include <QWidget>
 
 using namespace Core;
 

@@ -34,11 +34,11 @@
 #include <extensionsystem/pluginerrorview.h>
 #include <extensionsystem/pluginspec.h>
 
-#include <QtWidgets/QVBoxLayout>
-#include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QDialog>
-#include <QtWidgets/QDialogButtonBox>
-#include <QtWidgets/QPushButton>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QPushButton>
 #include <QtDebug>
 
 using namespace Core::Internal;

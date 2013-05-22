@@ -34,7 +34,7 @@
 #include "configuration.h"
 #include <QtGui>
 #include <QTransform>
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include <QBrush>
 #include <QFont>
 #include <QObject>

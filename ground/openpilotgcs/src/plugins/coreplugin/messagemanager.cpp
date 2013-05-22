@@ -31,7 +31,7 @@
 
 #include <extensionsystem/pluginmanager.h>
 
-#include <QtWidgets/QStatusBar>
+#include <QStatusBar>
 #include <QtWidgets/QApplication>
 
 using namespace Core;

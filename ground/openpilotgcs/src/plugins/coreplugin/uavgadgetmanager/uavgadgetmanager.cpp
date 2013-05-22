@@ -53,15 +53,15 @@
 #include <QtCore/QProcess>
 #include <QtCore/QSet>
 
-#include <QtWidgets/QAction>
+#include <QAction>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QLayout>
-#include <QtWidgets/QMainWindow>
-#include <QtWidgets/QMenu>
-#include <QtWidgets/QMessageBox>
-#include <QtWidgets/QPushButton>
-#include <QtWidgets/QSplitter>
-#include <QtWidgets/QStackedLayout>
+#include <QLayout>
+#include <QMainWindow>
+#include <QMenu>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QSplitter>
+#include <QStackedLayout>
 
 Q_DECLARE_METATYPE(Core::IUAVGadget *)
 
