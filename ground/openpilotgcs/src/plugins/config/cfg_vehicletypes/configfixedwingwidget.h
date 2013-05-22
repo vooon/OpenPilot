@@ -40,8 +40,7 @@
 
 class Ui_Widget;
 
-class ConfigFixedWingWidget: public VehicleConfig
-{
+class ConfigFixedWingWidget : public VehicleConfig {
     Q_OBJECT
 
 public:
@@ -69,7 +68,6 @@ protected:
 private slots:
     virtual void setupUI(QString airframeType);
     virtual bool throwConfigError(QString airframeType);
-
 };
 
 #endif // CONFIGFIXEDWINGWIDGET_H

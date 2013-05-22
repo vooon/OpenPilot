@@ -32,7 +32,7 @@ OPStartPage::OPStartPage(SetupWizard *wizard, QWidget *parent) :
     ui(new Ui::OPStartPage)
 {
     ui->setupUi(this);
-     setFont(QFont("Ubuntu",2));
+    setFont(QFont("Ubuntu", 2));
 }
 
 OPStartPage::~OPStartPage()

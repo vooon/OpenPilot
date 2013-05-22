@@ -26,26 +26,26 @@
  */
 #include "port.h"
 #include "delay.h"
-port::port(QString name):mstatus(port::closed)
+port::port(QString name) : mstatus(port::closed)
 {
     timer.start();
     sport = new QSerialPort(name);
-    if(sport->open(QIODevice::ReadWrite|QIODevice::Unbuffered))
-    {
+    if (sport->open(QIODevice::ReadWrite | QIODevice::Unbuffered)) {
         if (sport->setBaudRate(57600)
-                && sport->setDataBits(QSerialPort::Data8)
-                && sport->setParity(QSerialPort::NoParity)
-                && sport->setStopBits(QSerialPort::OneStop)
-                && sport->setFlowControl(QSerialPort::NoFlowControl)) {
-            mstatus=port::open;
+            && sport->setDataBits(QSerialPort::Data8)
+            && sport->setParity(QSerialPort::NoParity)
+            && sport->setStopBits(QSerialPort::OneStop)
+            && sport->setFlowControl(QSerialPort::NoFlowControl)) {
+            mstatus = port::open;
         }
-      //  sport->setDtr();
+        // sport->setDtr();
+    } else {
+        mstatus = port::error;
     }
-    else
-        mstatus=port::error;
 }
 
-port::~port() {
+port::~port()
+{
     sport->close();
 }
 
@@ -55,21 +55,20 @@ port::portstatus port::status()
 }
 int16_t port::pfSerialRead(void)
 {
-
     char c[1];
-    if( sport->bytesAvailable() )
-    {
-        sport->read(c,1);
-    }
-    else return -1;
+
+    if (sport->bytesAvailable()) {
+        sport->read(c, 1);
+    } else { return -1; }
     return (uint8_t)c[0];
 }
 
 void port::pfSerialWrite(uint8_t c)
 {
     char cc[1];
-    cc[0]=c;
-    sport->write(cc,1);
+
+    cc[0] = c;
+    sport->write(cc, 1);
 }
 
 uint32_t port::pfGetTime(void)

@@ -7,7 +7,7 @@
  * @{
  * @addtogroup ModelViewPlugin ModelView Plugin
  * @{
- * @brief A gadget that displays a 3D representation of the UAV 
+ * @brief A gadget that displays a 3D representation of the UAV
  *****************************************************************************/
 /*
  * This program is free software; you can redistribute it and/or modify
@@ -32,18 +32,17 @@
 
 class ModelViewGadgetFactory;
 
-class ModelViewPlugin : public ExtensionSystem::IPlugin
-{
+class ModelViewPlugin : public ExtensionSystem::IPlugin {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "Openpilot")
+                                                Q_PLUGIN_METADATA(IID "Openpilot")
 public:
-   ModelViewPlugin();
-   ~ModelViewPlugin();
+    ModelViewPlugin();
+    ~ModelViewPlugin();
 
-   void extensionsInitialized();
-   bool initialize(const QStringList & arguments, QString * errorString);
-   void shutdown();
+    void extensionsInitialized();
+    bool initialize(const QStringList & arguments, QString *errorString);
+    void shutdown();
 private:
-   ModelViewGadgetFactory *mvf;
+    ModelViewGadgetFactory *mvf;
 };
 #endif /* MODELVIEWPLUGIN_H_ */

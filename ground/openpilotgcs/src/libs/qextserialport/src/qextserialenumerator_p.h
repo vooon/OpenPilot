@@ -33,8 +33,8 @@
 #define _QEXTSERIALENUMERATOR_P_H_
 
 //
-//  W A R N I N G
-//  -------------
+// W A R N I N G
+// -------------
 //
 // This file is not part of the QESP API.  It exists for the convenience
 // of other QESP classes.  This header file may change from version to
@@ -51,7 +51,7 @@
 // http://mingw-users.1079350.n2.nabble.com/DEV-BROADCAST-DEVICEINTERFACE-was-not-declared-in-this-scope-td3552762.html
 // http://msdn.microsoft.com/en-us/library/6sehtctf.aspx
 #  ifndef WINVER
-#    define WINVER 0x0501
+#    define WINVER       0x0501
 #  endif
 #  ifndef _WIN32_WINNT
 #    define _WIN32_WINNT WINVER
@@ -74,8 +74,7 @@ extern "C" {
 #endif
 
 class QextSerialRegistrationWidget;
-class QextSerialEnumeratorPrivate
-{
+class QextSerialEnumeratorPrivate {
     Q_DECLARE_PUBLIC(QextSerialEnumerator)
 public:
     QextSerialEnumeratorPrivate(QextSerialEnumerator *enumrator);
@@ -122,4 +121,4 @@ private:
     QextSerialEnumerator *q_ptr;
 };
 
-#endif //_QEXTSERIALENUMERATOR_P_H_
+#endif // _QEXTSERIALENUMERATOR_P_H_

@@ -34,12 +34,10 @@
 #include <QtCore/QDebug>
 
 void QextSerialEnumeratorPrivate::platformSpecificInit()
-{
-}
+{}
 
 void QextSerialEnumeratorPrivate::platformSpecificDestruct()
-{
-}
+{}
 
 QList<QextPortInfo> QextSerialEnumeratorPrivate::getPorts_sys()
 {

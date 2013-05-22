@@ -21,18 +21,17 @@
 
 class PfdQmlGadgetFactory;
 
-class PfdQmlPlugin : public ExtensionSystem::IPlugin
-{
+class PfdQmlPlugin : public ExtensionSystem::IPlugin {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "OpenPilot")
+                                             Q_PLUGIN_METADATA(IID "OpenPilot")
 public:
-   PfdQmlPlugin();
-   ~PfdQmlPlugin();
+    PfdQmlPlugin();
+    ~PfdQmlPlugin();
 
-   void extensionsInitialized();
-   bool initialize(const QStringList &arguments, QString *errorString);
-   void shutdown();
+    void extensionsInitialized();
+    bool initialize(const QStringList &arguments, QString *errorString);
+    void shutdown();
 private:
-   PfdQmlGadgetFactory *mf;
+    PfdQmlGadgetFactory *mf;
 };
 #endif /* PFDQMLPLUGIN_H_ */

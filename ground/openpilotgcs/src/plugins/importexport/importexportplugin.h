@@ -30,23 +30,21 @@
 #include <extensionsystem/iplugin.h>
 #include "importexport_global.h"
 
-class IMPORTEXPORT_EXPORT ImportExportPlugin : public ExtensionSystem::IPlugin
-{
+class IMPORTEXPORT_EXPORT ImportExportPlugin : public ExtensionSystem::IPlugin {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "OpenPilot")
+                          Q_PLUGIN_METADATA(IID "OpenPilot")
 
 public:
     ImportExportPlugin();
     ~ImportExportPlugin();
 
     void extensionsInitialized();
-    bool initialize(const QStringList & arguments, QString * errorString);
+    bool initialize(const QStringList & arguments, QString *errorString);
     void shutdown();
 private:
 
 private slots:
     void importExport();
-
 };
 #endif /* IMPORTEXPORTPLUGIN_H_ */
 /**

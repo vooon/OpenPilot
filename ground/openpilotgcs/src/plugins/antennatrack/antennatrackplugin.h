@@ -5,16 +5,15 @@
 
 class AntennaTrackGadgetFactory;
 
-class AntennaTrackPlugin : public ExtensionSystem::IPlugin
-{
+class AntennaTrackPlugin : public ExtensionSystem::IPlugin {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "OpenPilot")
+                                                   Q_PLUGIN_METADATA(IID "OpenPilot")
 public:
     AntennaTrackPlugin();
     ~AntennaTrackPlugin();
 
     void extensionsInitialized();
-    bool initialize(const QStringList & arguments, QString * errorString);
+    bool initialize(const QStringList & arguments, QString *errorString);
     void shutdown();
 private:
     AntennaTrackGadgetFactory *mf;

@@ -7,7 +7,7 @@
  * @{
  * @addtogroup OPMapPlugin OpenPilot Map Plugin
  * @{
- * @brief The OpenPilot Map plugin 
+ * @brief The OpenPilot Map plugin
  *****************************************************************************/
 /*
  * This program is free software; you can redistribute it and/or modify
@@ -32,18 +32,17 @@
 
 class OPMapGadgetFactory;
 
-class OPMapPlugin : public ExtensionSystem::IPlugin
-{
+class OPMapPlugin : public ExtensionSystem::IPlugin {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "OpenPilot")
+                                            Q_PLUGIN_METADATA(IID "OpenPilot")
 public:
     OPMapPlugin();
     ~OPMapPlugin();
 
-   void extensionsInitialized();
-   bool initialize(const QStringList & arguments, QString * errorString);
-   void shutdown();
+    void extensionsInitialized();
+    bool initialize(const QStringList & arguments, QString *errorString);
+    void shutdown();
 private:
-   OPMapGadgetFactory *mf;
+    OPMapGadgetFactory *mf;
 };
 #endif /* OPMAP_PLUGIN_H_ */

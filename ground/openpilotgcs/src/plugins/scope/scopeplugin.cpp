@@ -44,7 +44,7 @@ ScopePlugin::~ScopePlugin()
 }
 
 
-bool ScopePlugin::initialize(const QStringList& args, QString *errMsg)
+bool ScopePlugin::initialize(const QStringList & args, QString *errMsg)
 {
     Q_UNUSED(args);
     Q_UNUSED(errMsg);

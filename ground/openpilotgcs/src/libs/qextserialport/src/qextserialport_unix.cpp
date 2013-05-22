@@ -50,46 +50,45 @@ void QextSerialPortPrivate::platformSpecificInit()
 
 /*!
     Standard destructor.
-*/
+ */
 void QextSerialPortPrivate::platformSpecificDestruct()
-{
-}
+{}
 
 static QString fullPortName(const QString &name)
 {
-    if (name.startsWith(QLatin1Char('/')))
+    if (name.startsWith(QLatin1Char('/'))) {
         return name;
-    return QLatin1String("/dev/")+name;
+    }
+    return QLatin1String("/dev/") + name;
 }
 
 bool QextSerialPortPrivate::open_sys(QIODevice::OpenMode mode)
 {
     Q_Q(QextSerialPort);
-    //note: linux 2.6.21 seems to ignore O_NDELAY flag
-    if ((fd = ::open(fullPortName(port).toLatin1() ,O_RDWR | O_NOCTTY | O_NDELAY)) != -1) {
-
+    // note: linux 2.6.21 seems to ignore O_NDELAY flag
+    if ((fd = ::open(fullPortName(port).toLatin1(), O_RDWR | O_NOCTTY | O_NDELAY)) != -1) {
         /*In the Private class, We can not call QIODevice::open()*/
-        q->setOpenMode(mode);             // Flag the port as opened
-        ::tcgetattr(fd, &oldTermios);    // Save the old termios
-        currentTermios = oldTermios;   // Make a working copy
-        ::cfmakeraw(&currentTermios);   // Enable raw access
+        q->setOpenMode(mode); // Flag the port as opened
+        ::tcgetattr(fd, &oldTermios); // Save the old termios
+        currentTermios = oldTermios; // Make a working copy
+        ::cfmakeraw(&currentTermios); // Enable raw access
 
         /*set up other port settings*/
-        currentTermios.c_cflag |= CREAD|CLOCAL;
-        currentTermios.c_lflag &= (~(ICANON|ECHO|ECHOE|ECHOK|ECHONL|ISIG));
-        currentTermios.c_iflag &= (~(INPCK|IGNPAR|PARMRK|ISTRIP|ICRNL|IXANY));
-        currentTermios.c_oflag &= (~OPOST);
+        currentTermios.c_cflag   |= CREAD | CLOCAL;
+        currentTermios.c_lflag   &= (~(ICANON | ECHO | ECHOE | ECHOK | ECHONL | ISIG));
+        currentTermios.c_iflag   &= (~(INPCK | IGNPAR | PARMRK | ISTRIP | ICRNL | IXANY));
+        currentTermios.c_oflag   &= (~OPOST);
         currentTermios.c_cc[VMIN] = 0;
-#ifdef _POSIX_VDISABLE  // Is a disable character available on this system?
+#ifdef _POSIX_VDISABLE // Is a disable character available on this system?
         // Some systems allow for per-device disable-characters, so get the
-        //  proper value for the configured device
+        // proper value for the configured device
         const long vdisable = ::fpathconf(fd, _PC_VDISABLE);
-        currentTermios.c_cc[VINTR] = vdisable;
-        currentTermios.c_cc[VQUIT] = vdisable;
+        currentTermios.c_cc[VINTR]  = vdisable;
+        currentTermios.c_cc[VQUIT]  = vdisable;
         currentTermios.c_cc[VSTART] = vdisable;
-        currentTermios.c_cc[VSTOP] = vdisable;
-        currentTermios.c_cc[VSUSP] = vdisable;
-#endif //_POSIX_VDISABLE
+        currentTermios.c_cc[VSTOP]  = vdisable;
+        currentTermios.c_cc[VSUSP]  = vdisable;
+#endif // _POSIX_VDISABLE
         settingsDirtyFlags = DFE_ALL;
         updatePortSettings();
 
@@ -109,7 +108,7 @@ bool QextSerialPortPrivate::close_sys()
     // Force a flush and then restore the original termios
     flush_sys();
     // Using both TCSAFLUSH and TCSANOW here discards any pending input
-    ::tcsetattr(fd, TCSAFLUSH | TCSANOW, &oldTermios);   // Restore termios
+    ::tcsetattr(fd, TCSAFLUSH | TCSANOW, &oldTermios); // Restore termios
     ::close(fd);
     if (readNotifier) {
         delete readNotifier;
@@ -127,14 +126,16 @@ bool QextSerialPortPrivate::flush_sys()
 qint64 QextSerialPortPrivate::bytesAvailable_sys() const
 {
     int bytesQueued;
-    if (::ioctl(fd, FIONREAD, &bytesQueued) == -1)
-        return (qint64)-1;
+
+    if (::ioctl(fd, FIONREAD, &bytesQueued) == -1) {
+        return (qint64) - 1;
+    }
     return bytesQueued;
 }
 
 /*!
     Translates a system-specific error code to a QextSerialPort error code.  Used internally.
-*/
+ */
 void QextSerialPortPrivate::translateError(ulong error)
 {
     switch (error) {
@@ -160,37 +161,58 @@ void QextSerialPortPrivate::translateError(ulong error)
 void QextSerialPortPrivate::setDtr_sys(bool set)
 {
     int status;
+
     ::ioctl(fd, TIOCMGET, &status);
-    if (set)
+    if (set) {
         status |= TIOCM_DTR;
-    else
+    } else {
         status &= ~TIOCM_DTR;
+    }
     ::ioctl(fd, TIOCMSET, &status);
 }
 
 void QextSerialPortPrivate::setRts_sys(bool set)
 {
     int status;
+
     ::ioctl(fd, TIOCMGET, &status);
-    if (set)
+    if (set) {
         status |= TIOCM_RTS;
-    else
+    } else {
         status &= ~TIOCM_RTS;
+    }
     ::ioctl(fd, TIOCMSET, &status);
 }
 
 unsigned long QextSerialPortPrivate::lineStatus_sys()
 {
-    unsigned long Status=0, Temp=0;
+    unsigned long Status = 0, Temp = 0;
+
     ::ioctl(fd, TIOCMGET, &Temp);
-    if (Temp & TIOCM_CTS) Status |= LS_CTS;
-    if (Temp & TIOCM_DSR) Status |= LS_DSR;
-    if (Temp & TIOCM_RI) Status |= LS_RI;
-    if (Temp & TIOCM_CD) Status |= LS_DCD;
-    if (Temp & TIOCM_DTR) Status |= LS_DTR;
-    if (Temp & TIOCM_RTS) Status |= LS_RTS;
-    if (Temp & TIOCM_ST) Status |= LS_ST;
-    if (Temp & TIOCM_SR) Status |= LS_SR;
+    if (Temp & TIOCM_CTS) {
+        Status |= LS_CTS;
+    }
+    if (Temp & TIOCM_DSR) {
+        Status |= LS_DSR;
+    }
+    if (Temp & TIOCM_RI) {
+        Status |= LS_RI;
+    }
+    if (Temp & TIOCM_CD) {
+        Status |= LS_DCD;
+    }
+    if (Temp & TIOCM_DTR) {
+        Status |= LS_DTR;
+    }
+    if (Temp & TIOCM_RTS) {
+        Status |= LS_RTS;
+    }
+    if (Temp & TIOCM_ST) {
+        Status |= LS_ST;
+    }
+    if (Temp & TIOCM_SR) {
+        Status |= LS_SR;
+    }
     return Status;
 }
 
@@ -198,15 +220,17 @@ unsigned long QextSerialPortPrivate::lineStatus_sys()
     Reads a block of data from the serial port.  This function will read at most maxSize bytes from
     the serial port and place them in the buffer pointed to by data.  Return value is the number of
     bytes actually read, or -1 on error.
-    
+
     \warning before calling this function ensure that serial port associated with this class
     is currently open (use isOpen() function to check if port is open).
-*/
+ */
 qint64 QextSerialPortPrivate::readData_sys(char *data, qint64 maxSize)
 {
     int retVal = ::read(fd, data, maxSize);
-    if (retVal == -1)
+
+    if (retVal == -1) {
         lastErr = E_READ_FAILED;
+    }
 
     return retVal;
 }
@@ -215,15 +239,17 @@ qint64 QextSerialPortPrivate::readData_sys(char *data, qint64 maxSize)
     Writes a block of data to the serial port.  This function will write maxSize bytes
     from the buffer pointed to by data to the serial port.  Return value is the number
     of bytes actually written, or -1 on error.
-    
+
     \warning before calling this function ensure that serial port associated with this class
     is currently open (use isOpen() function to check if port is open).
-*/
+ */
 qint64 QextSerialPortPrivate::writeData_sys(const char *data, qint64 maxSize)
 {
     int retVal = ::write(fd, data, maxSize);
-    if (retVal == -1)
+
+    if (retVal == -1) {
         lastErr = E_WRITE_FAILED;
+    }
 
     return (qint64)retVal;
 }
@@ -241,11 +267,12 @@ static void setBaudRate2Termios(termios *config, int baudRate)
 
 /*
     All the platform settings was performed in this function.
-*/
+ */
 void QextSerialPortPrivate::updatePortSettings()
 {
-    if (!q_func()->isOpen() || !settingsDirtyFlags)
+    if (!q_func()->isOpen() || !settingsDirtyFlags) {
         return;
+    }
 
     if (settingsDirtyFlags & DFE_BaudRate) {
         switch (settings.BaudRate) {
@@ -345,7 +372,7 @@ void QextSerialPortPrivate::updatePortSettings()
         case BAUD4000000:
             setBaudRate2Termios(&currentTermios, B4000000);
             break;
-#endif
+#endif // if defined(B230400) && defined(B4000000)
 #ifdef Q_OS_MAC
         default:
             setBaudRate2Termios(&currentTermios, settings.BaudRate);
@@ -357,7 +384,7 @@ void QextSerialPortPrivate::updatePortSettings()
         switch (settings.Parity) {
         case PAR_SPACE:
             /*space parity not directly supported - add an extra data bit to simulate it*/
-            settingsDirtyFlags |= DFE_DataBits;
+            settingsDirtyFlags     |= DFE_DataBits;
             break;
         case PAR_NONE:
             currentTermios.c_cflag &= (~PARENB);
@@ -367,7 +394,7 @@ void QextSerialPortPrivate::updatePortSettings()
             currentTermios.c_cflag |= PARENB;
             break;
         case PAR_ODD:
-            currentTermios.c_cflag |= (PARENB|PARODD);
+            currentTermios.c_cflag |= (PARENB | PARODD);
             break;
         }
     }
@@ -375,7 +402,7 @@ void QextSerialPortPrivate::updatePortSettings()
     if (settingsDirtyFlags & DFE_DataBits) {
         if (settings.Parity != PAR_SPACE) {
             currentTermios.c_cflag &= (~CSIZE);
-            switch(settings.DataBits) {
+            switch (settings.DataBits) {
             case DATA_5:
                 currentTermios.c_cflag |= CS5;
                 break;
@@ -391,8 +418,8 @@ void QextSerialPortPrivate::updatePortSettings()
             }
         } else {
             /*space parity not directly supported - add an extra data bit to simulate it*/
-            currentTermios.c_cflag &= ~(PARENB|CSIZE);
-            switch(settings.DataBits) {
+            currentTermios.c_cflag &= ~(PARENB | CSIZE);
+            switch (settings.DataBits) {
             case DATA_5:
                 currentTermios.c_cflag |= CS6;
                 break;
@@ -419,38 +446,39 @@ void QextSerialPortPrivate::updatePortSettings()
         }
     }
     if (settingsDirtyFlags & DFE_Flow) {
-        switch(settings.FlowControl) {
+        switch (settings.FlowControl) {
         case FLOW_OFF:
             currentTermios.c_cflag &= (~CRTSCTS);
-            currentTermios.c_iflag &= (~(IXON|IXOFF|IXANY));
+            currentTermios.c_iflag &= (~(IXON | IXOFF | IXANY));
             break;
         case FLOW_XONXOFF:
             /*software (XON/XOFF) flow control*/
             currentTermios.c_cflag &= (~CRTSCTS);
-            currentTermios.c_iflag |= (IXON|IXOFF|IXANY);
+            currentTermios.c_iflag |= (IXON | IXOFF | IXANY);
             break;
         case FLOW_HARDWARE:
             currentTermios.c_cflag |= CRTSCTS;
-            currentTermios.c_iflag &= (~(IXON|IXOFF|IXANY));
+            currentTermios.c_iflag &= (~(IXON | IXOFF | IXANY));
             break;
         }
     }
 
     /*if any thing in currentTermios changed, flush*/
-    if (settingsDirtyFlags & DFE_Settings_Mask)
+    if (settingsDirtyFlags & DFE_Settings_Mask) {
         ::tcsetattr(fd, TCSAFLUSH, &currentTermios);
+    }
 
     if (settingsDirtyFlags & DFE_TimeOut) {
         int millisec = settings.Timeout_Millisec;
         if (millisec == -1) {
             ::fcntl(fd, F_SETFL, O_NDELAY);
         } else {
-            //O_SYNC should enable blocking ::write()
-            //however this seems not working on Linux 2.6.21 (works on OpenBSD 4.2)
+            // O_SYNC should enable blocking ::write()
+            // however this seems not working on Linux 2.6.21 (works on OpenBSD 4.2)
             ::fcntl(fd, F_SETFL, O_SYNC);
         }
         ::tcgetattr(fd, &currentTermios);
-        currentTermios.c_cc[VTIME] = millisec/100;
+        currentTermios.c_cc[VTIME] = millisec / 100;
         ::tcsetattr(fd, TCSAFLUSH, &currentTermios);
     }
 

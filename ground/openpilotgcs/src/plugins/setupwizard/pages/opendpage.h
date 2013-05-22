@@ -34,14 +34,13 @@ namespace Ui {
 class OPEndPage;
 }
 
-class OPEndPage : public AbstractWizardPage
-{
+class OPEndPage : public AbstractWizardPage {
     Q_OBJECT
-    
+
 public:
     explicit OPEndPage(SetupWizard *wizard, QWidget *parent = 0);
     ~OPEndPage();
-    
+
 private slots:
     void openInputWizard();
 

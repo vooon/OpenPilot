@@ -43,7 +43,7 @@ QT_END_NAMESPACE
 
 class UAVOBJECTWIDGETUTILS_EXPORT MixerNode : public QObject, public QGraphicsItem {
     Q_OBJECT
-    Q_INTERFACES(QGraphicsItem)
+                                  Q_INTERFACES(QGraphicsItem)
 public:
     MixerNode(MixerCurveWidget *graphWidget);
     void addEdge(Edge *edge);
@@ -95,8 +95,8 @@ protected:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
 
 private:
-    QList<Edge *>       edgeList;
-    QPointF             newPos;
+    QList<Edge *> edgeList;
+    QPointF newPos;
     MixerCurveWidget *graph;
 
     QColor positiveColor;
@@ -105,12 +105,12 @@ private:
     QColor disabledColor;
     QColor disabledTextColor;
 
-    QImage              image;
+    QImage image;
 
-    bool    vertical;
-    bool    drawNode;
-    bool    drawText;
-    int     index;
+    bool vertical;
+    bool drawNode;
+    bool drawText;
+    int index;
 };
 
-#endif  // MIXERCURVEPOINT_H
+#endif // MIXERCURVEPOINT_H

@@ -31,18 +31,17 @@
 
 class PathActionEditorGadgetFactory;
 
-class PathActionEditorPlugin : public ExtensionSystem::IPlugin
-{
+class PathActionEditorPlugin : public ExtensionSystem::IPlugin {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "OpenPilot")
+                                                       Q_PLUGIN_METADATA(IID "OpenPilot")
 public:
     PathActionEditorPlugin();
-   ~PathActionEditorPlugin();
+    ~PathActionEditorPlugin();
 
-   void extensionsInitialized();
-   bool initialize(const QStringList & arguments, QString * errorString);
-   void shutdown();
+    void extensionsInitialized();
+    bool initialize(const QStringList & arguments, QString *errorString);
+    void shutdown();
 private:
-   PathActionEditorGadgetFactory *mf;
+    PathActionEditorGadgetFactory *mf;
 };
 #endif /* PathActionEditorPLUGIN_H_ */

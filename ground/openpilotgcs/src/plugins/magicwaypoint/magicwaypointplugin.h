@@ -32,18 +32,17 @@
 
 class MagicWaypointGadgetFactory;
 
-class MagicWaypointPlugin : public ExtensionSystem::IPlugin
-{
+class MagicWaypointPlugin : public ExtensionSystem::IPlugin {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "OpenPilot")
+                                                    Q_PLUGIN_METADATA(IID "OpenPilot")
 public:
     MagicWaypointPlugin();
-   ~MagicWaypointPlugin();
+    ~MagicWaypointPlugin();
 
-   void extensionsInitialized();
-   bool initialize(const QStringList & arguments, QString * errorString);
-   void shutdown();
+    void extensionsInitialized();
+    bool initialize(const QStringList & arguments, QString *errorString);
+    void shutdown();
 private:
-   MagicWaypointGadgetFactory *mf;
+    MagicWaypointGadgetFactory *mf;
 };
 #endif /* GCSControlPLUGIN_H_ */

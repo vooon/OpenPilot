@@ -38,8 +38,7 @@
 #include <QtWidgets/QWidget>
 #include <QTimer>
 
-class ConfigAutotuneWidget : public ConfigTaskWidget
-{
+class ConfigAutotuneWidget : public ConfigTaskWidget {
     Q_OBJECT
 public:
     explicit ConfigAutotuneWidget(QWidget *parent = 0);

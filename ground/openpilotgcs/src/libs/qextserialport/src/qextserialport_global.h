@@ -57,16 +57,19 @@
 
 /*macros for warning and debug messages*/
 #ifdef QESP_NO_PORTABILITY_WARN
-#  define QESP_PORTABILITY_WARNING  while (false)qWarning
+#  define QESP_PORTABILITY_WARNING \
+    while (false) \
+        qWarning
 #else
 #  define QESP_PORTABILITY_WARNING qWarning
 #endif /*QESP_NOWARN_PORT*/
 
 #ifdef QESP_NO_WARN
-#  define QESP_WARNING while (false)qWarning
+#  define QESP_WARNING \
+    while (false) \
+        qWarning
 #else
 #  define QESP_WARNING qWarning
 #endif /*QESP_NOWARN*/
 
 #endif // QEXTSERIALPORT_GLOBAL_H
-

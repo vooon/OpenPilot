@@ -39,13 +39,14 @@
 void QextSerialEnumeratorPrivate::platformSpecificInit()
 {
 #ifndef QESP_NO_UDEV
-    monitor = NULL;
+    monitor    = NULL;
     notifierFd = -1;
-    notifier = NULL;
+    notifier   = NULL;
 
     udev = udev_new();
-    if (!udev)
+    if (!udev) {
         qCritical() << "Unable to initialize udev notifications";
+    }
 #endif
 }
 
@@ -57,25 +58,28 @@ void QextSerialEnumeratorPrivate::platformSpecificDestruct()
         delete notifier;
     }
 
-    if (monitor)
+    if (monitor) {
         udev_monitor_unref(monitor);
+    }
 
-    if (udev)
+    if (udev) {
         udev_unref(udev);
+    }
 #endif
 }
 
 #ifndef QESP_NO_UDEV
 static QextPortInfo portInfoFromDevice(struct udev_device *dev)
 {
-    QString vendor = QString::fromLatin1(udev_device_get_property_value(dev, "ID_VENDOR_ID"));
+    QString vendor  = QString::fromLatin1(udev_device_get_property_value(dev, "ID_VENDOR_ID"));
     QString product = QString::fromLatin1(udev_device_get_property_value(dev, "ID_MODEL_ID"));
 
     QextPortInfo pi;
-    pi.vendorID = vendor.toInt(0, 16);
+
+    pi.vendorID  = vendor.toInt(0, 16);
     pi.productID = product.toInt(0, 16);
-    pi.portName = QString::fromLatin1(udev_device_get_devnode(dev));
-    pi.physName = pi.portName;
+    pi.portName  = QString::fromLatin1(udev_device_get_devnode(dev));
+    pi.physName  = pi.portName;
 
     return pi;
 }
@@ -94,7 +98,7 @@ QList<QextPortInfo> QextSerialEnumeratorPrivate::getPorts_sys()
     struct udev_enumerate *enumerate = udev_enumerate_new(ud);
     udev_enumerate_add_match_subsystem(enumerate, "tty");
     udev_enumerate_scan_devices(enumerate);
-    struct udev_list_entry *list = udev_enumerate_get_list_entry(enumerate);
+    struct udev_list_entry *list     = udev_enumerate_get_list_entry(enumerate);
     struct udev_list_entry *entry;
     udev_list_entry_foreach(entry, list) {
         const char *path;
@@ -102,7 +106,7 @@ QList<QextPortInfo> QextSerialEnumeratorPrivate::getPorts_sys()
 
         // Have to grab the actual udev device here...
         path = udev_list_entry_get_name(entry);
-        dev = udev_device_new_from_syspath(ud, path);
+        dev  = udev_device_new_from_syspath(ud, path);
 
         infoList.append(portInfoFromDevice(dev));
 
@@ -112,7 +116,7 @@ QList<QextPortInfo> QextSerialEnumeratorPrivate::getPorts_sys()
     // Done with the list and this udev
     udev_enumerate_unref(enumerate);
     udev_unref(ud);
-#else
+#else // ifndef QESP_NO_UDEV
     QStringList portNamePrefixes, portNameList;
     portNamePrefixes << QLatin1String("ttyS*"); // list normal serial ports first
 
@@ -124,7 +128,7 @@ QList<QextPortInfo> QextSerialEnumeratorPrivate::getPorts_sys()
         bool ok;
         QString current = portNameList.at(i);
         // remove the ttyS part, and check, if the other part is a number
-        current.remove(0,4).toInt(&ok, 10);
+        current.remove(0, 4).toInt(&ok, 10);
         if (!ok) {
             portNameList.removeAt(i);
             i--;
@@ -138,24 +142,23 @@ QList<QextPortInfo> QextSerialEnumeratorPrivate::getPorts_sys()
     portNamePrefixes << QLatin1String("ttyACM*") << QLatin1String("ttyUSB*") << QLatin1String("rfcomm*");
     portNameList += dir.entryList(portNamePrefixes, (QDir::System | QDir::Files), QDir::Name);
 
-    foreach (QString str , portNameList) {
+    foreach(QString str, portNameList) {
         QextPortInfo inf;
-        inf.physName = QLatin1String("/dev/")+str;
+
+        inf.physName = QLatin1String("/dev/") + str;
         inf.portName = str;
 
         if (str.contains(QLatin1String("ttyS"))) {
-            inf.friendName = QLatin1String("Serial port ")+str.remove(0, 4);
-        }
-        else if (str.contains(QLatin1String("ttyUSB"))) {
-            inf.friendName = QLatin1String("USB-serial adapter ")+str.remove(0, 6);
-        }
-        else if (str.contains(QLatin1String("rfcomm"))) {
-            inf.friendName = QLatin1String("Bluetooth-serial adapter ")+str.remove(0, 6);
+            inf.friendName = QLatin1String("Serial port ") + str.remove(0, 4);
+        } else if (str.contains(QLatin1String("ttyUSB"))) {
+            inf.friendName = QLatin1String("USB-serial adapter ") + str.remove(0, 6);
+        } else if (str.contains(QLatin1String("rfcomm"))) {
+            inf.friendName = QLatin1String("Bluetooth-serial adapter ") + str.remove(0, 6);
         }
         inf.enumName = QLatin1String("/dev"); // is there a more helpful name for this?
         infoList.append(inf);
     }
-#endif
+#endif // ifndef QESP_NO_UDEV
 
     return infoList;
 }
@@ -172,22 +175,24 @@ bool QextSerialEnumeratorPrivate::setUpNotifications_sys(bool setup)
 
     // Emit signals immediately for devices already connected (Windows version seems to behave
     // this way)
-    foreach (QextPortInfo i, getPorts_sys())
-        Q_EMIT q->deviceDiscovered(i);
+    foreach(QextPortInfo i, getPorts_sys())
+    Q_EMIT q->deviceDiscovered(i);
 
     // Look for tty devices from udev.
-    monitor = udev_monitor_new_from_netlink(udev, "udev");
+    monitor    = udev_monitor_new_from_netlink(udev, "udev");
     udev_monitor_filter_add_match_subsystem_devtype(monitor, "tty", NULL);
     udev_monitor_enable_receiving(monitor);
     notifierFd = udev_monitor_get_fd(monitor);
-    notifier = new QSocketNotifier(notifierFd, QSocketNotifier::Read);
+    notifier   = new QSocketNotifier(notifierFd, QSocketNotifier::Read);
     q->connect(notifier, SIGNAL(activated(int)), q, SLOT(_q_deviceEvent()));
     notifier->setEnabled(true);
 
     return true;
-#else
+
+#else // ifndef QESP_NO_UDEV
     return false;
-#endif
+
+#endif // ifndef QESP_NO_UDEV
 }
 
 #ifndef QESP_NO_UDEV
@@ -201,10 +206,11 @@ void QextSerialEnumeratorPrivate::_q_deviceEvent()
         QLatin1String action(udev_device_get_action(dev));
         udev_device_unref(dev);
 
-        if (action == QLatin1String("add"))
+        if (action == QLatin1String("add")) {
             Q_EMIT q->deviceDiscovered(pi);
-        else if (action == QLatin1String("remove"))
+        } else if (action == QLatin1String("remove")) {
             Q_EMIT q->deviceRemoved(pi);
+        }
     }
 }
 #endif

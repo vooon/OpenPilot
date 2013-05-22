@@ -32,21 +32,18 @@
 
 class ScopeGadgetFactory;
 
-class ScopePlugin : public ExtensionSystem::IPlugin
-{
+class ScopePlugin : public ExtensionSystem::IPlugin {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "OpenPilot")
+                                            Q_PLUGIN_METADATA(IID "OpenPilot")
 public:
     ScopePlugin();
     ~ScopePlugin();
 
     void extensionsInitialized();
-    bool initialize(const QStringList & arguments, QString * errorString);
+    bool initialize(const QStringList & arguments, QString *errorString);
     void shutdown();
 
 private:
     ScopeGadgetFactory *mf;
-
-
 };
 #endif /* SCOPEPLUGIN_H_ */

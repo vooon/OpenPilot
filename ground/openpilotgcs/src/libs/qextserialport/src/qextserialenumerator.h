@@ -37,21 +37,19 @@
 #include "qextserialport_global.h"
 
 struct QextPortInfo {
-    QString portName;   ///< Port name.
-    QString physName;   ///< Physical name.
+    QString portName; ///< Port name.
+    QString physName; ///< Physical name.
     QString friendName; ///< Friendly name.
-    QString enumName;   ///< Enumerator name.
-    int vendorID;       ///< Vendor ID.
-    int productID;      ///< Product ID
+    QString enumName; ///< Enumerator name.
+    int     vendorID;       ///< Vendor ID.
+    int     productID;      ///< Product ID
 };
 
 class QextSerialEnumeratorPrivate;
-class QEXTSERIALPORT_EXPORT QextSerialEnumerator : public QObject
-{
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QextSerialEnumerator)
+class QEXTSERIALPORT_EXPORT QextSerialEnumerator : public QObject {
+    Q_OBJECT Q_DECLARE_PRIVATE(QextSerialEnumerator)
 public:
-    QextSerialEnumerator(QObject *parent=0);
+    QextSerialEnumerator(QObject *parent = 0);
     ~QextSerialEnumerator();
 
     static QList<QextPortInfo> getPorts();
@@ -66,7 +64,7 @@ private:
 #if defined(Q_OS_LINUX) && !defined(QESP_NO_UDEV)
     Q_PRIVATE_SLOT(d_func(), void _q_deviceEvent())
 #endif
-    QextSerialEnumeratorPrivate *d_ptr;
+    QextSerialEnumeratorPrivate * d_ptr;
 };
 
 #endif /*_QEXTSERIALENUMERATOR_H_*/

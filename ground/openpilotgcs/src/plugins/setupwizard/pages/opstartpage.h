@@ -33,14 +33,13 @@ namespace Ui {
 class OPStartPage;
 }
 
-class OPStartPage : public AbstractWizardPage
-{
+class OPStartPage : public AbstractWizardPage {
     Q_OBJECT
-    
+
 public:
     explicit OPStartPage(SetupWizard *wizard, QWidget *parent = 0);
     ~OPStartPage();
-    
+
 private:
     Ui::OPStartPage *ui;
 };

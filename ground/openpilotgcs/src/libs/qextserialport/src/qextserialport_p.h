@@ -33,8 +33,8 @@
 #define _QEXTSERIALPORT_P_H_
 
 //
-//  W A R N I N G
-//  -------------
+// W A R N I N G
+// -------------
 //
 // This file is not part of the QESP API.  It exists for the convenience
 // of other QESP classes.  This header file may change from version to
@@ -54,54 +54,60 @@
 
 // This is QextSerialPort's read buffer, needed by posix system.
 // ref: QRingBuffer & QIODevicePrivateLinearBuffer
-class QextReadBuffer
-{
+class QextReadBuffer {
 public:
-    inline QextReadBuffer(size_t growth=4096)
-        : len(0), first(0), buf(0), capacity(0), basicBlockSize(growth) {
+    inline QextReadBuffer(size_t growth = 4096)
+        : len(0), first(0), buf(0), capacity(0), basicBlockSize(growth) {}
+
+    ~QextReadBuffer()
+    {
+        delete[] buf;
     }
 
-    ~QextReadBuffer() {
-        delete [] buf;
-    }
-
-    inline void clear() {
+    inline void clear()
+    {
         first = buf;
-        len = 0;
+        len   = 0;
     }
 
-    inline int size() const {
+    inline int size() const
+    {
         return len;
     }
 
-    inline bool isEmpty() const {
+    inline bool isEmpty() const
+    {
         return len == 0;
     }
 
-    inline int read(char *target, int size) {
+    inline int read(char *target, int size)
+    {
         int r = qMin(size, len);
+
         if (r == 1) {
             *target = *first;
             --len;
             ++first;
         } else {
             memcpy(target, first, r);
-            len -= r;
+            len   -= r;
             first += r;
         }
         return r;
     }
 
-    inline char *reserve(size_t size) {
+    inline char *reserve(size_t size)
+    {
         if ((first - buf) + len + size > capacity) {
             size_t newCapacity = qMax(capacity, basicBlockSize);
-            while (newCapacity < len + size)
+            while (newCapacity < len + size) {
                 newCapacity *= 2;
+            }
             if (newCapacity > capacity) {
                 // allocate more space
                 char *newBuf = new char[newCapacity];
                 memmove(newBuf, first, len);
-                delete [] buf;
+                delete[] buf;
                 buf = newBuf;
                 capacity = newCapacity;
             } else {
@@ -115,21 +121,25 @@ public:
         return writePtr;
     }
 
-    inline void chop(int size) {
-        if (size >= len)
+    inline void chop(int size)
+    {
+        if (size >= len) {
             clear();
-        else
+        } else {
             len -= size;
+        }
     }
 
-    inline void squeeze() {
+    inline void squeeze()
+    {
         if (first != buf) {
             memmove(buf, first, len);
             first = buf;
         }
         size_t newCapacity = basicBlockSize;
-        while (newCapacity < size_t(len))
+        while (newCapacity < size_t(len)) {
             newCapacity *= 2;
+        }
         if (newCapacity < capacity) {
             char *tmp = static_cast<char *>(realloc(buf, newCapacity));
             if (tmp) {
@@ -139,25 +149,31 @@ public:
         }
     }
 
-    inline QByteArray readAll() {
+    inline QByteArray readAll()
+    {
         char *f = first;
-        int l = len;
+        int l   = len;
+
         clear();
         return QByteArray(f, l);
     }
 
-    inline int readLine(char *target, int size) {
-        int r = qMin(size, len);
+    inline int readLine(char *target, int size)
+    {
+        int r     = qMin(size, len);
         char *eol = static_cast<char *>(memchr(first, '\n', r));
-        if (eol)
-            r = 1+(eol-first);
+
+        if (eol) {
+            r = 1 + (eol - first);
+        }
         memcpy(target, first, r);
-        len -= r;
+        len   -= r;
         first += r;
         return int(r);
     }
 
-    inline bool canReadLine() const {
+    inline bool canReadLine() const
+    {
         return memchr(first, '\n', len);
     }
 
@@ -173,22 +189,20 @@ class QWinEventNotifier;
 class QReadWriteLock;
 class QSocketNotifier;
 
-class QextSerialPortPrivate
-{
+class QextSerialPortPrivate {
     Q_DECLARE_PUBLIC(QextSerialPort)
 public:
     QextSerialPortPrivate(QextSerialPort *q);
     ~QextSerialPortPrivate();
-    enum DirtyFlagEnum
-    {
+    enum DirtyFlagEnum {
         DFE_BaudRate = 0x0001,
-        DFE_Parity = 0x0002,
+        DFE_Parity   = 0x0002,
         DFE_StopBits = 0x0004,
         DFE_DataBits = 0x0008,
-        DFE_Flow = 0x0010,
-        DFE_TimeOut = 0x0100,
+        DFE_Flow     = 0x0010,
+        DFE_TimeOut  = 0x0100,
         DFE_ALL = 0x0fff,
-        DFE_Settings_Mask = 0x00ff //without TimeOut
+        DFE_Settings_Mask = 0x00ff // without TimeOut
     };
     mutable QReadWriteLock lock;
     QString port;
@@ -216,13 +230,13 @@ public:
 #endif
 
     /*fill PortSettings*/
-    void setBaudRate(BaudRateType baudRate, bool update=true);
-    void setDataBits(DataBitsType dataBits, bool update=true);
-    void setParity(ParityType parity, bool update=true);
-    void setStopBits(StopBitsType stopbits, bool update=true);
-    void setFlowControl(FlowType flow, bool update=true);
-    void setTimeout(long millisec, bool update=true);
-    void setPortSettings(const PortSettings &settings, bool update=true);
+    void setBaudRate(BaudRateType baudRate, bool update = true);
+    void setDataBits(DataBitsType dataBits, bool update = true);
+    void setParity(ParityType parity, bool update = true);
+    void setStopBits(StopBitsType stopbits, bool update = true);
+    void setFlowControl(FlowType flow, bool update = true);
+    void setTimeout(long millisec, bool update = true);
+    void setPortSettings(const PortSettings &settings, bool update = true);
 
     void platformSpecificDestruct();
     void platformSpecificInit();
@@ -231,8 +245,8 @@ public:
 
     qint64 readData_sys(char *data, qint64 maxSize);
     qint64 writeData_sys(const char *data, qint64 maxSize);
-    void setDtr_sys(bool set=true);
-    void setRts_sys(bool set=true);
+    void setDtr_sys(bool set = true);
+    void setRts_sys(bool set = true);
     bool open_sys(QIODevice::OpenMode mode);
     bool close_sys();
     bool flush_sys();
@@ -247,4 +261,4 @@ public:
     QextSerialPort *q_ptr;
 };
 
-#endif //_QEXTSERIALPORT_P_H_
+#endif // _QEXTSERIALPORT_P_H_
