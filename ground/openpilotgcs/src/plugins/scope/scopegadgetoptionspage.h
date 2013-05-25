@@ -65,7 +65,7 @@ private:
 
     void addPlotCurveConfig(QString uavObject, QString uavField, int scale, int mean, QString mathFunction, QVariant varColor, bool antialias);
     void setCurvePlotProperties(QListWidgetItem *listWidgetItem, QString uavObject, QString uavField, int scale, int mean,
-                                QString mathFunction, QVariant varColor, bool antialias);
+                                QString mathFunction, QVariant varColor, bool antialiasing);
     void setYAxisWidgetFromPlotCurve();
     void setButtonColor(const QColor &color);
     void validateRefreshInterval();

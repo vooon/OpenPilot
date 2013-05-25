@@ -52,12 +52,10 @@ PlotData::PlotData(QString p_uavObject, QString p_uavField)
     scalePower      = 0;
     meanSamples = 1;
     meanSum         = 0.0f;
-// mathFunction=0;
     correctionSum   = 0.0f;
     correctionCount = 0;
     yMinimum        = 0;
     yMaximum        = 0;
-
     m_xWindowSize   = 0;
 }
 
@@ -72,8 +70,6 @@ double PlotData::valueAsDouble(UAVObject *obj, UAVObjectField *field)
     } else {
         value = field->getValue();
     }
-
-    // qDebug() << "Data  (" << value.typeName() << ") " <<  value.toString();
 
     return value.toDouble();
 }
@@ -138,8 +134,6 @@ bool SequentialPlotData::append(UAVObject *obj)
                 xData->insert(xData->size(), xData->size());
             }
 
-            // notify the gui of changes in the data
-            // dataChanged();
             return true;
         }
     }
@@ -152,10 +146,9 @@ bool ChronoPlotData::append(UAVObject *obj)
     if (uavObject == obj->getName()) {
         // Get the field of interest
         UAVObjectField *field = obj->getField(uavField);
-        // qDebug() << "uavObject: " << uavObject << ", uavField: " << uavField;
 
         if (field) {
-            QDateTime NOW = QDateTime::currentDateTime(); // THINK ABOUT REIMPLEMENTING THIS TO SHOW UAVO TIME, NOT SYSTEM TIME
+            QDateTime NOW = QDateTime::currentDateTime();
             double currentValue = valueAsDouble(obj, field) * pow(10, scalePower);
 
             // Perform scope math, if necessary
@@ -179,7 +172,6 @@ bool ChronoPlotData::append(UAVObject *obj)
                 }
 
                 double boxcarAvg = meanSum / yDataHistory->size();
-// qDebug()<<mathFunction;
                 if (mathFunction == "Standard deviation") {
                     // Calculate square of sample standard deviation, with Bessel's correction
                     double stdSum = 0;
@@ -197,13 +189,9 @@ bool ChronoPlotData::append(UAVObject *obj)
             double valueX = NOW.toTime_t() + NOW.time().msec() / 1000.0;
             xData->append(valueX);
 
-            // qDebug() << "Data  " << uavObject << "." << field->getName() << " X,Y:" << valueX << "," <<  valueY;
-
             // Remove stale data
             removeStaleData();
 
-            // notify the gui of chages in the data
-            // dataChanged();
             return true;
         }
     }
@@ -231,15 +219,11 @@ void ChronoPlotData::removeStaleData()
             break;
         }
     }
-
-    // qDebug() << "removeStaleData ";
 }
 
 void ChronoPlotData::removeStaleDataTimeout()
 {
     removeStaleData();
-    // dataChanged();
-    // qDebug() << "removeStaleDataTimeout";
 }
 
 bool UAVObjectPlotData::append(UAVObject *obj)

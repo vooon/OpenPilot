@@ -36,7 +36,9 @@ ScopeGadget::ScopeGadget(QString classId, ScopeGadgetWidget *widget, QWidget *pa
     IUAVGadget(classId, parent),
     m_widget(widget),
     configLoaded(false)
-{}
+{
+    // no further action here
+}
 
 void ScopeGadget::loadConfiguration(IUAVGadgetConfiguration *config)
 {
@@ -86,10 +88,10 @@ void ScopeGadget::loadConfiguration(IUAVGadgetConfiguration *config)
 }
 
 /**
-   Scope gadget destructor: should delete the associated
-   scope gadget widget too!
+   Scope gadget destructor
  */
 ScopeGadget::~ScopeGadget()
 {
+    // delete the associated widget
     delete m_widget;
 }

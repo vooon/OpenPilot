@@ -41,6 +41,8 @@
 #include <QVector>
 #include <QMutex>
 
+const double SCOPE_DEFAULT_ZOOM_SCALE = 1.1;
+
 /*!
    \brief This class is used to render the time values on the horizontal axis for the
    ChronoPlot.
@@ -95,8 +97,8 @@ public:
     void addCurvePlot(QString uavObject, QString uavFieldSubField, int scaleOrderFactor = 0, int meanSamples = 1,
                       QString mathFunction = "None", QPen pen = QPen(Qt::black), bool antialiased = true);
     void clearCurvePlots();
-    int csvLoggingStart();
-    int csvLoggingStop();
+    void csvLoggingStart();
+    void csvLoggingStop();
     void csvLoggingSetName(QString);
     void setLoggingEnabled(bool value)
     {

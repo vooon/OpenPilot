@@ -47,10 +47,9 @@ QWidget *ScopeGadgetOptionsPage::createPage(QWidget *parent)
 {
     Q_UNUSED(parent);
 
+    // setup widget and layout
     options_page = new Ui::ScopeGadgetOptionsPage();
-    // main widget
     QWidget *optionsPageWidget = new QWidget;
-    // main layout
     options_page->setupUi(optionsPageWidget);
 
     options_page->cmbPlotType->addItem("Sequential Plot", "");
@@ -93,6 +92,7 @@ QWidget *ScopeGadgetOptionsPage::createPage(QWidget *parent)
     options_page->cmbScale->addItem("10^6", 6);
     options_page->cmbScale->addItem("10^9", 9);
     options_page->cmbScale->addItem("10^12", 12);
+
     options_page->cmbScale->setCurrentIndex(7);
 
     // Set widget values from settings
@@ -197,7 +197,6 @@ void ScopeGadgetOptionsPage::setYAxisWidgetFromPlotCurve()
         return;
     }
 
-    // WHAT IS UserRole DOING?
     int currentIndex = options_page->cmbUAVObjects->findText(listItem->data(Qt::UserRole + 0).toString());
     options_page->cmbUAVObjects->setCurrentIndex(currentIndex);
 
@@ -331,11 +330,9 @@ void ScopeGadgetOptionsPage::on_btnAddCurve_clicked()
 
     int mean = options_page->spnMeanSamples->value();
     QString mathFunction = options_page->mathFunctionComboBox->currentText();
-
-
     QVariant varColor    = (int)QColor(options_page->btnColor->text()).rgb();
-
     bool antialiased     = options_page->drawAntialiasedCheckBox->isChecked();
+
     // Find an existing plot curve config based on the uavobject and uav field. If it
     // exists, update it, else add a new one.
     if (options_page->lstCurves->count() &&
@@ -361,7 +358,7 @@ void ScopeGadgetOptionsPage::addPlotCurveConfig(QString uavObject, QString uavFi
 }
 
 void ScopeGadgetOptionsPage::setCurvePlotProperties(QListWidgetItem *listWidgetItem, QString uavObject, QString uavField, int scale,
-                                                    int mean, QString mathFunction, QVariant varColor, bool antialias)
+                                                    int mean, QString mathFunction, QVariant varColor, bool antialiasing)
 {
     bool parseOK  = false;
 
@@ -378,7 +375,7 @@ void ScopeGadgetOptionsPage::setCurvePlotProperties(QListWidgetItem *listWidgetI
     listWidgetItem->setData(Qt::UserRole + 3, varColor);
     listWidgetItem->setData(Qt::UserRole + 4, QVariant(mean));
     listWidgetItem->setData(Qt::UserRole + 5, QVariant(mathFunction));
-    listWidgetItem->setData(Qt::UserRole + 6, QVariant(antialias));
+    listWidgetItem->setData(Qt::UserRole + 6, QVariant(antialiasing));
 }
 
 /*!

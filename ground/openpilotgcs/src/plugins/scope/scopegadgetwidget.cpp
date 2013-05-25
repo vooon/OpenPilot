@@ -53,14 +53,11 @@
 #include <QMutexLocker>
 #include <QWheelEvent>
 
-// using namespace Core;
-
 // ******************************************************************
 
 ScopeGadgetWidget::ScopeGadgetWidget(QWidget *parent) : QwtPlot(parent)
 {
     setMouseTracking(true);
-// canvas()->setMouseTracking(true);
 
     // Setup the timer that replots data
     replotTimer = new QTimer(this);
@@ -151,17 +148,17 @@ void ScopeGadgetWidget::wheelEvent(QWheelEvent *e)
     // Change zoom on scroll wheel event
     QwtInterval yInterval = axisInterval(QwtPlot::yLeft);
 
-    if (yInterval.minValue() != yInterval.maxValue()) { // Make sure that the two values are never the same. Sometimes axisInterval returns (0,0)
+    // Make sure that the two values are never the same. Sometimes axisInterval returns (0,0)
+    if (yInterval.minValue() != yInterval.maxValue()) {
         // Determine what y value to zoom about. NOTE, this approach has a bug that the in that
         // the value returned by Qt includes the legend, whereas the value transformed by Qwt
         // does *not*. Thus, when zooming with a legend, there will always be a small bias error.
         // In practice, this seems not to be a UI problem.
         QPoint mouse_pos = e->pos(); // Get the mouse coordinate in the frame
         double zoomLine  = invTransform(QwtPlot::yLeft, mouse_pos.y()); // Transform the y mouse coordinate into a frame value.
+        double zoomScale = SCOPE_DEFAULT_ZOOM_SCALE;
 
-        double zoomScale = 1.1; // THIS IS AN ARBITRARY CONSTANT, AND PERHAPS SHOULD BE IN A DEFINE INSTEAD OF BURIED HERE
-
-        mutex.lock(); // DOES THIS mutex.lock NEED TO BE HERE? I DON'T KNOW, I JUST COPIED IT FROM THE ABOVE CODE
+        mutex.lock();
         // Set the scale
         if (e->delta() < 0) {
             setAxisScale(QwtPlot::yLeft,
@@ -188,34 +185,26 @@ void ScopeGadgetWidget::showEvent(QShowEvent *e)
  */
 void ScopeGadgetWidget::startPlotting()
 {
-    if (!replotTimer) {
-        return;
-    }
-
-    if (!replotTimer->isActive()) {
-        replotTimer->start(m_refreshInterval);
+    if (replotTimer) {
+        if (!replotTimer->isActive()) {
+            replotTimer->start(m_refreshInterval);
+        }
     }
 }
 
 void ScopeGadgetWidget::stopPlotting()
 {
-    if (!replotTimer) {
-        return;
+    if (replotTimer) {
+        replotTimer->stop();
     }
-
-    replotTimer->stop();
 }
 
 void ScopeGadgetWidget::deleteLegend()
 {
-    if (!legend()) {
-        return;
+    if (legend()) {
+        disconnect(this, SIGNAL(legendChecked(QwtPlotItem *, bool)), this, 0);
+        insertLegend(NULL, QwtPlot::TopLegend);
     }
-
-    disconnect(this, SIGNAL(legendChecked(QwtPlotItem *, bool)), this, 0);
-
-    insertLegend(NULL, QwtPlot::TopLegend);
-// insertLegend(NULL, QwtPlot::ExternalLegend);
 }
 
 void ScopeGadgetWidget::addLegend()
@@ -227,24 +216,14 @@ void ScopeGadgetWidget::addLegend()
     // Show a legend at the top
     QwtLegend *legend = new QwtLegend();
     legend->setItemMode(QwtLegend::CheckableItem);
-    legend->setFrameStyle(QFrame::Box | QFrame::Sunken);
+    legend->setFrameStyle(QFrame::NoFrame);
     legend->setToolTip(tr("Click legend to show/hide scope trace"));
 
     QPalette pal = legend->palette();
     pal.setColor(legend->backgroundRole(), QColor(100, 100, 100)); // background colour
-// pal.setColor(legend->backgroundRole(), Qt::transparent);		// background colour
-// pal.setColor(QPalette::Text, QColor(255, 255, 255));			// text colour
     pal.setColor(QPalette::Text, QColor(0, 0, 0)); // text colour
     legend->setPalette(pal);
-
     insertLegend(legend, QwtPlot::TopLegend);
-// insertLegend(legend, QwtPlot::ExternalLegend);
-
-//// Show a legend at the bottom
-// QwtLegend *legend = new QwtLegend();
-// legend->setItemMode(QwtLegend::CheckableItem);
-// legend->setFrameStyle(QFrame::Box | QFrame::Sunken);
-// insertLegend(legend, QwtPlot::BottomLegend);
 
     // Update the checked/unchecked state of the legend items
     // -> this is necessary when hiding a legend where some plots are
@@ -269,16 +248,6 @@ void ScopeGadgetWidget::preparePlot(PlotType plotType)
 
     setMinimumSize(64, 64);
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-
-// setMargin(1);
-
-// QPalette pal = palette();
-// QPalette::ColorRole cr = backgroundRole();
-// pal.setColor(cr, QColor(128, 128, 128));				// background colour
-// pal.setColor(QPalette::Text, QColor(255, 255, 255));	// text colour
-// setPalette(pal);
-
-// setCanvasBackground(Utils::StyleHelper::baseColor());
     setCanvasBackground(QColor(64, 64, 64));
 
     // Add grid lines
@@ -319,12 +288,6 @@ void ScopeGadgetWidget::setupSequentialPlot()
 {
     preparePlot(SequentialPlot);
 
-// QwtText title("Index");
-////	title.setFont(QFont("Helvetica", 20));
-// title.font().setPointSize(title.font().pointSize() / 2);
-// setAxisTitle(QwtPlot::xBottom, title);
-////    setAxisTitle(QwtPlot::xBottom, "Index");
-
     setAxisScaleDraw(QwtPlot::xBottom, new QwtScaleDraw());
     setAxisScale(QwtPlot::xBottom, 0, m_xWindowSize);
     setAxisLabelRotation(QwtPlot::xBottom, 0.0);
@@ -333,11 +296,11 @@ void ScopeGadgetWidget::setupSequentialPlot()
     QwtScaleWidget *scaleWidget = axisWidget(QwtPlot::xBottom);
 
     // reduce the gap between the scope canvas and the axis scale
-    scaleWidget->setMargin(0);
+    scaleWidget->setMargin(1);
 
     // reduce the axis font size
     QFont fnt(axisFont(QwtPlot::xBottom));
-    fnt.setPointSize(7);
+    fnt.setPointSize(8);
     setAxisFont(QwtPlot::xBottom, fnt); // x-axis
     setAxisFont(QwtPlot::yLeft, fnt); // y-axis
 }
@@ -346,56 +309,22 @@ void ScopeGadgetWidget::setupChronoPlot()
 {
     preparePlot(ChronoPlot);
 
-// QwtText title("Time [h:m:s]");
-////	title.setFont(QFont("Helvetica", 20));
-// title.font().setPointSize(title.font().pointSize() / 2);
-// setAxisTitle(QwtPlot::xBottom, title);
-////	setAxisTitle(QwtPlot::xBottom, "Time [h:m:s]");
-
     setAxisScaleDraw(QwtPlot::xBottom, new TimeScaleDraw());
     uint NOW = QDateTime::currentDateTime().toTime_t();
     setAxisScale(QwtPlot::xBottom, NOW - m_xWindowSize / 1000, NOW);
-// setAxisLabelRotation(QwtPlot::xBottom, -15.0);
     setAxisLabelRotation(QwtPlot::xBottom, 0.0);
     setAxisLabelAlignment(QwtPlot::xBottom, Qt::AlignLeft | Qt::AlignBottom);
-// setAxisLabelAlignment(QwtPlot::xBottom, Qt::AlignCenter | Qt::AlignBottom);
 
     QwtScaleWidget *scaleWidget = axisWidget(QwtPlot::xBottom);
-// QwtScaleDraw *scaleDraw = axisScaleDraw();
 
     // reduce the gap between the scope canvas and the axis scale
-    scaleWidget->setMargin(0);
+    scaleWidget->setMargin(1);
 
     // reduce the axis font size
     QFont fnt(axisFont(QwtPlot::xBottom));
-    fnt.setPointSize(7);
+    fnt.setPointSize(8);
     setAxisFont(QwtPlot::xBottom, fnt); // x-axis
     setAxisFont(QwtPlot::yLeft, fnt); // y-axis
-
-    // set the axis colours .. can't seem to change the background colour :(
-// QPalette pal = scaleWidget->palette();
-// QPalette::ColorRole cr = scaleWidget->backgroundRole();
-// pal.setColor(cr, QColor(128, 128, 128));				// background colour
-// cr = scaleWidget->foregroundRole();
-// pal.setColor(cr, QColor(255, 255, 255));				// tick colour
-// pal.setColor(QPalette::Text, QColor(255, 255, 255));	// text colour
-// scaleWidget->setPalette(pal);
-
-    /*
-       In situations, when there is a label at the most right position of the
-       scale, additional space is needed to display the overlapping part
-       of the label would be taken by reducing the width of scale and canvas.
-       To avoid this "jumping canvas" effect, we add a permanent margin.
-       We don't need to do the same for the left border, because there
-       is enough space for the overlapping label below the left scale.
-     */
-
-// const int fmh = QFontMetrics(scaleWidget->font()).height();
-// scaleWidget->setMinBorderDist(0, fmh / 2);
-
-// const int fmw = QFontMetrics(scaleWidget->font()).width(" 00:00:00 ");
-// const int fmw = QFontMetrics(scaleWidget->font()).width(" ");
-// scaleWidget->setMinBorderDist(0, fmw);
 }
 
 void ScopeGadgetWidget::addCurvePlot(QString uavObject, QString uavFieldSubField, int scaleOrderFactor, int meanSamples, QString mathFunction, QPen pen, bool antialiased)
@@ -407,8 +336,6 @@ void ScopeGadgetWidget::addCurvePlot(QString uavObject, QString uavFieldSubField
     } else if (m_plotType == ChronoPlot) {
         plotData = new ChronoPlotData(uavObject, uavFieldSubField);
     }
-    // else if (m_plotType == UAVObjectPlot)
-    // plotData = new UAVObjectPlotData(uavObject, uavField);
 
     plotData->m_xWindowSize = m_xWindowSize;
     plotData->scalePower    = scaleOrderFactor;
@@ -477,22 +404,6 @@ void ScopeGadgetWidget::addCurvePlot(QString uavObject, QString uavFieldSubField
     mutex.unlock();
 }
 
-// void ScopeGadgetWidget::removeCurvePlot(QString uavObject, QString uavField)
-// {
-// QString curveName = uavObject + "." + uavField;
-//
-// PlotData* plotData = m_curvesData.take(curveName);
-// m_curvesData.remove(curveName);
-// plotData->curve->detach();
-//
-// delete plotData->curve;
-// delete plotData;
-//
-// mutex.lock();
-// replot();
-// mutex.unlock();
-// }
-
 void ScopeGadgetWidget::uavObjectReceived(UAVObject *obj)
 {
     foreach(PlotData * plotData, m_curvesData.values()) {
@@ -522,10 +433,7 @@ void ScopeGadgetWidget::replotNewData()
         setAxisScale(QwtPlot::xBottom, toTime - m_xWindowSize, toTime);
     }
 
-// qDebug() << "replotNewData from " << NOW.addSecs(- m_xWindowSize) << " to " << NOW;
-
     csvLoggingInsertData();
-
     replot();
 }
 
@@ -541,54 +449,40 @@ void ScopeGadgetWidget::clearCurvePlots()
     m_curvesData.clear();
 }
 
-
-/*
-   int csvLoggingEnable;
-   int csvLoggingHeaderSaved;
-   int csvLoggingDataSaved;
-   QString csvLoggingPath;
-   QFile csvLoggingFile;
- */
-int ScopeGadgetWidget::csvLoggingStart()
+void ScopeGadgetWidget::csvLoggingStart()
 {
-    if (!m_csvLoggingStarted) {
-        if (m_csvLoggingEnabled) {
-            if ((!m_csvLoggingNewFileOnConnect) || (m_csvLoggingNewFileOnConnect && m_csvLoggingConnected)) {
-                QDateTime NOW = QDateTime::currentDateTime();
-                m_csvLoggingStartTime   = NOW;
-                m_csvLoggingHeaderSaved = 0;
-                m_csvLoggingDataSaved   = 0;
-                m_csvLoggingBuffer.clear();
-                QDir PathCheck(m_csvLoggingPath);
-                if (!PathCheck.exists()) {
-                    PathCheck.mkpath("./");
-                }
+    if ((!m_csvLoggingStarted && m_csvLoggingEnabled) &&
+        ((!m_csvLoggingNewFileOnConnect) || (m_csvLoggingNewFileOnConnect && m_csvLoggingConnected))) {
+        QDateTime NOW = QDateTime::currentDateTime();
+        m_csvLoggingStartTime   = NOW;
+        m_csvLoggingHeaderSaved = 0;
+        m_csvLoggingDataSaved   = 0;
+        m_csvLoggingBuffer.clear();
 
+        QDir PathCheck(m_csvLoggingPath);
+        if (!PathCheck.exists()) {
+            PathCheck.mkpath("./");
+        }
 
-                if (m_csvLoggingNameSet) {
-                    m_csvLoggingFile.setFileName(QString("%1/%2_%3_%4.csv").arg(m_csvLoggingPath).arg(m_csvLoggingName).arg(NOW.toString("yyyy-MM-dd")).arg(NOW.toString("hh-mm-ss")));
-                } else {
-                    m_csvLoggingFile.setFileName(QString("%1/Log_%2_%3.csv").arg(m_csvLoggingPath).arg(NOW.toString("yyyy-MM-dd")).arg(NOW.toString("hh-mm-ss")));
-                }
-                QDir FileCheck(m_csvLoggingFile.fileName());
-                if (FileCheck.exists()) {
-                    m_csvLoggingFile.setFileName("");
-                } else {
-                    m_csvLoggingStarted = 1;
-                    csvLoggingInsertHeader();
-                }
-            }
+        if (m_csvLoggingNameSet) {
+            m_csvLoggingFile.setFileName(QString("%1/%2_%3_%4.csv").arg(m_csvLoggingPath).arg(m_csvLoggingName).arg(NOW.toString("yyyy-MM-dd")).arg(NOW.toString("hh-mm-ss")));
+        } else {
+            m_csvLoggingFile.setFileName(QString("%1/Log_%2_%3.csv").arg(m_csvLoggingPath).arg(NOW.toString("yyyy-MM-dd")).arg(NOW.toString("hh-mm-ss")));
+        }
+
+        QDir FileCheck(m_csvLoggingFile.fileName());
+        if (FileCheck.exists()) {
+            m_csvLoggingFile.setFileName("");
+        } else {
+            m_csvLoggingStarted = 1;
+            csvLoggingInsertHeader();
         }
     }
-
-    return 0;
 }
 
-int ScopeGadgetWidget::csvLoggingStop()
+void ScopeGadgetWidget::csvLoggingStop()
 {
     m_csvLoggingStarted = 0;
-
-    return 0;
 }
 
 int ScopeGadgetWidget::csvLoggingInsertHeader()
@@ -635,12 +529,7 @@ int ScopeGadgetWidget::csvLoggingAddData()
 
     QTextStream ss(&tempString);
     ss << NOW.toString("yyyy-MM-dd") << ", " << NOW.toString("hh:mm:ss.z") << ", ";
-
-#if QT_VERSION >= 0x040700
     ss << (NOW.toMSecsSinceEpoch() - m_csvLoggingStartTime.toMSecsSinceEpoch()) / 1000.00;
-#else
-    ss << (NOW.toTime_t() - m_csvLoggingStartTime.toTime_t());
-#endif
     ss << ", " << m_csvLoggingConnected << ", " << m_csvLoggingDataUpdated;
     m_csvLoggingDataUpdated = 0;
 

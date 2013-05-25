@@ -35,10 +35,14 @@ ScopeGadgetFactory::ScopeGadgetFactory(QObject *parent) :
     IUAVGadgetFactory(QString("ScopeGadget"),
                       tr("Scope"),
                       parent)
-{}
+{
+    // nothing else to be done here
+}
 
 ScopeGadgetFactory::~ScopeGadgetFactory()
-{}
+{
+    // no specific additional destructor work needed
+}
 
 void ScopeGadgetFactory::stopPlotting()
 {
@@ -49,7 +53,6 @@ void ScopeGadgetFactory::startPlotting()
 {
     emit onStartPlotting();
 }
-
 
 Core::IUAVGadget *ScopeGadgetFactory::createGadget(QWidget *parent)
 {

@@ -37,7 +37,6 @@ ScopeGadgetConfiguration::ScopeGadgetConfiguration(QString classId, QSettings *q
     uint currentStreamVersion = 0;
     int plotCurveCount = 0;
 
-
     // If a saved configuration exists load it
     if (qSettings != 0) {
         currentStreamVersion = qSettings->value("configurationStreamVersion").toUInt();
@@ -107,8 +106,8 @@ IUAVGadgetConfiguration *ScopeGadgetConfiguration::clone()
 
     for (plotDatasLoadIndex = 0; plotDatasLoadIndex < plotCurveCount; plotDatasLoadIndex++) {
         PlotCurveConfiguration *currentPlotCurveConf = m_plotCurveConfigs.at(plotDatasLoadIndex);
-
         PlotCurveConfiguration *newPlotCurveConf     = new PlotCurveConfiguration();
+
         newPlotCurveConf->uavObject       = currentPlotCurveConf->uavObject;
         newPlotCurveConf->uavField        = currentPlotCurveConf->uavField;
         newPlotCurveConf->color           = currentPlotCurveConf->color;
@@ -147,7 +146,6 @@ void ScopeGadgetConfiguration::saveConfig(QSettings *qSettings) const
 
     for (plotDatasLoadIndex = 0; plotDatasLoadIndex < plotCurveCount; plotDatasLoadIndex++) {
         qSettings->beginGroup(QString("plotCurve") + QString().number(plotDatasLoadIndex));
-
         PlotCurveConfiguration *plotCurveConf = m_plotCurveConfigs.at(plotDatasLoadIndex);
         qSettings->setValue("uavObject", plotCurveConf->uavObject);
         qSettings->setValue("uavField", plotCurveConf->uavField);
@@ -170,7 +168,6 @@ void ScopeGadgetConfiguration::saveConfig(QSettings *qSettings) const
 void ScopeGadgetConfiguration::replacePlotCurveConfig(QList<PlotCurveConfiguration *> newPlotCurveConfigs)
 {
     clearPlotData();
-
     m_plotCurveConfigs.append(newPlotCurveConfigs);
 }
 

@@ -34,12 +34,12 @@ class ScopeGadgetFactory;
 
 class ScopePlugin : public ExtensionSystem::IPlugin {
 public:
-    ScopePlugin();
-    ~ScopePlugin();
+    ScopePlugin() {}
+    ~ScopePlugin() {}
 
-    void extensionsInitialized();
+    void extensionsInitialized() {}
     bool initialize(const QStringList & arguments, QString *errorString);
-    void shutdown();
+    void shutdown() {}
 
 private:
     ScopeGadgetFactory *mf;
