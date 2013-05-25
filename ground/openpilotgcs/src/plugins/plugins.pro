@@ -80,13 +80,13 @@ SUBDIRS += plugin_modelview
 macx:contains(QT_VERSION, ^4\\.8\\.0): CONFIG += disable_notify_plugin
 
 # Notify gadget
-#!disable_notify_plugin {
-#    plugin_notify.subdir = notify
-#    plugin_notify.depends = plugin_coreplugin
-#    plugin_notify.depends += plugin_uavobjects
-#    plugin_notify.depends += plugin_uavtalk
-#    SUBDIRS += plugin_notify
-#}
+!disable_notify_plugin {
+    plugin_notify.subdir = notify
+    plugin_notify.depends = plugin_coreplugin
+    plugin_notify.depends += plugin_uavobjects
+    plugin_notify.depends += plugin_uavtalk
+    SUBDIRS += plugin_notify
+}
 
 # Uploader gadget
 plugin_uploader.subdir = uploader
@@ -188,10 +188,10 @@ plugin_gcscontrol.depends += plugin_uavobjects
 SUBDIRS += plugin_gcscontrol
 
 # Antenna tracker
-#plugin_antennatrack.subdir = antennatrack
-#plugin_antennatrack.depends = plugin_coreplugin
-#plugin_antennatrack.depends += plugin_uavobjects
-#SUBDIRS += plugin_antennatrack
+plugin_antennatrack.subdir = antennatrack
+plugin_antennatrack.depends = plugin_coreplugin
+plugin_antennatrack.depends += plugin_uavobjects
+SUBDIRS += plugin_antennatrack
 
 # Scope OpenGL Gadget
 #plugin_scopeogl.subdir = scopeogl

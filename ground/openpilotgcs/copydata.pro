@@ -26,6 +26,8 @@ equals(copydata, 1) {
                   Qt5PrintSupport.dll \
                   Qt5OpenGL.dll \
                   Qt5SerialPort.dll \
+                  Qt5Multimedia.dll \
+                  Qt5MultimediaWidgets.dll \
                   icuin51.dll \
                   icudt51.dll \
                   libstdc++-6.dll \

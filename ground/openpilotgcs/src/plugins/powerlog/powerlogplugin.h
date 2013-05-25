@@ -99,7 +99,7 @@ private:
 
 class PowerlogPlugin : public ExtensionSystem::IPlugin {
     Q_OBJECT
-
+                                               Q_PLUGIN_METADATA(IID "OpenPilot.Powerlog")
 
 public:
     PowerlogPlugin();
