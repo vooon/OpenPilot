@@ -1,4 +1,4 @@
-ï»¿#
+#
 # Project: OpenPilot
 # NSIS configuration file for OpenPilot GCS
 # The OpenPilot Team, http://www.openpilot.org, Copyright (C) 2010-2013.
@@ -72,7 +72,7 @@
   VIAddVersionKey "Comments" "${INSTALLER_NAME}. ${BUILD_DESCRIPTION}"
   VIAddVersionKey "CompanyName" "The OpenPilot Team, http://www.openpilot.org"
   VIAddVersionKey "LegalTrademarks" "${PRODUCT_NAME} is a trademark of The OpenPilot Team"
-  VIAddVersionKey "LegalCopyright" "Â© 2010-2013 The OpenPilot Team"
+  VIAddVersionKey "LegalCopyright" "© 2010-2013 The OpenPilot Team"
   VIAddVersionKey "FileDescription" "${INSTALLER_NAME}"
 
 ;--------------------------------
@@ -93,7 +93,7 @@
 ;--------------------------------
 ; Branding
 
-  BrandingText "Â© 2010-2013 The OpenPilot Team, http://www.openpilot.org"
+  BrandingText "© 2010-2013 The OpenPilot Team, http://www.openpilot.org"
 
   !define MUI_ICON "${NSIS_DATA_TREE}\resources\openpilot.ico"
   !define MUI_HEADERIMAGE
@@ -265,6 +265,7 @@ Section ; create uninstall info
   ; Write the uninstall keys for Windows
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenPilot" "DisplayName" "OpenPilot GCS"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenPilot" "UninstallString" '"$INSTDIR\Uninstall.exe"'
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenPilot" "DisplayIcon" '"$INSTDIR\bin\openpilotgcs.exe"'
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenPilot" "NoModify" 1
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenPilot" "NoRepair" 1
 
