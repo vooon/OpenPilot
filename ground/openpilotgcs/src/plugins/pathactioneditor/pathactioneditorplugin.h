@@ -33,7 +33,7 @@ class PathActionEditorGadgetFactory;
 
 class PathActionEditorPlugin : public ExtensionSystem::IPlugin {
     Q_OBJECT
-                                                       Q_PLUGIN_METADATA(IID "OpenPilot")
+                                                       Q_PLUGIN_METADATA(IID "OpenPilot.PathActionEditor")
 public:
     PathActionEditorPlugin();
     ~PathActionEditorPlugin();

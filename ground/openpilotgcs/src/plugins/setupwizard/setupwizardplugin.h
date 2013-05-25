@@ -33,7 +33,7 @@
 
 class SetupWizardPlugin : public ExtensionSystem::IPlugin {
     Q_OBJECT
-                                                  Q_PLUGIN_METADATA(IID "OpenPilot")
+                                                  Q_PLUGIN_METADATA(IID "OpenPilot.SetupWizard")
 public:
     SetupWizardPlugin();
     ~SetupWizardPlugin();

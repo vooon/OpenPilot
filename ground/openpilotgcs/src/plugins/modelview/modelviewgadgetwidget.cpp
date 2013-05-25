@@ -51,7 +51,7 @@ ModelViewGadgetWidget::ModelViewGadgetWidget(QWidget *parent)
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 
     m_Light.setPosition(4000.0, 40000.0, 80000.0);
-    //m_GlView.setBackgroundColor(Qt::white);
+    // m_GlView.setBackgroundColor(Qt::white);
     m_Light.setAmbientColor(Qt::lightGray);
 
     m_GlView.cameraHandle()->setDefaultUpVector(glc::Z_AXIS);

@@ -33,7 +33,7 @@
 #include "uavsettingsimportexportfactory.h"
 class UAVSETTINGSIMPORTEXPORT_EXPORT UAVSettingsImportExportPlugin : public ExtensionSystem::IPlugin {
     Q_OBJECT
-                                     Q_PLUGIN_METADATA(IID "OpenPilot")
+                                     Q_PLUGIN_METADATA(IID "OpenPilot.UAVSettingsImportExport")
 
 public:
     UAVSettingsImportExportPlugin();
