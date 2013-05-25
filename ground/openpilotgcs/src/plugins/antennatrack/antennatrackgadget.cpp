@@ -33,7 +33,7 @@
 AntennaTrackGadget::AntennaTrackGadget(QString classId, AntennaTrackWidget *widget, QWidget *parent) :
     IUAVGadget(classId, parent),
     m_widget(widget),
-    connected(FALSE)
+    connected(false)
 {
     connect(m_widget->connectButton, SIGNAL(clicked(bool)), this, SLOT(onConnect()));
     connect(m_widget->disconnectButton, SIGNAL(clicked(bool)), this, SLOT(onDisconnect()));
