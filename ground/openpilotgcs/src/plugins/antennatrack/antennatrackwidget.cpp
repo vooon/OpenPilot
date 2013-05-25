@@ -47,7 +47,7 @@ AntennaTrackWidget::AntennaTrackWidget(QWidget *parent) : QWidget(parent)
 
 AntennaTrackWidget::~AntennaTrackWidget()
 {}
-void AntennaTrackWidget::setPort(QPointer<QextSerialPort> portx)
+void AntennaTrackWidget::setPort(QPointer<QSerialPort> portx)
 {
     port = portx;
 }
@@ -209,5 +209,4 @@ void AntennaTrackWidget::calcAntennaPosition(void)
     }
     azimuth_old   = azimuth;
     elevation_old = elevation;
-}
 }

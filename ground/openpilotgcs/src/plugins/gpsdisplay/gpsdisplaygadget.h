@@ -69,6 +69,7 @@ private:
     QPointer<GPSParser> parser;
     bool connected;
     void processNewSerialData(QByteArray serialData);
+    PortSettings m_portsettings;
 };
 
 

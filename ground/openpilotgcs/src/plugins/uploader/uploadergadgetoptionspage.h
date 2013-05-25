@@ -63,15 +63,6 @@ private:
     QComboBox *m_parityCB;
     QComboBox *m_stopbitsCB;
     QSpinBox *m_timeoutSpin;
-    QStringList BaudRateTypeString;
-    QStringList BaudRateTypeStringALL;
-    QStringList DataBitsTypeStringALL;
-    QStringList ParityTypeStringALL;
-    QStringList StopBitsTypeStringALL;
-    QStringList DataBitsTypeString;
-    QStringList ParityTypeString;
-    QStringList StopBitsTypeString;
-    QStringList FlowTypeString;
 };
 
 #endif // UPLOADERGADGETOPTIONSPAGE_H
