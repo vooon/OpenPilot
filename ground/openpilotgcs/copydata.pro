@@ -60,6 +60,20 @@ equals(copydata, 1) {
             data_copy.commands += $(COPY_FILE) $$targetPath(\"$$[QT_INSTALL_PLUGINS]/imageformats/$$dll\") $$targetPath(\"$$GCS_APP_PATH/imageformats/$$dll\") $$addNewline()
         }
 
+        # copy platforms
+        QT_PLATFORMS_DLLS = qwindows.dll
+        data_copy.commands += -@$(MKDIR) $$targetPath(\"$$GCS_APP_PATH/platforms\") $$addNewline()
+        for(dll, QT_PLATFORMS_DLLS) {
+            data_copy.commands += $(COPY_FILE) $$targetPath(\"$$[QT_INSTALL_PLUGINS]/platforms/$$dll\") $$targetPath(\"$$GCS_APP_PATH/platforms/$$dll\") $$addNewline()
+        }
+
+        # copy mediaservice
+        QT_MEDIASERVICE_DLLS = dsengine.dll
+        data_copy.commands += -@$(MKDIR) $$targetPath(\"$$GCS_APP_PATH/mediaservice\") $$addNewline()
+        for(dll, QT_MEDIASERVICE_DLLS) {
+            data_copy.commands += $(COPY_FILE) $$targetPath(\"$$[QT_INSTALL_PLUGINS]/mediaservice/$$dll\") $$targetPath(\"$$GCS_APP_PATH/mediaservice/$$dll\") $$addNewline()
+        }
+
         # copy phonon_backend
         #QT_PHONON_BACKEND_DLLS = phonon_ds94.dll
         #data_copy.commands += -@$(MKDIR) $$targetPath(\"$$GCS_APP_PATH/phonon_backend\") $$addNewline()
