@@ -170,8 +170,14 @@ LRESULT USBMonitor::onDeviceChangeWin(WPARAM wParam, LPARAM lParam)
     return 0;
 }
 #ifdef QT_GUI_LIB
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 bool USBRegistrationWidget::winEvent(MSG *message, long *result)
 {
+#else
+bool USBRegistrationWidget::nativeEvent(const QByteArray & /*eventType*/, void *msg, long *result)
+{
+    MSG *message = static_cast<MSG *>(msg);
+#endif
     if (message->message == WM_DEVICECHANGE) {
         qese->onDeviceChangeWin(message->wParam, message->lParam);
         *result = 1;
