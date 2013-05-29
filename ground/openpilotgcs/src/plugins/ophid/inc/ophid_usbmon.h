@@ -81,36 +81,39 @@ protected:
 #endif
 
 struct USBPortInfo {
-	USBPortInfo() {
+    USBPortInfo()
+    {
 #ifdef __APPLE__
-		dev_handle = 0;
+        dev_handle = 0;
 #endif // __APPLE__
-		UsagePage = 0;
-		Usage     = 0;
-		vendorID  = 0;
-		productID = 0;
-		bcdDevice = 0;
-	}
+        UsagePage  = 0;
+        Usage = 0;
+        vendorID   = 0;
+        productID  = 0;
+        bcdDevice  = 0;
+    }
 
-	USBPortInfo(const USBPortInfo& other) {
-		operator=(other);
-	}
-	USBPortInfo& operator=(const USBPortInfo& other) {
-		serialNumber = other.serialNumber; // As a string as it can be anything, really...
-		manufacturer = other.manufacturer;
-		product      = other.product;
+    USBPortInfo(const USBPortInfo & other)
+    {
+        operator=(other);
+    }
+    USBPortInfo & operator=(const USBPortInfo & other)
+    {
+        serialNumber = other.serialNumber; // As a string as it can be anything, really...
+        manufacturer = other.manufacturer;
+        product = other.product;
 #if defined(Q_OS_WIN32)
-		devicePath   = other.devicePath; // only has meaning on windows
+        devicePath   = other.devicePath; // only has meaning on windows
 #elif  defined(Q_OS_MAC)
-		dev_handle   = other.dev_handle;
+        dev_handle   = other.dev_handle;
 #endif
-		UsagePage    = other.UsagePage;
-		Usage        = other.Usage;
-		vendorID     = other.vendorID;
-		productID    = other.productID;
-		bcdDevice    = other.bcdDevice;
-		return *this;
-	}
+        UsagePage    = other.UsagePage;
+        Usage = other.Usage;
+        vendorID     = other.vendorID;
+        productID    = other.productID;
+        bcdDevice    = other.bcdDevice;
+        return *this;
+    }
 
     // QString friendName; ///< Friendly name.
     // QString physName;
@@ -137,7 +140,7 @@ struct USBPortInfo {
 class OPHID_EXPORT USBMonitor : public QThread {
     Q_OBJECT
 
-	friend class RawHID;
+    friend class RawHID;
 public:
     enum RunState {
         Bootloader = 0x01,
@@ -158,7 +161,7 @@ public:
     QList<USBPortInfo> availableDevices();
     QList<USBPortInfo> availableDevices(int vid, int pid, int boardModel, int runState);
 #ifdef __APPLE__
-	USBPortInfo deviceBySerialNumber(const QString& serial) const;
+    USBPortInfo deviceBySerialNumber(const QString & serial) const;
 #endif // __APPLE__
 #if defined(Q_OS_WIN32)
     LRESULT onDeviceChangeWin(WPARAM wParam, LPARAM lParam);
@@ -173,7 +176,7 @@ signals:
      */
     void deviceDiscovered(const USBPortInfo & info);
     void deviceDiscovered();
-	void deviceDiscovered(const QString&);
+    void deviceDiscovered(const QString &);
 
     /*!
        A device has been disconnected from the system.
@@ -204,7 +207,7 @@ private:
     static USBMonitor * m_instance;
 
 #ifdef __APPLE__
-	CFRunLoopRef m_loop;
+    CFRunLoopRef m_loop;
 #endif // __APPLE__
 
 

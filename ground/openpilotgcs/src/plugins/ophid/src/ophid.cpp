@@ -494,7 +494,5 @@ qint64 RawHID::writeData(const char *data, qint64 maxSize)
 }
 
 
-void RawHID::deviceDetached(const QString& serialNumber)
-{
-
-}
+void RawHID::deviceDetached(const QString & serialNumber)
+{}

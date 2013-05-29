@@ -78,9 +78,9 @@ protected:
     bool closeDevice();
 
 #if defined(__APPLE__)
-	//! Callback for the HID driver on an input report
-	static void input_callback(void* c, IOReturn ret, void* sender, IOHIDReportType type, uint32_t id, uint8_t* data, CFIndex len);
-	void input(uint8_t *data, CFIndex len);
+    // ! Callback for the HID driver on an input report
+    static void input_callback(void *c, IOReturn ret, void *sender, IOHIDReportType type, uint32_t id, uint8_t *data, CFIndex len);
+    void input(uint8_t *data, CFIndex len);
 #endif
 
     QString serialNumber;
@@ -95,15 +95,15 @@ protected:
     QMutex *m_mutex;
     QMutex *m_startedMutex;
 
-	static const int BUFFER_LENGTH = 128;
+    static const int BUFFER_LENGTH = 128;
 // needed only for MaxOs
 #ifdef __APPLE__
-	QByteArray       m_rcvData;
-	IOHIDDeviceRef   m_handle;
-	uint8_t          m_buffer[BUFFER_LENGTH];
+    QByteArray m_rcvData;
+    IOHIDDeviceRef m_handle;
+    uint8_t m_buffer[BUFFER_LENGTH];
 
 public slots:
-	void deviceDetached(const QString& serialNumber);
+    void deviceDetached(const QString & serialNumber);
 #endif // __APPLE__
 };
 
