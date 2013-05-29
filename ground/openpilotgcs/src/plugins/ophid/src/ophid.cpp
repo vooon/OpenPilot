@@ -492,3 +492,9 @@ qint64 RawHID::writeData(const char *data, qint64 maxSize)
 
     return m_writeThread->pushDataToWrite(data, maxSize);
 }
+
+
+void RawHID::deviceDetached(const QString& serialNumber)
+{
+
+}

@@ -48,9 +48,12 @@ USBMonitor::USBMonitor(QObject *parent) : QThread(parent), m_terminate(1)
 {
     m_instance  = this;
     hid_manager = NULL;
+	m_loop      = 0;
+
     listMutex   = new QMutex();
     knowndevices.clear();
     qRegisterMetaType<USBPortInfo>("USBPortInfo");
+	qRegisterMetaType<QString>("QString");
     start();
 }
 
@@ -100,6 +103,8 @@ void USBMonitor::removeDevice(IOHIDDeviceRef dev)
         if (port.dev_handle == dev) {
             QMutexLocker locker(listMutex);
             knowndevices.removeAt(i);
+			qDebug() << port.serialNumber;
+			emit deviceDiscovered(port.serialNumber);
             emit deviceRemoved(port);
             emit deviceRemoved();
             return;
@@ -215,6 +220,18 @@ QList<USBPortInfo> USBMonitor::availableDevices(int vid, int pid, int bcdDeviceM
 }
 
 
+USBPortInfo USBMonitor::deviceBySerialNumber(const QString& serial) const
+{
+	QMutexLocker locker(listMutex);
+	for (QList<USBPortInfo>::const_iterator it = knowndevices.begin();it!=knowndevices.end();it++) {
+		if (serial == (*it).serialNumber) {
+			return *it;
+		}
+	}
+	return USBPortInfo();
+}
+
+
 /**
  * \brief USBMonitor thread
  *
@@ -235,14 +252,14 @@ void USBMonitor::run()
     // No matching filter
     IOHIDManagerSetDeviceMatching(hid_manager, NULL);
 
-    CFRunLoopRef loop = CFRunLoopGetCurrent();
+	m_loop = CFRunLoopGetCurrent();
     // set up a callbacks for device attach & detach
-    IOHIDManagerScheduleWithRunLoop(hid_manager, loop, kCFRunLoopDefaultMode);
+	IOHIDManagerScheduleWithRunLoop(hid_manager, m_loop, kCFRunLoopDefaultMode);
     IOHIDManagerRegisterDeviceMatchingCallback(hid_manager, attach_callback, this);
     IOHIDManagerRegisterDeviceRemovalCallback(hid_manager, detach_callback, this);
     ret = IOHIDManagerOpen(hid_manager, kIOHIDOptionsTypeNone);
     if (ret != kIOReturnSuccess) {
-        IOHIDManagerUnscheduleFromRunLoop(hid_manager, loop, kCFRunLoopDefaultMode);
+		IOHIDManagerUnscheduleFromRunLoop(hid_manager, m_loop, kCFRunLoopDefaultMode);
         CFRelease(hid_manager);
         return;
     }
@@ -250,7 +267,7 @@ void USBMonitor::run()
     while (m_terminate.available()) {
         CFRunLoopRunInMode(kCFRunLoopDefaultMode, 1, false);
     }
-    IOHIDManagerUnscheduleFromRunLoop(hid_manager, loop, kCFRunLoopDefaultMode);
+	IOHIDManagerUnscheduleFromRunLoop(hid_manager, m_loop, kCFRunLoopDefaultMode);
     CFRelease(hid_manager);
 
     hid_manager = NULL;

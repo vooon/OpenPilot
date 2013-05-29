@@ -13,7 +13,6 @@ HEADERS += inc/ophid_global.h \
            inc/ophid_usbsignal.h \
            hidapi/hidapi.h
 SOURCES += src/ophid_plugin.cpp \
-           src/ophid.cpp \
            src/ophid_usbsignal.cpp \
            src/ophid_hidapi.cpp
 FORMS += 
@@ -34,6 +33,7 @@ win32 {
 macx { 
     SOURCES += src/ophid_usbmon_mac.cpp \
                hidapi/mac/hid.c
+    OBJECTIVE_SOURCES += src/ophid_mac.mm
     SDK = /Developer/SDKs/MacOSX10.5.sdk
     ARCH = -mmacosx-version-min=10.5 \
            -arch ppc \
@@ -42,6 +42,9 @@ macx {
             -Wl,-syslibroot,$(SDK) \
             -framework IOKit \
             -framework CoreFoundation
+} else {
+    SOURCES += \
+           src/ophid.cpp
 }
 
 linux-g++ {
