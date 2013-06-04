@@ -63,7 +63,7 @@ ListModel {
 
 	ListElement{ name:"Thorsten Klose" }
 	
-	ListElement{ name:"Rick King" }
+	ListElement{ name:"Ricky King" }
 
 	ListElement{ name:"Hallvard Kristiansen" }
 
@@ -150,6 +150,8 @@ ListModel {
 	ListElement{ name:"Kevin Vertucio" }
 
 	ListElement{ name:"Alex Vrubel" }
+
+	ListElement{ name:"Mike Walters" }
 
 	ListElement{ name:"Brian Webb" }
 
