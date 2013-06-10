@@ -120,7 +120,7 @@ int32_t AnyTXControlInitialize()
 
     return 0;
 }
-MODULE_INITCALL(AnyTXControlInitialize, AnyTXControlStart)
+MODULE_INITCALL(AnyTXControlInitialize, AnyTXControlStart);
 
 /**
  * Module task

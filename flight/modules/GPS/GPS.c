@@ -113,7 +113,7 @@ int32_t GPSStart(void)
             return 0;
         }
 
-        AlarmsSet(SYSTEMALARMS_ALARM_GPS, SYSTEMALARMS_ALARM_CRITICAL);
+        AlarmsSet(SYSTEMALARMS_ALARM_GPS, SYSTEMALARMS_ALARM_ERROR);
     }
     return -1;
 }
@@ -190,7 +190,7 @@ int32_t GPSInitialize(void)
     return -1;
 }
 
-MODULE_INITCALL(GPSInitialize, GPSStart)
+MODULE_INITCALL(GPSInitialize, GPSStart);
 
 // ****************
 /**

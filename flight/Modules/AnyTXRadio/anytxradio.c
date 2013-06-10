@@ -106,7 +106,7 @@ int32_t AnyTXRadioInitialize(void)
     return 0;
 }
 
-MODULE_INITCALL(AnyTXRadioInitialize, AnyTXRadioStart)
+MODULE_INITCALL(AnyTXRadioInitialize, AnyTXRadioStart);
 
 /**
  * System task, periodically executes every SYSTEM_UPDATE_PERIOD_MS
