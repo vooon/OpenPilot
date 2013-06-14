@@ -273,4 +273,3 @@ bool RawHIDPlugin::initialize(const QStringList & arguments, QString *errorStrin
 
     return true;
 }
-

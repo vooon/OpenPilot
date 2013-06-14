@@ -177,6 +177,7 @@ bool USBRegistrationWidget::winEvent(MSG *message, long *result)
 bool USBRegistrationWidget::nativeEvent(const QByteArray & /*eventType*/, void *msg, long *result)
 {
     MSG *message = static_cast<MSG *>(msg);
+
 #endif
     if (message->message == WM_DEVICECHANGE) {
         qese->onDeviceChangeWin(message->wParam, message->lParam);

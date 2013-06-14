@@ -404,6 +404,26 @@ void loadTranslators(QString language, QTranslator &translator, QTranslator &qtT
         }
     }
 }
+
+void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    QFile file("gcs.log");
+
+    if (file.open(QIODevice::Append | QIODevice::Text)) {
+        QTextStream out(&file);
+        out << QTime::currentTime().toString("hh:mm:ss.zzz ");
+
+        switch (type) {
+        case QtDebugMsg:    out << "DBG: "; break;
+        case QtWarningMsg:  out << "WRN: "; break;
+        case QtCriticalMsg: out << "CRT: "; break;
+        case QtFatalMsg:    out << "FTL: "; break;
+        }
+
+        out << msg << '\n';
+        out.flush();
+    }
+}
 } // namespace anonymous
 
 int main(int argc, char * *argv)
@@ -414,6 +434,13 @@ int main(int argc, char * *argv)
 
     // low level init
     systemInit();
+    qInstallMessageHandler(myMessageOutput);
+    QFile file("gcs.log");
+    if (file.exists()) {
+        if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            // erase old log
+        }
+    }
 
     // create application
     SharedTools::QtSingleApplication app(APP_NAME, argc, argv);

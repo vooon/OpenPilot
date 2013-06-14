@@ -37,7 +37,6 @@
 #include <extensionsystem/pluginmanager.h>
 
 #include <iostream>
-#include "qxttimer.h"
 
 static const QString VERSION = "1.0.0";
 

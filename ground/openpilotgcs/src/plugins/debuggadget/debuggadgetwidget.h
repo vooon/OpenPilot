@@ -30,13 +30,14 @@
 
 #include <QLabel>
 #include "ui_debug.h"
+#include "debugengine.h"
 class DebugGadgetWidget : public QLabel {
     Q_OBJECT
 
 public:
     DebugGadgetWidget(QWidget *parent = 0);
     ~DebugGadgetWidget();
-
+    static void customMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
 private:
     Ui_Form *m_config;
 private slots:

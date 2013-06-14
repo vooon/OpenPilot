@@ -61,19 +61,19 @@
 extern "C" {
 #endif
 
-HIDAPI VOID WINAPI HidD_GetHidGuid (LPGUID);
-HIDAPI BOOL WINAPI HidD_GetPreparsedData(HANDLE, PHIDP_PREPARSED_DATA  *);
+HIDAPI VOID WINAPI HidD_GetHidGuid(LPGUID);
+HIDAPI BOOL WINAPI HidD_GetPreparsedData(HANDLE, PHIDP_PREPARSED_DATA *);
 HIDAPI BOOL WINAPI HidD_FreePreparsedData(PHIDP_PREPARSED_DATA);
-HIDAPI BOOL WINAPI HidD_FlushQueue (HANDLE);
-HIDAPI BOOL WINAPI HidD_GetConfiguration (HANDLE, PHIDD_CONFIGURATION, ULONG);
-HIDAPI BOOL WINAPI HidD_SetConfiguration (HANDLE, PHIDD_CONFIGURATION, ULONG);
-HIDAPI BOOL WINAPI HidD_GetNumInputBuffers (HANDLE, PULONG);
-HIDAPI BOOL WINAPI HidD_SetNumInputBuffers (HANDLE HidDeviceObject, ULONG);
-HIDAPI BOOL WINAPI HidD_GetPhysicalDescriptor (HANDLE, PVOID, ULONG);
-HIDAPI BOOL WINAPI HidD_GetManufacturerString (HANDLE, PVOID, ULONG);
-HIDAPI BOOL WINAPI HidD_GetProductString ( HANDLE, PVOID, ULONG);
-HIDAPI BOOL WINAPI HidD_GetIndexedString ( HANDLE, ULONG, PVOID, ULONG);
-HIDAPI BOOL WINAPI HidD_GetSerialNumberString (HANDLE, PVOID, ULONG);
+HIDAPI BOOL WINAPI HidD_FlushQueue(HANDLE);
+HIDAPI BOOL WINAPI HidD_GetConfiguration(HANDLE, PHIDD_CONFIGURATION, ULONG);
+HIDAPI BOOL WINAPI HidD_SetConfiguration(HANDLE, PHIDD_CONFIGURATION, ULONG);
+HIDAPI BOOL WINAPI HidD_GetNumInputBuffers(HANDLE, PULONG);
+HIDAPI BOOL WINAPI HidD_SetNumInputBuffers(HANDLE HidDeviceObject, ULONG);
+HIDAPI BOOL WINAPI HidD_GetPhysicalDescriptor(HANDLE, PVOID, ULONG);
+HIDAPI BOOL WINAPI HidD_GetManufacturerString(HANDLE, PVOID, ULONG);
+HIDAPI BOOL WINAPI HidD_GetProductString(HANDLE, PVOID, ULONG);
+HIDAPI BOOL WINAPI HidD_GetIndexedString(HANDLE, ULONG, PVOID, ULONG);
+HIDAPI BOOL WINAPI HidD_GetSerialNumberString(HANDLE, PVOID, ULONG);
 
 #ifdef __cplusplus
 }
@@ -103,8 +103,8 @@ protected:
     bool nativeEvent(const QByteArray & /*eventType*/, void *msg, long *result);
 #endif
 };
-#endif
-#endif
+#endif // ifdef QT_GUI_LIB
+#endif // ifdef Q_OS_WIN
 
 struct USBPortInfo {
     // QString friendName; ///< Friendly name.

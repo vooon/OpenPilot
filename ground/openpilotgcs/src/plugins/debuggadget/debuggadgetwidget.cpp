@@ -32,21 +32,54 @@
 #include <QTextEdit>
 #include <QVBoxLayout>
 #include <QPushButton>
-#include "qxtlogger.h"
 #include "debugengine.h"
 #include <QFile>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QScrollBar>
 #include <QTime>
+
+QPointer<QTextBrowser> m_textedit;
+
+void DebugGadgetWidget::customMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    QString txt;
+    QColor color = Qt::black;
+
+    switch (type) {
+    case QtDebugMsg:
+        txt   = QString("Debug: %1").arg(msg);
+        color = Qt::black;
+        break;
+    case QtWarningMsg:
+        txt   = QString("Warning: %1").arg(msg);
+        color = Qt::red;
+        break;
+    case QtCriticalMsg:
+        txt   = QString("Critical: %1").arg(msg);
+        color = Qt::red;
+        break;
+    case QtFatalMsg:
+        txt   = QString("Fatal: %1").arg(msg);
+        abort();
+    }
+
+    debugengine::getInstance()->setTextEdit(m_textedit);
+    debugengine::getInstance()->setColor(color);
+    debugengine::getInstance()->writeMessage(txt);
+}
+
 DebugGadgetWidget::DebugGadgetWidget(QWidget *parent) : QLabel(parent)
 {
     m_config = new Ui_Form();
     m_config->setupUi(this);
-    debugengine *de = new debugengine();
-    QxtLogger::getInstance()->addLoggerEngine("debugplugin", de);
-    connect(de, SIGNAL(dbgMsg(QString, QList<QVariant>)), this, SLOT(dbgMsg(QString, QList<QVariant>)));
-    connect(de, SIGNAL(dbgMsgError(QString, QList<QVariant>)), this, SLOT(dbgMsgError(QString, QList<QVariant>)));
+
+    // m_textedit = m_config->plainTextEdit;
+    // MyplainTextEdit=m_config->plainTextEdit;
+    // debugengine *de = new debugengine();
+    // qInstallMessageHandler(customMessageHandler);
+    // connect(de, SIGNAL(dbgMsg(QString, QList<QVariant>)), this, SLOT(dbgMsg(QString, QList<QVariant>)));
+    // connect(de, SIGNAL(dbgMsgError(QString, QList<QVariant>)), this, SLOT(dbgMsgError(QString, QList<QVariant>)));
     connect(m_config->pushButton, SIGNAL(clicked()), this, SLOT(saveLog()));
 }
 

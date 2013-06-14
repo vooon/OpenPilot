@@ -40,8 +40,6 @@
 #include "mimedatabase.h"
 #include "outputpane.h"
 #include "plugindialog.h"
-#include "qxtlogger.h"
-#include "qxtbasicstdloggerengine.h"
 #include "shortcutsettings.h"
 #include "uavgadgetmanager.h"
 #include "uavgadgetinstancemanager.h"
@@ -190,11 +188,6 @@ MainWindow::MainWindow() :
     connect(m_modeManager, SIGNAL(newModeOrder(QVector<IMode *>)), m_workspaceSettings, SLOT(newModeOrder(QVector<IMode *>)));
     statusBar()->setProperty("p_styled", true);
     setAcceptDrops(true);
-    foreach(QString engine, qxtLog->allLoggerEngines())
-    qxtLog->removeLoggerEngine(engine);
-    qxtLog->addLoggerEngine("std", new QxtBasicSTDLoggerEngine());
-    qxtLog->installAsMessageHandler();
-    qxtLog->enableAllLogLevels();
 }
 
 MainWindow::~MainWindow()
@@ -206,9 +199,6 @@ MainWindow::~MainWindow()
 
     hide();
 
-    qxtLog->removeAsMessageHandler();
-    foreach(QString engine, qxtLog->allLoggerEngines())
-    qxtLog->removeLoggerEngine(engine);
     ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
     if (m_uavGadgetManagers.count() > 0) {
         foreach(UAVGadgetManager * mode, m_uavGadgetManagers) {

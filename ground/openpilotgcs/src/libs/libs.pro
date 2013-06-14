@@ -11,7 +11,6 @@ SUBDIRS   = \
     utils \
     opmapcontrol \
     qwt \
-    sdlgamepad \
-    libqxt
+    sdlgamepad
 
 SUBDIRS +=

@@ -47,6 +47,7 @@ bool EventFilteringMainWindow::winEvent(MSG *msg, long *result)
 bool EventFilteringMainWindow::nativeEvent(const QByteArray & /*eventType*/, void *message, long *result)
 {
     MSG *msg = static_cast<MSG *>(message);
+
 #endif
     if (msg->message == WM_DEVICECHANGE) {
         emit deviceChange();
