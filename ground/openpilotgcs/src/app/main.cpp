@@ -86,6 +86,7 @@
 #include <extensionsystem/iplugin.h>
 
 #include <QtCore/QDir>
+#include <QtCore/QFile>
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QTextStream>
 #include <QtCore/QFileInfo>
@@ -407,7 +408,7 @@ void loadTranslators(QString language, QTranslator &translator, QTranslator &qtT
 
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
-    QFile file("gcs.log");
+    QFile file(QDir::tempPath() + "/gcs.log");
 
     if (file.open(QIODevice::Append | QIODevice::Text)) {
         QTextStream out(&file);
@@ -434,13 +435,15 @@ int main(int argc, char * *argv)
 
     // low level init
     systemInit();
+#ifdef QT_NO_DEBUG
     qInstallMessageHandler(myMessageOutput);
-    QFile file("gcs.log");
+    QFile file(QDir::tempPath() + "/gcs.log");
     if (file.exists()) {
         if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
             // erase old log
         }
     }
+#endif
 
     // create application
     SharedTools::QtSingleApplication app(APP_NAME, argc, argv);
@@ -523,8 +526,8 @@ int main(int argc, char * *argv)
     if (!appOptionValues.contains(NO_SPLASH_OPTION)) {
         splash = new GCSSplashScreen();
         // show splash
-        // splash->showProgressMessage(QObject::tr("Application starting..."));
-        // splash->show();
+        splash->showProgressMessage(QObject::tr("Application starting..."));
+        splash->show();
         // connect to track progress of plugin manager
         QObject::connect(&pluginManager, SIGNAL(pluginAboutToBeLoaded(ExtensionSystem::PluginSpec *)), splash,
                          SLOT(showPluginLoadingProgress(ExtensionSystem::PluginSpec *)));
