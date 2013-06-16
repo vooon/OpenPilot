@@ -42,6 +42,8 @@ cp "${ROOT_DIR}/GPLv3.txt" "/Volumes/${VOL_NAME}/Docs"
 "${ROOT_DIR}/package/osx/libraries" \
     "/Volumes/${VOL_NAME}/OpenPilot GCS.app" || exit 1
 
+df -h
+
 echo "Resizing dmg to ${min}"
 
 hdiutil detach "/Volumes/${VOL_NAME}"
