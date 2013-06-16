@@ -20,7 +20,7 @@ hdiutil unmount "/Volumes/${VOL_NAME}"
 fi
 
 # create temporary image
-hdiutil create "${TEMP_FILE}" -ov -fs "HFS+" -volname "${PACKAGE_NAME}" -size 200m
+hdiutil create "${TEMP_FILE}" -ov -fs "HFS+" -volname "${PACKAGE_NAME}" -size 300m
 hdiutil attach "${TEMP_FILE}"
 
 # packaging goes here
@@ -31,7 +31,7 @@ mkdir "/Volumes/${VOL_NAME}/.background"
 cp "${BUILD_DIR}/../package/osx/.background.png" "/Volumes/${VOL_NAME}/.background/installer.png"
 cp "${BUILD_DIR}/../package/osx/Getting Started.webloc" "/Volumes/${VOL_NAME}/"
 
-cp -r "${APP_PATH}" "/Volumes/${VOL_NAME}"
+cp -a "${APP_PATH}" "/Volumes/${VOL_NAME}"
 cp "${BUILD_DIR}/uavobject-synthetics/matlab/OPLogConvert.m" "/Volumes/${VOL_NAME}/Utilities"
 cp "${ROOT_DIR}/WHATSNEW.txt" "/Volumes/${VOL_NAME}"
 cp "${ROOT_DIR}/README.txt" "/Volumes/${VOL_NAME}/Docs"
