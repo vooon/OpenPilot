@@ -19,14 +19,19 @@ then
 hdiutil unmount "/Volumes/${VOL_NAME}"
 fi
 
-hdiutil convert "${ROOT_DIR}/package/osx/OpenPilot.dmg" \
-    -format UDRW -o "${TEMP_FILE}"
-device=$(hdiutil attach "${TEMP_FILE}" | \
-    egrep '^/dev/' | sed 1q | awk '{print $1}')
+# create temporary image
+hdiutil create "${TEMP_FILE}" -ov -fs "HFS+" -volname "${PACKAGE_NAME}" -size 200m
+hdiutil attach "${TEMP_FILE}"
 
 # packaging goes here
-cp -a "${APP_PATH}" "/Volumes/${VOL_NAME}"
-#ls "${FW_DIR}" | xargs -n 1 -I {} cp "${FW_DIR}/{}" "/Volumes/${VOL_NAME}/Firmware"
+ln -s /Applications /Volumes/${VOL_NAME}/
+mkdir "/Volumes/${VOL_NAME}/Utilities"
+mkdir "/Volumes/${VOL_NAME}/Docs"
+mkdir "/Volumes/${VOL_NAME}/.background"
+cp "${BUILD_DIR}/../package/osx/.background.png" "/Volumes/${VOL_NAME}/.background/installer.png"
+cp "${BUILD_DIR}/../package/osx/Getting Started.webloc" "/Volumes/${VOL_NAME}/"
+
+cp -r "${APP_PATH}" "/Volumes/${VOL_NAME}"
 cp "${BUILD_DIR}/uavobject-synthetics/matlab/OPLogConvert.m" "/Volumes/${VOL_NAME}/Utilities"
 cp "${ROOT_DIR}/WHATSNEW.txt" "/Volumes/${VOL_NAME}"
 cp "${ROOT_DIR}/README.txt" "/Volumes/${VOL_NAME}/Docs"
@@ -37,13 +42,40 @@ cp "${ROOT_DIR}/GPLv3.txt" "/Volumes/${VOL_NAME}/Docs"
 "${ROOT_DIR}/package/osx/libraries" \
     "/Volumes/${VOL_NAME}/OpenPilot GCS.app" || exit 1
 
-hdiutil detach ${device}
-
-min=`hdiutil resize ${TEMP_FILE} | awk \{print\ \$\1\}`
 echo "Resizing dmg to ${min}"
 
-hdiutil resize -sectors ${min} ${TEMP_FILE}
+hdiutil detach "/Volumes/${VOL_NAME}"
+hdiutil resize "${TEMP_FILE}" -size min
+hdiutil attach "${TEMP_FILE}"
+
+echo '
+tell application "Finder"
+  tell disk "'${VOL_NAME}'"
+    open
+    set current view of container window to icon view
+    set toolbar visible of container window to false
+    set statusbar visible of container window to false
+    set the bounds of container window to {401, 101, 999, 657}
+    set theViewOptions to the icon view options of container window
+    set arrangement of theViewOptions to not arranged
+    set icon size of theViewOptions to 72
+    set background picture of theViewOptions to file ".background:installer.png"
+    update without registering applications
+    delay 5
+    set position of item "Applications" of container window to {456, 215}
+    set position of item "OpenPilot GCS" of container window to {131, 215}
+    set position of item "Getting Started" of container window to {101, 378}
+    set position of item "WHATSNEW.txt" of container window to {231, 378}
+    set position of item "Docs" of container window to {358, 378}
+    set position of item "Utilities" of container window to {488, 378}
+    delay 5
+    eject
+  end tell
+end tell
+' | osascript
+
+rm -f "$OUT_FILE"
 hdiutil convert "${TEMP_FILE}" -format UDZO -o "${OUT_FILE}"
 
 # cleanup
-rm "${TEMP_FILE}"
+rm -f "${TEMP_FILE}"
