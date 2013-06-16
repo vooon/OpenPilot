@@ -66,7 +66,7 @@ tell application "Finder"
     delay 5
     set position of item "Applications" of container window to {456, 215}
     set position of item "OpenPilot GCS" of container window to {131, 215}
-    set position of item "Getting Started" of container window to {101, 378}
+    #set position of item "Getting Started" of container window to {101, 378}
     set position of item "WHATSNEW.txt" of container window to {231, 378}
     set position of item "Docs" of container window to {358, 378}
     set position of item "Utilities" of container window to {488, 378}
