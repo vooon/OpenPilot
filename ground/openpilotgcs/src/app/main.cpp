@@ -527,7 +527,7 @@ int main(int argc, char * *argv)
         splash = new GCSSplashScreen();
         // show splash
         splash->showProgressMessage(QObject::tr("Application starting..."));
-        splash->show();
+        //splash->show();
         // connect to track progress of plugin manager
         QObject::connect(&pluginManager, SIGNAL(pluginAboutToBeLoaded(ExtensionSystem::PluginSpec *)), splash,
                          SLOT(showPluginLoadingProgress(ExtensionSystem::PluginSpec *)));

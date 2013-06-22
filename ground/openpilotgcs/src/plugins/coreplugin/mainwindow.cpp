@@ -50,7 +50,7 @@
 #include "ioutputpane.h"
 #include "icorelistener.h"
 #include "iconfigurableplugin.h"
-// #include "manhattanstyle.h"
+#include "manhattanstyle.h"
 #include "rightpane.h"
 #include "settingsdialog.h"
 #include "threadmanager.h"
@@ -155,7 +155,7 @@ MainWindow::MainWindow() :
         }
     }
 #endif
-    // qApp->setStyle(new ManhattanStyle(baseName));
+    qApp->setStyle(new ManhattanStyle(baseName));
 
     setDockNestingEnabled(true);
 
