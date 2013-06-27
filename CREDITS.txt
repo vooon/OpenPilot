@@ -30,6 +30,7 @@ Sami Korhonen
 Thorsten Klose
 Ricky King
 Hallvard Kristiansen
+Alan Krum
 Edouard Lafargue
 Mike Labranche
 Fredrik Larsson
