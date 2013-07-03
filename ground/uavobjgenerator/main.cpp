@@ -35,6 +35,7 @@
 #include "generators/matlab/uavobjectgeneratormatlab.h"
 #include "generators/python/uavobjectgeneratorpython.h"
 #include "generators/wireshark/uavobjectgeneratorwireshark.h"
+#include "generators/rosgw/uavobjectgeneratorrosgw.h"
 
 #define RETURN_ERR_USAGE 1
 #define RETURN_ERR_XML   2
@@ -47,7 +48,7 @@ using namespace std;
  */
 void usage()
 {
-    cout << "Usage: uavobjectgenerator [-gcs] [-flight] [-java] [-python] [-matlab] [-wireshark] [-none] [-v] xml_path template_base [UAVObj1] ... [UAVObjN]" << endl;
+    cout << "Usage: uavobjectgenerator [-gcs] [-flight] [-java] [-python] [-matlab] [-wireshark] [-rosgw] [-none] [-v] xml_path template_base [UAVObj1] ... [UAVObjN]" << endl;
     cout << "Languages: " << endl;
     cout << "\t-gcs           build groundstation code" << endl;
     cout << "\t-flight        build flight code" << endl;
@@ -55,6 +56,7 @@ void usage()
     cout << "\t-python        build python code" << endl;
     cout << "\t-matlab        build matlab code" << endl;
     cout << "\t-wireshark     build wireshark plugin" << endl;
+    cout << "\t-rosgw         build ros gateway code" << endl;
     cout << "\tIf no language is specified ( and not -none ) -> all are built." << endl;
     cout << "Misc: " << endl;
     cout << "\t-none          build no language - just parse xml's" << endl;
@@ -109,9 +111,10 @@ int main(int argc, char *argv[])
     bool do_python     = (arguments_stringlist.removeAll("-python") > 0);
     bool do_matlab     = (arguments_stringlist.removeAll("-matlab") > 0);
     bool do_wireshark  = (arguments_stringlist.removeAll("-wireshark") > 0);
+    bool do_rosgw      = (arguments_stringlist.removeAll("-rosgw") > 0);
     bool do_none       = (arguments_stringlist.removeAll("-none") > 0); //
 
-    bool do_all        = ((do_gcs || do_flight || do_java || do_python || do_matlab) == false);
+    bool do_all        = ((do_gcs || do_flight || do_java || do_python || do_matlab || do_rosgw) == false);
     bool do_allObjects = true;
 
     if (arguments_stringlist.length() >= 2) {
@@ -249,6 +252,13 @@ int main(int argc, char *argv[])
         cout << "generating wireshark code" << endl;
         UAVObjectGeneratorWireshark wiresharkgen;
         wiresharkgen.generate(parser, templatepath, outputpath);
+    }
+
+    // generate ros gw code if wanted
+    if (do_rosgw | do_all) {
+        cout << "generating ros gateway code" << endl;
+        UAVObjectGeneratorRosGW rosgwgen;
+        rosgwgen.generate(parser, templatepath, outputpath);
     }
 
     return RETURN_OK;

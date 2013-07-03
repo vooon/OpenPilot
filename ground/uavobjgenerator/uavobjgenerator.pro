@@ -21,7 +21,8 @@ SOURCES += main.cpp \
     generators/matlab/uavobjectgeneratormatlab.cpp \
     generators/python/uavobjectgeneratorpython.cpp \
     generators/wireshark/uavobjectgeneratorwireshark.cpp \
-    generators/generator_common.cpp
+    generators/generator_common.cpp \
+    generators/rosgw/uavobjectgeneratorrosgw.cpp
 HEADERS += uavobjectparser.h \
     generators/generator_io.h \
     generators/java/uavobjectgeneratorjava.h \
@@ -29,4 +30,5 @@ HEADERS += uavobjectparser.h \
     generators/matlab/uavobjectgeneratormatlab.h \
     generators/python/uavobjectgeneratorpython.h \
     generators/wireshark/uavobjectgeneratorwireshark.h \
-    generators/generator_common.h
+    generators/generator_common.h \
+    generators/rosgw/uavobjectgeneratorrosgw.h
