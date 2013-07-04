@@ -122,15 +122,17 @@ bool UAVObjectGeneratorRosGW::process_object(ObjectInfo *info)
         type = fieldTypeStrCPP[field->type];
         // Append field
         if (field->numElements > 1) {
-            QString h = "\tsout << \"%1: [ \" ";
+            QString h = "\tsout << \" %1: [\" ";
             tostringdata.append(h.arg(field->name));
             for (int idx = 0; idx < field->numElements; ++idx) {
-                QString d = " << data.%1[%2]";
+                QString d = " << std::dec << data.%1[%2]";
+                if (idx)
+                    d.append(" << \", \"");
                 tostringdata.append(d.arg(field->name).arg(idx));
             }
             tostringdata.append(" << \"]\";\n");
         } else {
-            QString s = "\tsout << \"%1: \" << data.%2;\n";
+            QString s = "\tsout << \" %1: \" << data.%2;\n";
             tostringdata.append(s.arg(field->name).arg(field->name));
         }
     }
