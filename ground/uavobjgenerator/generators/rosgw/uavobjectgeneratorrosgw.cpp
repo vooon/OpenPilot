@@ -126,7 +126,7 @@ bool UAVObjectGeneratorRosGW::process_object(ObjectInfo *info)
             tostringdata.append(h.arg(field->name));
             for (int idx = 0; idx < field->numElements; ++idx) {
                 QString d = " << std::dec << data.%1[%2]";
-                if (idx)
+                if (idx < field->numElements - 1)
                     d.append(" << \", \"");
                 tostringdata.append(d.arg(field->name).arg(idx));
             }
