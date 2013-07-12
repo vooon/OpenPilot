@@ -81,7 +81,9 @@ static xTaskHandle taskHandle;
 static void AttitudeTask(void *parameters);
 
 static float gyro_correct_int[3] = { 0, 0, 0 };
+#if defined(PIOS_INCLUDE_ADXL345)
 static xQueueHandle gyro_queue;
+#endif
 
 static int32_t updateSensors(AccelStateData *, GyroStateData *);
 static int32_t updateSensorsCC3D(AccelStateData *accelStateData, GyroStateData *gyrosData);
@@ -123,7 +125,9 @@ int32_t AttitudeStart(void)
     // Start main task
     xTaskCreate(AttitudeTask, (signed char *)"Attitude", STACK_SIZE_BYTES / 4, NULL, TASK_PRIORITY, &taskHandle);
     PIOS_TASK_MONITOR_RegisterTask(TASKINFO_RUNNING_ATTITUDE, taskHandle);
+#ifdef PIOS_INCLUDE_WDG
     PIOS_WDG_RegisterFlag(PIOS_WDG_ATTITUDE);
+#endif
 
     return 0;
 }
@@ -185,30 +189,34 @@ static void AttitudeTask(__attribute__((unused)) void *parameters)
     AlarmsClear(SYSTEMALARMS_ALARM_ATTITUDE);
 
     // Set critical error and wait until the accel is producing data
+#if defined(PIOS_INCLUDE_ADXL345)
     while (PIOS_ADXL345_FifoElements() == 0) {
         AlarmsSet(SYSTEMALARMS_ALARM_ATTITUDE, SYSTEMALARMS_ALARM_CRITICAL);
+#ifdef PIOS_INCLUDE_WDG
         PIOS_WDG_UpdateFlag(PIOS_WDG_ATTITUDE);
+#endif
     }
+#endif
 
     const struct pios_board_info *bdinfo = &pios_board_info_blob;
 
-    bool cc3d = bdinfo->board_rev == 0x02;
+    bool cc   = bdinfo->board_type == 0x04;
+    bool cc3d = cc && ((bdinfo->board_rev == 0x02) || (bdinfo->board_rev == 0x03));
 
     if (cc3d) {
 #if defined(PIOS_INCLUDE_MPU6000)
-        gyro_test = PIOS_MPU6000_Test();
+        PIOS_Assert(PIOS_MPU6000_Test() == 0);
 #endif
     } else {
 #if defined(PIOS_INCLUDE_ADXL345)
         accel_test = PIOS_ADXL345_Test();
-#endif
-
 #if defined(PIOS_INCLUDE_ADC)
         // Create queue for passing gyro data, allow 2 back samples in case
         gyro_queue = xQueueCreate(1, sizeof(float) * 4);
         PIOS_Assert(gyro_queue != NULL);
         PIOS_ADC_SetQueue(gyro_queue);
         PIOS_ADC_Config((PIOS_ADC_RATE / 1000.0f) * UPDATE_RATE);
+#endif
 #endif
     }
     // Force settings update to make sure rotation loaded
@@ -246,7 +254,9 @@ static void AttitudeTask(__attribute__((unused)) void *parameters)
             init = 1;
         }
 
+#ifdef PIOS_INCLUDE_WDG
         PIOS_WDG_UpdateFlag(PIOS_WDG_ATTITUDE);
+#endif
 
         AccelStateData accelState;
         GyroStateData gyros;
@@ -279,8 +289,9 @@ float gyros_passed[3];
  * @param[in] attitudeRaw Populate the UAVO instead of saving right here
  * @return 0 if successfull, -1 if not
  */
-static int32_t updateSensors(AccelStateData *accelState, GyroStateData *gyros)
+static int32_t updateSensors(__attribute__((unused)) AccelStateData *accelState, __attribute__((unused)) GyroStateData *gyros)
 {
+#if defined(PIOS_INCLUDE_ADXL345)
     struct pios_adxl345_data accel_data;
     float gyro[4];
 
@@ -378,6 +389,7 @@ static int32_t updateSensors(AccelStateData *accelState, GyroStateData *gyros)
 
     GyroStateSet(gyros);
     AccelStateSet(accelState);
+#endif /* if defined(PIOS_INCLUDE_ADXL345) */
 
     return 0;
 }
@@ -390,13 +402,13 @@ static int32_t updateSensors(AccelStateData *accelState, GyroStateData *gyros)
 struct pios_mpu6000_data mpu6000_data;
 static int32_t updateSensorsCC3D(AccelStateData *accelStateData, GyroStateData *gyrosData)
 {
+    portTickType lastSysTime;
     float accels[3], gyros[3];
 
 #if defined(PIOS_INCLUDE_MPU6000)
 
-    xQueueHandle queue = PIOS_MPU6000_GetQueue();
-
-    if (xQueueReceive(queue, (void *)&mpu6000_data, SENSOR_PERIOD) == errQUEUE_EMPTY) {
+    vTaskDelayUntil(&lastSysTime, SENSOR_PERIOD / portTICK_RATE_MS);
+    if (!PIOS_MPU6000_ReadSensors(&mpu6000_data)) {
         return -1; // Error, no data
     }
     // Do not read raw sensor data in simulation mode
@@ -454,6 +466,8 @@ static int32_t updateSensorsCC3D(AccelStateData *accelStateData, GyroStateData *
 
     GyroStateSet(gyrosData);
     AccelStateSet(accelStateData);
+
+    lastSysTime = xTaskGetTickCount();
 
     return 0;
 }
