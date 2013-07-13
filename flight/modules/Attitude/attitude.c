@@ -223,7 +223,6 @@ static void AttitudeTask(__attribute__((unused)) void *parameters)
     settingsUpdatedCb(AttitudeSettingsHandle());
 
     // Main task loop
-    portTickType lastSysTime = xTaskGetTickCount();
     while (1) {
         FlightStatusData flightStatus;
         FlightStatusGet(&flightStatus);
@@ -265,7 +264,6 @@ static void AttitudeTask(__attribute__((unused)) void *parameters)
 
         if (cc3d) {
             retval = updateSensorsCC3D(&accelState, &gyros);
-            vTaskDelayUntil(&lastSysTime, SENSOR_PERIOD / portTICK_RATE_MS);
         } else {
             retval = updateSensors(&accelState, &gyros);
         }
@@ -405,23 +403,44 @@ struct pios_mpu6000_data mpu6000_data;
 static int32_t updateSensorsCC3D(AccelStateData *accelStateData, GyroStateData *gyrosData)
 {
     float accels[3], gyros[3];
+    uint8_t count = 0;
 
 #if defined(PIOS_INCLUDE_MPU6000)
-    if (!PIOS_MPU6000_ReadSensors(&mpu6000_data)) {
-        return -1; // Error, no data
-    }
     // Do not read raw sensor data in simulation mode
     if (GyroStateReadOnly() || AccelStateReadOnly()) {
         return 0;
     }
 
-    gyros[0]  = mpu6000_data.gyro_x * PIOS_MPU6000_GetScale();
-    gyros[1]  = mpu6000_data.gyro_y * PIOS_MPU6000_GetScale();
-    gyros[2]  = mpu6000_data.gyro_z * PIOS_MPU6000_GetScale();
+    // Wait for a signal that there is data ready in the FIFO.
+    xSemaphoreHandle semaphore = PIOS_MPU6000_GetSemaphore();
+    if (xSemaphoreTake(semaphore, SENSOR_PERIOD) == pdFALSE) {
+        return -1;
+    }
 
-    accels[0] = mpu6000_data.accel_x * PIOS_MPU6000_GetAccelScale();
-    accels[1] = mpu6000_data.accel_y * PIOS_MPU6000_GetAccelScale();
-    accels[2] = mpu6000_data.accel_z * PIOS_MPU6000_GetAccelScale();
+    // Read all available data out of the FIFO.
+    while (PIOS_MPU6000_ReadFifo(&mpu6000_data)) {
+        gyros[0]  += mpu6000_data.gyro_x * PIOS_MPU6000_GetScale();
+        gyros[1]  += mpu6000_data.gyro_y * PIOS_MPU6000_GetScale();
+        gyros[2]  += mpu6000_data.gyro_z * PIOS_MPU6000_GetScale();
+
+        accels[0] += mpu6000_data.accel_x * PIOS_MPU6000_GetAccelScale();
+        accels[1] += mpu6000_data.accel_y * PIOS_MPU6000_GetAccelScale();
+        accels[2] += mpu6000_data.accel_z * PIOS_MPU6000_GetAccelScale();
+
+        ++count;
+    }
+
+    if (count == 0) {
+        return -1; // Error, no data
+    }
+
+    gyros[0]  /= count;
+    gyros[1]  /= count;
+    gyros[2]  /= count;
+
+    accels[0] /= count;
+    accels[1] /= count;
+    accels[2] /= count;
 
     // gyrosData->temperature  = 35.0f + ((float)mpu6000_data.temperature + 512.0f) / 340.0f;
     // accelsData->temperature = 35.0f + ((float)mpu6000_data.temperature + 512.0f) / 340.0f;

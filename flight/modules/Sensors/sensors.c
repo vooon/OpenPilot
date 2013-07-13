@@ -306,25 +306,35 @@ static void SensorsTask(__attribute__((unused)) void *parameters)
         case 0x03: // MPU6000 board
 #if defined(PIOS_INCLUDE_MPU6000)
             {
-                struct pios_mpu6000_data mpu6000_data;
-                vTaskDelayUntil(&lastSysTime, SENSOR_PERIOD / portTICK_RATE_MS);
-                if (!PIOS_MPU6000_ReadSensors(&mpu6000_data)) {
+                // Wait for a signal that there is data ready in the FIFO.
+                xSemaphoreHandle semaphore = PIOS_MPU6000_GetSemaphore();
+                if (xSemaphoreTake(semaphore, SENSOR_PERIOD) == pdFALSE) {
                     error = true;
                     continue;
                 }
 
-                gyro_accum[0]  = mpu6000_data.gyro_x;
-                gyro_accum[1]  = mpu6000_data.gyro_y;
-                gyro_accum[2]  = mpu6000_data.gyro_z;
+                // Read all available data out of the FIFO.
+                struct pios_mpu6000_data mpu6000_data;
+                while (PIOS_MPU6000_ReadFifo(&mpu6000_data)) {
+                    gyro_accum[0]  += mpu6000_data.gyro_x;
+                    gyro_accum[1]  += mpu6000_data.gyro_y;
+                    gyro_accum[2]  += mpu6000_data.gyro_z;
 
-                accel_accum[0] = mpu6000_data.accel_x;
-                accel_accum[1] = mpu6000_data.accel_y;
-                accel_accum[2] = mpu6000_data.accel_z;
+                    accel_accum[0] += mpu6000_data.accel_x;
+                    accel_accum[1] += mpu6000_data.accel_y;
+                    accel_accum[2] += mpu6000_data.accel_z;
 
-                gyro_samples   = accel_samples = 1;
+                    ++gyro_samples;
+                    ++accel_samples;
+                }
 
-                gyro_scaling   = PIOS_MPU6000_GetScale();
-                accel_scaling  = PIOS_MPU6000_GetAccelScale();
+                if (gyro_samples == 0) {
+                    error = true;
+                    continue;
+                }
+
+                gyro_scaling  = PIOS_MPU6000_GetScale();
+                accel_scaling = PIOS_MPU6000_GetAccelScale();
 
                 gyroSensorData.temperature  = 35.0f + ((float)mpu6000_data.temperature + 512.0f) / 340.0f;
                 accelSensorData.temperature = 35.0f + ((float)mpu6000_data.temperature + 512.0f) / 340.0f;

@@ -55,6 +55,8 @@ struct mpu6000_dev {
 /* Global Variables */
 static struct mpu6000_dev *dev;
 volatile bool mpu6000_configured = false;
+static uint32_t mpu6000_irq = 0;
+static uint8_t mpu6000_rec_buf[sizeof(struct pios_mpu6000_data) + 1];
 
 /* Private functions */
 static struct mpu6000_dev *PIOS_MPU6000_alloc(void);
@@ -428,40 +430,6 @@ static int32_t PIOS_MPU6000_SetReg(uint8_t reg, uint8_t data)
 #endif /* ifdef PIOS_MPU6000_I2C_INTERFACE */
 }
 
-/**
- * @brief Read current X, Z, Y values (in that order)
- * \param[out] int16_t array of size 3 to store X, Z, and Y magnetometer readings
- * \returns 0 if succesful
- */
-int32_t PIOS_MPU6000_ReadGyros(struct pios_mpu6000_data *data)
-{
-    // THIS FUNCTION IS DEPRECATED AND DOES NOT PERFORM A ROTATION
-    uint8_t rec[7];
-
-#ifdef PIOS_MPU6000_I2C_INTERFACE
-    if (PIOS_MPU6000_I2CRead(PIOS_MPU6000_GYRO_X_OUT_MSB, rec + 1, sizeof(rec)) < 0) {
-        return -2;
-    }
-#else /* PIOS_MPU6000_I2C_INTERFACE */
-    if (PIOS_MPU6000_ClaimBus() != 0) {
-        return -1;
-    }
-
-    uint8_t buf[7] = { PIOS_MPU6000_GYRO_X_OUT_MSB | 0x80, 0, 0, 0, 0, 0, 0 };
-    if (PIOS_SPI_TransferBlock(dev->interface_id, &buf[0], &rec[0], sizeof(buf), NULL) < 0) {
-        return -2;
-    }
-
-    PIOS_MPU6000_ReleaseBus();
-#endif /* PIOS_MPU6000_I2C_INTERFACE */
-
-    data->gyro_x = rec[1] << 8 | rec[2];
-    data->gyro_y = rec[3] << 8 | rec[4];
-    data->gyro_z = rec[5] << 8 | rec[6];
-
-    return 0;
-}
-
 /*
  * @brief Read the identification bytes from the MPU6000 sensor
  * \return ID read from MPU6000 or -1 if failure
@@ -548,12 +516,153 @@ int32_t PIOS_MPU6000_Test(void)
 }
 
 /**
- * @brief EXTI IRQ Handler.  Read all the data from onboard buffer
- * @return a boolean to the EXTI IRQ Handler wrapper indicating if a
- *         higher priority task is now eligible to run
+ * @brief Obtains the number of bytes in the FIFO.
+ * @return the number of bytes in the FIFO
  */
-static uint32_t mpu6000_irq = 0;
-static uint8_t mpu6000_rec_buf[sizeof(struct pios_mpu6000_data) + 1];
+static uint16_t PIOS_MPU6000_FifoDepth()
+{
+    uint8_t buf[3];
+
+#ifdef PIOS_MPU6000_I2C_INTERFACE
+    if (PIOS_MPU6000_I2CRead(PIOS_MPU6000_FIFO_CNT_MSB, buf + 1, 2) < 0) {
+        return -1;
+    }
+#else
+
+    if (PIOS_MPU6000_ClaimBus() != 0) {
+        return -1;
+    }
+
+    uint8_t mpu6000_send_buf[3] = { PIOS_MPU6000_FIFO_CNT_MSB | 0x80, 0, 0 };
+    if (PIOS_SPI_TransferBlock(dev->interface_id, &mpu6000_send_buf[0], &buf[0], sizeof(mpu6000_send_buf), NULL) < 0) {
+        PIOS_MPU6000_ReleaseBus();
+        return -1;
+    }
+
+    PIOS_MPU6000_ReleaseBus();
+#endif
+
+    return (buf[1] << 8) | buf[2];
+}
+
+/**
+ * @brief Get the status code.
+ * \return the status code if successful
+ * \return negative value if failed
+ */
+static uint8_t PIOS_MPU6000_GetStatus(void)
+{
+    int32_t reg;
+
+    while ((reg = PIOS_MPU6000_GetReg(PIOS_MPU6000_INT_STATUS_REG)) < 0) {
+        ;
+    }
+    return reg;
+}
+
+/**
+ * @brief Determines if the FIFO has overflowed
+ * \return true if an overflow has occurred.
+ */
+static bool PIOS_MPU6000_Overflowed()
+{
+    uint8_t status = PIOS_MPU6000_GetStatus();
+
+    return status & PIOS_MPU6000_INT_STATUS_OVERFLOW;
+}
+
+/**
+ * @brief Resets the Fifo (usually used after an overflow).
+ */
+static void PIOS_MPU6000_FifoReset()
+{
+    uint8_t reg = PIOS_MPU6000_GetReg(PIOS_MPU6000_USER_CTRL_REG);
+
+    PIOS_MPU6000_SetReg(PIOS_MPU6000_USER_CTRL_REG, reg | PIOS_MPU6000_USERCTL_FIFO_RST);
+}
+
+/**
+ * @brief Read the sensor values out of the data buffer and rotate appropriately.
+ * \param[in] buf The input buffer
+ * \param[out] data The scaled and rotated values.
+ */
+static void PIOS_MPU6000_Rotate(struct pios_mpu6000_data *data, const uint8_t *buf)
+{
+    uint8_t accel_y_msb = buf[0];
+    uint8_t accel_y_lsb = buf[1];
+    uint8_t accel_x_msb = buf[2];
+    uint8_t accel_x_lsb = buf[3];
+    uint8_t accel_z_msb = buf[4];
+    uint8_t accel_z_lsb = buf[5];
+    uint8_t temp_msb    = buf[6];
+    uint8_t temp_lsb    = buf[7];
+    uint8_t gyro_y_msb  = buf[8];
+    uint8_t gyro_y_lsb  = buf[9];
+    uint8_t gyro_x_msb  = buf[10];
+    uint8_t gyro_x_lsb  = buf[11];
+    uint8_t gyro_z_msb  = buf[12];
+    uint8_t gyro_z_lsb  = buf[13];
+
+    // Rotate the sensor to OP convention.  The datasheet defines X as towards the right
+    // and Y as forward.  OP convention transposes this.  Also the Z is defined negatively
+    // to our convention
+#if defined(PIOS_MPU6000_ACCEL)
+    // Currently we only support rotations on top so switch X/Y accordingly
+    switch (dev->cfg->orientation) {
+    case PIOS_MPU6000_TOP_0DEG:
+        data->accel_y = accel_y_msb << 8 | accel_y_lsb; // chip X
+        data->accel_x = accel_x_msb << 8 | accel_x_lsb; // chip Y
+        data->gyro_y  = gyro_y_msb << 8 | gyro_y_lsb; // chip X
+        data->gyro_x  = gyro_x_msb << 8 | gyro_x_lsb; // chip Y
+        break;
+    case PIOS_MPU6000_TOP_90DEG:
+        // -1 to bring it back to -32768 +32767 range
+        data->accel_y = -1 - (accel_x_msb << 8 | accel_x_lsb); // chip Y
+        data->accel_x = accel_y_msb << 8 | accel_y_lsb; // chip X
+        data->gyro_y  = -1 - (gyro_x_msb << 8 | gyro_x_lsb); // chip Y
+        data->gyro_x  = gyro_y_msb << 8 | gyro_y_lsb; // chip X
+        break;
+    case PIOS_MPU6000_TOP_180DEG:
+        data->accel_y = -1 - (accel_y_msb << 8 | accel_y_lsb); // chip X
+        data->accel_x = -1 - (accel_x_msb << 8 | accel_x_lsb); // chip Y
+        data->gyro_y  = -1 - (gyro_y_msb << 8 | gyro_y_lsb); // chip X
+        data->gyro_x  = -1 - (gyro_x_msb << 8 | gyro_x_lsb); // chip Y
+        break;
+    case PIOS_MPU6000_TOP_270DEG:
+        data->accel_y = accel_x_msb << 8 | accel_x_lsb; // chip Y
+        data->accel_x = -1 - (accel_y_msb << 8 | accel_y_lsb); // chip X
+        data->gyro_y  = gyro_x_msb << 8 | gyro_x_lsb; // chip Y
+        data->gyro_x  = -1 - (gyro_y_msb << 8 | gyro_y_lsb); // chip X
+        break;
+    }
+    data->gyro_z      = -1 - (gyro_z_msb << 8 | gyro_z_lsb);
+    data->accel_z     = -1 - (accel_z_msb << 8 | accel_z_lsb);
+    data->temperature = temp_msb << 8 | temp_lsb;
+#else /* if defined(PIOS_MPU6000_ACCEL) */
+    data->gyro_x      = accel_x_msb << 8 | accel_x_lsb;
+    data->gyro_y      = accel_z_msb << 8 | accel_z_lsb;
+    switch (dev->cfg->orientation) {
+    case PIOS_MPU6000_TOP_0DEG:
+        data->gyro_y = accel_x_msb << 8 | accel_x_lsb;
+        data->gyro_x = accel_z_msb << 8 | accel_z_lsb;
+        break;
+    case PIOS_MPU6000_TOP_90DEG:
+        data->gyro_y = -1 - (accel_z_msb << 8 | accel_z_lsb); // chip Y
+        data->gyro_x = accel_x_msb << 8 | accel_x_lsb; // chip X
+        break;
+    case PIOS_MPU6000_TOP_180DEG:
+        data->gyro_y = -1 - (accel_x_msb << 8 | accel_x_lsb);
+        data->gyro_x = -1 - (accel_z_msb << 8 | accel_z_lsb);
+        break;
+    case PIOS_MPU6000_TOP_270DEG:
+        data->gyro_y = accel_z_msb << 8 | accel_z_lsb; // chip Y
+        data->gyro_x = -1 - (accel_x_msb << 8 | accel_x_lsb); // chip X
+        break;
+    }
+    data->gyro_z = -1 - (temp_msb << 8 | temp_lsb);
+    data->temperature = accel_y_msb << 8 | accel_y_lsb;
+#endif /* if defined(PIOS_MPU6000_ACCEL) */
+}
 
 /**
  * @brief Read current accel, gyro, and temperature values.
@@ -563,9 +672,11 @@ static uint8_t mpu6000_rec_buf[sizeof(struct pios_mpu6000_data) + 1];
 bool PIOS_MPU6000_ReadSensors(struct pios_mpu6000_data *data)
 {
 #ifdef PIOS_MPU6000_I2C_INTERFACE
-    if (PIOS_MPU6000_I2CRead(PIOS_MPU6000_ACCEL_X_OUT_MSB, mpu6000_rec_buf + 1, sizeof(struct pios_mpu6000_data)) < 0) {
+    if (PIOS_MPU6000_I2CRead(PIOS_MPU6000_ACCEL_X_OUT_MSB, mpu6000_rec_buf, sizeof(struct pios_mpu6000_data)) < 0) {
         return false;
     }
+
+    PIOS_MPU6000_Rotate(data, mpu6000_rec_buf);
 #else /* PIOS_MPU6000_I2C_INTERFACE */
     if (PIOS_MPU6000_ClaimBus() != 0) {
         return false;
@@ -577,67 +688,53 @@ bool PIOS_MPU6000_ReadSensors(struct pios_mpu6000_data *data)
     }
 
     PIOS_MPU6000_ReleaseBus();
+
+    PIOS_MPU6000_Rotate(data, mpu6000_rec_buf + 1);
 #endif /* PIOS_MPU6000_I2C_INTERFACE */
 
-    // Rotate the sensor to OP convention.  The datasheet defines X as towards the right
-    // and Y as forward.  OP convention transposes this.  Also the Z is defined negatively
-    // to our convention
-#if defined(PIOS_MPU6000_ACCEL)
-    // Currently we only support rotations on top so switch X/Y accordingly
-    switch (dev->cfg->orientation) {
-    case PIOS_MPU6000_TOP_0DEG:
-        data->accel_y = mpu6000_rec_buf[1] << 8 | mpu6000_rec_buf[2]; // chip X
-        data->accel_x = mpu6000_rec_buf[3] << 8 | mpu6000_rec_buf[4]; // chip Y
-        data->gyro_y  = mpu6000_rec_buf[9] << 8 | mpu6000_rec_buf[10]; // chip X
-        data->gyro_x  = mpu6000_rec_buf[11] << 8 | mpu6000_rec_buf[12]; // chip Y
-        break;
-    case PIOS_MPU6000_TOP_90DEG:
-        // -1 to bring it back to -32768 +32767 range
-        data->accel_y = -1 - (mpu6000_rec_buf[3] << 8 | mpu6000_rec_buf[4]); // chip Y
-        data->accel_x = mpu6000_rec_buf[1] << 8 | mpu6000_rec_buf[2]; // chip X
-        data->gyro_y  = -1 - (mpu6000_rec_buf[11] << 8 | mpu6000_rec_buf[12]); // chip Y
-        data->gyro_x  = mpu6000_rec_buf[9] << 8 | mpu6000_rec_buf[10]; // chip X
-        break;
-    case PIOS_MPU6000_TOP_180DEG:
-        data->accel_y = -1 - (mpu6000_rec_buf[1] << 8 | mpu6000_rec_buf[2]); // chip X
-        data->accel_x = -1 - (mpu6000_rec_buf[3] << 8 | mpu6000_rec_buf[4]); // chip Y
-        data->gyro_y  = -1 - (mpu6000_rec_buf[9] << 8 | mpu6000_rec_buf[10]); // chip X
-        data->gyro_x  = -1 - (mpu6000_rec_buf[11] << 8 | mpu6000_rec_buf[12]); // chip Y
-        break;
-    case PIOS_MPU6000_TOP_270DEG:
-        data->accel_y = mpu6000_rec_buf[3] << 8 | mpu6000_rec_buf[4]; // chip Y
-        data->accel_x = -1 - (mpu6000_rec_buf[1] << 8 | mpu6000_rec_buf[2]); // chip X
-        data->gyro_y  = mpu6000_rec_buf[11] << 8 | mpu6000_rec_buf[12]; // chip Y
-        data->gyro_x  = -1 - (mpu6000_rec_buf[9] << 8 | mpu6000_rec_buf[10]); // chip X
-        break;
+    return true;
+}
+
+/**
+ * @brief Read current accel, gyro, and temperature values.
+ * \param[out] data The scaled and rotated values.
+ * \returns true if succesful
+ */
+bool PIOS_MPU6000_ReadFifo(struct pios_mpu6000_data *data)
+{
+    // Did the FIFO overflow?
+    if (PIOS_MPU6000_Overflowed()) {
+        PIOS_MPU6000_FifoReset();
+        return false;
     }
-    data->gyro_z      = -1 - (mpu6000_rec_buf[13] << 8 | mpu6000_rec_buf[14]);
-    data->accel_z     = -1 - (mpu6000_rec_buf[5] << 8 | mpu6000_rec_buf[6]);
-    data->temperature = mpu6000_rec_buf[7] << 8 | mpu6000_rec_buf[8];
-#else /* if defined(PIOS_MPU6000_ACCEL) */
-    data->gyro_x      = mpu6000_rec_buf[3] << 8 | mpu6000_rec_buf[4];
-    data->gyro_y      = mpu6000_rec_buf[5] << 8 | mpu6000_rec_buf[6];
-    switch (dev->cfg->orientation) {
-    case PIOS_MPU6000_TOP_0DEG:
-        data->gyro_y = mpu6000_rec_buf[3] << 8 | mpu6000_rec_buf[4];
-        data->gyro_x = mpu6000_rec_buf[5] << 8 | mpu6000_rec_buf[6];
-        break;
-    case PIOS_MPU6000_TOP_90DEG:
-        data->gyro_y = -1 - (mpu6000_rec_buf[5] << 8 | mpu6000_rec_buf[6]); // chip Y
-        data->gyro_x = mpu6000_rec_buf[3] << 8 | mpu6000_rec_buf[4]; // chip X
-        break;
-    case PIOS_MPU6000_TOP_180DEG:
-        data->gyro_y = -1 - (mpu6000_rec_buf[3] << 8 | mpu6000_rec_buf[4]);
-        data->gyro_x = -1 - (mpu6000_rec_buf[5] << 8 | mpu6000_rec_buf[6]);
-        break;
-    case PIOS_MPU6000_TOP_270DEG:
-        data->gyro_y = mpu6000_rec_buf[5] << 8 | mpu6000_rec_buf[6]; // chip Y
-        data->gyro_x = -1 - (mpu6000_rec_buf[3] << 8 | mpu6000_rec_buf[4]); // chip X
-        break;
+
+    // Ensure that there's enough data in the FIFO.
+    uint16_t depth = PIOS_MPU6000_FifoDepth();
+    if (depth < sizeof(struct pios_mpu6000_data)) {
+        return false;
     }
-    data->gyro_z = -1 - (mpu6000_rec_buf[7] << 8 | mpu6000_rec_buf[8]);
-    data->temperature = mpu6000_rec_buf[1] << 8 | mpu6000_rec_buf[2];
-#endif /* if defined(PIOS_MPU6000_ACCEL) */
+
+    // Read the data out of the FIFO.
+#ifdef PIOS_MPU6000_I2C_INTERFACE
+    if (PIOS_MPU6000_I2CRead(PIOS_MPU6000_FIFO_REG, mpu6000_rec_buf, sizeof(struct pios_mpu6000_data)) < 0) {
+        return false;
+    }
+
+    PIOS_MPU6000_Rotate(data, mpu6000_rec_buf);
+#else /* PIOS_MPU6000_I2C_INTERFACE */
+    if (PIOS_MPU6000_ClaimBus() != 0) {
+        return false;
+    }
+
+    static uint8_t mpu6000_send_buf[1 + sizeof(struct pios_mpu6000_data)] = { PIOS_MPU6000_FIFO_REG | 0x80, 0, 0, 0, 0, 0, 0, 0, 0 };
+    if (PIOS_SPI_TransferBlock(dev->interface_id, mpu6000_send_buf, mpu6000_rec_buf, sizeof(mpu6000_send_buf), NULL) < 0) {
+        return false;
+    }
+
+    PIOS_MPU6000_ReleaseBus();
+
+    PIOS_MPU6000_Rotate(data, mpu6000_rec_buf + 1);
+#endif /* PIOS_MPU6000_I2C_INTERFACE */
 
     return true;
 }
