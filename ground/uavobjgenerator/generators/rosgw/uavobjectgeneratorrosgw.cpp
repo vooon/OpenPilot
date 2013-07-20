@@ -120,20 +120,28 @@ bool UAVObjectGeneratorRosGW::process_object(ObjectInfo *info)
 
         // Determine type
         type = fieldTypeStrCPP[field->type];
+        QString type_conv = "";
+
+        if (field->type == FIELDTYPE_ENUM || field->type == FIELDTYPE_UINT8)
+            type_conv = QString(" (unsigned int)");
+
+        if (field->type == FIELDTYPE_INT8)
+            type_conv = QString(" (int)");
+
         // Append field
         if (field->numElements > 1) {
-            QString h = "\tsout << \" %1: [\" ";
+            QString h = "\tsout << std::dec << \" %1: [\" ";
             tostringdata.append(h.arg(field->name));
             for (int idx = 0; idx < field->numElements; ++idx) {
-                QString d = " << std::dec << data.%1[%2]";
+                QString d = " <<%3 data.%1[%2]";
                 if (idx < field->numElements - 1)
                     d.append(" << \", \"");
-                tostringdata.append(d.arg(field->name).arg(idx));
+                tostringdata.append(d.arg(field->name).arg(idx).arg(type_conv));
             }
             tostringdata.append(" << \"]\";\n");
         } else {
-            QString s = "\tsout << \" %1: \" << data.%2;\n";
-            tostringdata.append(s.arg(field->name).arg(field->name));
+            QString s = "\tsout << \" %1: \" <<%3 data.%2;\n";
+            tostringdata.append(s.arg(field->name).arg(field->name).arg(type_conv));
         }
     }
     outCode.replace(QString("$(TOSTRINGDATA)"), tostringdata);
