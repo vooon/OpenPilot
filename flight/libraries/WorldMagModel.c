@@ -57,6 +57,7 @@
 // #define MALLOC(x) malloc(x)
 // #define FREE(x) free(x)
 
+/* *INDENT-OFF* */
 // http://reviews.openpilot.org/cru/OPReview-436#c6476 :
 // first column not used but it will be optimized out by compiler
 static const float CoeffFile[91][6] = {
@@ -152,6 +153,7 @@ static const float CoeffFile[91][6] = {
     { 12.0f, 11.0f, -0.8f,     -0.2f,    -0.1f,  0.0f   },
     { 12.0f, 12.0f, 0.0f,      0.9f,     0.1f,   0.0f   }
 };
+/* *INDENT-ON* */
 
 static WMMtype_Ellipsoid *Ellip = NULL;
 static WMMtype_MagneticModel *MagneticModel = NULL;
