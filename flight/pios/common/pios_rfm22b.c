@@ -28,30 +28,30 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-// *****************************************************************
-// RFM22B hardware layer
-//
-// This module uses the RFM22B's internal packet handling hardware to
-// encapsulate our own packet data.
-//
-// The RFM22B internal hardware packet handler configuration is as follows:
-//
-// 6-byte (32-bit) preamble .. alternating 0's & 1's
-// 4-byte (32-bit) sync
-// 1-byte packet length (number of data bytes to follow)
-// 0 to 255 user data bytes
-// 4 byte ECC
-//
-// OR in PPM only mode:
-//
-// 6-byte (32-bit) preamble .. alternating 0's & 1's
-// 4-byte (32-bit) sync
-// 1-byte packet length (number of data bytes to follow)
-// 1 byte valid bitmask
-// 8 PPM values (0-255)
-// 1 byte CRC
-//
-// *****************************************************************
+/* *****************************************************************
+ * RFM22B hardware layer
+ *
+ * This module uses the RFM22B's internal packet handling hardware to
+ * encapsulate our own packet data.
+ *
+ * The RFM22B internal hardware packet handler configuration is as follows:
+ *
+ * 6-byte (32-bit) preamble .. alternating 0's & 1's
+ * 4-byte (32-bit) sync
+ * 1-byte packet length (number of data bytes to follow)
+ * 0 to 255 user data bytes
+ * 4 byte ECC
+ *
+ * OR in PPM only mode:
+ *
+ * 6-byte (32-bit) preamble .. alternating 0's & 1's
+ * 4-byte (32-bit) sync
+ * 1-byte packet length (number of data bytes to follow)
+ * 1 byte valid bitmask
+ * 8 PPM values (0-255)
+ * 1 byte CRC
+ *
+ * ***************************************************************** */
 
 #include "pios.h"
 
