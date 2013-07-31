@@ -49,7 +49,7 @@ bool SetupWizardPlugin::initialize(const QStringList & args, QString *errMsg)
     Q_UNUSED(errMsg);
 
     // Add Menu entry
-    Core::ActionManager *am   = Core::ICore::instance()->actionManager();
+    Core::ActionManager *am = Core::ICore::instance()->actionManager();
     Core::ActionContainer *ac = am->actionContainer(Core::Constants::M_TOOLS);
 
     Core::Command *cmd = am->registerAction(new QAction(this),

@@ -100,7 +100,7 @@ int32_t PIOS_SDCARD_Init(uint32_t spi_id)
 {
     SDCARD_MUTEX_TAKE;
 
-    sdcard_mounted  = 0;
+    sdcard_mounted = 0;
 
     PIOS_SDCARD_SPI = spi_id;
 
@@ -160,9 +160,9 @@ int32_t PIOS_SDCARD_PowerOn(void)
         }
 
         if (i < 16384) {
-            status   = PIOS_SDCARD_SendSDCCmd(SDCMD_READ_OCR, 0, SDCMD_READ_OCR_CRC);
+            status = PIOS_SDCARD_SendSDCCmd(SDCMD_READ_OCR, 0, SDCMD_READ_OCR_CRC);
             CardType = ((status >> 24) & 0x40) ? CT_SD2 | CT_BLOCK : CT_SD2;
-            status   = 0;
+            status = 0;
         } else {
             /* We waited long enough! */
             status = -2;
@@ -331,7 +331,7 @@ int32_t PIOS_SDCARD_SendSDCCmd(uint8_t cmd, uint32_t addr, uint8_t crc)
 
     if (cmd & 0x80) { /* ACMD<n> is the command sequence of CMD55-CMD<n> */
         cmd &= 0x7F;
-        ret  = PIOS_SDCARD_SendSDCCmd(SDCMD_APP_CMD, 0, SDCMD_APP_CMD_CRC);
+        ret = PIOS_SDCARD_SendSDCCmd(SDCMD_APP_CMD, 0, SDCMD_APP_CMD_CRC);
         if (ret > 1) {
             return ret;
         }
@@ -376,7 +376,7 @@ int32_t PIOS_SDCARD_SendSDCCmd(uint8_t cmd, uint32_t addr, uint8_t crc)
 
     if ((cmd == SDCMD_SEND_IF_COND || cmd == SDCMD_READ_OCR) && timeout != 1) {
         /* This is a 4 byte R3 or R7 response. */
-        ret  = (PIOS_SPI_TransferByte(PIOS_SDCARD_SPI, 0xff) << 24);
+        ret = (PIOS_SPI_TransferByte(PIOS_SDCARD_SPI, 0xff) << 24);
         ret |= (PIOS_SPI_TransferByte(PIOS_SDCARD_SPI, 0xff) << 16);
         ret |= (PIOS_SPI_TransferByte(PIOS_SDCARD_SPI, 0xff) << 8);
         ret |= (PIOS_SPI_TransferByte(PIOS_SDCARD_SPI, 0xff) << 0);
@@ -604,33 +604,33 @@ int32_t PIOS_SDCARD_CIDRead(SDCARDCidTypeDef *cid)
     /* Byte 0 */
     cid->ManufacturerID = cid_buffer[0];
     /* Byte 1 */
-    cid->OEM_AppliID    = cid_buffer[1] << 8;
+    cid->OEM_AppliID = cid_buffer[1] << 8;
     /* Byte 2 */
-    cid->OEM_AppliID   |= cid_buffer[2];
+    cid->OEM_AppliID |= cid_buffer[2];
     /* Byte 3..7 */
     for (i = 0; i < 5; ++i) {
         cid->ProdName[i] = cid_buffer[3 + i];
     }
     cid->ProdName[5] = 0; /* string terminator */
     /* Byte 8 */
-    cid->ProdRev     = cid_buffer[8];
+    cid->ProdRev = cid_buffer[8];
     /* Byte 9 */
-    cid->ProdSN        = cid_buffer[9] << 24;
+    cid->ProdSN = cid_buffer[9] << 24;
     /* Byte 10 */
-    cid->ProdSN       |= cid_buffer[10] << 16;
+    cid->ProdSN |= cid_buffer[10] << 16;
     /* Byte 11 */
-    cid->ProdSN       |= cid_buffer[11] << 8;
+    cid->ProdSN |= cid_buffer[11] << 8;
     /* Byte 12 */
-    cid->ProdSN       |= cid_buffer[12];
+    cid->ProdSN |= cid_buffer[12];
     /* Byte 13 */
-    cid->Reserved1    |= (cid_buffer[13] & 0xF0) >> 4;
+    cid->Reserved1 |= (cid_buffer[13] & 0xF0) >> 4;
     /* Byte 14 */
-    cid->ManufactDate  = (cid_buffer[13] & 0x0F) << 8;
+    cid->ManufactDate = (cid_buffer[13] & 0x0F) << 8;
     /* Byte 15 */
     cid->ManufactDate |= cid_buffer[14];
     /* Byte 16 */
-    cid->msd_CRC       = (cid_buffer[15] & 0xFE) >> 1;
-    cid->Reserved2     = 1;
+    cid->msd_CRC = (cid_buffer[15] & 0xFE) >> 1;
+    cid->Reserved2 = 1;
 
 error:
     /* deactivate chip select */
@@ -699,19 +699,19 @@ int32_t PIOS_SDCARD_CSDRead(SDCARDCsdTypeDef *csd)
     /* Byte 2 */
     csd->NSAC = csd_buffer[2];
     /* Byte 3 */
-    csd->MaxBusClkFrec    = csd_buffer[3];
+    csd->MaxBusClkFrec = csd_buffer[3];
     /* Byte 4 */
-    csd->CardComdClasses  = csd_buffer[4] << 4;
+    csd->CardComdClasses = csd_buffer[4] << 4;
     /* Byte 5 */
     csd->CardComdClasses |= (csd_buffer[5] & 0xF0) >> 4;
     csd->RdBlockLen = csd_buffer[5] & 0x0F;
     /* Byte 6 */
-    csd->PartBlockRead    = (csd_buffer[6] & 0x80) >> 7;
-    csd->WrBlockMisalign  = (csd_buffer[6] & 0x40) >> 6;
-    csd->RdBlockMisalign  = (csd_buffer[6] & 0x20) >> 5;
-    csd->DSRImpl     = (csd_buffer[6] & 0x10) >> 4;
-    csd->Reserved2   = 0;     /* Reserved */
-    csd->DeviceSize  = (csd_buffer[6] & 0x03) << 10;
+    csd->PartBlockRead = (csd_buffer[6] & 0x80) >> 7;
+    csd->WrBlockMisalign = (csd_buffer[6] & 0x40) >> 6;
+    csd->RdBlockMisalign = (csd_buffer[6] & 0x20) >> 5;
+    csd->DSRImpl = (csd_buffer[6] & 0x10) >> 4;
+    csd->Reserved2 = 0; /* Reserved */
+    csd->DeviceSize = (csd_buffer[6] & 0x03) << 10;
     /* Byte 7 */
     csd->DeviceSize |= (csd_buffer[7]) << 2;
     /* Byte 8 */
@@ -721,33 +721,33 @@ int32_t PIOS_SDCARD_CSDRead(SDCARDCsdTypeDef *csd)
     /* Byte 9 */
     csd->MaxWrCurrentVDDMin = (csd_buffer[9] & 0xE0) >> 5;
     csd->MaxWrCurrentVDDMax = (csd_buffer[9] & 0x1C) >> 2;
-    csd->DeviceSizeMul       = (csd_buffer[9] & 0x03) << 1;
+    csd->DeviceSizeMul = (csd_buffer[9] & 0x03) << 1;
     /* Byte 10 */
-    csd->DeviceSizeMul      |= (csd_buffer[10] & 0x80) >> 7;
-    csd->EraseGrSize         = (csd_buffer[10] & 0x7C) >> 2;
-    csd->EraseGrMul          = (csd_buffer[10] & 0x03) << 3;
+    csd->DeviceSizeMul |= (csd_buffer[10] & 0x80) >> 7;
+    csd->EraseGrSize = (csd_buffer[10] & 0x7C) >> 2;
+    csd->EraseGrMul = (csd_buffer[10] & 0x03) << 3;
     /* Byte 11 */
-    csd->EraseGrMul         |= (csd_buffer[11] & 0xE0) >> 5;
-    csd->WrProtectGrSize     = (csd_buffer[11] & 0x1F);
+    csd->EraseGrMul |= (csd_buffer[11] & 0xE0) >> 5;
+    csd->WrProtectGrSize = (csd_buffer[11] & 0x1F);
     /* Byte 12 */
-    csd->WrProtectGrEnable   = (csd_buffer[12] & 0x80) >> 7;
-    csd->ManDeflECC          = (csd_buffer[12] & 0x60) >> 5;
-    csd->WrSpeedFact         = (csd_buffer[12] & 0x1C) >> 2;
-    csd->MaxWrBlockLen       = (csd_buffer[12] & 0x03) << 2;
+    csd->WrProtectGrEnable = (csd_buffer[12] & 0x80) >> 7;
+    csd->ManDeflECC = (csd_buffer[12] & 0x60) >> 5;
+    csd->WrSpeedFact = (csd_buffer[12] & 0x1C) >> 2;
+    csd->MaxWrBlockLen = (csd_buffer[12] & 0x03) << 2;
     /* Byte 13 */
-    csd->MaxWrBlockLen      |= (csd_buffer[13] & 0xc0) >> 6;
+    csd->MaxWrBlockLen |= (csd_buffer[13] & 0xc0) >> 6;
     csd->WriteBlockPaPartial = (csd_buffer[13] & 0x20) >> 5;
     csd->Reserved3 = 0;
     csd->ContentProtectAppli = (csd_buffer[13] & 0x01);
     /* Byte 14 */
-    csd->FileFormatGrouop    = (csd_buffer[14] & 0x80) >> 7;
+    csd->FileFormatGrouop = (csd_buffer[14] & 0x80) >> 7;
     csd->CopyFlag = (csd_buffer[14] & 0x40) >> 6;
-    csd->PermWrProtect       = (csd_buffer[14] & 0x20) >> 5;
-    csd->TempWrProtect       = (csd_buffer[14] & 0x10) >> 4;
-    csd->FileFormat          = (csd_buffer[14] & 0x0C) >> 2;
-    csd->ECC       = (csd_buffer[14] & 0x03);
+    csd->PermWrProtect = (csd_buffer[14] & 0x20) >> 5;
+    csd->TempWrProtect = (csd_buffer[14] & 0x10) >> 4;
+    csd->FileFormat = (csd_buffer[14] & 0x0C) >> 2;
+    csd->ECC = (csd_buffer[14] & 0x03);
     /* Byte 15 */
-    csd->msd_CRC   = (csd_buffer[15] & 0xFE) >> 1;
+    csd->msd_CRC = (csd_buffer[15] & 0xFE) >> 1;
     csd->Reserved4 = 1;
 
 error:

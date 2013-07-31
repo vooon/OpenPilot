@@ -93,7 +93,7 @@ static void altitudeTask(__attribute__((unused)) void *parameters)
 #if defined(PIOS_INCLUDE_HCSR04)
     SonarAltitudeData sonardata;
     int32_t value = 0, timeout = 10, sample_rate = 0;
-    float coeff   = 0.25, height_out = 0, height_in = 0;
+    float coeff = 0.25, height_out = 0, height_in = 0;
     PIOS_HCSR04_Trigger();
 #endif
 
@@ -116,7 +116,7 @@ static void altitudeTask(__attribute__((unused)) void *parameters)
                 value = PIOS_HCSR04_Get();
                 // from 3.4cm to 5.1m
                 if ((value > 100) && (value < 15000)) {
-                    height_in  = value * 0.00034f / 2.0f;
+                    height_in = value * 0.00034f / 2.0f;
                     height_out = (height_out * (1 - coeff)) + (height_in * coeff);
                     sonardata.Altitude = height_out; // m/us
                 }
@@ -155,16 +155,16 @@ static void altitudeTask(__attribute__((unused)) void *parameters)
         PIOS_MS5611_ReadADC();
 
 
-        temp  = PIOS_MS5611_GetTemperature();
+        temp = PIOS_MS5611_GetTemperature();
         press = PIOS_MS5611_GetPressure();
 
 
         float altitude = 44330.0f * (1.0f - powf(press / MS5611_P0, (1.0f / 5.255f)));
 
         if (!isnan(altitude)) {
-            data.Altitude    = altitude;
+            data.Altitude = altitude;
             data.Temperature = temp;
-            data.Pressure    = press;
+            data.Pressure = press;
             // Update the BasoSensor UAVObject
             BaroSensorSet(&data);
         }

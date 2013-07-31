@@ -105,7 +105,7 @@ ConfigRevoWidget::ConfigRevoWidget(QWidget *parent) :
     // Initialize the 9 bargraph values:
 
     QMatrix lineMatrix = renderer->matrixForElement("accel_x");
-    QRectF rect  = lineMatrix.mapRect(renderer->boundsOnElement("accel_x"));
+    QRectF rect = lineMatrix.mapRect(renderer->boundsOnElement("accel_x"));
     qreal startX = rect.x();
     qreal startY = rect.y() + rect.height();
     // maxBarHeight will be used for scaling it later.
@@ -123,9 +123,9 @@ ConfigRevoWidget::ConfigRevoWidget(QWidget *parent) :
 
     lineMatrix = renderer->matrixForElement("accel_y");
     rect = lineMatrix.mapRect(renderer->boundsOnElement("accel_y"));
-    startX     = rect.x();
-    startY     = rect.y() + rect.height();
-    accel_y    = new QGraphicsSvgItem();
+    startX = rect.x();
+    startY = rect.y() + rect.height();
+    accel_y = new QGraphicsSvgItem();
     accel_y->setSharedRenderer(renderer);
     accel_y->setElementId("accel_y");
     m_ui->sensorsBargraph->scene()->addItem(accel_y);
@@ -134,9 +134,9 @@ ConfigRevoWidget::ConfigRevoWidget(QWidget *parent) :
 
     lineMatrix = renderer->matrixForElement("accel_z");
     rect = lineMatrix.mapRect(renderer->boundsOnElement("accel_z"));
-    startX     = rect.x();
-    startY     = rect.y() + rect.height();
-    accel_z    = new QGraphicsSvgItem();
+    startX = rect.x();
+    startY = rect.y() + rect.height();
+    accel_z = new QGraphicsSvgItem();
     accel_z->setSharedRenderer(renderer);
     accel_z->setElementId("accel_z");
     m_ui->sensorsBargraph->scene()->addItem(accel_z);
@@ -145,9 +145,9 @@ ConfigRevoWidget::ConfigRevoWidget(QWidget *parent) :
 
     lineMatrix = renderer->matrixForElement("gyro_x");
     rect = lineMatrix.mapRect(renderer->boundsOnElement("gyro_x"));
-    startX     = rect.x();
-    startY     = rect.y() + rect.height();
-    gyro_x     = new QGraphicsSvgItem();
+    startX = rect.x();
+    startY = rect.y() + rect.height();
+    gyro_x = new QGraphicsSvgItem();
     gyro_x->setSharedRenderer(renderer);
     gyro_x->setElementId("gyro_x");
     m_ui->sensorsBargraph->scene()->addItem(gyro_x);
@@ -156,9 +156,9 @@ ConfigRevoWidget::ConfigRevoWidget(QWidget *parent) :
 
     lineMatrix = renderer->matrixForElement("gyro_y");
     rect = lineMatrix.mapRect(renderer->boundsOnElement("gyro_y"));
-    startX     = rect.x();
-    startY     = rect.y() + rect.height();
-    gyro_y     = new QGraphicsSvgItem();
+    startX = rect.x();
+    startY = rect.y() + rect.height();
+    gyro_y = new QGraphicsSvgItem();
     gyro_y->setSharedRenderer(renderer);
     gyro_y->setElementId("gyro_y");
     m_ui->sensorsBargraph->scene()->addItem(gyro_y);
@@ -168,9 +168,9 @@ ConfigRevoWidget::ConfigRevoWidget(QWidget *parent) :
 
     lineMatrix = renderer->matrixForElement("gyro_z");
     rect = lineMatrix.mapRect(renderer->boundsOnElement("gyro_z"));
-    startX     = rect.x();
-    startY     = rect.y() + rect.height();
-    gyro_z     = new QGraphicsSvgItem();
+    startX = rect.x();
+    startY = rect.y() + rect.height();
+    gyro_z = new QGraphicsSvgItem();
     gyro_z->setSharedRenderer(renderer);
     gyro_z->setElementId("gyro_z");
     m_ui->sensorsBargraph->scene()->addItem(gyro_z);
@@ -179,8 +179,8 @@ ConfigRevoWidget::ConfigRevoWidget(QWidget *parent) :
 
     lineMatrix = renderer->matrixForElement("mag_x");
     rect = lineMatrix.mapRect(renderer->boundsOnElement("mag_x"));
-    startX     = rect.x();
-    startY     = rect.y() + rect.height();
+    startX = rect.x();
+    startY = rect.y() + rect.height();
     mag_x = new QGraphicsSvgItem();
     mag_x->setSharedRenderer(renderer);
     mag_x->setElementId("mag_x");
@@ -190,8 +190,8 @@ ConfigRevoWidget::ConfigRevoWidget(QWidget *parent) :
 
     lineMatrix = renderer->matrixForElement("mag_y");
     rect = lineMatrix.mapRect(renderer->boundsOnElement("mag_y"));
-    startX     = rect.x();
-    startY     = rect.y() + rect.height();
+    startX = rect.x();
+    startY = rect.y() + rect.height();
     mag_y = new QGraphicsSvgItem();
     mag_y->setSharedRenderer(renderer);
     mag_y->setElementId("mag_y");
@@ -201,8 +201,8 @@ ConfigRevoWidget::ConfigRevoWidget(QWidget *parent) :
 
     lineMatrix = renderer->matrixForElement("mag_z");
     rect = lineMatrix.mapRect(renderer->boundsOnElement("mag_z"));
-    startX     = rect.x();
-    startY     = rect.y() + rect.height();
+    startX = rect.x();
+    startY = rect.y() + rect.height();
     mag_z = new QGraphicsSvgItem();
     mag_z->setSharedRenderer(renderer);
     mag_z->setElementId("mag_z");
@@ -367,7 +367,7 @@ void ConfigRevoWidget::doGetAccelGyroBiasData(UAVObject *obj)
         collectingData = false;
 
         AccelState *accelState = AccelState::GetInstance(getObjectManager());
-        GyroState *gyroState   = GyroState::GetInstance(getObjectManager());
+        GyroState *gyroState = GyroState::GetInstance(getObjectManager());
 
         disconnect(accelState, SIGNAL(objectUpdated(UAVObject *)), this, SLOT(doGetAccelGyroBiasData(UAVObject *)));
         disconnect(gyroState, SIGNAL(objectUpdated(UAVObject *)), this, SLOT(doGetAccelGyroBiasData(UAVObject *)));
@@ -383,9 +383,9 @@ void ConfigRevoWidget::doGetAccelGyroBiasData(UAVObject *obj)
         revoCalibrationData.accel_bias[RevoCalibration::ACCEL_BIAS_X] += listMean(accel_accum_x);
         revoCalibrationData.accel_bias[RevoCalibration::ACCEL_BIAS_Y] += listMean(accel_accum_y);
         revoCalibrationData.accel_bias[RevoCalibration::ACCEL_BIAS_Z] += (listMean(accel_accum_z) + GRAVITY);
-        revoCalibrationData.gyro_bias[RevoCalibration::GYRO_BIAS_X]   += listMean(gyro_accum_x);
-        revoCalibrationData.gyro_bias[RevoCalibration::GYRO_BIAS_Y]   += listMean(gyro_accum_y);
-        revoCalibrationData.gyro_bias[RevoCalibration::GYRO_BIAS_Z]   += listMean(gyro_accum_z);
+        revoCalibrationData.gyro_bias[RevoCalibration::GYRO_BIAS_X] += listMean(gyro_accum_x);
+        revoCalibrationData.gyro_bias[RevoCalibration::GYRO_BIAS_Y] += listMean(gyro_accum_y);
+        revoCalibrationData.gyro_bias[RevoCalibration::GYRO_BIAS_Z] += listMean(gyro_accum_z);
 
         revoCalibration->setData(revoCalibrationData);
         revoCalibration->updated();
@@ -479,7 +479,7 @@ int SixPointInConstFieldCal(double ConstMag, double x[6], double y[6], double z[
         A[i][2] = 2.0 * (y[i + 1] - y[i]);
         A[i][3] = z[i + 1] * z[i + 1] - z[i] * z[i];
         A[i][4] = 2.0 * (z[i + 1] - z[i]);
-        f[i]    = x[i] * x[i] - x[i + 1] * x[i + 1];
+        f[i] = x[i] * x[i] - x[i + 1] * x[i + 1];
     }
 
     // solve for c0=bx/Sx, c1=Sy^2/Sx^2; c2=Sy*by/Sx^2, c3=Sz^2/Sx^2, c4=Sz*bz/Sx^2
@@ -488,8 +488,8 @@ int SixPointInConstFieldCal(double ConstMag, double x[6], double y[6], double z[
     }
 
     // use one magnitude equation and c's to find Sx - doesn't matter which - all give the same answer
-    xp   = x[0]; yp = y[0]; zp = z[0];
-    Sx   = sqrt(ConstMag * ConstMag / (xp * xp + 2 * c[0] * xp + c[0] * c[0] + c[1] * yp * yp + 2 * c[2] * yp + c[2] * c[2] / c[1] + c[3] * zp * zp + 2 * c[4] * zp + c[4] * c[4] / c[3]));
+    xp = x[0]; yp = y[0]; zp = z[0];
+    Sx = sqrt(ConstMag * ConstMag / (xp * xp + 2 * c[0] * xp + c[0] * c[0] + c[1] * yp * yp + 2 * c[2] * yp + c[2] * c[2] / c[1] + c[3] * zp * zp + 2 * c[4] * zp + c[4] * c[4] / c[3]));
 
     S[0] = Sx;
     b[0] = Sx * c[0];
@@ -539,9 +539,9 @@ void ConfigRevoWidget::doStartSixPointCalibration()
     revoCalibrationData.accel_scale[RevoCalibration::ACCEL_SCALE_X] = 1;
     revoCalibrationData.accel_scale[RevoCalibration::ACCEL_SCALE_Y] = 1;
     revoCalibrationData.accel_scale[RevoCalibration::ACCEL_SCALE_Z] = 1;
-    revoCalibrationData.accel_bias[RevoCalibration::ACCEL_BIAS_X]   = 0;
-    revoCalibrationData.accel_bias[RevoCalibration::ACCEL_BIAS_Y]   = 0;
-    revoCalibrationData.accel_bias[RevoCalibration::ACCEL_BIAS_Z]   = 0;
+    revoCalibrationData.accel_bias[RevoCalibration::ACCEL_BIAS_X] = 0;
+    revoCalibrationData.accel_bias[RevoCalibration::ACCEL_BIAS_Y] = 0;
+    revoCalibrationData.accel_bias[RevoCalibration::ACCEL_BIAS_Z] = 0;
 
     accel_accum_x.clear();
     accel_accum_y.clear();
@@ -552,9 +552,9 @@ void ConfigRevoWidget::doStartSixPointCalibration()
     revoCalibrationData.mag_scale[RevoCalibration::MAG_SCALE_X] = 1;
     revoCalibrationData.mag_scale[RevoCalibration::MAG_SCALE_Y] = 1;
     revoCalibrationData.mag_scale[RevoCalibration::MAG_SCALE_Z] = 1;
-    revoCalibrationData.mag_bias[RevoCalibration::MAG_BIAS_X]   = 0;
-    revoCalibrationData.mag_bias[RevoCalibration::MAG_BIAS_Y]   = 0;
-    revoCalibrationData.mag_bias[RevoCalibration::MAG_BIAS_Z]   = 0;
+    revoCalibrationData.mag_bias[RevoCalibration::MAG_BIAS_X] = 0;
+    revoCalibrationData.mag_bias[RevoCalibration::MAG_BIAS_Y] = 0;
+    revoCalibrationData.mag_bias[RevoCalibration::MAG_BIAS_Z] = 0;
 
     // Disable adaptive mag nulling
     initialMagCorrectionRate = revoCalibrationData.MagBiasNullingRate;
@@ -754,9 +754,9 @@ void ConfigRevoWidget::computeScaleBias()
     revoCalibrationData.accel_scale[RevoCalibration::ACCEL_SCALE_Y] = fabs(S[1]);
     revoCalibrationData.accel_scale[RevoCalibration::ACCEL_SCALE_Z] = fabs(S[2]);
 
-    revoCalibrationData.accel_bias[RevoCalibration::ACCEL_BIAS_X]   = -sign(S[0]) * b[0];
-    revoCalibrationData.accel_bias[RevoCalibration::ACCEL_BIAS_Y]   = -sign(S[1]) * b[1];
-    revoCalibrationData.accel_bias[RevoCalibration::ACCEL_BIAS_Z]   = -sign(S[2]) * b[2];
+    revoCalibrationData.accel_bias[RevoCalibration::ACCEL_BIAS_X] = -sign(S[0]) * b[0];
+    revoCalibrationData.accel_bias[RevoCalibration::ACCEL_BIAS_Y] = -sign(S[1]) * b[1];
+    revoCalibrationData.accel_bias[RevoCalibration::ACCEL_BIAS_Z] = -sign(S[2]) * b[2];
 #endif
 
     // Calibration mag
@@ -766,9 +766,9 @@ void ConfigRevoWidget::computeScaleBias()
     revoCalibrationData.mag_scale[RevoCalibration::MAG_SCALE_Y] = fabs(S[1]);
     revoCalibrationData.mag_scale[RevoCalibration::MAG_SCALE_Z] = fabs(S[2]);
 
-    revoCalibrationData.mag_bias[RevoCalibration::MAG_BIAS_X]   = -sign(S[0]) * b[0];
-    revoCalibrationData.mag_bias[RevoCalibration::MAG_BIAS_Y]   = -sign(S[1]) * b[1];
-    revoCalibrationData.mag_bias[RevoCalibration::MAG_BIAS_Z]   = -sign(S[2]) * b[2];
+    revoCalibrationData.mag_bias[RevoCalibration::MAG_BIAS_X] = -sign(S[0]) * b[0];
+    revoCalibrationData.mag_bias[RevoCalibration::MAG_BIAS_Y] = -sign(S[1]) * b[1];
+    revoCalibrationData.mag_bias[RevoCalibration::MAG_BIAS_Z] = -sign(S[2]) * b[2];
 
     // Restore the previous setting
     revoCalibrationData.MagBiasNullingRate = initialMagCorrectionRate;
@@ -843,15 +843,15 @@ void ConfigRevoWidget::storeAndClearBoardRotation()
         isBoardRotationStored = true;
         AttitudeSettings *attitudeSettings = AttitudeSettings::GetInstance(getObjectManager());
         Q_ASSERT(attitudeSettings);
-        AttitudeSettings::DataFields data  = attitudeSettings->getData();
-        storedBoardRotation[AttitudeSettings::BOARDROTATION_YAW]   = data.BoardRotation[AttitudeSettings::BOARDROTATION_YAW];
-        storedBoardRotation[AttitudeSettings::BOARDROTATION_ROLL]  = data.BoardRotation[AttitudeSettings::BOARDROTATION_ROLL];
+        AttitudeSettings::DataFields data = attitudeSettings->getData();
+        storedBoardRotation[AttitudeSettings::BOARDROTATION_YAW] = data.BoardRotation[AttitudeSettings::BOARDROTATION_YAW];
+        storedBoardRotation[AttitudeSettings::BOARDROTATION_ROLL] = data.BoardRotation[AttitudeSettings::BOARDROTATION_ROLL];
         storedBoardRotation[AttitudeSettings::BOARDROTATION_PITCH] = data.BoardRotation[AttitudeSettings::BOARDROTATION_PITCH];
 
         // Set board rotation to no rotation
-        data.BoardRotation[AttitudeSettings::BOARDROTATION_YAW]    = 0;
-        data.BoardRotation[AttitudeSettings::BOARDROTATION_ROLL]   = 0;
-        data.BoardRotation[AttitudeSettings::BOARDROTATION_PITCH]  = 0;
+        data.BoardRotation[AttitudeSettings::BOARDROTATION_YAW] = 0;
+        data.BoardRotation[AttitudeSettings::BOARDROTATION_ROLL] = 0;
+        data.BoardRotation[AttitudeSettings::BOARDROTATION_PITCH] = 0;
         attitudeSettings->setData(data);
     }
 }
@@ -864,9 +864,9 @@ void ConfigRevoWidget::recallBoardRotation()
 
         AttitudeSettings *attitudeSettings = AttitudeSettings::GetInstance(getObjectManager());
         Q_ASSERT(attitudeSettings);
-        AttitudeSettings::DataFields data  = attitudeSettings->getData();
-        data.BoardRotation[AttitudeSettings::BOARDROTATION_YAW]   = storedBoardRotation[AttitudeSettings::BOARDROTATION_YAW];
-        data.BoardRotation[AttitudeSettings::BOARDROTATION_ROLL]  = storedBoardRotation[AttitudeSettings::BOARDROTATION_ROLL];
+        AttitudeSettings::DataFields data = attitudeSettings->getData();
+        data.BoardRotation[AttitudeSettings::BOARDROTATION_YAW] = storedBoardRotation[AttitudeSettings::BOARDROTATION_YAW];
+        data.BoardRotation[AttitudeSettings::BOARDROTATION_ROLL] = storedBoardRotation[AttitudeSettings::BOARDROTATION_ROLL];
         data.BoardRotation[AttitudeSettings::BOARDROTATION_PITCH] = storedBoardRotation[AttitudeSettings::BOARDROTATION_PITCH];
         attitudeSettings->setData(data);
     }
@@ -927,7 +927,7 @@ void ConfigRevoWidget::doStartNoiseMeasurement()
     /* Need to get as many accel, mag and gyro updates as possible */
     AccelState *accelState = AccelState::GetInstance(getObjectManager());
     Q_ASSERT(accelState);
-    GyroState *gyroState   = GyroState::GetInstance(getObjectManager());
+    GyroState *gyroState = GyroState::GetInstance(getObjectManager());
     Q_ASSERT(gyroState);
     MagState *mag = MagState::GetInstance(getObjectManager());
     Q_ASSERT(mag);
@@ -1005,9 +1005,9 @@ void ConfigRevoWidget::doGetNoiseSample(UAVObject *obj)
         Q_ASSERT(0);
     }
 
-    float p1   = (float)mag_accum_x.length() / (float)NOISE_SAMPLES;
-    float p2   = (float)gyro_accum_x.length() / (float)NOISE_SAMPLES;
-    float p3   = (float)accel_accum_x.length() / (float)NOISE_SAMPLES;
+    float p1 = (float)mag_accum_x.length() / (float)NOISE_SAMPLES;
+    float p2 = (float)gyro_accum_x.length() / (float)NOISE_SAMPLES;
+    float p3 = (float)accel_accum_x.length() / (float)NOISE_SAMPLES;
 
     float prog = (p1 < p2) ? p1 : p2;
     prog = (prog < p3) ? prog : p3;
@@ -1020,7 +1020,7 @@ void ConfigRevoWidget::doGetNoiseSample(UAVObject *obj)
         // No need to for more updates
         MagState *mags = MagState::GetInstance(getObjectManager());
         AccelState *accelState = AccelState::GetInstance(getObjectManager());
-        GyroState *gyroState   = GyroState::GetInstance(getObjectManager());
+        GyroState *gyroState = GyroState::GetInstance(getObjectManager());
         disconnect(accelState, SIGNAL(objectUpdated(UAVObject *)), this, SLOT(doGetNoiseSample(UAVObject *)));
         disconnect(gyroState, SIGNAL(objectUpdated(UAVObject *)), this, SLOT(doGetNoiseSample(UAVObject *)));
         disconnect(mags, SIGNAL(objectUpdated(UAVObject *)), this, SLOT(doGetNoiseSample(UAVObject *)));
@@ -1032,12 +1032,12 @@ void ConfigRevoWidget::doGetNoiseSample(UAVObject *obj)
             revoCalData.Q[EKFConfiguration::Q_ACCELX] = listVar(accel_accum_x);
             revoCalData.Q[EKFConfiguration::Q_ACCELY] = listVar(accel_accum_y);
             revoCalData.Q[EKFConfiguration::Q_ACCELZ] = listVar(accel_accum_z);
-            revoCalData.Q[EKFConfiguration::Q_GYROX]  = listVar(gyro_accum_x);
-            revoCalData.Q[EKFConfiguration::Q_GYROY]  = listVar(gyro_accum_y);
-            revoCalData.Q[EKFConfiguration::Q_GYROZ]  = listVar(gyro_accum_z);
-            revoCalData.R[EKFConfiguration::R_MAGX]   = listVar(mag_accum_x);
-            revoCalData.R[EKFConfiguration::R_MAGY]   = listVar(mag_accum_y);
-            revoCalData.R[EKFConfiguration::R_MAGZ]   = listVar(mag_accum_z);
+            revoCalData.Q[EKFConfiguration::Q_GYROX] = listVar(gyro_accum_x);
+            revoCalData.Q[EKFConfiguration::Q_GYROY] = listVar(gyro_accum_y);
+            revoCalData.Q[EKFConfiguration::Q_GYROZ] = listVar(gyro_accum_z);
+            revoCalData.R[EKFConfiguration::R_MAGX] = listVar(mag_accum_x);
+            revoCalData.R[EKFConfiguration::R_MAGY] = listVar(mag_accum_y);
+            revoCalData.R[EKFConfiguration::R_MAGZ] = listVar(mag_accum_z);
             ekfConfiguration->setData(revoCalData);
         }
 
@@ -1134,12 +1134,12 @@ void ConfigRevoWidget::clearHomeLocation()
 
     Q_ASSERT(homeLocation);
     HomeLocation::DataFields homeLocationData;
-    homeLocationData.Latitude  = 0;
+    homeLocationData.Latitude = 0;
     homeLocationData.Longitude = 0;
-    homeLocationData.Altitude  = 0;
-    homeLocationData.Be[0]     = 0;
-    homeLocationData.Be[1]     = 0;
-    homeLocationData.Be[2]     = 0;
+    homeLocationData.Altitude = 0;
+    homeLocationData.Be[0] = 0;
+    homeLocationData.Be[1] = 0;
+    homeLocationData.Be[2] = 0;
     homeLocationData.g_e = 9.81f;
     homeLocationData.Set = HomeLocation::SET_FALSE;
     homeLocation->setData(homeLocationData);

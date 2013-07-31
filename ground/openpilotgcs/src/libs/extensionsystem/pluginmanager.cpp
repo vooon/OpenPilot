@@ -459,7 +459,7 @@ bool PluginManager::runningTests() const
 QString PluginManager::testDataDirectory() const
 {
     QByteArray ba = qgetenv("QTCREATOR_TEST_DIR");
-    QString s     = QString::fromLocal8Bit(ba.constData(), ba.size());
+    QString s = QString::fromLocal8Bit(ba.constData(), ba.size());
 
     if (s.isEmpty()) {
         s = GCS_TEST_DIR;
@@ -625,7 +625,7 @@ bool PluginManagerPrivate::loadQueue(PluginSpec *spec, QList<PluginSpec *> &queu
     }
     // check for circular dependencies
     if (circularityCheckQueue.contains(spec)) {
-        spec->d->hasError    = true;
+        spec->d->hasError = true;
         spec->d->errorString = PluginManager::tr("Circular dependency detected:\n");
         int index = circularityCheckQueue.indexOf(spec);
         for (int i = index; i < circularityCheckQueue.size(); ++i) {
@@ -638,7 +638,7 @@ bool PluginManagerPrivate::loadQueue(PluginSpec *spec, QList<PluginSpec *> &queu
     circularityCheckQueue.append(spec);
     // check if we have the dependencies
     if (spec->state() == PluginSpec::Invalid || spec->state() == PluginSpec::Read) {
-        spec->d->hasError     = true;
+        spec->d->hasError = true;
         spec->d->errorString += "\n";
         spec->d->errorString += PluginManager::tr("Cannot load plugin because dependencies are not resolved");
         return false;
@@ -646,7 +646,7 @@ bool PluginManagerPrivate::loadQueue(PluginSpec *spec, QList<PluginSpec *> &queu
     // add dependencies
     foreach(PluginSpec * depSpec, spec->dependencySpecs()) {
         if (!loadQueue(depSpec, queue, circularityCheckQueue)) {
-            spec->d->hasError    = true;
+            spec->d->hasError = true;
             spec->d->errorString =
                 PluginManager::tr("Cannot load plugin because dependency failed to load: %1(%2)\nReason: %3")
                 .arg(depSpec->name()).arg(depSpec->version()).arg(depSpec->errorString());
@@ -676,7 +676,7 @@ void PluginManagerPrivate::loadPlugin(PluginSpec *spec, PluginSpec::State destSt
     }
     foreach(PluginSpec * depSpec, spec->dependencySpecs()) {
         if (depSpec->state() != destState) {
-            spec->d->hasError    = true;
+            spec->d->hasError = true;
             spec->d->errorString =
                 PluginManager::tr("Cannot load plugin because dependency failed to load: %1(%2)\nReason: %3")
                 .arg(depSpec->name()).arg(depSpec->version()).arg(depSpec->errorString());
@@ -718,7 +718,7 @@ void PluginManagerPrivate::readPluginPaths()
         const QFileInfoList files = dir.entryInfoList(QStringList() << QString("*.%1").arg(extension), QDir::Files);
         foreach(const QFileInfo &file, files)
         specFiles << file.absoluteFilePath();
-        const QFileInfoList dirs  = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+        const QFileInfoList dirs = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
         foreach(const QFileInfo &subdir, dirs)
         searchPaths << subdir.absoluteFilePath();
     }

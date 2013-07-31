@@ -173,7 +173,7 @@ static void manualControlTask(__attribute__((unused)) void *parameters)
     float flightMode = 0;
 
     uint8_t disconnected_count = 0;
-    uint8_t connected_count    = 0;
+    uint8_t connected_count = 0;
 
     // For now manual instantiate extra instances of Accessory Desired.  In future should be done dynamically
     // this includes not even registering it if not used
@@ -307,21 +307,21 @@ static void manualControlTask(__attribute__((unused)) void *parameters)
 
             // Implement hysteresis loop on connection status
             if (valid_input_detected && (++connected_count > 10)) {
-                cmd.Connected      = MANUALCONTROLCOMMAND_CONNECTED_TRUE;
-                connected_count    = 0;
+                cmd.Connected = MANUALCONTROLCOMMAND_CONNECTED_TRUE;
+                connected_count = 0;
                 disconnected_count = 0;
             } else if (!valid_input_detected && (++disconnected_count > 10)) {
-                cmd.Connected      = MANUALCONTROLCOMMAND_CONNECTED_FALSE;
-                connected_count    = 0;
+                cmd.Connected = MANUALCONTROLCOMMAND_CONNECTED_FALSE;
+                connected_count = 0;
                 disconnected_count = 0;
             }
 
             int8_t armSwitch = 0;
             if (cmd.Connected == MANUALCONTROLCOMMAND_CONNECTED_FALSE) {
-                cmd.Throttle   = -1;      // Shut down engine with no control
-                cmd.Roll       = 0;
+                cmd.Throttle = -1; // Shut down engine with no control
+                cmd.Roll = 0;
                 cmd.Yaw = 0;
-                cmd.Pitch      = 0;
+                cmd.Pitch = 0;
                 cmd.Collective = 0;
                 if (settings.FailsafeBehavior != MANUALCONTROLSETTINGS_FAILSAFEBEHAVIOR_NONE) {
                     FlightStatusGet(&flightStatus);
@@ -357,11 +357,11 @@ static void manualControlTask(__attribute__((unused)) void *parameters)
                 AlarmsClear(SYSTEMALARMS_ALARM_MANUALCONTROL);
 
                 // Scale channels to -1 -> +1 range
-                cmd.Roll     = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ROLL];
-                cmd.Pitch    = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_PITCH];
-                cmd.Yaw      = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_YAW];
+                cmd.Roll = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_ROLL];
+                cmd.Pitch = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_PITCH];
+                cmd.Yaw = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_YAW];
                 cmd.Throttle = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_THROTTLE];
-                flightMode   = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_FLIGHTMODE];
+                flightMode = scaledChannel[MANUALCONTROLSETTINGS_CHANNELGROUPS_FLIGHTMODE];
 
                 // Apply deadband for Roll/Pitch/Yaw stick inputs
                 if (settings.Deadband > 0.0f) {
@@ -517,7 +517,7 @@ static void resetRcvrActivity(struct rcvr_activity_fsm *fsm)
     /* Clear all channel activity flags */
     ReceiverActivityGet(&data);
     if (data.ActiveGroup != RECEIVERACTIVITY_ACTIVEGROUP_NONE && data.ActiveChannel != 255) {
-        data.ActiveGroup   = RECEIVERACTIVITY_ACTIVEGROUP_NONE;
+        data.ActiveGroup = RECEIVERACTIVITY_ACTIVEGROUP_NONE;
         data.ActiveChannel = 255;
         updated = true;
     }
@@ -650,9 +650,9 @@ static void updateActuatorDesired(ManualControlCommandData *cmd)
     ActuatorDesiredData actuator;
 
     ActuatorDesiredGet(&actuator);
-    actuator.Roll     = cmd->Roll;
-    actuator.Pitch    = cmd->Pitch;
-    actuator.Yaw      = cmd->Yaw;
+    actuator.Roll = cmd->Roll;
+    actuator.Pitch = cmd->Pitch;
+    actuator.Yaw = cmd->Yaw;
     actuator.Throttle = (cmd->Throttle < 0) ? -1 : cmd->Throttle;
     ActuatorDesiredSet(&actuator);
 }
@@ -686,9 +686,9 @@ static void updateStabilizationDesired(ManualControlCommandData *cmd, ManualCont
     }
 
     // TOOD: Add assumption about order of stabilization desired and manual control stabilization mode fields having same order
-    stabilization.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_ROLL]  = stab_settings[0];
+    stabilization.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_ROLL] = stab_settings[0];
     stabilization.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_PITCH] = stab_settings[1];
-    stabilization.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_YAW]   = stab_settings[2];
+    stabilization.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_YAW] = stab_settings[2];
 
     stabilization.Roll =
         (stab_settings[0] == STABILIZATIONDESIRED_STABILIZATIONMODE_NONE) ? cmd->Roll :
@@ -755,13 +755,13 @@ static void updatePathDesired(__attribute__((unused)) ManualControlCommandData *
         PathDesiredData pathDesired;
         PathDesiredGet(&pathDesired);
         pathDesired.Start[PATHDESIRED_START_NORTH] = 0;
-        pathDesired.Start[PATHDESIRED_START_EAST]  = 0;
-        pathDesired.Start[PATHDESIRED_START_DOWN]  = positionState.Down - settings.ReturnToHomeAltitudeOffset;
-        pathDesired.End[PATHDESIRED_END_NORTH]     = 0;
+        pathDesired.Start[PATHDESIRED_START_EAST] = 0;
+        pathDesired.Start[PATHDESIRED_START_DOWN] = positionState.Down - settings.ReturnToHomeAltitudeOffset;
+        pathDesired.End[PATHDESIRED_END_NORTH] = 0;
         pathDesired.End[PATHDESIRED_END_EAST] = 0;
         pathDesired.End[PATHDESIRED_END_DOWN] = positionState.Down - settings.ReturnToHomeAltitudeOffset;
         pathDesired.StartingVelocity = 1;
-        pathDesired.EndingVelocity   = 0;
+        pathDesired.EndingVelocity = 0;
         pathDesired.Mode = PATHDESIRED_MODE_FLYENDPOINT;
         PathDesiredSet(&pathDesired);
     } else if (changed) {
@@ -772,13 +772,13 @@ static void updatePathDesired(__attribute__((unused)) ManualControlCommandData *
         PathDesiredData pathDesired;
         PathDesiredGet(&pathDesired);
         pathDesired.Start[PATHDESIRED_START_NORTH] = positionState.North;
-        pathDesired.Start[PATHDESIRED_START_EAST]  = positionState.East;
-        pathDesired.Start[PATHDESIRED_START_DOWN]  = positionState.Down;
-        pathDesired.End[PATHDESIRED_END_NORTH]     = positionState.North;
+        pathDesired.Start[PATHDESIRED_START_EAST] = positionState.East;
+        pathDesired.Start[PATHDESIRED_START_DOWN] = positionState.Down;
+        pathDesired.End[PATHDESIRED_END_NORTH] = positionState.North;
         pathDesired.End[PATHDESIRED_END_EAST] = positionState.East;
         pathDesired.End[PATHDESIRED_END_DOWN] = positionState.Down;
         pathDesired.StartingVelocity = 1;
-        pathDesired.EndingVelocity   = 0;
+        pathDesired.EndingVelocity = 0;
         pathDesired.Mode = PATHDESIRED_MODE_FLYENDPOINT;
         PathDesiredSet(&pathDesired);
         /* Disable this section, until such time as proper discussion can be had about how to implement it for all types of crafts.
@@ -814,13 +814,13 @@ static void updateLandDesired(__attribute__((unused)) ManualControlCommandData *
     if (changed) {
         // After not being in this mode for a while init at current height
         pathDesired.Start[PATHDESIRED_START_NORTH] = positionState.North;
-        pathDesired.Start[PATHDESIRED_START_EAST]  = positionState.East;
-        pathDesired.Start[PATHDESIRED_START_DOWN]  = positionState.Down;
-        pathDesired.End[PATHDESIRED_END_NORTH]     = positionState.North;
+        pathDesired.Start[PATHDESIRED_START_EAST] = positionState.East;
+        pathDesired.Start[PATHDESIRED_START_DOWN] = positionState.Down;
+        pathDesired.End[PATHDESIRED_END_NORTH] = positionState.North;
         pathDesired.End[PATHDESIRED_END_EAST] = positionState.East;
         pathDesired.End[PATHDESIRED_END_DOWN] = positionState.Down;
         pathDesired.StartingVelocity = 1;
-        pathDesired.EndingVelocity   = 0;
+        pathDesired.EndingVelocity = 0;
         pathDesired.Mode = PATHDESIRED_MODE_FLYENDPOINT;
     }
     pathDesired.End[PATHDESIRED_END_DOWN] = positionState.Down + 5;
@@ -834,9 +834,9 @@ static void updateLandDesired(__attribute__((unused)) ManualControlCommandData *
  */
 static void altitudeHoldDesired(ManualControlCommandData *cmd, bool changed)
 {
-    const float DEADBAND      = 0.25f;
+    const float DEADBAND = 0.25f;
     const float DEADBAND_HIGH = 1.0f / 2 + DEADBAND / 2;
-    const float DEADBAND_LOW  = 1.0f / 2 - DEADBAND / 2;
+    const float DEADBAND_LOW = 1.0f / 2 - DEADBAND / 2;
 
     // Stop updating AltitudeHoldDesired triggering a failsafe condition.
     if (cmd->Throttle < 0) {
@@ -859,7 +859,7 @@ static void altitudeHoldDesired(ManualControlCommandData *cmd, bool changed)
     AltitudeHoldDesiredGet(&altitudeHoldDesiredData);
 
     if (flightMode == FLIGHTSTATUS_FLIGHTMODE_ALTITUDEHOLD) {
-        throttleExp  = 128;
+        throttleExp = 128;
         throttleRate = 0;
     } else {
         AltitudeHoldSettingsThrottleExpGet(&throttleExp);
@@ -869,13 +869,13 @@ static void altitudeHoldDesired(ManualControlCommandData *cmd, bool changed)
     StabilizationSettingsData stabSettings;
     StabilizationSettingsGet(&stabSettings);
 
-    thisSysTime   = xTaskGetTickCount();
+    thisSysTime = xTaskGetTickCount();
     dT = ((thisSysTime == lastSysTimeAH) ? 0.001f : (thisSysTime - lastSysTimeAH) * portTICK_RATE_MS * 0.001f);
     lastSysTimeAH = thisSysTime;
 
-    altitudeHoldDesiredData.Roll  = cmd->Roll * stabSettings.RollMax;
+    altitudeHoldDesiredData.Roll = cmd->Roll * stabSettings.RollMax;
     altitudeHoldDesiredData.Pitch = cmd->Pitch * stabSettings.PitchMax;
-    altitudeHoldDesiredData.Yaw   = cmd->Yaw * stabSettings.ManualRate[STABILIZATIONSETTINGS_MANUALRATE_YAW];
+    altitudeHoldDesiredData.Yaw = cmd->Yaw * stabSettings.ManualRate[STABILIZATIONSETTINGS_MANUALRATE_YAW];
 
     float currentDown;
     PositionStateDownGet(&currentDown);
@@ -1124,7 +1124,7 @@ static void processArm(ManualControlCommandData *cmd, ManualControlSettingsData 
             break;
         }
 
-        bool manualArm    = false;
+        bool manualArm = false;
         bool manualDisarm = false;
 
         if (armingInputLevel <= -ARMED_THRESHOLD) {

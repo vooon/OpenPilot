@@ -34,8 +34,8 @@ Widget::Widget(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    inSocket      = NULL;
-    outSocket     = NULL;
+    inSocket = NULL;
+    outSocket = NULL;
     screenTimeout.start();
     packetCounter = 0;
 
@@ -98,8 +98,8 @@ void Widget::on_btTransmitStart_clicked()
     on_btTransmitStop_clicked();
 
     outSocket = new QUdpSocket();
-    outHost   = ui->simHost->text();
-    outPort   = ui->simPort->text().toInt();
+    outHost = ui->simHost->text();
+    outPort = ui->simPort->text().toInt();
 
     ui->listWidget->addItem("transmit started");
     ui->btTransmitStop->setEnabled(1);
@@ -435,7 +435,7 @@ void Widget::asQuat2RPY(const QQuaternion &q, QVector3D &rpy)
     qreal pitch;
     qreal yaw;
 
-    const qreal d2  = 2.0;
+    const qreal d2 = 2.0;
     const qreal qss = q.scalar() * q.scalar();
     const qreal qxx = q.x() * q.x();
     const qreal qyy = q.y() * q.y();
@@ -448,18 +448,18 @@ void Widget::asQuat2RPY(const QQuaternion &q, QVector3D &rpy)
         qreal R10 = d2 * (q.x() * q.y() - q.scalar() * q.z());
         qreal R11 = qss - qxx + qyy - qzz;
 
-        roll  = 0.0;
+        roll = 0.0;
         pitch = copysign(M_PI_2, test);
-        yaw   = qAtan2(-R10, R11);
+        yaw = qAtan2(-R10, R11);
     } else {
         qreal R12 = d2 * (q.y() * q.z() + q.scalar() * q.x());
         qreal R22 = qss - qxx - qyy + qzz;
         qreal R01 = d2 * (q.x() * q.y() + q.scalar() * q.z());
         qreal R00 = qss + qxx - qyy - qzz;
 
-        roll  = qAtan2(R12, R22);
+        roll = qAtan2(R12, R22);
         pitch = qAsin(test);
-        yaw   = qAtan2(R01, R00);
+        yaw = qAtan2(R01, R00);
     }
     rpy.setX(RAD2DEG * roll);
     rpy.setY(RAD2DEG * pitch);
@@ -474,13 +474,13 @@ void Widget::asMatrix2RPY(const QMatrix4x4 &m, QVector3D &rpy)
 
     if (qFabs(m(0, 2)) > 0.998) {
         // ~86.3°, gimbal lock
-        roll  = 0.0;
+        roll = 0.0;
         pitch = copysign(M_PI_2, -m(0, 2));
-        yaw   = qAtan2(-m(1, 0), m(1, 1));
+        yaw = qAtan2(-m(1, 0), m(1, 1));
     } else {
-        roll  = qAtan2(m(1, 2), m(2, 2));
+        roll = qAtan2(m(1, 2), m(2, 2));
         pitch = qAsin(-m(0, 2));
-        yaw   = qAtan2(m(0, 1), m(0, 0));
+        yaw = qAtan2(m(0, 1), m(0, 0));
     }
 
     rpy.setX(roll * RAD2DEG);

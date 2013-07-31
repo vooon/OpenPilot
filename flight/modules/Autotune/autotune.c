@@ -125,7 +125,7 @@ static void AutotuneTask(__attribute__((unused)) void *parameters)
 {
     // AlarmsClear(SYSTEMALARMS_ALARM_ATTITUDE);
 
-    enum AUTOTUNE_STATE state   = AT_INIT;
+    enum AUTOTUNE_STATE state = AT_INIT;
 
     portTickType lastUpdateTime = xTaskGetTickCount();
 
@@ -138,7 +138,7 @@ static void AutotuneTask(__attribute__((unused)) void *parameters)
         portTickType diffTime;
 
         const uint32_t PREPARE_TIME = 2000;
-        const uint32_t MEAURE_TIME  = 30000;
+        const uint32_t MEAURE_TIME = 30000;
 
         FlightStatusData flightStatus;
         FlightStatusGet(&flightStatus);
@@ -168,16 +168,16 @@ static void AutotuneTask(__attribute__((unused)) void *parameters)
         bool rate = relaySettings.Mode == RELAYTUNINGSETTINGS_MODE_RATE;
 
         if (rate) { // rate mode
-            stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_ROLL]  = STABILIZATIONDESIRED_STABILIZATIONMODE_RATE;
+            stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_ROLL] = STABILIZATIONDESIRED_STABILIZATIONMODE_RATE;
             stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_PITCH] = STABILIZATIONDESIRED_STABILIZATIONMODE_RATE;
 
-            stabDesired.Roll  = manualControl.Roll * stabSettings.ManualRate[STABILIZATIONSETTINGS_MANUALRATE_ROLL];
+            stabDesired.Roll = manualControl.Roll * stabSettings.ManualRate[STABILIZATIONSETTINGS_MANUALRATE_ROLL];
             stabDesired.Pitch = manualControl.Pitch * stabSettings.ManualRate[STABILIZATIONSETTINGS_MANUALRATE_PITCH];
         } else {
-            stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_ROLL]  = STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE;
+            stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_ROLL] = STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE;
             stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_PITCH] = STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE;
 
-            stabDesired.Roll  = manualControl.Roll * stabSettings.RollMax;
+            stabDesired.Roll = manualControl.Roll * stabSettings.RollMax;
             stabDesired.Pitch = manualControl.Pitch * stabSettings.PitchMax;
         }
 
@@ -284,13 +284,13 @@ static void update_stabilization_settings()
 
     // For now just run over roll and pitch
     for (uint i = 0; i < 2; i++) {
-        float wu  = 1000.0f * 2 * M_PI / relayTuning.Period[i]; // ultimate freq = output osc freq (rad/s)
+        float wu = 1000.0f * 2 * M_PI / relayTuning.Period[i]; // ultimate freq = output osc freq (rad/s)
 
-        float wc  = wu * gain_ratio_r;      // target openloop crossover frequency (rad/s)
-        float zc  = wc * zero_ratio_r;      // controller zero location (rad/s)
+        float wc = wu * gain_ratio_r; // target openloop crossover frequency (rad/s)
+        float zc = wc * zero_ratio_r; // controller zero location (rad/s)
         float kpu = 4.0f / M_PI / relayTuning.Gain[i]; // ultimate gain, i.e. the proportional gain for instablity
-        float kp  = kpu * gain_ratio_r;     // proportional gain
-        float ki  = zc * kp;                // integral gain
+        float kp = kpu * gain_ratio_r; // proportional gain
+        float ki = zc * kp; // integral gain
 
         // Now calculate gains for the next loop out knowing it is the integral of
         // the inner loop -- the plant is position/velocity = scale*1/s

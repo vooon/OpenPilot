@@ -53,7 +53,7 @@ QStringList ConfigCcpmWidget::getChannelDescriptions()
 
     // get the gui config data
     GUIConfigDataUnion configData = getConfigData();
-    heliGUISettingsStruct heli    = configData.heli;
+    heliGUISettingsStruct heli = configData.heli;
 
     if (heli.Throttle > 0) {
         channelDesc[heli.Throttle - 1] = QString("Throttle");
@@ -126,8 +126,8 @@ ConfigCcpmWidget::ConfigCcpmWidget(QWidget *parent) :
     SwashLvlConfigurationInProgress = 0;
     SwashLvlState = 0;
     SwashLvlServoInterlock = 0;
-    updatingFromHardware   = FALSE;
-    updatingToHardware     = FALSE;
+    updatingFromHardware = FALSE;
+    updatingToHardware = FALSE;
 
     // Initialization of the swashplaye widget
     m_aircraft->SwashplateImage->setScene(new QGraphicsScene(this));
@@ -178,7 +178,7 @@ ConfigCcpmWidget::ConfigCcpmWidget(QWidget *parent) :
     for (int i = 0; i < CCPM_MAX_SWASH_SERVOS; i++) {
         ServoLines[i] = m_aircraft->SwashLvlSwashplateImage->scene()->addLine(0, 0, 100 * i, i * i * 100, pen);
 
-        Servos[i]     = new QGraphicsSvgItem();
+        Servos[i] = new QGraphicsSvgItem();
         Servos[i]->setSharedRenderer(renderer);
         Servos[i]->setElementId(ServoNames.at(i));
         m_aircraft->SwashplateImage->scene()->addItem(Servos[i]);
@@ -317,8 +317,8 @@ void ConfigCcpmWidget::registerWidgets(ConfigTaskWidget &parent)
 
 void ConfigCcpmWidget::resetActuators(GUIConfigDataUnion *configData)
 {
-    configData->heli.Throttle    = 0;
-    configData->heli.Tail        = 0;
+    configData->heli.Throttle = 0;
+    configData->heli.Tail = 0;
     configData->heli.ServoIndexW = 0;
     configData->heli.ServoIndexX = 0;
     configData->heli.ServoIndexY = 0;
@@ -387,7 +387,7 @@ void ConfigCcpmWidget::UpdateType()
 
     SetUIComponentVisibilities();
 
-    TypeInt  = m_aircraft->ccpmType->count() - m_aircraft->ccpmType->currentIndex() - 1;
+    TypeInt = m_aircraft->ccpmType->count() - m_aircraft->ccpmType->currentIndex() - 1;
     TypeText = m_aircraft->ccpmType->currentText();
     SingleServoIndex = m_aircraft->ccpmSingleServo->currentIndex();
 
@@ -553,10 +553,10 @@ void ConfigCcpmWidget::ccpmSwashplateRedraw()
     double scale, xscale, yscale;
 
 
-    size   = m_aircraft->SwashplateImage->rect();
+    size = m_aircraft->SwashplateImage->rect();
     xscale = size.width();
     yscale = size.height();
-    scale  = xscale;
+    scale = xscale;
     if (yscale < scale) {
         scale = yscale;
     }
@@ -564,10 +564,10 @@ void ConfigCcpmWidget::ccpmSwashplateRedraw()
     m_aircraft->SwashplateImage->resetTransform();
     m_aircraft->SwashplateImage->scale(scale, scale);
 
-    size   = m_aircraft->SwashLvlSwashplateImage->rect();
+    size = m_aircraft->SwashLvlSwashplateImage->rect();
     xscale = size.width();
     yscale = size.height();
-    scale  = xscale;
+    scale = xscale;
     if (yscale < scale) {
         scale = yscale;
     }
@@ -580,7 +580,7 @@ void ConfigCcpmWidget::ccpmSwashplateRedraw()
     CenterX = 200;
     CenterY = 200;
 
-    bounds  = SwashplateImg->boundingRect();
+    bounds = SwashplateImg->boundingRect();
 
     SwashplateImg->setPos(CenterX - bounds.width() / 2, CenterY - bounds.height() / 2);
 
@@ -588,14 +588,14 @@ void ConfigCcpmWidget::ccpmSwashplateRedraw()
     defined[1] = (m_aircraft->ccpmServoXChannel->isEnabled());
     defined[2] = (m_aircraft->ccpmServoYChannel->isEnabled());
     defined[3] = (m_aircraft->ccpmServoZChannel->isEnabled());
-    used[0]    = ((m_aircraft->ccpmServoWChannel->currentIndex() > 0) && (m_aircraft->ccpmServoWChannel->isEnabled()));
-    used[1]    = ((m_aircraft->ccpmServoXChannel->currentIndex() > 0) && (m_aircraft->ccpmServoXChannel->isEnabled()));
-    used[2]    = ((m_aircraft->ccpmServoYChannel->currentIndex() > 0) && (m_aircraft->ccpmServoYChannel->isEnabled()));
-    used[3]    = ((m_aircraft->ccpmServoZChannel->currentIndex() > 0) && (m_aircraft->ccpmServoZChannel->isEnabled()));
-    angle[0]   = (CorrectionAngle + 180 + m_aircraft->ccpmAngleW->value()) * Pi / 180.00;
-    angle[1]   = (CorrectionAngle + 180 + m_aircraft->ccpmAngleX->value()) * Pi / 180.00;
-    angle[2]   = (CorrectionAngle + 180 + m_aircraft->ccpmAngleY->value()) * Pi / 180.00;
-    angle[3]   = (CorrectionAngle + 180 + m_aircraft->ccpmAngleZ->value()) * Pi / 180.00;
+    used[0] = ((m_aircraft->ccpmServoWChannel->currentIndex() > 0) && (m_aircraft->ccpmServoWChannel->isEnabled()));
+    used[1] = ((m_aircraft->ccpmServoXChannel->currentIndex() > 0) && (m_aircraft->ccpmServoXChannel->isEnabled()));
+    used[2] = ((m_aircraft->ccpmServoYChannel->currentIndex() > 0) && (m_aircraft->ccpmServoYChannel->isEnabled()));
+    used[3] = ((m_aircraft->ccpmServoZChannel->currentIndex() > 0) && (m_aircraft->ccpmServoZChannel->isEnabled()));
+    angle[0] = (CorrectionAngle + 180 + m_aircraft->ccpmAngleW->value()) * Pi / 180.00;
+    angle[1] = (CorrectionAngle + 180 + m_aircraft->ccpmAngleX->value()) * Pi / 180.00;
+    angle[2] = (CorrectionAngle + 180 + m_aircraft->ccpmAngleY->value()) * Pi / 180.00;
+    angle[3] = (CorrectionAngle + 180 + m_aircraft->ccpmAngleZ->value()) * Pi / 180.00;
 
 
     for (i = 0; i < CCPM_MAX_SWASH_SERVOS; i++) {
@@ -667,14 +667,14 @@ void ConfigCcpmWidget::UpdateMixer()
 
     GUIConfigDataUnion config = getConfigData();
 
-    useCCPM   = !(config.heli.ccpmCollectivePassthroughState || !config.heli.ccpmLinkCyclicState);
+    useCCPM = !(config.heli.ccpmCollectivePassthroughState || !config.heli.ccpmLinkCyclicState);
     useCyclic = config.heli.ccpmLinkRollState;
 
     CollectiveConstant = (float)config.heli.SliderValue0 / 100.00;
 
     if (useCCPM) { // cyclic = 1 - collective
         PitchConstant = 1 - CollectiveConstant;
-        RollConstant  = PitchConstant;
+        RollConstant = PitchConstant;
     } else {
         PitchConstant = (float)config.heli.SliderValue1 / 100.00;
         ;
@@ -696,10 +696,10 @@ void ConfigCcpmWidget::UpdateMixer()
         MixerChannelData[5] = m_aircraft->ccpmServoZChannel->currentIndex();
 
         // get the angle data from the ui
-        ThisAngle[2]  = m_aircraft->ccpmAngleW->value();
-        ThisAngle[3]  = m_aircraft->ccpmAngleX->value();
-        ThisAngle[4]  = m_aircraft->ccpmAngleY->value();
-        ThisAngle[5]  = m_aircraft->ccpmAngleZ->value();
+        ThisAngle[2] = m_aircraft->ccpmAngleW->value();
+        ThisAngle[3] = m_aircraft->ccpmAngleX->value();
+        ThisAngle[4] = m_aircraft->ccpmAngleY->value();
+        ThisAngle[5] = m_aircraft->ccpmAngleZ->value();
 
         // get the angle data from the ui
         ThisEnable[2] = m_aircraft->ccpmServoWChannel->isEnabled();
@@ -806,14 +806,14 @@ QString ConfigCcpmWidget::updateConfigObjects()
     GUIConfigDataUnion config = getConfigData();
 
     // swashplate config
-    config.heli.SwashplateType  = m_aircraft->ccpmType->count() - m_aircraft->ccpmType->currentIndex() - 1;
+    config.heli.SwashplateType = m_aircraft->ccpmType->count() - m_aircraft->ccpmType->currentIndex() - 1;
     config.heli.FirstServoIndex = m_aircraft->ccpmSingleServo->currentIndex();
 
     // ccpm mixing options
     config.heli.ccpmCollectivePassthroughState = m_aircraft->ccpmCollectivePassthrough->isChecked();
     config.heli.ccpmLinkCyclicState = m_aircraft->ccpmLinkCyclic->isChecked();
-    config.heli.ccpmLinkRollState   = m_aircraft->ccpmLinkRoll->isChecked();
-    useCCPM   = !(config.heli.ccpmCollectivePassthroughState || !config.heli.ccpmLinkCyclicState);
+    config.heli.ccpmLinkRollState = m_aircraft->ccpmLinkRoll->isChecked();
+    useCCPM = !(config.heli.ccpmCollectivePassthroughState || !config.heli.ccpmLinkCyclicState);
     useCyclic = config.heli.ccpmLinkRollState;
 
     // correction angle
@@ -833,13 +833,13 @@ QString ConfigCcpmWidget::updateConfigObjects()
     config.heli.SliderValue2 = m_aircraft->ccpmRollScale->value();
 
     // servo assignments
-    config.heli.ServoIndexW  = m_aircraft->ccpmServoWChannel->currentIndex();
-    config.heli.ServoIndexX  = m_aircraft->ccpmServoXChannel->currentIndex();
-    config.heli.ServoIndexY  = m_aircraft->ccpmServoYChannel->currentIndex();
-    config.heli.ServoIndexZ  = m_aircraft->ccpmServoZChannel->currentIndex();
+    config.heli.ServoIndexW = m_aircraft->ccpmServoWChannel->currentIndex();
+    config.heli.ServoIndexX = m_aircraft->ccpmServoXChannel->currentIndex();
+    config.heli.ServoIndexY = m_aircraft->ccpmServoYChannel->currentIndex();
+    config.heli.ServoIndexZ = m_aircraft->ccpmServoZChannel->currentIndex();
 
     // throttle
-    config.heli.Throttle     = m_aircraft->ccpmEngineChannel->currentIndex();
+    config.heli.Throttle = m_aircraft->ccpmEngineChannel->currentIndex();
     // tail
     config.heli.Tail = m_aircraft->ccpmTailChannel->currentIndex();
 
@@ -1101,9 +1101,9 @@ void ConfigCcpmWidget::SwashLvlStartButtonPressed()
         obj = dynamic_cast<UAVDataObject *>(objManager->getObject(QString("ActuatorSettings")));
         Q_ASSERT(obj);
         // obj->requestUpdate();
-        MinField     = obj->getField(QString("ChannelMin"));
+        MinField = obj->getField(QString("ChannelMin"));
         NeutralField = obj->getField(QString("ChannelNeutral"));
-        MaxField     = obj->getField(QString("ChannelMax"));
+        MaxField = obj->getField(QString("ChannelMax"));
 
         // channel assignments
         oldSwashLvlConfiguration.ServoChannels[0] = m_aircraft->ccpmServoWChannel->currentIndex() - 1;
@@ -1117,9 +1117,9 @@ void ConfigCcpmWidget::SwashLvlStartButtonPressed()
         oldSwashLvlConfiguration.Used[3] = ((m_aircraft->ccpmServoZChannel->isEnabled()) && (m_aircraft->ccpmServoZChannel->currentIndex() > 0));
         // min,neutral,max values for the servos
         for (i = 0; i < CCPM_MAX_SWASH_SERVOS; i++) {
-            oldSwashLvlConfiguration.Min[i]     = MinField->getValue(oldSwashLvlConfiguration.ServoChannels[i]).toInt();
+            oldSwashLvlConfiguration.Min[i] = MinField->getValue(oldSwashLvlConfiguration.ServoChannels[i]).toInt();
             oldSwashLvlConfiguration.Neutral[i] = NeutralField->getValue(oldSwashLvlConfiguration.ServoChannels[i]).toInt();
-            oldSwashLvlConfiguration.Max[i]     = MaxField->getValue(oldSwashLvlConfiguration.ServoChannels[i]).toInt();
+            oldSwashLvlConfiguration.Max[i] = MaxField->getValue(oldSwashLvlConfiguration.ServoChannels[i]).toInt();
         }
 
         // copy to new Actuator settings.
@@ -1270,9 +1270,9 @@ void ConfigCcpmWidget::SwashLvlCancelButtonPressed()
     UAVDataObject *obj = dynamic_cast<UAVDataObject *>(objManager->getObject(QString("ActuatorSettings")));
     Q_ASSERT(obj);
     // update settings to match our changes.
-    MinField     = obj->getField(QString("ChannelMin"));
+    MinField = obj->getField(QString("ChannelMin"));
     NeutralField = obj->getField(QString("ChannelNeutral"));
-    MaxField     = obj->getField(QString("ChannelMax"));
+    MaxField = obj->getField(QString("ChannelMax"));
 
     // min,neutral,max values for the servos
     for (int i = 0; i < CCPM_MAX_SWASH_SERVOS; i++) {
@@ -1309,9 +1309,9 @@ void ConfigCcpmWidget::SwashLvlFinishButtonPressed()
     Q_ASSERT(obj);
 
     // update settings to match our changes.
-    MinField     = obj->getField(QString("ChannelMin"));
+    MinField = obj->getField(QString("ChannelMin"));
     NeutralField = obj->getField(QString("ChannelNeutral"));
-    MaxField     = obj->getField(QString("ChannelMax"));
+    MaxField = obj->getField(QString("ChannelMax"));
 
     // min,neutral,max values for the servos
     for (int i = 0; i < CCPM_MAX_SWASH_SERVOS; i++) {
@@ -1396,7 +1396,7 @@ void ConfigCcpmWidget::enableSwashplateLevellingControl(bool state)
     UAVObjectManager *objManager = pm->getObject<UAVObjectManager>();
 
     UAVDataObject *obj = dynamic_cast<UAVDataObject *>(objManager->getObject(QString("ActuatorCommand")));
-    UAVObject::Metadata mdata    = obj->getMetadata();
+    UAVObject::Metadata mdata = obj->getMetadata();
 
     if (state) {
         SwashLvlaccInitialData = mdata;
@@ -1404,7 +1404,7 @@ void ConfigCcpmWidget::enableSwashplateLevellingControl(bool state)
         UAVObject::SetFlightTelemetryUpdateMode(mdata, UAVObject::UPDATEMODE_ONCHANGE);
         UAVObject::SetGcsTelemetryAcked(mdata, false);
         UAVObject::SetGcsTelemetryUpdateMode(mdata, UAVObject::UPDATEMODE_ONCHANGE);
-        mdata.gcsTelemetryUpdatePeriod  = 100;
+        mdata.gcsTelemetryUpdatePeriod = 100;
         SwashLvlConfigurationInProgress = 1;
         m_aircraft->TabObject->setTabEnabled(0, 0);
         m_aircraft->TabObject->setTabEnabled(2, 0);

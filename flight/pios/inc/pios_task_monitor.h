@@ -79,7 +79,7 @@ struct pios_task_info {
     /** Remaining task stack in bytes. */
     uint32_t stack_remaining;
     /** Flag indicating whether or not the task is running. */
-    bool     is_running;
+    bool is_running;
     /** Percentage of cpu time used by the task since the last call
      *  to PIOS_TASK_MONITOR_ForEachTask(). Low-load tasks may
      *  report 0% load even though they have run during the interval. */

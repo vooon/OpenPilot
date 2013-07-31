@@ -31,7 +31,7 @@ namespace internals {
 Tile::Tile(int zoom, Point pos)
 {
     this->zoom = zoom;
-    this->pos  = pos;
+    this->pos = pos;
 }
 void Tile::Clear()
 {
@@ -50,7 +50,7 @@ Tile::Tile() : zoom(0), pos(0, 0)
 Tile & Tile::operator =(const Tile &cSource)
 {
     this->zoom = cSource.zoom;
-    this->pos  = cSource.pos;
+    this->pos = cSource.pos;
     return *this;
 }
 }

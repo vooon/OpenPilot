@@ -43,7 +43,7 @@ public:
     IVersionControl(QObject *parent = 0) : QObject(parent) {}
     virtual ~IVersionControl() {}
 
-    virtual QString name() const   = 0;
+    virtual QString name() const = 0;
 
     virtual bool isEnabled() const = 0;
 
@@ -82,7 +82,7 @@ public:
      *
      * \note The EditorManager calls this for the editors.
      */
-    virtual bool vcsOpen(const QString &fileName)   = 0;
+    virtual bool vcsOpen(const QString &fileName) = 0;
 
     /*!
      * Called after a file has been added to a project If the version control
@@ -92,7 +92,7 @@ public:
      * \note This function should be called from IProject subclasses after
      *       files are added to the project.
      */
-    virtual bool vcsAdd(const QString &filename)    = 0;
+    virtual bool vcsAdd(const QString &filename) = 0;
 
     /*!
      * Called after a file has been removed from the project (if the user

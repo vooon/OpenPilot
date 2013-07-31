@@ -245,9 +245,9 @@ static void simulateConstant()
 
     GPSPositionSensorData gpsPosition;
     GPSPositionSensorGet(&gpsPosition);
-    gpsPosition.Latitude  = 0;
+    gpsPosition.Latitude = 0;
     gpsPosition.Longitude = 0;
-    gpsPosition.Altitude  = 0;
+    gpsPosition.Altitude = 0;
     GPSPositionSensorSet(&gpsPosition);
 
     // Because most crafts wont get enough information from gravity to zero yaw gyro, we try
@@ -307,9 +307,9 @@ static void simulateModelAgnostic()
 
     GPSPositionSensorData gpsPosition;
     GPSPositionSensorGet(&gpsPosition);
-    gpsPosition.Latitude  = 0;
+    gpsPosition.Latitude = 0;
     gpsPosition.Longitude = 0;
-    gpsPosition.Altitude  = 0;
+    gpsPosition.Altitude = 0;
     GPSPositionSensorSet(&gpsPosition);
 
     // Because most crafts wont get enough information from gravity to zero yaw gyro, we try
@@ -321,24 +321,24 @@ static void simulateModelAgnostic()
     MagSensorSet(&mag);
 }
 
-float thrustToDegs   = 50;
+float thrustToDegs = 50;
 bool overideAttitude = false;
 static void simulateModelQuadcopter()
 {
-    static double pos[3]       = { 0, 0, 0 };
-    static double vel[3]       = { 0, 0, 0 };
+    static double pos[3] = { 0, 0, 0 };
+    static double vel[3] = { 0, 0, 0 };
     static double ned_accel[3] = { 0, 0, 0 };
-    static float q[4]          = { 1, 0, 0, 0 };
-    static float rpy[3]        = { 0, 0, 0 }; // Low pass filtered actuator
-    static float baro_offset   = 0.0f;
+    static float q[4] = { 1, 0, 0, 0 };
+    static float rpy[3] = { 0, 0, 0 }; // Low pass filtered actuator
+    static float baro_offset = 0.0f;
     float Rbe[3][3];
 
     const float ACTUATOR_ALPHA = 0.8;
-    const float MAX_THRUST     = GRAV * 2;
-    const float K_FRICTION     = 1;
-    const float GPS_PERIOD     = 0.1;
-    const float MAG_PERIOD     = 1.0 / 75.0;
-    const float BARO_PERIOD    = 1.0 / 20.0;
+    const float MAX_THRUST = GRAV * 2;
+    const float K_FRICTION = 1;
+    const float GPS_PERIOD = 0.1;
+    const float MAG_PERIOD = 1.0 / 75.0;
+    const float BARO_PERIOD = 1.0 / 20.0;
 
     static uint32_t last_time;
 
@@ -395,16 +395,16 @@ static void simulateModelQuadcopter()
     qdot[3] = (-q[2] * rpy[0] + q[1] * rpy[1] + q[0] * rpy[2]) * dT * M_PI / 180 / 2;
 
     // Take a time step
-    q[0]    = q[0] + qdot[0];
-    q[1]    = q[1] + qdot[1];
-    q[2]    = q[2] + qdot[2];
-    q[3]    = q[3] + qdot[3];
+    q[0] = q[0] + qdot[0];
+    q[1] = q[1] + qdot[1];
+    q[2] = q[2] + qdot[2];
+    q[3] = q[3] + qdot[3];
 
     float qmag = sqrtf(q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3]);
-    q[0]    = q[0] / qmag;
-    q[1]    = q[1] / qmag;
-    q[2]    = q[2] / qmag;
-    q[3]    = q[3] / qmag;
+    q[0] = q[0] / qmag;
+    q[1] = q[1] / qmag;
+    q[2] = q[2] / qmag;
+    q[3] = q[3] / qmag;
 
     if (overideAttitude) {
         AttitudeStateData attitudeState;
@@ -423,10 +423,10 @@ static void simulateModelQuadcopter()
 
     Quaternion2R(q, Rbe);
     // Make thrust negative as down is positive
-    ned_accel[0]  = -thrust * Rbe[2][0];
-    ned_accel[1]  = -thrust * Rbe[2][1];
+    ned_accel[0] = -thrust * Rbe[2][0];
+    ned_accel[1] = -thrust * Rbe[2][1];
     // Gravity causes acceleration of 9.81 in the down direction
-    ned_accel[2]  = -thrust * Rbe[2][2] + GRAV;
+    ned_accel[2] = -thrust * Rbe[2][2] + GRAV;
 
     // Apply acceleration based on velocity
     ned_accel[0] -= K_FRICTION * (vel[0] - wind[0]);
@@ -502,15 +502,15 @@ static void simulateModelQuadcopter()
 
         GPSPositionSensorData gpsPosition;
         GPSPositionSensorGet(&gpsPosition);
-        gpsPosition.Latitude    = homeLocation.Latitude + ((pos[0] + gps_drift[0]) / T[0] * 10.0e6);
-        gpsPosition.Longitude   = homeLocation.Longitude + ((pos[1] + gps_drift[1]) / T[1] * 10.0e6);
-        gpsPosition.Altitude    = homeLocation.Altitude + ((pos[2] + gps_drift[2]) / T[2]);
+        gpsPosition.Latitude = homeLocation.Latitude + ((pos[0] + gps_drift[0]) / T[0] * 10.0e6);
+        gpsPosition.Longitude = homeLocation.Longitude + ((pos[1] + gps_drift[1]) / T[1] * 10.0e6);
+        gpsPosition.Altitude = homeLocation.Altitude + ((pos[2] + gps_drift[2]) / T[2]);
         gpsPosition.Groundspeed = sqrt(pow(vel[0] + gps_vel_drift[0], 2) + pow(vel[1] + gps_vel_drift[1], 2));
-        gpsPosition.Heading     = 180 / M_PI * atan2(vel[1] + gps_vel_drift[1], vel[0] + gps_vel_drift[0]);
-        gpsPosition.Satellites  = 7;
+        gpsPosition.Heading = 180 / M_PI * atan2(vel[1] + gps_vel_drift[1], vel[0] + gps_vel_drift[0]);
+        gpsPosition.Satellites = 7;
         gpsPosition.PDOP = 1;
         GPSPositionSensorSet(&gpsPosition);
-        last_gps_time    = PIOS_DELAY_GetRaw();
+        last_gps_time = PIOS_DELAY_GetRaw();
     }
 
     // Update GPS Velocity measurements
@@ -519,8 +519,8 @@ static void simulateModelQuadcopter()
         GPSVelocitySensorData gpsVelocity;
         GPSVelocitySensorGet(&gpsVelocity);
         gpsVelocity.North = vel[0] + gps_vel_drift[0];
-        gpsVelocity.East  = vel[1] + gps_vel_drift[1];
-        gpsVelocity.Down  = vel[2] + gps_vel_drift[2];
+        gpsVelocity.East = vel[1] + gps_vel_drift[1];
+        gpsVelocity.Down = vel[2] + gps_vel_drift[2];
         GPSVelocitySensorSet(&gpsVelocity);
         last_gps_vel_time = PIOS_DELAY_GetRaw();
     }
@@ -565,21 +565,21 @@ static void simulateModelQuadcopter()
  */
 static void simulateModelAirplane()
 {
-    static double pos[3]       = { 0, 0, 0 };
-    static double vel[3]       = { 0, 0, 0 };
+    static double pos[3] = { 0, 0, 0 };
+    static double vel[3] = { 0, 0, 0 };
     static double ned_accel[3] = { 0, 0, 0 };
-    static float q[4]          = { 1, 0, 0, 0 };
-    static float rpy[3]        = { 0, 0, 0 }; // Low pass filtered actuator
-    static float baro_offset   = 0.0f;
+    static float q[4] = { 1, 0, 0, 0 };
+    static float rpy[3] = { 0, 0, 0 }; // Low pass filtered actuator
+    static float baro_offset = 0.0f;
     float Rbe[3][3];
 
-    const float LIFT_SPEED     = 8; // (m/s) where achieve lift for zero pitch
+    const float LIFT_SPEED = 8; // (m/s) where achieve lift for zero pitch
     const float ACTUATOR_ALPHA = 0.8;
-    const float MAX_THRUST     = 9.81 * 2;
-    const float K_FRICTION     = 0.2;
-    const float GPS_PERIOD     = 0.1;
-    const float MAG_PERIOD     = 1.0 / 75.0;
-    const float BARO_PERIOD    = 1.0 / 20.0;
+    const float MAX_THRUST = 9.81 * 2;
+    const float K_FRICTION = 0.2;
+    const float GPS_PERIOD = 0.1;
+    const float MAG_PERIOD = 1.0 / 75.0;
+    const float BARO_PERIOD = 1.0 / 20.0;
     const float ROLL_HEADING_COUPLING = 0.1; // (deg/s) heading change per deg of roll
     const float PITCH_THRUST_COUPLING = 0.2; // (m/s^2) of forward acceleration per deg of pitch
 
@@ -624,12 +624,12 @@ static void simulateModelAirplane()
     // Need to get roll angle for easy cross coupling
     AttitudeStateData attitudeState;
     AttitudeStateGet(&attitudeState);
-    double roll  = attitudeState.Roll;
+    double roll = attitudeState.Roll;
     double pitch = attitudeState.Pitch;
 
-    rpy[0]  = (flightStatus.Armed == FLIGHTSTATUS_ARMED_ARMED) * rateDesired.Roll * (1 - ACTUATOR_ALPHA) + rpy[0] * ACTUATOR_ALPHA;
-    rpy[1]  = (flightStatus.Armed == FLIGHTSTATUS_ARMED_ARMED) * rateDesired.Pitch * (1 - ACTUATOR_ALPHA) + rpy[1] * ACTUATOR_ALPHA;
-    rpy[2]  = (flightStatus.Armed == FLIGHTSTATUS_ARMED_ARMED) * rateDesired.Yaw * (1 - ACTUATOR_ALPHA) + rpy[2] * ACTUATOR_ALPHA;
+    rpy[0] = (flightStatus.Armed == FLIGHTSTATUS_ARMED_ARMED) * rateDesired.Roll * (1 - ACTUATOR_ALPHA) + rpy[0] * ACTUATOR_ALPHA;
+    rpy[1] = (flightStatus.Armed == FLIGHTSTATUS_ARMED_ARMED) * rateDesired.Pitch * (1 - ACTUATOR_ALPHA) + rpy[1] * ACTUATOR_ALPHA;
+    rpy[2] = (flightStatus.Armed == FLIGHTSTATUS_ARMED_ARMED) * rateDesired.Yaw * (1 - ACTUATOR_ALPHA) + rpy[2] * ACTUATOR_ALPHA;
     rpy[2] += roll * ROLL_HEADING_COUPLING;
 
 
@@ -647,16 +647,16 @@ static void simulateModelAirplane()
     qdot[3] = (-q[2] * rpy[0] + q[1] * rpy[1] + q[0] * rpy[2]) * dT * M_PI / 180 / 2;
 
     // Take a time step
-    q[0]    = q[0] + qdot[0];
-    q[1]    = q[1] + qdot[1];
-    q[2]    = q[2] + qdot[2];
-    q[3]    = q[3] + qdot[3];
+    q[0] = q[0] + qdot[0];
+    q[1] = q[1] + qdot[1];
+    q[2] = q[2] + qdot[2];
+    q[3] = q[3] + qdot[3];
 
     float qmag = sqrtf(q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3]);
-    q[0]    = q[0] / qmag;
-    q[1]    = q[1] / qmag;
-    q[2]    = q[2] / qmag;
-    q[3]    = q[3] / qmag;
+    q[0] = q[0] / qmag;
+    q[1] = q[1] / qmag;
+    q[2] = q[2] / qmag;
+    q[3] = q[3] / qmag;
 
     if (overideAttitude) {
         AttitudeStateData attitudeState;
@@ -681,8 +681,8 @@ static void simulateModelAirplane()
     // we get forward airspeed
     Quaternion2R(q, Rbe);
 
-    double airspeed[3]      = { vel[0] - wind[0], vel[1] - wind[1], vel[2] - wind[2] };
-    double forwardAirspeed  = Rbe[0][0] * airspeed[0] + Rbe[0][1] * airspeed[1] + Rbe[0][2] * airspeed[2];
+    double airspeed[3] = { vel[0] - wind[0], vel[1] - wind[1], vel[2] - wind[2] };
+    double forwardAirspeed = Rbe[0][0] * airspeed[0] + Rbe[0][1] * airspeed[1] + Rbe[0][2] * airspeed[2];
     double sidewaysAirspeed = Rbe[1][0] * airspeed[0] + Rbe[1][1] * airspeed[1] + Rbe[1][2] * airspeed[2];
     double downwardAirspeed = Rbe[2][0] * airspeed[0] + Rbe[2][1] * airspeed[1] + Rbe[2][2] * airspeed[2];
 
@@ -690,14 +690,14 @@ static void simulateModelAirplane()
     /* TODO: This should become more accurate.  Use the force equations to calculate lift from the   */
     /* various surfaces based on AoA and airspeed.  From that compute torques and forces.  For later */
     double forces[3]; // X, Y, Z
-    forces[0]     = thrust - pitch * PITCH_THRUST_COUPLING - forwardAirspeed * K_FRICTION;         // Friction is applied in all directions in NED
-    forces[1]     = 0 - sidewaysAirspeed * K_FRICTION * 100;      // No side slip
-    forces[2]     = GRAV * (forwardAirspeed - LIFT_SPEED) + downwardAirspeed * K_FRICTION * 100;    // Stupidly simple, always have gravity lift when straight and level
+    forces[0] = thrust - pitch * PITCH_THRUST_COUPLING - forwardAirspeed * K_FRICTION; // Friction is applied in all directions in NED
+    forces[1] = 0 - sidewaysAirspeed * K_FRICTION * 100; // No side slip
+    forces[2] = GRAV * (forwardAirspeed - LIFT_SPEED) + downwardAirspeed * K_FRICTION * 100; // Stupidly simple, always have gravity lift when straight and level
 
     // Negate force[2] as NED defines down as possitive, aircraft convention is Z up is positive (?)
-    ned_accel[0]  = forces[0] * Rbe[0][0] + forces[1] * Rbe[1][0] - forces[2] * Rbe[2][0];
-    ned_accel[1]  = forces[0] * Rbe[0][1] + forces[1] * Rbe[1][1] - forces[2] * Rbe[2][1];
-    ned_accel[2]  = forces[0] * Rbe[0][2] + forces[1] * Rbe[1][2] - forces[2] * Rbe[2][2];
+    ned_accel[0] = forces[0] * Rbe[0][0] + forces[1] * Rbe[1][0] - forces[2] * Rbe[2][0];
+    ned_accel[1] = forces[0] * Rbe[0][1] + forces[1] * Rbe[1][1] - forces[2] * Rbe[2][1];
+    ned_accel[2] = forces[0] * Rbe[0][2] + forces[1] * Rbe[1][2] - forces[2] * Rbe[2][2];
     // Gravity causes acceleration of 9.81 in the down direction
     ned_accel[2] += 9.81;
 
@@ -755,7 +755,7 @@ static void simulateModelAirplane()
     static uint32_t last_airspeed_time = 0;
     if (PIOS_DELAY_DiffuS(last_airspeed_time) / 1.0e6 > BARO_PERIOD) {
         AirspeedSensorData airspeedSensor;
-        airspeedSensor.SensorConnected    = AIRSPEEDSENSOR_SENSORCONNECTED_TRUE;
+        airspeedSensor.SensorConnected = AIRSPEEDSENSOR_SENSORCONNECTED_TRUE;
         airspeedSensor.CalibratedAirspeed = forwardAirspeed;
         AirspeedSensorSet(&airspeedSensor);
         last_airspeed_time = PIOS_DELAY_GetRaw();
@@ -785,15 +785,15 @@ static void simulateModelAirplane()
 
         GPSPositionSensorData gpsPosition;
         GPSPositionSensorGet(&gpsPosition);
-        gpsPosition.Latitude    = homeLocation.Latitude + ((pos[0] + gps_drift[0]) / T[0] * 10.0e6);
-        gpsPosition.Longitude   = homeLocation.Longitude + ((pos[1] + gps_drift[1]) / T[1] * 10.0e6);
-        gpsPosition.Altitude    = homeLocation.Altitude + ((pos[2] + gps_drift[2]) / T[2]);
+        gpsPosition.Latitude = homeLocation.Latitude + ((pos[0] + gps_drift[0]) / T[0] * 10.0e6);
+        gpsPosition.Longitude = homeLocation.Longitude + ((pos[1] + gps_drift[1]) / T[1] * 10.0e6);
+        gpsPosition.Altitude = homeLocation.Altitude + ((pos[2] + gps_drift[2]) / T[2]);
         gpsPosition.Groundspeed = sqrt(pow(vel[0] + gps_vel_drift[0], 2) + pow(vel[1] + gps_vel_drift[1], 2));
-        gpsPosition.Heading     = 180 / M_PI * atan2(vel[1] + gps_vel_drift[1], vel[0] + gps_vel_drift[0]);
-        gpsPosition.Satellites  = 7;
+        gpsPosition.Heading = 180 / M_PI * atan2(vel[1] + gps_vel_drift[1], vel[0] + gps_vel_drift[0]);
+        gpsPosition.Satellites = 7;
         gpsPosition.PDOP = 1;
         GPSPositionSensorSet(&gpsPosition);
-        last_gps_time    = PIOS_DELAY_GetRaw();
+        last_gps_time = PIOS_DELAY_GetRaw();
     }
 
     // Update GPS Velocity measurements
@@ -802,8 +802,8 @@ static void simulateModelAirplane()
         GPSVelocitySensorData gpsVelocity;
         GPSVelocitySensorGet(&gpsVelocity);
         gpsVelocity.North = vel[0] + gps_vel_drift[0];
-        gpsVelocity.East  = vel[1] + gps_vel_drift[1];
-        gpsVelocity.Down  = vel[2] + gps_vel_drift[2];
+        gpsVelocity.East = vel[1] + gps_vel_drift[1];
+        gpsVelocity.Down = vel[2] + gps_vel_drift[2];
         GPSVelocitySensorSet(&gpsVelocity);
         last_gps_vel_time = PIOS_DELAY_GetRaw();
     }
@@ -843,7 +843,7 @@ static float rand_gauss(void)
         v1 = 2.0 * ((float)rand() / RAND_MAX) - 1;
         v2 = 2.0 * ((float)rand() / RAND_MAX) - 1;
 
-        s  = v1 * v1 + v2 * v2;
+        s = v1 * v1 + v2 * v2;
     } while (s >= 1.0);
 
     if (s == 0.0) {

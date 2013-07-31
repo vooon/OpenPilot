@@ -209,7 +209,7 @@ void MainWindow::on_goBT_clicked()
                     for (int x = 1; x < filestr.count() - 1; ++x) {
                         QString before = filestr.at(x - 1);
                         QString actual = filestr.at(x);
-                        QString after  = filestr.at(x + 1);
+                        QString after = filestr.at(x + 1);
                         if (actual.trimmed().startsWith("qDebug") && !before.contains("#ifdef") && !before.contains("qDebug")) {
                             filestr.insert(x, "#ifdef DEBUG_" + (QString)str.split(".").at(0).toUpper());
                             ++x;

@@ -91,7 +91,7 @@
 
 static const char *UpdateConfFilePath = "/etosd/update.ocf";
 #ifdef DUMP_CONFIG
-static const char *DumpConfFilePath   = "/etosd/dump.ocf";
+static const char *DumpConfFilePath = "/etosd/dump.ocf";
 #endif
 
 //
@@ -106,9 +106,9 @@ static const char *DumpConfFilePath   = "/etosd/dump.ocf";
 // 00   01   02   03   04   05   06   07   08   09   10   11   12   13   14   15   16   17   18   19   20   21   22   23   24   25   26   27   28   29   30   31   32   33   34   35   36   37   38   39   40   41   42   43   44   45   46   47   48   49   50   51   52   53   54   55   56   57   58   59   60   61   62
 uint8_t msg[63] =
 { 0x03, 0x3F, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x0A, 0x00, 0xE4, 0x30, 0x00, 0x00, 0x00, 0x00, 0xFC, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x09, 0x60, 0x10, 0x02, 0x00, 0x00, 0x90,0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x09, 0x60, 0x10, 0x02, 0x00, 0x00, 0x90, 0x00,
   0x54, 0x54, 0x00, 0x00, 0x33, 0x28, 0x13, 0x00, 0x00, 0x08, 0x00, 0x00, 0x90, 0x0A };
-static volatile bool newPosData  = FALSE;
+static volatile bool newPosData = FALSE;
 static volatile bool newBattData = FALSE;
 static volatile bool newBaroData = FALSE;
 
@@ -157,7 +157,7 @@ static void SetCoord(uint8_t index, uint32_t coord)
 {
 #define E7 10000000
     uint8_t deg = coord / E7;
-    float sec   = (float)(coord - deg * E7) / ((float)E7 / (60.0 * 10000));
+    float sec = (float)(coord - deg * E7) / ((float)E7 / (60.0 * 10000));
 
     WriteToMsg8(index + 3, deg);
     WriteToMsg24(index, sec);
@@ -187,7 +187,7 @@ static void SetVoltage(uint32_t milliVolt)
 {
     msg[OSDMSG_VA_MS_IDX] &= 0x0F;
     msg[OSDMSG_VA_MS_IDX] |= (milliVolt / 6444) << 4;
-    msg[OSDMSG_V_LS_IDX]   = (milliVolt % 6444) * 256 / 6444;
+    msg[OSDMSG_V_LS_IDX] = (milliVolt % 6444) * 256 / 6444;
 }
 
 static void SetCurrent(uint32_t milliAmp)
@@ -196,7 +196,7 @@ static void SetCurrent(uint32_t milliAmp)
 
     msg[OSDMSG_VA_MS_IDX] &= 0xF0;
     msg[OSDMSG_VA_MS_IDX] |= ((value >> 8) & 0x0F);
-    msg[OSDMSG_A_LS_IDX]   = (value & 0xFF);
+    msg[OSDMSG_A_LS_IDX] = (value & 0xFF);
 }
 
 static void SetNbSats(uint8_t nb)
@@ -226,16 +226,16 @@ static bool Read(uint32_t start, uint8_t length, uint8_t *buffer)
     const struct pios_i2c_txn txn_list[] = {
         {
             .addr = OSD_ADDRESS,
-            .rw   = PIOS_I2C_TXN_WRITE,
-            .len  = sizeof(cmd),
-            .buf  = cmd,
+            .rw = PIOS_I2C_TXN_WRITE,
+            .len = sizeof(cmd),
+            .buf = cmd,
         }
         ,
         {
             .addr = OSD_ADDRESS,
-            .rw   = PIOS_I2C_TXN_READ,
-            .len  = length,
-            .buf  = buffer,
+            .rw = PIOS_I2C_TXN_READ,
+            .len = length,
+            .buf = buffer,
         }
         ,
     };
@@ -257,16 +257,16 @@ static bool Write(uint32_t start, uint8_t length, const uint8_t *buffer)
     const struct pios_i2c_txn txn_list1[] = {
         {
             .addr = OSD_ADDRESS,
-            .rw   = PIOS_I2C_TXN_WRITE,
-            .len  = sizeof(cmd),
-            .buf  = cmd,
+            .rw = PIOS_I2C_TXN_WRITE,
+            .len = sizeof(cmd),
+            .buf = cmd,
         }
         ,
         {
             .addr = OSD_ADDRESS,
-            .rw   = PIOS_I2C_TXN_READ,
-            .len  = sizeof(ack),
-            .buf  = ack,
+            .rw = PIOS_I2C_TXN_READ,
+            .len = sizeof(ack),
+            .buf = ack,
         }
         ,
     };
@@ -305,7 +305,7 @@ static uint32_t ReadSwVersion(void)
     uint32_t version;
 
     if (Read(0, 4, buf)) {
-        version  = (buf[0] - '0') * 100;
+        version = (buf[0] - '0') * 100;
         version += (buf[2] - '0') * 10;
         version += (buf[3] - '0');
     } else {
@@ -333,7 +333,7 @@ static void UpdateConfig(void)
 
         // Write the config-data in blocks to OSD
         while (addr < CONFIG_LENGTH && ok) {
-            n   = MIN(CONFIG_LENGTH - addr, sizeof(buf));
+            n = MIN(CONFIG_LENGTH - addr, sizeof(buf));
             res = DFS_ReadFile(&file, PIOS_SDCARD_Sector, buf, &bytesRead, n);
             if (res == DFS_OK && bytesRead == n) {
                 ok = Write(addr, n, buf);
@@ -357,7 +357,7 @@ static void UpdateConfig(void)
             addr = 0;
             while (addr < CONFIG_LENGTH && ok) {
                 // First half of the buffer is used to store the data read from the OSD, the second half will contain the data from the file
-                n  = MIN(CONFIG_LENGTH - addr, sizeof(buf) / 2);
+                n = MIN(CONFIG_LENGTH - addr, sizeof(buf) / 2);
                 ok = Read(addr, n, buf);
                 if (ok) {
                     uint32_t bytesRead;
@@ -402,7 +402,7 @@ static void DumpConfig(void)
         bool ok = TRUE;
 
         while (addr < CONFIG_LENGTH && ok) {
-            n  = MIN(CONFIG_LENGTH - addr, sizeof(buf));
+            n = MIN(CONFIG_LENGTH - addr, sizeof(buf));
             ok = Read(addr, n, buf);
             if (ok) {
                 res = DFS_WriteFile(&file, PIOS_SDCARD_Sector, buf, &bytesWritten, n);
@@ -483,9 +483,9 @@ static void Run(void)
         const struct pios_i2c_txn txn_list[] = {
             {
                 .addr = OSD_ADDRESS,
-                .rw   = PIOS_I2C_TXN_WRITE,
-                .len  = sizeof(msg),
-                .buf  = msg,
+                .rw = PIOS_I2C_TXN_WRITE,
+                .len = sizeof(msg),
+                .buf = msg,
             }
             ,
         };

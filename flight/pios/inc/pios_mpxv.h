@@ -34,16 +34,16 @@
 typedef enum { PIOS_MPXV_UNKNOWN, PIOS_MPXV_5004, PIOS_MPXV_7002 } PIOS_MPXV_sensortype;
 typedef struct {
     PIOS_MPXV_sensortype type;
-    uint8_t  airspeedADCPin;
+    uint8_t airspeedADCPin;
     uint16_t calibrationCount;
     uint32_t calibrationSum;
     uint16_t zeroPoint;
-    float    maxSpeed;
+    float maxSpeed;
 } PIOS_MPXV_descriptor;
 
 #define PIOS_MPXV_5004_DESC(pin) \
     (PIOS_MPXV_descriptor) { \
-        .type     = PIOS_MPXV_5004, \
+        .type = PIOS_MPXV_5004, \
         .airspeedADCPin = pin, \
         .maxSpeed = 80.0f, \
         .calibrationCount = 0, \
@@ -51,7 +51,7 @@ typedef struct {
     }
 #define PIOS_MPXV_7002_DESC(pin) \
     (PIOS_MPXV_descriptor) { \
-        .type     = PIOS_MPXV_7002, \
+        .type = PIOS_MPXV_7002, \
         .airspeedADCPin = pin, \
         .maxSpeed = 56.0f, \
         .calibrationCount = 0, \

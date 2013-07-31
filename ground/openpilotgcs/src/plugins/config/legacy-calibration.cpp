@@ -58,7 +58,7 @@ void openpilot_bias_scale(Vector3f & bias,
     // TODO: Add error handling, and return error codes through the return
     // value.
     if (n_samples < 6) {
-        bias  = Vector3f::Zero();
+        bias = Vector3f::Zero();
         scale = Vector3f::Zero();
         return;
     }
@@ -97,11 +97,11 @@ void openpilot_bias_scale(Vector3f & bias,
                     (xp * xp + 2 * c[0] * xp + c[0] * c[0] + c[1] * yp * yp + 2 * c[2] * yp + c[2] * c[2] / c[1] + c[3] * zp * zp + 2 * c[4] * zp + c[4] * c[4] / c[3]));
 
     scale[0] = Sx;
-    bias[0]  = Sx * c[0];
+    bias[0] = Sx * c[0];
     scale[1] = sqrt(c[1] * Sx * Sx);
-    bias[1]  = c[2] * Sx * Sx / scale[1];
+    bias[1] = c[2] * Sx * Sx / scale[1];
     scale[2] = sqrt(c[3] * Sx * Sx);
-    bias[2]  = c[4] * Sx * Sx / scale[2];
+    bias[2] = c[4] * Sx * Sx / scale[2];
 
     for (int i = 0; i < 3; ++i) {
         // Fixup difference between openpilot measurement model and twostep

@@ -81,13 +81,13 @@ UAVGadgetView::UAVGadgetView(Core::UAVGadgetManager *uavGadgetManager, IUAVGadge
         m_uavGadgetList->setMaxVisibleItems(40);
         m_uavGadgetList->setContextMenuPolicy(Qt::CustomContextMenu);
         UAVGadgetInstanceManager *im = ICore::instance()->uavGadgetInstanceManager();
-        QStringList sl    = im->classIds();
+        QStringList sl = im->classIds();
         int index = 0;
         bool startFromOne = false;
         foreach(QString classId, sl) {
             if (classId == QString("EmptyGadget")) {
                 m_defaultIndex = 0;
-                startFromOne   = true;
+                startFromOne = true;
                 m_uavGadgetList->insertItem(0, im->gadgetName(classId), classId);
                 m_uavGadgetList->setItemIcon(0, im->gadgetIcon(classId));
                 m_uavGadgetList->insertSeparator(1);
@@ -244,7 +244,7 @@ void UAVGadgetView::listSelectionActivated(int index)
     UAVGadgetInstanceManager *im = ICore::instance()->uavGadgetInstanceManager();
     IUAVGadget *gadget = im->createGadget(classId, this);
 
-    IUAVGadget *gadgetToRemove   = m_uavGadget;
+    IUAVGadget *gadgetToRemove = m_uavGadget;
     setGadget(gadget);
     m_uavGadgetManager->setCurrentGadget(gadget);
     im->removeGadget(gadgetToRemove);

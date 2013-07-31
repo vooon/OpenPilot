@@ -80,7 +80,7 @@ public:
     QVector<double> *yDataHistory;
 
     virtual bool append(UAVObject *obj) = 0;
-    virtual PlotType plotType()    = 0;
+    virtual PlotType plotType() = 0;
     virtual void removeStaleData() = 0;
 
     void updatePlotCurveData();

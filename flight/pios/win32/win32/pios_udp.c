@@ -37,9 +37,9 @@
 /* Provide a COM driver */
 const struct pios_com_driver pios_udp_com_driver = {
     .set_baud = PIOS_UDP_ChangeBaud,
-    .tx_nb    = PIOS_UDP_TxBufferPutMoreNonBlocking,
-    .tx       = PIOS_UDP_TxBufferPutMore,
-    .rx       = PIOS_UDP_RxBufferGet,
+    .tx_nb = PIOS_UDP_TxBufferPutMoreNonBlocking,
+    .tx = PIOS_UDP_TxBufferPutMore,
+    .rx = PIOS_UDP_RxBufferGet,
     .rx_avail = PIOS_UDP_RxBufferUsed,
 };
 
@@ -75,15 +75,15 @@ void PIOS_UDP_Init(void)
         udp_dev->rx.head = udp_dev->rx.tail = udp_dev->rx.size = 0;
 
         /* assign socket */
-        udp_dev->socket  = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+        udp_dev->socket = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
         memset(&udp_dev->server, 0, sizeof(udp_dev->server));
         memset(&udp_dev->client, 0, sizeof(udp_dev->client));
         udp_dev->server.sin_family = AF_INET;
         udp_dev->server.sin_addr.s_addr = inet_addr(udp_dev->cfg->ip);
-        udp_dev->server.sin_port   = htons(udp_dev->cfg->port);
-        BOOL tmp    = TRUE;
+        udp_dev->server.sin_port = htons(udp_dev->cfg->port);
+        BOOL tmp = TRUE;
         setsockopt(udp_dev->socket, SOL_SOCKET, SO_BROADCAST, (char *)&tmp, sizeof(tmp));
-        int res     = bind(udp_dev->socket, (struct sockaddr *)&udp_dev->server, sizeof(udp_dev->server));
+        int res = bind(udp_dev->socket, (struct sockaddr *)&udp_dev->server, sizeof(udp_dev->server));
         /* use nonblocking IO */
         u_long argp = 1;
         ioctlsocket(udp_dev->socket, FIONBIO, &argp);

@@ -155,7 +155,7 @@ static const float CoeffFile[91][6] = {
 };
 /* *INDENT-ON* */
 
-static WMMtype_Ellipsoid *Ellip = NULL;
+static WMMtype_Ellipsoid * Ellip = NULL;
 static WMMtype_MagneticModel *MagneticModel = NULL;
 static float decimal_date;
 
@@ -181,12 +181,12 @@ int WMM_Initialize()
         return -2; // invalid pointer
     }
     // Sets WGS-84 parameters
-    Ellip->a     = 6378.137f;   // semi-major axis of the ellipsoid in km
-    Ellip->b     = 6356.7523142f;       // semi-minor axis of the ellipsoid in km
-    Ellip->fla   = 1.0f / 298.257223563f;     // flattening
-    Ellip->eps   = sqrt(1 - (Ellip->b * Ellip->b) / (Ellip->a * Ellip->a));   // first eccentricity
+    Ellip->a = 6378.137f; // semi-major axis of the ellipsoid in km
+    Ellip->b = 6356.7523142f; // semi-minor axis of the ellipsoid in km
+    Ellip->fla = 1.0f / 298.257223563f; // flattening
+    Ellip->eps = sqrt(1 - (Ellip->b * Ellip->b) / (Ellip->a * Ellip->a)); // first eccentricity
     Ellip->epssq = (Ellip->eps * Ellip->eps); // first eccentricity squared
-    Ellip->re    = 6371.2f;    // Earth's radius in km
+    Ellip->re = 6371.2f; // Earth's radius in km
 
     // Sets Magnetic Model parameters
     MagneticModel->nMax = WMM_MAX_MODEL_DEGREES;
@@ -237,7 +237,7 @@ int WMM_GetMagVector(float Lat, float Lon, float AltEllipsoid, uint16_t Month, u
     MagneticModel = (WMMtype_MagneticModel *)MALLOC(sizeof(WMMtype_MagneticModel));
 
     WMMtype_CoordSpherical *CoordSpherical = (WMMtype_CoordSpherical *)MALLOC(sizeof(WMMtype_CoordSpherical));
-    WMMtype_CoordGeodetic *CoordGeodetic   = (WMMtype_CoordGeodetic *)MALLOC(sizeof(WMMtype_CoordGeodetic));
+    WMMtype_CoordGeodetic *CoordGeodetic = (WMMtype_CoordGeodetic *)MALLOC(sizeof(WMMtype_CoordGeodetic));
     WMMtype_GeoMagneticElements *GeoMagneticElements = (WMMtype_GeoMagneticElements *)MALLOC(sizeof(WMMtype_GeoMagneticElements));
 
     if (!Ellip || !MagneticModel || !CoordSpherical || !CoordGeodetic || !GeoMagneticElements) {
@@ -253,7 +253,7 @@ int WMM_GetMagVector(float Lat, float Lon, float AltEllipsoid, uint16_t Month, u
 
     if (returned >= 0) {
         CoordGeodetic->lambda = Lon;
-        CoordGeodetic->phi    = Lat;
+        CoordGeodetic->phi = Lat;
         CoordGeodetic->HeightAboveEllipsoid = AltEllipsoid / 1000.0f; // convert to km
 
         // Convert from geodetic to Spherical Equations: 17-18, WMM Technical report
@@ -724,12 +724,12 @@ int WMM_CalculateGeoMagneticElements(WMMtype_MagneticResults *MagneticResultsGeo
    CALLS : none
  */
 {
-    GeoMagneticElements->X    = MagneticResultsGeo->Bx;
-    GeoMagneticElements->Y    = MagneticResultsGeo->By;
-    GeoMagneticElements->Z    = MagneticResultsGeo->Bz;
+    GeoMagneticElements->X = MagneticResultsGeo->Bx;
+    GeoMagneticElements->Y = MagneticResultsGeo->By;
+    GeoMagneticElements->Z = MagneticResultsGeo->Bz;
 
-    GeoMagneticElements->H    = sqrtf(MagneticResultsGeo->Bx * MagneticResultsGeo->Bx + MagneticResultsGeo->By * MagneticResultsGeo->By);
-    GeoMagneticElements->F    = sqrtf(GeoMagneticElements->H * GeoMagneticElements->H + MagneticResultsGeo->Bz * MagneticResultsGeo->Bz);
+    GeoMagneticElements->H = sqrtf(MagneticResultsGeo->Bx * MagneticResultsGeo->Bx + MagneticResultsGeo->By * MagneticResultsGeo->By);
+    GeoMagneticElements->F = sqrtf(GeoMagneticElements->H * GeoMagneticElements->H + MagneticResultsGeo->Bz * MagneticResultsGeo->Bz);
     GeoMagneticElements->Decl = RAD2DEG(atan2f(GeoMagneticElements->Y, GeoMagneticElements->X));
     GeoMagneticElements->Incl = RAD2DEG(atan2f(GeoMagneticElements->Z, GeoMagneticElements->H));
 
@@ -755,11 +755,11 @@ int WMM_CalculateSecularVariation(WMMtype_MagneticResults *MagneticVariation, WM
 
  */
 {
-    MagneticElements->Xdot    = MagneticVariation->Bx;
-    MagneticElements->Ydot    = MagneticVariation->By;
-    MagneticElements->Zdot    = MagneticVariation->Bz;
-    MagneticElements->Hdot    = (MagneticElements->X * MagneticElements->Xdot + MagneticElements->Y * MagneticElements->Ydot) / MagneticElements->H;   // See equation 19 in the WMM technical report
-    MagneticElements->Fdot    =
+    MagneticElements->Xdot = MagneticVariation->Bx;
+    MagneticElements->Ydot = MagneticVariation->By;
+    MagneticElements->Zdot = MagneticVariation->Bz;
+    MagneticElements->Hdot = (MagneticElements->X * MagneticElements->Xdot + MagneticElements->Y * MagneticElements->Ydot) / MagneticElements->H; // See equation 19 in the WMM technical report
+    MagneticElements->Fdot =
         (MagneticElements->X * MagneticElements->Xdot +
          MagneticElements->Y * MagneticElements->Ydot + MagneticElements->Z * MagneticElements->Zdot) / MagneticElements->F;
     MagneticElements->Decldot =
@@ -768,7 +768,7 @@ int WMM_CalculateSecularVariation(WMMtype_MagneticResults *MagneticVariation, WM
     MagneticElements->Incldot =
         180.0f / M_PI_F * (MagneticElements->H * MagneticElements->Zdot -
                            MagneticElements->Z * MagneticElements->Hdot) / (MagneticElements->F * MagneticElements->F);
-    MagneticElements->GVdot   = MagneticElements->Decldot;
+    MagneticElements->GVdot = MagneticElements->Decldot;
 
     return 0; // OK
 }
@@ -816,8 +816,8 @@ int WMM_PcupHigh(float *Pcup, float *dPcup, float x, uint16_t nMax)
     uint16_t k, kstart, m, n;
     float pm2, pm1, pmm, plm, rescalem, z, scalef;
 
-    float *f1     = (float *)MALLOC(sizeof(float) * NUMPCUP);
-    float *f2     = (float *)MALLOC(sizeof(float) * NUMPCUP);
+    float *f1 = (float *)MALLOC(sizeof(float) * NUMPCUP);
+    float *f2 = (float *)MALLOC(sizeof(float) * NUMPCUP);
     float *PreSqr = (float *)MALLOC(sizeof(float) * NUMPCUP);
 
     if (!PreSqr || !f2 || !f1) { // memory allocation error
@@ -858,11 +858,11 @@ int WMM_PcupHigh(float *Pcup, float *dPcup, float x, uint16_t nMax)
     k = 2;
 
     for (n = 2; n <= nMax; n++) {
-        k     = k + 1;
+        k = k + 1;
         f1[k] = (float)(2 * n - 1) / (float)(n);
         f2[k] = (float)(n - 1) / (float)(n);
         for (m = 1; m <= n - 2; m++) {
-            k     = k + 1;
+            k = k + 1;
             f1[k] = (float)(2 * n - 1) / PreSqr[n + m] / PreSqr[n - m];
             f2[k] = PreSqr[n - m - 1] * PreSqr[n + m - 1] / PreSqr[n + m] / PreSqr[n - m];
         }
@@ -870,9 +870,9 @@ int WMM_PcupHigh(float *Pcup, float *dPcup, float x, uint16_t nMax)
     }
 
     /*z = sinf (geocentric latitude) */
-    z        = sqrtf((1.0f - x) * (1.0f + x));
-    pm2      = 1.0f;
-    Pcup[0]  = 1.0f;
+    z = sqrtf((1.0f - x) * (1.0f + x));
+    pm2 = 1.0f;
+    Pcup[0] = 1.0f;
     dPcup[0] = 0.0f;
     if (nMax == 0) {
         FREE(PreSqr);
@@ -880,54 +880,54 @@ int WMM_PcupHigh(float *Pcup, float *dPcup, float x, uint16_t nMax)
         FREE(f1);
         return -3;
     }
-    pm1      = x;
-    Pcup[1]  = pm1;
+    pm1 = x;
+    Pcup[1] = pm1;
     dPcup[1] = z;
     k = 1;
 
     for (n = 2; n <= nMax; n++) {
-        k        = k + n;
-        plm      = f1[k] * x * pm1 - f2[k] * pm2;
-        Pcup[k]  = plm;
+        k = k + n;
+        plm = f1[k] * x * pm1 - f2[k] * pm2;
+        Pcup[k] = plm;
         dPcup[k] = (float)(n) * (pm1 - x * plm) / z;
-        pm2      = pm1;
-        pm1      = plm;
+        pm2 = pm1;
+        pm1 = plm;
     }
 
-    pmm      = PreSqr[2] * scalef;
+    pmm = PreSqr[2] * scalef;
     rescalem = 1.0f / scalef;
-    kstart   = 0;
+    kstart = 0;
 
     for (m = 1; m <= nMax - 1; ++m) {
-        rescalem      = rescalem * z;
+        rescalem = rescalem * z;
 
         /* Calculate Pcup(m,m) */
-        kstart        = kstart + m + 1;
+        kstart = kstart + m + 1;
         pmm = pmm * PreSqr[2 * m + 1] / PreSqr[2 * m];
-        Pcup[kstart]  = pmm * rescalem / PreSqr[2 * m + 1];
+        Pcup[kstart] = pmm * rescalem / PreSqr[2 * m + 1];
         dPcup[kstart] = -((float)(m) * x * Pcup[kstart] / z);
-        pm2      = pmm / PreSqr[2 * m + 1];
+        pm2 = pmm / PreSqr[2 * m + 1];
         /* Calculate Pcup(m+1,m) */
-        k        = kstart + m + 1;
-        pm1      = x * PreSqr[2 * m + 1] * pm2;
-        Pcup[k]  = pm1 * rescalem;
+        k = kstart + m + 1;
+        pm1 = x * PreSqr[2 * m + 1] * pm2;
+        Pcup[k] = pm1 * rescalem;
         dPcup[k] = ((pm2 * rescalem) * PreSqr[2 * m + 1] - x * (float)(m + 1) * Pcup[k]) / z;
         /* Calculate Pcup(n,m) */
         for (n = m + 2; n <= nMax; ++n) {
-            k        = k + n;
-            plm      = x * f1[k] * pm1 - f2[k] * pm2;
-            Pcup[k]  = plm * rescalem;
+            k = k + n;
+            plm = x * f1[k] * pm1 - f2[k] * pm2;
+            Pcup[k] = plm * rescalem;
             dPcup[k] = (PreSqr[n + m] * PreSqr[n - m] * (pm1 * rescalem) - (float)(n) * x * Pcup[k]) / z;
-            pm2      = pm1;
-            pm1      = plm;
+            pm2 = pm1;
+            pm1 = plm;
         }
     }
 
     /* Calculate Pcup(nMax,nMax) */
-    rescalem      = rescalem * z;
-    kstart        = kstart + m + 1;
+    rescalem = rescalem * z;
+    kstart = kstart + m + 1;
     pmm = pmm / PreSqr[2 * nMax];
-    Pcup[kstart]  = pmm * rescalem;
+    Pcup[kstart] = pmm * rescalem;
     dPcup[kstart] = -(float)(nMax) * x * Pcup[kstart] / z;
 
     // *********
@@ -976,7 +976,7 @@ int WMM_PcupLow(float *Pcup, float *dPcup, float x, uint16_t nMax)
         return -1;
     }
 
-    Pcup[0]  = 1.0f;
+    Pcup[0] = 1.0f;
     dPcup[0] = 0.0f;
 
     /*sinf (geocentric latitude) - sin_phi */
@@ -998,12 +998,12 @@ int WMM_PcupLow(float *Pcup, float *dPcup, float x, uint16_t nMax)
                 index1 = (n - 2) * (n - 1) / 2 + m;
                 index2 = (n - 1) * n / 2 + m;
                 if (m > n - 2) {
-                    Pcup[index]  = x * Pcup[index2];
+                    Pcup[index] = x * Pcup[index2];
                     dPcup[index] = x * dPcup[index2] - z * Pcup[index2];
                 } else {
                     k = (float)(((n - 1) * (n - 1)) - (m * m)) / (float)((2 * n - 1)
                                                                          * (2 * n - 3));
-                    Pcup[index]  = x * Pcup[index2] - k * Pcup[index1];
+                    Pcup[index] = x * Pcup[index2] - k * Pcup[index1];
                     dPcup[index] = x * dPcup[index2] - z * Pcup[index2] - k * dPcup[index1];
                 }
             }
@@ -1015,13 +1015,13 @@ int WMM_PcupLow(float *Pcup, float *dPcup, float x, uint16_t nMax)
 
     schmidtQuasiNorm[0] = 1.0f;
     for (n = 1; n <= nMax; n++) {
-        index  = (n * (n + 1) / 2);
+        index = (n * (n + 1) / 2);
         index1 = (n - 1) * n / 2;
         /* for m = 0 */
         schmidtQuasiNorm[index] = schmidtQuasiNorm[index1] * (float)(2 * n - 1) / (float)n;
 
         for (m = 1; m <= n; m++) {
-            index  = (n * (n + 1) / 2 + m);
+            index = (n * (n + 1) / 2 + m);
             index1 = (n * (n + 1) / 2 + m - 1);
             schmidtQuasiNorm[index] = schmidtQuasiNorm[index1] * sqrtf((float)((n - m + 1) * (m == 1 ? 2 : 1)) / (float)(n + m));
         }
@@ -1034,7 +1034,7 @@ int WMM_PcupLow(float *Pcup, float *dPcup, float x, uint16_t nMax)
     for (n = 1; n <= nMax; n++) {
         for (m = 0; m <= n; m++) {
             index = (n * (n + 1) / 2 + m);
-            Pcup[index]  = Pcup[index] * schmidtQuasiNorm[index];
+            Pcup[index] = Pcup[index] * schmidtQuasiNorm[index];
             dPcup[index] = -dPcup[index] * schmidtQuasiNorm[index];
             /* The sign is changed since the new WMM routines use derivative with respect to latitude
                insted of co-latitude */
@@ -1071,7 +1071,7 @@ int WMM_SummationSpecial(WMMtype_SphericalHarmonicVariables *
         return -1; // memory allocation error
     }
     PcupS[0] = 1;
-    schmidtQuasiNorm1   = 1.0f;
+    schmidtQuasiNorm1 = 1.0f;
 
     MagneticResults->By = 0.0f;
     sin_phi = sinf(DEG2RAD(CoordSpherical->phig));
@@ -1133,7 +1133,7 @@ int WMM_SecVarSummationSpecial(WMMtype_SphericalHarmonicVariables *
         return -1; // memory allocation error
     }
     PcupS[0] = 1;
-    schmidtQuasiNorm1   = 1.0f;
+    schmidtQuasiNorm1 = 1.0f;
 
     MagneticResults->By = 0.0f;
     sin_phi = sinf(DEG2RAD(CoordSpherical->phig));
@@ -1250,7 +1250,7 @@ float WMM_get_secular_var_coeff_h(uint16_t index)
 int WMM_DateToYear(uint16_t month, uint16_t day, uint16_t year)
 // Converts a given calendar date into a decimal year
 {
-    uint16_t temp     = 0;      // Total number of days
+    uint16_t temp = 0; // Total number of days
     uint16_t MonthDays[13] = { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
     uint16_t ExtraDay = 0;
     uint16_t i;
@@ -1291,7 +1291,7 @@ int WMM_GeodeticToSpherical(WMMtype_CoordGeodetic *CoordGeodetic, WMMtype_CoordS
     SinLat = sinf(DEG2RAD(CoordGeodetic->phi));
 
     // compute the local radius of curvature on the WGS-84 reference ellipsoid
-    rc     = Ellip->a / sqrtf(1.0f - Ellip->epssq * SinLat * SinLat);
+    rc = Ellip->a / sqrtf(1.0f - Ellip->epssq * SinLat * SinLat);
 
     // compute ECEF Cartesian coordinates of specified point (for longitude=0)
 
@@ -1300,8 +1300,8 @@ int WMM_GeodeticToSpherical(WMMtype_CoordGeodetic *CoordGeodetic, WMMtype_CoordS
 
     // compute spherical radius and angle lambda and phi of specified point
 
-    CoordSpherical->r      = sqrtf(xp * xp + zp * zp);
-    CoordSpherical->phig   = RAD2DEG(asinf(zp / CoordSpherical->r));  // geocentric latitude
+    CoordSpherical->r = sqrtf(xp * xp + zp * zp);
+    CoordSpherical->phig = RAD2DEG(asinf(zp / CoordSpherical->r)); // geocentric latitude
     CoordSpherical->lambda = CoordGeodetic->lambda; // longitude
 
     return 0; // OK

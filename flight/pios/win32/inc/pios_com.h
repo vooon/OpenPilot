@@ -45,8 +45,8 @@ extern int32_t PIOS_COM_ReceiveBufferUsed(uint8_t port);
 extern int32_t PIOS_COM_ReceiveHandler(void);
 
 struct pios_com_driver {
-    void    (*init)(uint8_t id);
-    void    (*set_baud)(uint8_t id, uint32_t baud);
+    void (*init)(uint8_t id);
+    void (*set_baud)(uint8_t id, uint32_t baud);
     int32_t (*tx_nb)(uint8_t id, char *buffer, uint16_t len);
     int32_t (*tx)(uint8_t id, char *buffer, uint16_t len);
     int32_t (*rx)(uint8_t id);

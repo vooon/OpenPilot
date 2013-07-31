@@ -38,11 +38,11 @@
 
 struct pios_udp_cfg {
     const char *ip;
-    uint16_t   port;
+    uint16_t port;
 };
 
 struct pios_udp_buffer {
-    uint8_t  buf[PIOS_UDP_RX_BUFFER_SIZE];
+    uint8_t buf[PIOS_UDP_RX_BUFFER_SIZE];
     uint16_t head;
     uint16_t tail;
     uint16_t size;
@@ -52,8 +52,8 @@ struct pios_udp_dev {
     const struct pios_udp_cfg *const cfg;
     struct pios_udp_buffer rx;
     SOCKET socket;
-    struct sockaddr_in     server;
-    struct sockaddr_in     client;
+    struct sockaddr_in server;
+    struct sockaddr_in client;
     uint32_t clientLength;
 };
 

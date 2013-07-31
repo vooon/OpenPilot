@@ -161,11 +161,11 @@ static void SensorsTask(__attribute__((unused)) void *parameters)
 {
     portTickType lastSysTime;
     uint32_t accel_samples = 0;
-    uint32_t gyro_samples  = 0;
+    uint32_t gyro_samples = 0;
     int32_t accel_accum[3] = { 0, 0, 0 };
-    int32_t gyro_accum[3]  = { 0, 0, 0 };
-    float gyro_scaling     = 0;
-    float accel_scaling    = 0;
+    int32_t gyro_accum[3] = { 0, 0, 0 };
+    float gyro_scaling = 0;
+    float accel_scaling = 0;
     static int32_t timeval;
 
     AlarmsClear(SYSTEMALARMS_ALARM_SENSORS);
@@ -178,7 +178,7 @@ static void SensorsTask(__attribute__((unused)) void *parameters)
     switch (bdinfo->board_rev) {
     case 0x01:
 #if defined(PIOS_INCLUDE_L3GD20)
-        gyro_test  = PIOS_L3GD20_Test();
+        gyro_test = PIOS_L3GD20_Test();
 #endif
 #if defined(PIOS_INCLUDE_BMA180)
         accel_test = PIOS_BMA180_Test();
@@ -186,7 +186,7 @@ static void SensorsTask(__attribute__((unused)) void *parameters)
         break;
     case 0x02:
 #if defined(PIOS_INCLUDE_MPU6000)
-        gyro_test  = PIOS_MPU6000_Test();
+        gyro_test = PIOS_MPU6000_Test();
         accel_test = gyro_test;
 #endif
         break;
@@ -234,10 +234,10 @@ static void SensorsTask(__attribute__((unused)) void *parameters)
 
         for (int i = 0; i < 3; i++) {
             accel_accum[i] = 0;
-            gyro_accum[i]  = 0;
+            gyro_accum[i] = 0;
         }
         accel_samples = 0;
-        gyro_samples  = 0;
+        gyro_samples = 0;
 
         AccelSensorData accelSensorData;
         GyroSensorData gyroSensorData;
@@ -290,12 +290,12 @@ static void SensorsTask(__attribute__((unused)) void *parameters)
                     continue;
                 }
 
-                gyro_samples   = 1;
+                gyro_samples = 1;
                 gyro_accum[1] += gyro.gyro_x;
                 gyro_accum[0] += gyro.gyro_y;
                 gyro_accum[2] -= gyro.gyro_z;
 
-                gyro_scaling   = PIOS_L3GD20_GetScale();
+                gyro_scaling = PIOS_L3GD20_GetScale();
 
                 // Get temp from last reading
                 gyroSensorData.temperature = gyro.temperature;
@@ -310,9 +310,9 @@ static void SensorsTask(__attribute__((unused)) void *parameters)
                 xQueueHandle queue = PIOS_MPU6000_GetQueue();
 
                 while (xQueueReceive(queue, (void *)&mpu6000_data, gyro_samples == 0 ? 10 : 0) != errQUEUE_EMPTY) {
-                    gyro_accum[0]  += mpu6000_data.gyro_x;
-                    gyro_accum[1]  += mpu6000_data.gyro_y;
-                    gyro_accum[2]  += mpu6000_data.gyro_z;
+                    gyro_accum[0] += mpu6000_data.gyro_x;
+                    gyro_accum[1] += mpu6000_data.gyro_y;
+                    gyro_accum[2] += mpu6000_data.gyro_z;
 
                     accel_accum[0] += mpu6000_data.accel_x;
                     accel_accum[1] += mpu6000_data.accel_y;
@@ -328,10 +328,10 @@ static void SensorsTask(__attribute__((unused)) void *parameters)
                     continue;
                 }
 
-                gyro_scaling  = PIOS_MPU6000_GetScale();
+                gyro_scaling = PIOS_MPU6000_GetScale();
                 accel_scaling = PIOS_MPU6000_GetAccelScale();
 
-                gyroSensorData.temperature  = 35.0f + ((float)mpu6000_data.temperature + 512.0f) / 340.0f;
+                gyroSensorData.temperature = 35.0f + ((float)mpu6000_data.temperature + 512.0f) / 340.0f;
                 accelSensorData.temperature = 35.0f + ((float)mpu6000_data.temperature + 512.0f) / 340.0f;
             }
 #endif /* PIOS_INCLUDE_MPU6000 */
@@ -341,9 +341,9 @@ static void SensorsTask(__attribute__((unused)) void *parameters)
         }
 
         // Scale the accels
-        float accels[3]     = { (float)accel_accum[0] / accel_samples,
-                                (float)accel_accum[1] / accel_samples,
-                                (float)accel_accum[2] / accel_samples };
+        float accels[3] = { (float)accel_accum[0] / accel_samples,
+                            (float)accel_accum[1] / accel_samples,
+                            (float)accel_accum[2] / accel_samples };
         float accels_out[3] = { accels[0] * accel_scaling * accel_scale[0] - accel_bias[0],
                                 accels[1] * accel_scaling * accel_scale[1] - accel_bias[1],
                                 accels[2] * accel_scaling * accel_scale[2] - accel_bias[2] };
@@ -360,9 +360,9 @@ static void SensorsTask(__attribute__((unused)) void *parameters)
         AccelSensorSet(&accelSensorData);
 
         // Scale the gyros
-        float gyros[3]     = { (float)gyro_accum[0] / gyro_samples,
-                               (float)gyro_accum[1] / gyro_samples,
-                               (float)gyro_accum[2] / gyro_samples };
+        float gyros[3] = { (float)gyro_accum[0] / gyro_samples,
+                           (float)gyro_accum[1] / gyro_samples,
+                           (float)gyro_accum[2] / gyro_samples };
         float gyros_out[3] = { gyros[0] * gyro_scaling * gyro_scale[0] - gyro_staticbias[0],
                                gyros[1] * gyro_scaling * gyro_scale[1] - gyro_staticbias[1],
                                gyros[2] * gyro_scaling * gyro_scale[2] - gyro_staticbias[2] };
@@ -422,24 +422,24 @@ static void settingsUpdatedCb(__attribute__((unused)) UAVObjEvent *objEv)
 {
     RevoCalibrationGet(&cal);
 
-    mag_bias[0]        = cal.mag_bias[REVOCALIBRATION_MAG_BIAS_X];
-    mag_bias[1]        = cal.mag_bias[REVOCALIBRATION_MAG_BIAS_Y];
-    mag_bias[2]        = cal.mag_bias[REVOCALIBRATION_MAG_BIAS_Z];
-    mag_scale[0]       = cal.mag_scale[REVOCALIBRATION_MAG_SCALE_X];
-    mag_scale[1]       = cal.mag_scale[REVOCALIBRATION_MAG_SCALE_Y];
-    mag_scale[2]       = cal.mag_scale[REVOCALIBRATION_MAG_SCALE_Z];
-    accel_bias[0]      = cal.accel_bias[REVOCALIBRATION_ACCEL_BIAS_X];
-    accel_bias[1]      = cal.accel_bias[REVOCALIBRATION_ACCEL_BIAS_Y];
-    accel_bias[2]      = cal.accel_bias[REVOCALIBRATION_ACCEL_BIAS_Z];
-    accel_scale[0]     = cal.accel_scale[REVOCALIBRATION_ACCEL_SCALE_X];
-    accel_scale[1]     = cal.accel_scale[REVOCALIBRATION_ACCEL_SCALE_Y];
-    accel_scale[2]     = cal.accel_scale[REVOCALIBRATION_ACCEL_SCALE_Z];
+    mag_bias[0] = cal.mag_bias[REVOCALIBRATION_MAG_BIAS_X];
+    mag_bias[1] = cal.mag_bias[REVOCALIBRATION_MAG_BIAS_Y];
+    mag_bias[2] = cal.mag_bias[REVOCALIBRATION_MAG_BIAS_Z];
+    mag_scale[0] = cal.mag_scale[REVOCALIBRATION_MAG_SCALE_X];
+    mag_scale[1] = cal.mag_scale[REVOCALIBRATION_MAG_SCALE_Y];
+    mag_scale[2] = cal.mag_scale[REVOCALIBRATION_MAG_SCALE_Z];
+    accel_bias[0] = cal.accel_bias[REVOCALIBRATION_ACCEL_BIAS_X];
+    accel_bias[1] = cal.accel_bias[REVOCALIBRATION_ACCEL_BIAS_Y];
+    accel_bias[2] = cal.accel_bias[REVOCALIBRATION_ACCEL_BIAS_Z];
+    accel_scale[0] = cal.accel_scale[REVOCALIBRATION_ACCEL_SCALE_X];
+    accel_scale[1] = cal.accel_scale[REVOCALIBRATION_ACCEL_SCALE_Y];
+    accel_scale[2] = cal.accel_scale[REVOCALIBRATION_ACCEL_SCALE_Z];
     gyro_staticbias[0] = cal.gyro_bias[REVOCALIBRATION_GYRO_BIAS_X];
     gyro_staticbias[1] = cal.gyro_bias[REVOCALIBRATION_GYRO_BIAS_Y];
     gyro_staticbias[2] = cal.gyro_bias[REVOCALIBRATION_GYRO_BIAS_Z];
-    gyro_scale[0]      = cal.gyro_scale[REVOCALIBRATION_GYRO_SCALE_X];
-    gyro_scale[1]      = cal.gyro_scale[REVOCALIBRATION_GYRO_SCALE_Y];
-    gyro_scale[2]      = cal.gyro_scale[REVOCALIBRATION_GYRO_SCALE_Z];
+    gyro_scale[0] = cal.gyro_scale[REVOCALIBRATION_GYRO_SCALE_X];
+    gyro_scale[1] = cal.gyro_scale[REVOCALIBRATION_GYRO_SCALE_Y];
+    gyro_scale[2] = cal.gyro_scale[REVOCALIBRATION_GYRO_SCALE_Z];
 
 
     AttitudeSettingsData attitudeSettings;

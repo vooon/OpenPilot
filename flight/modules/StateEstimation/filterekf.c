@@ -57,18 +57,18 @@
 // Private types
 struct data {
     EKFConfigurationData ekfConfiguration;
-    HomeLocationData     homeLocation;
+    HomeLocationData homeLocation;
 
-    bool    usePos;
+    bool usePos;
 
     int32_t init_stage;
 
     stateEstimation work;
 
     uint32_t ins_last_time;
-    bool     inited;
+    bool inited;
 
-    float    dTa;
+    float dTa;
 };
 
 // Private variables
@@ -99,16 +99,16 @@ static void globalInit(void)
 int32_t filterEKF13iInitialize(stateFilter *handle)
 {
     globalInit();
-    handle->init      = &init13i;
-    handle->filter    = &filter;
+    handle->init = &init13i;
+    handle->filter = &filter;
     handle->localdata = pvPortMalloc(sizeof(struct data));
     return STACK_REQUIRED;
 }
 int32_t filterEKF13Initialize(stateFilter *handle)
 {
     globalInit();
-    handle->init      = &init13;
-    handle->filter    = &filter;
+    handle->init = &init13;
+    handle->filter = &filter;
     handle->localdata = pvPortMalloc(sizeof(struct data));
     return STACK_REQUIRED;
 }
@@ -118,16 +118,16 @@ int32_t filterEKF13Initialize(stateFilter *handle)
 int32_t filterEKF16iInitialize(stateFilter *handle)
 {
     globalInit();
-    handle->init      = &init13i;
-    handle->filter    = &filter;
+    handle->init = &init13i;
+    handle->filter = &filter;
     handle->localdata = pvPortMalloc(sizeof(struct data));
     return STACK_REQUIRED;
 }
 int32_t filterEKF16Initialize(stateFilter *handle)
 {
     globalInit();
-    handle->init      = &init13;
-    handle->filter    = &filter;
+    handle->init = &init13;
+    handle->filter = &filter;
     handle->localdata = pvPortMalloc(sizeof(struct data));
     return STACK_REQUIRED;
 }
@@ -153,9 +153,9 @@ static int32_t maininit(stateFilter *self)
 {
     struct data *this = (struct data *)self->localdata;
 
-    this->inited        = false;
-    this->init_stage    = 0;
-    this->work.updated  = 0;
+    this->inited = false;
+    this->init_stage = 0;
+    this->work.updated = 0;
     this->ins_last_time = PIOS_DELAY_GetRaw();
     this->dTa = DT_INIT;
 
@@ -193,7 +193,7 @@ static int32_t maininit(stateFilter *self)
  */
 static int32_t filter(stateFilter *self, stateEstimation *state)
 {
-    struct data *this    = (struct data *)self->localdata;
+    struct data *this = (struct data *)self->localdata;
 
     const float zeros[3] = { 0.0f, 0.0f, 0.0f };
 
@@ -270,14 +270,14 @@ static int32_t filter(stateFilter *self, stateEstimation *state)
             // Set initial attitude. Use accels to determine roll and pitch, rotate magnetic measurement accordingly,
             // so pseudo "north" vector can be estimated even if the board is not level
             attitudeState.Roll = atan2f(-this->work.accel[1], -this->work.accel[2]);
-            float zn  = cosf(attitudeState.Roll) * this->work.mag[2] + sinf(attitudeState.Roll) * this->work.mag[1];
-            float yn  = cosf(attitudeState.Roll) * this->work.mag[1] - sinf(attitudeState.Roll) * this->work.mag[2];
+            float zn = cosf(attitudeState.Roll) * this->work.mag[2] + sinf(attitudeState.Roll) * this->work.mag[1];
+            float yn = cosf(attitudeState.Roll) * this->work.mag[1] - sinf(attitudeState.Roll) * this->work.mag[2];
 
             // rotate accels z vector according to roll
             float azn = cosf(attitudeState.Roll) * this->work.accel[2] + sinf(attitudeState.Roll) * this->work.accel[1];
             attitudeState.Pitch = atan2f(this->work.accel[0], -azn);
 
-            float xn  = cosf(attitudeState.Pitch) * this->work.mag[0] + sinf(attitudeState.Pitch) * zn;
+            float xn = cosf(attitudeState.Pitch) * this->work.mag[0] + sinf(attitudeState.Pitch) * zn;
 
             attitudeState.Yaw = atan2f(-yn, xn);
             // TODO: This is still a hack
@@ -286,9 +286,9 @@ static int32_t filter(stateFilter *self, stateEstimation *state)
             // should calculate the rotation in 3d space using proper cross product math
             // SUBTODO: formulate the math required
 
-            attitudeState.Roll  = RAD2DEG(attitudeState.Roll);
+            attitudeState.Roll = RAD2DEG(attitudeState.Roll);
             attitudeState.Pitch = RAD2DEG(attitudeState.Pitch);
-            attitudeState.Yaw   = RAD2DEG(attitudeState.Yaw);
+            attitudeState.Yaw = RAD2DEG(attitudeState.Yaw);
 
             RPY2Quaternion(&attitudeState.Roll, this->work.attitude);
 
@@ -307,15 +307,15 @@ static int32_t filter(stateFilter *self, stateEstimation *state)
             state->attitude[1] = Nav.q[1];
             state->attitude[2] = Nav.q[2];
             state->attitude[3] = Nav.q[3];
-            state->gyro[0]    -= RAD2DEG(Nav.gyro_bias[0]);
-            state->gyro[1]    -= RAD2DEG(Nav.gyro_bias[1]);
-            state->gyro[2]    -= RAD2DEG(Nav.gyro_bias[2]);
-            state->pos[0]   = Nav.Pos[0];
-            state->pos[1]   = Nav.Pos[1];
-            state->pos[2]   = Nav.Pos[2];
-            state->vel[0]   = Nav.Vel[0];
-            state->vel[1]   = Nav.Vel[1];
-            state->vel[2]   = Nav.Vel[2];
+            state->gyro[0] -= RAD2DEG(Nav.gyro_bias[0]);
+            state->gyro[1] -= RAD2DEG(Nav.gyro_bias[1]);
+            state->gyro[2] -= RAD2DEG(Nav.gyro_bias[2]);
+            state->pos[0] = Nav.Pos[0];
+            state->pos[1] = Nav.Pos[1];
+            state->pos[2] = Nav.Pos[2];
+            state->vel[0] = Nav.Vel[0];
+            state->vel[1] = Nav.Vel[1];
+            state->vel[2] = Nav.Vel[2];
             state->updated |= SENSORUPDATES_attitude | SENSORUPDATES_pos | SENSORUPDATES_vel;
         }
 
@@ -342,15 +342,15 @@ static int32_t filter(stateFilter *self, stateEstimation *state)
     state->attitude[1] = Nav.q[1];
     state->attitude[2] = Nav.q[2];
     state->attitude[3] = Nav.q[3];
-    state->gyro[0]    -= RAD2DEG(Nav.gyro_bias[0]);
-    state->gyro[1]    -= RAD2DEG(Nav.gyro_bias[1]);
-    state->gyro[2]    -= RAD2DEG(Nav.gyro_bias[2]);
-    state->pos[0]   = Nav.Pos[0];
-    state->pos[1]   = Nav.Pos[1];
-    state->pos[2]   = Nav.Pos[2];
-    state->vel[0]   = Nav.Vel[0];
-    state->vel[1]   = Nav.Vel[1];
-    state->vel[2]   = Nav.Vel[2];
+    state->gyro[0] -= RAD2DEG(Nav.gyro_bias[0]);
+    state->gyro[1] -= RAD2DEG(Nav.gyro_bias[1]);
+    state->gyro[2] -= RAD2DEG(Nav.gyro_bias[2]);
+    state->pos[0] = Nav.Pos[0];
+    state->pos[1] = Nav.Pos[1];
+    state->pos[2] = Nav.Pos[2];
+    state->vel[0] = Nav.Vel[0];
+    state->vel[1] = Nav.Vel[1];
+    state->vel[2] = Nav.Vel[2];
     state->updated |= SENSORUPDATES_attitude | SENSORUPDATES_pos | SENSORUPDATES_vel;
 
     // Advance the covariance estimate

@@ -44,7 +44,7 @@ using namespace Core::Internal;
 
 namespace {
 struct PageData {
-    int     index;
+    int index;
     QString category;
     QString id;
 };
@@ -104,16 +104,16 @@ Q_DECLARE_METATYPE(::PageData) SettingsDialog::SettingsDialog(QWidget *parent, c
     // restore last displayed category and page
     // this is done only if no category or page was provided through the constructor
     QString initialCategory = categoryId;
-    QString initialPage     = pageId;
+    QString initialPage = pageId;
     qDebug() << "SettingsDialog constructor initial category:" << initialCategory << ", initial page:" << initialPage;
     if (initialCategory.isEmpty() && initialPage.isEmpty()) {
         initialCategory = settings->value("LastPreferenceCategory", QVariant(QString())).toString();
-        initialPage     = settings->value("LastPreferencePage", QVariant(QString())).toString();
+        initialPage = settings->value("LastPreferencePage", QVariant(QString())).toString();
         qDebug() << "SettingsDialog settings initial category:" << initialCategory << ", initial page: " << initialPage;
     }
 
     // restore window size
-    int windowWidth  = settings->value("WindowWidth", 0).toInt();
+    int windowWidth = settings->value("WindowWidth", 0).toInt();
     int windowHeight = settings->value("WindowHeight", 0).toInt();
     qDebug() << "SettingsDialog window width :" << windowWidth << ", height:" << windowHeight;
     if (windowWidth > 0 && windowHeight > 0) {
@@ -231,7 +231,7 @@ QTreeWidgetItem *SettingsDialog::addPage(IOptionsPage *page)
 {
     PageData pageData;
 
-    pageData.index    = m_pages.count();
+    pageData.index = m_pages.count();
     pageData.category = page->category();
     pageData.id = page->id();
 
@@ -308,9 +308,9 @@ void SettingsDialog::onItemSelected()
 
     // get user data
     PageData data = item->data(0, Qt::UserRole).value<PageData>();
-    int index     = data.index;
+    int index = data.index;
     m_currentCategory = data.category;
-    m_currentPage     = data.id;
+    m_currentPage = data.id;
 
     // check if we are looking at a place holder or not
     QWidget *widget = dynamic_cast<QLabel *>(stackedPages->widget(index));
@@ -343,7 +343,7 @@ void SettingsDialog::deletePage()
 {
     QTreeWidgetItem *item = pageTree->currentItem();
 
-    PageData data    = item->data(0, Qt::UserRole).value<PageData>();
+    PageData data = item->data(0, Qt::UserRole).value<PageData>();
     QString category = data.category;
 
     QList<QTreeWidgetItem *> *categoryItemList = m_categoryItemsMap.value(category);
@@ -363,7 +363,7 @@ void SettingsDialog::insertPage(IOptionsPage *page)
 {
     PageData pageData;
 
-    pageData.index    = m_pages.count();
+    pageData.index = m_pages.count();
     pageData.category = page->category();
     pageData.id = page->id();
 

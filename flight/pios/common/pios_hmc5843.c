@@ -115,26 +115,26 @@ void PIOS_HMC5843_EndOfConversion(void)
 
 static const struct pios_exti_cfg pios_exti_hmc5843_cfg __exti_config = {
     .vector = PIOS_HMC5843_EndOfConversion,
-    .line   = PIOS_HMC5843_DRDY_EXTI_LINE,
-    .pin    = {
+    .line = PIOS_HMC5843_DRDY_EXTI_LINE,
+    .pin = {
         .gpio = PIOS_HMC5843_DRDY_GPIO_PORT,
         .init = {
-            .GPIO_Pin  = PIOS_HMC5843_DRDY_GPIO_PIN,
+            .GPIO_Pin = PIOS_HMC5843_DRDY_GPIO_PIN,
             .GPIO_Mode = GPIO_Mode_IN_FLOATING,
         },
     },
-    .irq                                       = {
-        .init                                  = {
-            .NVIC_IRQChannel    = PIOS_HMC5843_DRDY_IRQn,
+    .irq = {
+        .init = {
+            .NVIC_IRQChannel = PIOS_HMC5843_DRDY_IRQn,
             .NVIC_IRQChannelPreemptionPriority = PIOS_HMC5843_DRDY_PRIO,
-            .NVIC_IRQChannelSubPriority        = 0,
+            .NVIC_IRQChannelSubPriority = 0,
             .NVIC_IRQChannelCmd = ENABLE,
         },
     },
-    .exti                                      = {
-        .init                                  = {
-            .EXTI_Line    = PIOS_HMC5843_DRDY_EXTI_LINE,
-            .EXTI_Mode    = EXTI_Mode_Interrupt,
+    .exti = {
+        .init = {
+            .EXTI_Line = PIOS_HMC5843_DRDY_EXTI_LINE,
+            .EXTI_Mode = EXTI_Mode_Interrupt,
             .EXTI_Trigger = EXTI_Trigger_Rising,
             .EXTI_LineCmd = ENABLE,
         },
@@ -153,13 +153,13 @@ void PIOS_HMC5843_Init(void)
 
     /* Configure the HMC5843 Sensor */
     PIOS_HMC5843_ConfigTypeDef HMC5843_InitStructure;
-    HMC5843_InitStructure.M_ODR     = PIOS_HMC5843_ODR_10;
+    HMC5843_InitStructure.M_ODR = PIOS_HMC5843_ODR_10;
     HMC5843_InitStructure.Meas_Conf = PIOS_HMC5843_MEASCONF_NORMAL;
     HMC5843_InitStructure.Gain = PIOS_HMC5843_GAIN_2;
     HMC5843_InitStructure.Mode = PIOS_HMC5843_MODE_CONTINUOUS;
     PIOS_HMC5843_Config(&HMC5843_InitStructure);
 
-    pios_hmc5843_data_ready    = false;
+    pios_hmc5843_data_ready = false;
 }
 
 /**
@@ -223,11 +223,11 @@ static void PIOS_HMC5843_Config(PIOS_HMC5843_ConfigTypeDef *HMC5843_Config_Struc
 {
     uint8_t CRTLA = 0x00;
     uint8_t CRTLB = 0x00;
-    uint8_t MODE  = 0x00;
+    uint8_t MODE = 0x00;
 
     CRTLA |= (uint8_t)(HMC5843_Config_Struct->M_ODR | HMC5843_Config_Struct->Meas_Conf);
     CRTLB |= (uint8_t)(HMC5843_Config_Struct->Gain);
-    MODE  |= (uint8_t)(HMC5843_Config_Struct->Mode);
+    MODE |= (uint8_t)(HMC5843_Config_Struct->Mode);
 
     // CRTL_REGA
     while (!PIOS_HMC5843_Write(PIOS_HMC5843_CONFIG_REG_A, CRTLA)) {
@@ -349,17 +349,17 @@ static bool PIOS_HMC5843_Read(uint8_t address, uint8_t *buffer, uint8_t len)
         {
             .info = __func__,
             .addr = PIOS_HMC5843_I2C_ADDR,
-            .rw   = PIOS_I2C_TXN_WRITE,
-            .len  = sizeof(addr_buffer),
-            .buf  = addr_buffer,
+            .rw = PIOS_I2C_TXN_WRITE,
+            .len = sizeof(addr_buffer),
+            .buf = addr_buffer,
         }
         ,
         {
             .info = __func__,
             .addr = PIOS_HMC5843_I2C_ADDR,
-            .rw   = PIOS_I2C_TXN_READ,
-            .len  = len,
-            .buf  = buffer,
+            .rw = PIOS_I2C_TXN_READ,
+            .len = len,
+            .buf = buffer,
         }
     };
 
@@ -385,9 +385,9 @@ static bool PIOS_HMC5843_Write(uint8_t address, uint8_t buffer)
         {
             .info = __func__,
             .addr = PIOS_HMC5843_I2C_ADDR,
-            .rw   = PIOS_I2C_TXN_WRITE,
-            .len  = sizeof(data),
-            .buf  = data,
+            .rw = PIOS_I2C_TXN_WRITE,
+            .len = sizeof(data),
+            .buf = data,
         }
         ,
     };

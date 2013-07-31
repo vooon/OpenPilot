@@ -48,10 +48,10 @@ void CoordinateConversions::RneFromLLA(double LLA[3], double Rne[3][3])
 {
     float sinLat, sinLon, cosLat, cosLon;
 
-    sinLat    = (float)sin(DEG2RAD * LLA[0]);
-    sinLon    = (float)sin(DEG2RAD * LLA[1]);
-    cosLat    = (float)cos(DEG2RAD * LLA[0]);
-    cosLon    = (float)cos(DEG2RAD * LLA[1]);
+    sinLat = (float)sin(DEG2RAD * LLA[0]);
+    sinLon = (float)sin(DEG2RAD * LLA[1]);
+    cosLat = (float)cos(DEG2RAD * LLA[0]);
+    cosLon = (float)cos(DEG2RAD * LLA[1]);
 
     Rne[0][0] = -sinLat * cosLon; Rne[0][1] = -sinLat * sinLon; Rne[0][2] = cosLat;
     Rne[1][0] = -sinLon; Rne[1][1] = cosLon; Rne[1][2] = 0;
@@ -98,17 +98,17 @@ int CoordinateConversions::ECEF2LLA(double ECEF[3], double LLA[3])
     LLA[1] = RAD2DEG * atan2(y, x);
     N = a;
     NplusH = N;
-    delta  = 1;
-    Lat    = 1;
-    iter   = 0;
+    delta = 1;
+    Lat = 1;
+    iter = 0;
 
     while (((delta > 1.0e-14) || (delta < -1.0e-14)) && (iter < 100)) {
-        delta  = Lat - atan(z / (sqrt(x * x + y * y) * (1 - (N * e * e / NplusH))));
-        Lat    = Lat - delta;
-        esLat  = e * sin(Lat);
-        N      = a / sqrt(1 - esLat * esLat);
+        delta = Lat - atan(z / (sqrt(x * x + y * y) * (1 - (N * e * e / NplusH))));
+        Lat = Lat - delta;
+        esLat = e * sin(Lat);
+        N = a / sqrt(1 - esLat * esLat);
         NplusH = sqrt(x * x + y * y) / cos(Lat);
-        iter  += 1;
+        iter += 1;
     }
 
     LLA[0] = RAD2DEG * Lat;
@@ -185,9 +185,9 @@ void CoordinateConversions::LLA2Base(double LLA[3], double BaseECEF[3], float Rn
     diff[1] = (float)(ECEF[1] - BaseECEF[1]);
     diff[2] = (float)(ECEF[2] - BaseECEF[2]);
 
-    NED[0]  = Rne[0][0] * diff[0] + Rne[0][1] * diff[1] + Rne[0][2] * diff[2];
-    NED[1]  = Rne[1][0] * diff[0] + Rne[1][1] * diff[1] + Rne[1][2] * diff[2];
-    NED[2]  = Rne[2][0] * diff[0] + Rne[2][1] * diff[1] + Rne[2][2] * diff[2];
+    NED[0] = Rne[0][0] * diff[0] + Rne[0][1] * diff[1] + Rne[0][2] * diff[2];
+    NED[1] = Rne[1][0] * diff[0] + Rne[1][1] * diff[1] + Rne[1][2] * diff[2];
+    NED[2] = Rne[2][0] * diff[0] + Rne[2][1] * diff[1] + Rne[2][2] * diff[2];
 }
 
 // ****** find roll, pitch, yaw from quaternion ********
@@ -199,11 +199,11 @@ void CoordinateConversions::Quaternion2RPY(const float q[4], float rpy[3])
     float q2s = q[2] * q[2];
     float q3s = q[3] * q[3];
 
-    R13    = 2 * (q[1] * q[3] - q[0] * q[2]);
-    R11    = q0s + q1s - q2s - q3s;
-    R12    = 2 * (q[1] * q[2] + q[0] * q[3]);
-    R23    = 2 * (q[2] * q[3] + q[0] * q[1]);
-    R33    = q0s - q1s - q2s + q3s;
+    R13 = 2 * (q[1] * q[3] - q[0] * q[2]);
+    R11 = q0s + q1s - q2s - q3s;
+    R12 = 2 * (q[1] * q[2] + q[0] * q[3]);
+    R23 = 2 * (q[2] * q[3] + q[0] * q[1]);
+    R33 = q0s - q1s - q2s + q3s;
 
     rpy[1] = RAD2DEG * asinf(-R13); // pitch always between -pi/2 to pi/2
     rpy[2] = RAD2DEG * atan2f(R12, R11);
@@ -218,20 +218,20 @@ void CoordinateConversions::RPY2Quaternion(const float rpy[3], float q[4])
     float phi, theta, psi;
     float cphi, sphi, ctheta, stheta, cpsi, spsi;
 
-    phi    = DEG2RAD * rpy[0] / 2;
-    theta  = DEG2RAD * rpy[1] / 2;
-    psi    = DEG2RAD * rpy[2] / 2;
-    cphi   = cosf(phi);
-    sphi   = sinf(phi);
+    phi = DEG2RAD * rpy[0] / 2;
+    theta = DEG2RAD * rpy[1] / 2;
+    psi = DEG2RAD * rpy[2] / 2;
+    cphi = cosf(phi);
+    sphi = sinf(phi);
     ctheta = cosf(theta);
     stheta = sinf(theta);
-    cpsi   = cosf(psi);
-    spsi   = sinf(psi);
+    cpsi = cosf(psi);
+    spsi = sinf(psi);
 
-    q[0]   = cphi * ctheta * cpsi + sphi * stheta * spsi;
-    q[1]   = sphi * ctheta * cpsi - cphi * stheta * spsi;
-    q[2]   = cphi * stheta * cpsi + sphi * ctheta * spsi;
-    q[3]   = cphi * ctheta * spsi - sphi * stheta * cpsi;
+    q[0] = cphi * ctheta * cpsi + sphi * stheta * spsi;
+    q[1] = sphi * ctheta * cpsi - cphi * stheta * spsi;
+    q[2] = cphi * stheta * cpsi + sphi * ctheta * spsi;
+    q[3] = cphi * ctheta * spsi - sphi * stheta * cpsi;
 
     if (q[0] < 0) { // q0 always positive for uniqueness
         q[0] = -q[0];
@@ -263,14 +263,14 @@ void CoordinateConversions::R2Quaternion(float const Rbe[3][3], float q[4])
     qreal w, x, y, z;
 
     // w always >= 0
-    w    = sqrt(std::max(0.0, 1.0 + Rbe[0][0] + Rbe[1][1] + Rbe[2][2])) / 2.0;
-    x    = sqrt(std::max(0.0, 1.0 + Rbe[0][0] - Rbe[1][1] - Rbe[2][2])) / 2.0;
-    y    = sqrt(std::max(0.0, 1.0 - Rbe[0][0] + Rbe[1][1] - Rbe[2][2])) / 2.0;
-    z    = sqrt(std::max(0.0, 1.0 - Rbe[0][0] - Rbe[1][1] + Rbe[2][2])) / 2.0;
+    w = sqrt(std::max(0.0, 1.0 + Rbe[0][0] + Rbe[1][1] + Rbe[2][2])) / 2.0;
+    x = sqrt(std::max(0.0, 1.0 + Rbe[0][0] - Rbe[1][1] - Rbe[2][2])) / 2.0;
+    y = sqrt(std::max(0.0, 1.0 - Rbe[0][0] + Rbe[1][1] - Rbe[2][2])) / 2.0;
+    z = sqrt(std::max(0.0, 1.0 - Rbe[0][0] - Rbe[1][1] + Rbe[2][2])) / 2.0;
 
-    x    = copysign(x, (Rbe[1][2] - Rbe[2][1]));
-    y    = copysign(y, (Rbe[2][0] - Rbe[0][2]));
-    z    = copysign(z, (Rbe[0][1] - Rbe[1][0]));
+    x = copysign(x, (Rbe[1][2] - Rbe[2][1]));
+    y = copysign(y, (Rbe[2][0] - Rbe[0][2]));
+    z = copysign(z, (Rbe[0][1] - Rbe[1][0]));
 
     q[0] = w;
     q[1] = x;

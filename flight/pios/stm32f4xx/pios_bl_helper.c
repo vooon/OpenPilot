@@ -59,64 +59,64 @@ struct device_flash_sector {
 };
 
 static struct device_flash_sector flash_sectors[] = {
-    [0] =  {
-        .start     = 0x08000000,
-        .size      = 16 * 1024,
+    [0] = {
+        .start = 0x08000000,
+        .size = 16 * 1024,
         .st_sector = FLASH_Sector_0,
     },
-    [1] =  {
-        .start     = 0x08004000,
-        .size      = 16 * 1024,
+    [1] = {
+        .start = 0x08004000,
+        .size = 16 * 1024,
         .st_sector = FLASH_Sector_1,
     },
-    [2] =  {
-        .start     = 0x08008000,
-        .size      = 16 * 1024,
+    [2] = {
+        .start = 0x08008000,
+        .size = 16 * 1024,
         .st_sector = FLASH_Sector_2,
     },
-    [3] =  {
-        .start     = 0x0800C000,
-        .size      = 16 * 1024,
+    [3] = {
+        .start = 0x0800C000,
+        .size = 16 * 1024,
         .st_sector = FLASH_Sector_3,
     },
-    [4] =  {
-        .start     = 0x08010000,
-        .size      = 64 * 1024,
+    [4] = {
+        .start = 0x08010000,
+        .size = 64 * 1024,
         .st_sector = FLASH_Sector_4,
     },
-    [5] =  {
-        .start     = 0x08020000,
-        .size      = 128 * 1024,
+    [5] = {
+        .start = 0x08020000,
+        .size = 128 * 1024,
         .st_sector = FLASH_Sector_5,
     },
-    [6] =  {
-        .start     = 0x08040000,
-        .size      = 128 * 1024,
+    [6] = {
+        .start = 0x08040000,
+        .size = 128 * 1024,
         .st_sector = FLASH_Sector_6,
     },
-    [7] =  {
-        .start     = 0x08060000,
-        .size      = 128 * 1024,
+    [7] = {
+        .start = 0x08060000,
+        .size = 128 * 1024,
         .st_sector = FLASH_Sector_7,
     },
-    [8] =  {
-        .start     = 0x08080000,
-        .size      = 128 * 1024,
+    [8] = {
+        .start = 0x08080000,
+        .size = 128 * 1024,
         .st_sector = FLASH_Sector_8,
     },
-    [9] =  {
-        .start     = 0x080A0000,
-        .size      = 128 * 1024,
+    [9] = {
+        .start = 0x080A0000,
+        .size = 128 * 1024,
         .st_sector = FLASH_Sector_9,
     },
     [10] = {
-        .start     = 0x080C0000,
-        .size      = 128 * 1024,
+        .start = 0x080C0000,
+        .size = 128 * 1024,
         .st_sector = FLASH_Sector_10,
     },
     [11] = {
-        .start     = 0x080E0000,
-        .size      = 128 * 1024,
+        .start = 0x080E0000,
+        .size = 128 * 1024,
         .st_sector = FLASH_Sector_11,
     },
 };
@@ -129,8 +129,8 @@ static bool PIOS_BL_HELPER_FLASH_GetSectorInfo(uint32_t address, uint8_t *sector
             (address < (sector->start + sector->size))) {
             /* address lies within this sector */
             *sector_number = sector->st_sector;
-            *sector_start  = sector->start;
-            *sector_size   = sector->size;
+            *sector_start = sector->start;
+            *sector_size = sector->size;
             return true;
         }
     }
@@ -142,7 +142,7 @@ uint8_t PIOS_BL_HELPER_FLASH_Start()
 {
     const struct pios_board_info *bdinfo = &pios_board_info_blob;
     uint32_t startAddress = bdinfo->fw_base;
-    uint32_t endAddress   = bdinfo->fw_base + bdinfo->fw_size + bdinfo->desc_size;
+    uint32_t endAddress = bdinfo->fw_base + bdinfo->fw_size + bdinfo->desc_size;
 
     bool success = erase_flash(startAddress, endAddress);
 
@@ -154,7 +154,7 @@ uint8_t PIOS_BL_HELPER_FLASH_Erase_Bootloader()
 {
 /// Bootloader memory space erase
     uint32_t startAddress = BL_BANK_BASE;
-    uint32_t endAddress   = BL_BANK_BASE + BL_BANK_SIZE;
+    uint32_t endAddress = BL_BANK_BASE + BL_BANK_SIZE;
 
     bool success = erase_flash(startAddress, endAddress);
 

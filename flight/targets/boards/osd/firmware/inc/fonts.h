@@ -36,9 +36,9 @@
 struct FontEntry {
     int id;
     unsigned char width, height;
-    const char    *name;
-    const char    *lookup;
-    const char    *data;
+    const char *name;
+    const char *lookup;
+    const char *data;
     int flags;
 };
 

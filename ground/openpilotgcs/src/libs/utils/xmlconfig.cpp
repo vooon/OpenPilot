@@ -182,7 +182,7 @@ QString XmlConfig::variantToString(const QVariant &v)
     case QVariant::ByteArray:
     {
         QByteArray a = v.toByteArray().toBase64();
-        result  = QLatin1String("@ByteArray(");
+        result = QLatin1String("@ByteArray(");
         result += QString::fromLatin1(a.constData(), a.size());
         result += QLatin1Char(')');
         break;
@@ -251,7 +251,7 @@ QString XmlConfig::variantToString(const QVariant &v)
             s << v;
         }
 
-        result  = QLatin1String("@Variant(");
+        result = QLatin1String("@Variant(");
         result += QString::fromLatin1(a.toBase64().constData());
         result += QLatin1Char(')');
         // These were being much too noisy!!

@@ -103,10 +103,10 @@ void PositionField::updateActualIndicator(double north, double east)
  */
 void PositionField::mouseMoveEvent(QMouseEvent *event)
 {
-    QPointF point    = mapToScene(event->pos());
+    QPointF point = mapToScene(event->pos());
     QRectF sceneSize = scene()->sceneRect();
 
-    double north     = -(point.y() / sceneSize.height() - .5) * 2;
+    double north = -(point.y() / sceneSize.height() - .5) * 2;
     double east = (point.x() / sceneSize.width() - .5) * 2;
     emit positionClicked(north, east);
 }

@@ -42,7 +42,7 @@
 
 // Private types
 struct data {
-    GPSSettingsData  settings;
+    GPSSettingsData settings;
     HomeLocationData home;
     double HomeECEF[3];
     float HomeRne[3][3];
@@ -58,8 +58,8 @@ static int32_t filter(stateFilter *self, stateEstimation *state);
 
 int32_t filterLLAInitialize(stateFilter *handle)
 {
-    handle->init      = &init;
-    handle->filter    = &filter;
+    handle->init = &init;
+    handle->filter = &filter;
     handle->localdata = pvPortMalloc(sizeof(struct data));
     GPSSettingsInitialize();
     GPSPositionSensorInitialize();

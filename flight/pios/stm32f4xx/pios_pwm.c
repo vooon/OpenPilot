@@ -50,10 +50,10 @@ enum pios_pwm_dev_magic {
 };
 
 struct pios_pwm_dev {
-    enum pios_pwm_dev_magic   magic;
+    enum pios_pwm_dev_magic magic;
     const struct pios_pwm_cfg *cfg;
 
-    uint8_t  CaptureState[PIOS_PWM_NUM_INPUTS];
+    uint8_t CaptureState[PIOS_PWM_NUM_INPUTS];
     uint16_t RiseValue[PIOS_PWM_NUM_INPUTS];
     uint16_t FallValue[PIOS_PWM_NUM_INPUTS];
     uint32_t CaptureValue[PIOS_PWM_NUM_INPUTS];
@@ -101,7 +101,7 @@ static void PIOS_PWM_tim_overflow_cb(uint32_t id, uint32_t context, uint8_t chan
 static void PIOS_PWM_tim_edge_cb(uint32_t id, uint32_t context, uint8_t channel, uint16_t count);
 static const struct pios_tim_callbacks tim_callbacks = {
     .overflow = PIOS_PWM_tim_overflow_cb,
-    .edge     = PIOS_PWM_tim_edge_cb,
+    .edge = PIOS_PWM_tim_edge_cb,
 };
 
 /**
@@ -125,8 +125,8 @@ int32_t PIOS_PWM_Init(uint32_t *pwm_id, const struct pios_pwm_cfg *cfg)
     for (uint8_t i = 0; i < PIOS_PWM_NUM_INPUTS; i++) {
         /* Flush counter variables */
         pwm_dev->CaptureState[i] = 0;
-        pwm_dev->RiseValue[i]    = 0;
-        pwm_dev->FallValue[i]    = 0;
+        pwm_dev->RiseValue[i] = 0;
+        pwm_dev->FallValue[i] = 0;
         pwm_dev->CaptureValue[i] = PIOS_RCVR_TIMEOUT;
     }
 
@@ -137,7 +137,7 @@ int32_t PIOS_PWM_Init(uint32_t *pwm_id, const struct pios_pwm_cfg *cfg)
 
     /* Configure the channels to be in capture/compare mode */
     for (uint8_t i = 0; i < cfg->num_channels; i++) {
-        const struct pios_tim_channel *chan   = &cfg->channels[i];
+        const struct pios_tim_channel *chan = &cfg->channels[i];
 
         /* Configure timer for input capture */
         TIM_ICInitTypeDef TIM_ICInitStructure = cfg->tim_ic_init;
@@ -211,10 +211,10 @@ static void PIOS_PWM_tim_overflow_cb(__attribute__((unused)) uint32_t tim_id, ui
 
     pwm_dev->us_since_update[channel] += count;
     if (pwm_dev->us_since_update[channel] >= PWM_SUPERVISOR_TIMEOUT) {
-        pwm_dev->CaptureState[channel]    = 0;
-        pwm_dev->RiseValue[channel]       = 0;
-        pwm_dev->FallValue[channel]       = 0;
-        pwm_dev->CaptureValue[channel]    = PIOS_RCVR_TIMEOUT;
+        pwm_dev->CaptureState[channel] = 0;
+        pwm_dev->RiseValue[channel] = 0;
+        pwm_dev->FallValue[channel] = 0;
+        pwm_dev->CaptureValue[channel] = PIOS_RCVR_TIMEOUT;
         pwm_dev->us_since_update[channel] = 0;
     }
 }
@@ -248,11 +248,11 @@ static void PIOS_PWM_tim_edge_cb(__attribute__((unused)) uint32_t tim_id, uint32
     TIM_ICInitTypeDef TIM_ICInitStructure = pwm_dev->cfg->tim_ic_init;
     if (pwm_dev->CaptureState[chan_idx] == 0) {
         /* Switch states */
-        pwm_dev->CaptureState[chan_idx]    = 1;
+        pwm_dev->CaptureState[chan_idx] = 1;
 
         /* Switch polarity of input capture */
         TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Falling;
-        TIM_ICInitStructure.TIM_Channel    = chan->timer_chan;
+        TIM_ICInitStructure.TIM_Channel = chan->timer_chan;
         TIM_ICInit(chan->timer, &TIM_ICInitStructure);
     } else {
         /* Capture computation */
@@ -270,7 +270,7 @@ static void PIOS_PWM_tim_edge_cb(__attribute__((unused)) uint32_t tim_id, uint32
 
         /* Switch polarity of input capture */
         TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;
-        TIM_ICInitStructure.TIM_Channel    = chan->timer_chan;
+        TIM_ICInitStructure.TIM_Channel = chan->timer_chan;
         TIM_ICInit(chan->timer, &TIM_ICInitStructure);
     }
 }

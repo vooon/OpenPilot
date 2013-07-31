@@ -38,7 +38,7 @@ Edge::Edge(MixerNode *sourceNode, MixerNode *destNode)
 {
     setAcceptedMouseButtons(0);
     source = sourceNode;
-    dest   = destNode;
+    dest = destNode;
     source->addEdge(this);
     dest->addEdge(this);
     adjust();
@@ -83,7 +83,7 @@ void Edge::adjust()
     if (length > qreal(20.)) {
         QPointF edgeOffset((line.dx() * 13) / length, (line.dy() * 13) / length);
         sourcePoint = line.p1() + edgeOffset;
-        destPoint   = line.p2() - edgeOffset;
+        destPoint = line.p2() - edgeOffset;
     } else {
         sourcePoint = destPoint = line.p1();
     }
@@ -96,7 +96,7 @@ QRectF Edge::boundingRect() const
     }
 
     qreal penWidth = 1;
-    qreal extra    = (penWidth + arrowSize) / 2.0;
+    qreal extra = (penWidth + arrowSize) / 2.0;
 
     return QRectF(sourcePoint, QSizeF(destPoint.x() - sourcePoint.x(),
                                       destPoint.y() - sourcePoint.y()))

@@ -106,7 +106,7 @@ QPixmap QtColorButtonPrivate::generatePixmap() const
 
     QPainter p(&pix);
     int corr = 1;
-    QRect r  = pix.rect().adjusted(corr, corr, -corr, -corr);
+    QRect r = pix.rect().adjusted(corr, corr, -corr, -corr);
     p.setBrushOrigin((r.width() % pixSize + pixSize) / 2 + corr, (r.height() % pixSize + pixSize) / 2 + corr);
     p.fillRect(r, br);
 
@@ -125,7 +125,7 @@ QtColorButton::QtColorButton(QWidget *parent)
 {
     d_ptr = new QtColorButtonPrivate;
     d_ptr->q_ptr = this;
-    d_ptr->m_dragging     = false;
+    d_ptr->m_dragging = false;
     d_ptr->m_backgroundCheckered = true;
     d_ptr->m_alphaAllowed = true;
 
@@ -269,7 +269,7 @@ void QtColorButton::dragEnterEvent(QDragEnterEvent *event)
 
     event->accept();
     d_ptr->m_dragColor = qvariant_cast<QColor>(mime->colorData());
-    d_ptr->m_dragging  = true;
+    d_ptr->m_dragging = true;
     update();
 }
 

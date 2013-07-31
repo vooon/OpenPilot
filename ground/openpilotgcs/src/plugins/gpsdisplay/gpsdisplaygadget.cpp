@@ -65,11 +65,11 @@ void GpsDisplayGadget::loadConfiguration(IUAVGadgetConfiguration *config)
 
     if (gpsDisplayConfig->connectionMode() == "Serial") {
         PortSettings portsettings;
-        portsettings.BaudRate    = gpsDisplayConfig->speed();
-        portsettings.DataBits    = gpsDisplayConfig->dataBits();
+        portsettings.BaudRate = gpsDisplayConfig->speed();
+        portsettings.DataBits = gpsDisplayConfig->dataBits();
         portsettings.FlowControl = gpsDisplayConfig->flow();
         portsettings.Parity = gpsDisplayConfig->parity();
-        portsettings.StopBits    = gpsDisplayConfig->stopBits();
+        portsettings.StopBits = gpsDisplayConfig->stopBits();
         portsettings.Timeout_Millisec = gpsDisplayConfig->timeOut();
 
         // In case we find no port, buttons disabled
@@ -83,9 +83,9 @@ void GpsDisplayGadget::loadConfiguration(IUAVGadgetConfiguration *config)
                 parser = new NMEAParser();
 
 #ifdef Q_OS_WIN
-                port   = new QextSerialPort(nport.portName, portsettings, QextSerialPort::EventDriven);
+                port = new QextSerialPort(nport.portName, portsettings, QextSerialPort::EventDriven);
 #else
-                port   = new QextSerialPort(nport.physName, portsettings, QextSerialPort::EventDriven);
+                port = new QextSerialPort(nport.physName, portsettings, QextSerialPort::EventDriven);
 #endif
                 m_widget->connectButton->setEnabled(true);
                 m_widget->disconnectButton->setEnabled(false);
@@ -166,7 +166,7 @@ void GpsDisplayGadget::onDataAvailable()
 
 void GpsDisplayGadget::processNewSerialData(QByteArray serialData)
 {
-    int dataLength   = serialData.size();
+    int dataLength = serialData.size();
     const char *data = serialData.constData();
 
     for (int pos = 0; pos < dataLength; pos++) {

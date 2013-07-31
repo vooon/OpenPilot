@@ -81,8 +81,8 @@ public:
     static int LOWORD(int n);
 
 private:
-    int  x;
-    int  y;
+    int x;
+    int y;
     bool empty;
 };
 }

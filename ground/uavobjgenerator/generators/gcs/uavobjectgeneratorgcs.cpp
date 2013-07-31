@@ -35,11 +35,11 @@ bool UAVObjectGeneratorGCS::generate(UAVObjectParser *parser, QString templatepa
     fieldTypeStrCPPClass << "INT8" << "INT16" << "INT32"
                          << "UINT8" << "UINT16" << "UINT32" << "FLOAT32" << "ENUM";
 
-    gcsCodePath        = QDir(templatepath + QString(GCS_CODE_DIR));
-    gcsOutputPath      = QDir(outputpath + QString("gcs"));
+    gcsCodePath = QDir(templatepath + QString(GCS_CODE_DIR));
+    gcsOutputPath = QDir(outputpath + QString("gcs"));
     gcsOutputPath.mkpath(gcsOutputPath.absolutePath());
 
-    gcsCodeTemplate    = readFile(gcsCodePath.absoluteFilePath("uavobject.cpp.template"));
+    gcsCodeTemplate = readFile(gcsCodePath.absoluteFilePath("uavobject.cpp.template"));
     gcsIncludeTemplate = readFile(gcsCodePath.absoluteFilePath("uavobject.h.template"));
     QString gcsInitTemplate = readFile(gcsCodePath.absoluteFilePath("uavobjectsinit.cpp.template"));
 
@@ -82,7 +82,7 @@ bool UAVObjectGeneratorGCS::process_object(ObjectInfo *info)
 
     // Prepare output strings
     QString outInclude = gcsIncludeTemplate;
-    QString outCode    = gcsCodeTemplate;
+    QString outCode = gcsCodeTemplate;
 
     // Replace common tags
     replaceCommonTags(outInclude, info);
@@ -130,7 +130,7 @@ bool UAVObjectGeneratorGCS::process_object(ObjectInfo *info)
             propertyGetters +=
                 QString("    Q_INVOKABLE %1 get%2(quint32 index) const;\n")
                 .arg(type).arg(field->name);
-            propertiesImpl  +=
+            propertiesImpl +=
                 QString("%1 %2::get%3(quint32 index) const\n"
                         "{\n"
                         "   QMutexLocker locker(mutex);\n"
@@ -140,7 +140,7 @@ bool UAVObjectGeneratorGCS::process_object(ObjectInfo *info)
             propertySetters +=
                 QString("    void set%1(quint32 index, %2 value);\n")
                 .arg(field->name).arg(type);
-            propertiesImpl  +=
+            propertiesImpl +=
                 QString("void %1::set%2(quint32 index, %3 value)\n"
                         "{\n"
                         "   mutex->lock();\n"
@@ -159,7 +159,7 @@ bool UAVObjectGeneratorGCS::process_object(ObjectInfo *info)
             propertyGetters +=
                 QString("    Q_INVOKABLE %1 get%2() const;\n")
                 .arg(type).arg(field->name);
-            propertiesImpl  +=
+            propertiesImpl +=
                 QString("%1 %2::get%3() const\n"
                         "{\n"
                         "   QMutexLocker locker(mutex);\n"
@@ -169,7 +169,7 @@ bool UAVObjectGeneratorGCS::process_object(ObjectInfo *info)
             propertySetters +=
                 QString("    void set%1(%2 value);\n")
                 .arg(field->name).arg(type);
-            propertiesImpl  +=
+            propertiesImpl +=
                 QString("void %1::set%2(%3 value)\n"
                         "{\n"
                         "   mutex->lock();\n"
@@ -179,7 +179,7 @@ bool UAVObjectGeneratorGCS::process_object(ObjectInfo *info)
                         "   if (changed) emit %2Changed(value);\n"
                         "}\n\n")
                 .arg(info->name).arg(field->name).arg(type);
-            propertyNotifications     +=
+            propertyNotifications +=
                 QString("    void %1Changed(%2 value);\n")
                 .arg(field->name).arg(type);
             propertyNotificationsImpl +=
@@ -201,7 +201,7 @@ bool UAVObjectGeneratorGCS::process_object(ObjectInfo *info)
     QString finit;
     for (int n = 0; n < info->fields.length(); ++n) {
         // Setup element names
-        QString varElemName   = info->fields[n]->name + "ElemNames";
+        QString varElemName = info->fields[n]->name + "ElemNames";
         finit.append(QString("    QStringList %1;\n").arg(varElemName));
         QStringList elemNames = info->fields[n]->elementNames;
         for (int m = 0; m < elemNames.length(); ++m) {
@@ -214,7 +214,7 @@ bool UAVObjectGeneratorGCS::process_object(ObjectInfo *info)
         if (info->fields[n]->type == FIELDTYPE_ENUM) {
             QString varOptionName = info->fields[n]->name + "EnumOptions";
             finit.append(QString("    QStringList %1;\n").arg(varOptionName));
-            QStringList options   = info->fields[n]->options;
+            QStringList options = info->fields[n]->options;
             for (int m = 0; m < options.length(); ++m) {
                 finit.append(QString("    %1.append(\"%2\");\n")
                              .arg(varOptionName)

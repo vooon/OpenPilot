@@ -61,7 +61,7 @@ public:
     {
         return true;
     }
-    virtual QWidget *createEditor(QWidget *parent)   = 0;
+    virtual QWidget *createEditor(QWidget *parent) = 0;
     virtual QVariant getEditorValue(QWidget *editor) = 0;
     virtual void setEditorValue(QWidget *editor, QVariant value) = 0;
     virtual void apply() {}
@@ -81,8 +81,8 @@ public:
     void setData(QVariant value, int column)
     {
         QStringList options = m_field->getOptions();
-        QVariant tmpValue   = m_field->getValue(m_index);
-        int tmpValIndex     = options.indexOf(tmpValue.toString());
+        QVariant tmpValue = m_field->getValue(m_index);
+        int tmpValIndex = options.indexOf(tmpValue.toString());
         TreeItem::setData(value, column);
 
         setChanged(tmpValIndex != value);
@@ -106,7 +106,7 @@ public:
     {
         QStringList options = m_field->getOptions();
         QVariant value = m_field->getValue(m_index);
-        int valIndex   = options.indexOf(value.toString());
+        int valIndex = options.indexOf(value.toString());
 
         if (data() != valIndex || changed()) {
             TreeItem::setData(valIndex);
@@ -272,7 +272,7 @@ public:
         QScienceSpinBox *editor = new QScienceSpinBox(parent);
         editor->setDecimals(6);
                 #else
-        QDoubleSpinBox *editor  = new QDoubleSpinBox(parent);
+        QDoubleSpinBox *editor = new QDoubleSpinBox(parent);
         editor->setDecimals(8);
                 #endif
         editor->setMinimum(-std::numeric_limits<float>::max());
@@ -285,7 +285,7 @@ public:
                 #ifdef USE_SCIENTIFIC_NOTATION
         QScienceSpinBox *spinBox = static_cast<QScienceSpinBox *>(editor);
                 #else
-        QDoubleSpinBox *spinBox  = static_cast<QDoubleSpinBox *>(editor);
+        QDoubleSpinBox *spinBox = static_cast<QDoubleSpinBox *>(editor);
                 #endif
         spinBox->interpretText();
         return spinBox->value();
@@ -296,7 +296,7 @@ public:
                 #ifdef USE_SCIENTIFIC_NOTATION
         QScienceSpinBox *spinBox = static_cast<QScienceSpinBox *>(editor);
                 #else
-        QDoubleSpinBox *spinBox  = static_cast<QDoubleSpinBox *>(editor);
+        QDoubleSpinBox *spinBox = static_cast<QDoubleSpinBox *>(editor);
                 #endif
         spinBox->setValue(value.toDouble());
     }

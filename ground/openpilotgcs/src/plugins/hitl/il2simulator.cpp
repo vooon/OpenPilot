@@ -68,15 +68,15 @@
 #include <math.h>
 #include <qxtlogger.h>
 
-const float IL2Simulator::FT2M     = 12 * .254;
-const float IL2Simulator::KT2MPS   = 0.514444444;
-const float IL2Simulator::MPS2KMH  = 3.6;
-const float IL2Simulator::KMH2MPS  = (1.0 / 3.6);
+const float IL2Simulator::FT2M = 12 * .254;
+const float IL2Simulator::KT2MPS = 0.514444444;
+const float IL2Simulator::MPS2KMH = 3.6;
+const float IL2Simulator::KMH2MPS = (1.0 / 3.6);
 const float IL2Simulator::INHG2KPA = 3.386;
-const float IL2Simulator::RAD2DEG  = (180.0 / M_PI);
-const float IL2Simulator::DEG2RAD  = (M_PI / 180.0);
-const float IL2Simulator::NM2DEG   = 60. * 1852.; // 60 miles per degree times 1852 meters per mile
-const float IL2Simulator::DEG2NM   = (1.0 / (60. * 1852.));
+const float IL2Simulator::RAD2DEG = (180.0 / M_PI);
+const float IL2Simulator::DEG2RAD = (M_PI / 180.0);
+const float IL2Simulator::NM2DEG = 60. * 1852.; // 60 miles per degree times 1852 meters per mile
+const float IL2Simulator::DEG2NM = (1.0 / (60. * 1852.));
 
 IL2Simulator::IL2Simulator(const SimulatorSettings & params) :
     Simulator(params)
@@ -104,7 +104,7 @@ void IL2Simulator::transmitUpdate()
     ActuatorDesired::DataFields actData = actDesired->getData();
     float ailerons = actData.Roll;
     float elevator = actData.Pitch;
-    float rudder   = actData.Yaw;
+    float rudder = actData.Yaw;
     float throttle = actData.Throttle * 2 - 1.0;
 
     // Send update to Il2
@@ -142,22 +142,22 @@ void IL2Simulator::processUpdate(const QByteArray & inp)
             float value = values[1].toFloat();
             switch (id) {
             case 30:
-                current.cas     = value * KMH2MPS;
+                current.cas = value * KMH2MPS;
                 break;
             case 32:
-                current.dZ      = value;
+                current.dZ = value;
                 break;
             case 40:
-                current.Z       = value;
+                current.Z = value;
                 break;
             case 42:
                 current.azimuth = value;
                 break;
             case 46:
-                current.roll    = -value;
+                current.roll = -value;
                 break;
             case 48:
-                current.pitch   = value;
+                current.pitch = value;
                 break;
             }
         }
@@ -171,8 +171,8 @@ void IL2Simulator::processUpdate(const QByteArray & inp)
     current.T = old.T + current.dT;
     current.i = old.i + 1;
     if (current.i == 1) {
-        old.dRoll    = 0;
-        old.dPitch   = 0;
+        old.dRoll = 0;
+        old.dPitch = 0;
         old.dAzimuth = 0;
         old.ddX = 0;
         old.ddX = 0;
@@ -191,8 +191,8 @@ void IL2Simulator::processUpdate(const QByteArray & inp)
     current.dY = current.groundspeed * cos(current.azimuth * DEG2RAD);
 
     // simple IMS - integration over time the easy way...
-    current.X  = old.X + (current.dX * current.dT);
-    current.Y  = old.Y + (current.dY * current.dT);
+    current.X = old.X + (current.dX * current.dT);
+    current.Y = old.Y + (current.dY * current.dT);
 
     // accelerations (filtered)
     if (isnan(old.ddX) || isinf(old.ddX)) {
@@ -221,8 +221,8 @@ void IL2Simulator::processUpdate(const QByteArray & inp)
         old.dRoll = 0;
     }
     current.dAzimuth = (angleDifference(current.azimuth, old.azimuth) / current.dT + TURN_FILTER * (old.dAzimuth)) / (TURN_FILTER + 1);
-    current.dPitch   = (angleDifference(current.pitch, old.pitch) / current.dT + TURN_FILTER * (old.dPitch)) / (TURN_FILTER + 1);
-    current.dRoll    = (angleDifference(current.roll, old.roll) / current.dT + TURN_FILTER * (old.dRoll)) / (TURN_FILTER + 1);
+    current.dPitch = (angleDifference(current.pitch, old.pitch) / current.dT + TURN_FILTER * (old.dPitch)) / (TURN_FILTER + 1);
+    current.dRoll = (angleDifference(current.roll, old.roll) / current.dT + TURN_FILTER * (old.dRoll)) / (TURN_FILTER + 1);
 
     ///////
     // Output formatting
@@ -244,47 +244,47 @@ void IL2Simulator::processUpdate(const QByteArray & inp)
     double HomeLLA[3];
     double LLA[3];
     double NED[3];
-    HomeLLA[0]       = settings.latitude.toFloat();
-    HomeLLA[1]       = settings.longitude.toFloat();
-    HomeLLA[2]       = 0;
-    NED[0]           = current.Y;
-    NED[1]           = current.X;
-    NED[2]           = -current.Z;
+    HomeLLA[0] = settings.latitude.toFloat();
+    HomeLLA[1] = settings.longitude.toFloat();
+    HomeLLA[2] = 0;
+    NED[0] = current.Y;
+    NED[1] = current.X;
+    NED[2] = -current.Z;
     Utils::CoordinateConversions().NED2LLA_HomeLLA(HomeLLA, NED, LLA);
-    out.latitude     = LLA[0] * 1e7;
-    out.longitude    = LLA[1] * 1e7;
-    out.groundspeed  = current.groundspeed;
+    out.latitude = LLA[0] * 1e7;
+    out.longitude = LLA[1] * 1e7;
+    out.groundspeed = current.groundspeed;
 
     out.calibratedAirspeed = current.cas;
     out.trueAirspeed = cas2tas(current.cas, current.Z, airParameters, gravity);
 
-    out.dstN         = current.Y;
-    out.dstE         = current.X;
-    out.dstD         = -current.Z;
+    out.dstN = current.Y;
+    out.dstE = current.X;
+    out.dstD = -current.Z;
 
     // Update BaroSensor object
-    out.altitude     = current.Z;
-    out.agl          = current.Z;
-    out.temperature  = airParameters.groundTemp + (current.Z * airParameters.tempLapseRate) - 273.0;
-    out.pressure     = airPressureFromAltitude(current.Z, airParameters, gravity); // kpa
+    out.altitude = current.Z;
+    out.agl = current.Z;
+    out.temperature = airParameters.groundTemp + (current.Z * airParameters.tempLapseRate) - 273.0;
+    out.pressure = airPressureFromAltitude(current.Z, airParameters, gravity); // kpa
 
 
     // Update attState object
-    out.roll    = current.roll;   // roll;
-    out.pitch   = current.pitch;  // pitch
+    out.roll = current.roll; // roll;
+    out.pitch = current.pitch; // pitch
     out.heading = current.azimuth; // yaw
 
 
     // Update VelocityState.{North,East,Down}
     out.velNorth = current.dY;
-    out.velEast  = current.dX;
-    out.velDown  = -current.dZ;
+    out.velEast = current.dX;
+    out.velDown = -current.dZ;
 
     // rotate turn rates and accelerations into body frame
     // (note: rotation deltas are NOT in NED frame but in RPY - manual conversion!)
-    out.rollRate  = current.dRoll;
+    out.rollRate = current.dRoll;
     out.pitchRate = cos(DEG2RAD * current.roll) * current.dPitch + sin(DEG2RAD * current.roll) * current.dAzimuth;
-    out.yawRate   = cos(DEG2RAD * current.roll) * current.dAzimuth - sin(DEG2RAD * current.roll) * current.dPitch;
+    out.yawRate = cos(DEG2RAD * current.roll) * current.dAzimuth - sin(DEG2RAD * current.roll) * current.dPitch;
 
     // Update accelerometer sensor data
     out.accX = current.ddX * Rbe[0][0]

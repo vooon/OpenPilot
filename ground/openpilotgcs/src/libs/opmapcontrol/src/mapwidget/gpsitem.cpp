@@ -36,7 +36,7 @@ GPSItem::GPSItem(MapGraphicItem *map, OPMapWidget *parent, QString uavPic) : map
     localposition = map->FromLatLngToLocal(mapwidget->CurrentPosition());
     this->setPos(localposition.X(), localposition.Y());
     this->setZValue(4);
-    trail     = new QGraphicsItemGroup(this);
+    trail = new QGraphicsItemGroup(this);
     trail->setParentItem(map);
     trailLine = new QGraphicsItemGroup(this);
     trailLine->setParentItem(map);
@@ -44,7 +44,7 @@ GPSItem::GPSItem(MapGraphicItem *map, OPMapWidget *parent, QString uavPic) : map
     setCacheMode(QGraphicsItem::ItemCoordinateCache);
     mapfollowtype = UAVMapFollowType::None;
     // trailtype=UAVTrailType::ByDistance;
-    trailtype     = UAVTrailType::ByTimeElapsed;
+    trailtype = UAVTrailType::ByTimeElapsed;
     timer.start();
     connect(map, SIGNAL(childRefreshPosition()), this, SLOT(RefreshPos()));
     connect(map, SIGNAL(childSetOpacity(qreal)), this, SLOT(setOpacitySlot(qreal)));
@@ -92,7 +92,7 @@ void GPSItem::SetUAVPos(const internals::PointLatLng &position, const int &altit
                     connect(this, SIGNAL(setChildLine()), obj, SLOT(setLineSlot()));
                 }
                 lasttrailline = position;
-                lastcoord     = position;
+                lastcoord = position;
             }
         }
         coord = position;

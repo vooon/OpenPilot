@@ -41,18 +41,18 @@ enum pios_adc_dev_magic {
 
 struct pios_adc_dev {
     const struct pios_adc_cfg *cfg;
-    ADCCallback      callback_function;
+    ADCCallback callback_function;
 #if defined(PIOS_INCLUDE_FREERTOS)
-    xQueueHandle     data_queue;
+    xQueueHandle data_queue;
 #endif
     volatile int16_t *valid_data_buffer;
     volatile uint8_t adc_oversample;
-    uint8_t  dma_block_size;
+    uint8_t dma_block_size;
     uint16_t dma_half_buffer_size;
 #if defined(PIOS_INCLUDE_ADC)
-    int16_t  fir_coeffs[PIOS_ADC_MAX_SAMPLES + 1]  __attribute__((aligned(4)));
+    int16_t fir_coeffs[PIOS_ADC_MAX_SAMPLES + 1]  __attribute__((aligned(4)));
     volatile int16_t raw_data_buffer[PIOS_ADC_MAX_SAMPLES]  __attribute__((aligned(4))); // Double buffer that DMA just used
-    float    downsampled_buffer[PIOS_ADC_NUM_CHANNELS]  __attribute__((aligned(4)));
+    float downsampled_buffer[PIOS_ADC_NUM_CHANNELS]  __attribute__((aligned(4)));
 #endif
     enum pios_adc_dev_magic magic;
 };
@@ -74,9 +74,9 @@ static bool PIOS_ADC_validate(struct pios_adc_dev *);
 /* Local Variables */
 static GPIO_TypeDef *ADC_GPIO_PORT[PIOS_ADC_NUM_PINS] = PIOS_ADC_PORTS;
 static const uint32_t ADC_GPIO_PIN[PIOS_ADC_NUM_PINS] = PIOS_ADC_PINS;
-static const uint32_t ADC_CHANNEL[PIOS_ADC_NUM_PINS]  = PIOS_ADC_CHANNELS;
+static const uint32_t ADC_CHANNEL[PIOS_ADC_NUM_PINS] = PIOS_ADC_CHANNELS;
 
-static ADC_TypeDef *ADC_MAPPING[PIOS_ADC_NUM_PINS]    = PIOS_ADC_MAPPING;
+static ADC_TypeDef *ADC_MAPPING[PIOS_ADC_NUM_PINS] = PIOS_ADC_MAPPING;
 static const uint32_t ADC_CHANNEL_MAPPING[PIOS_ADC_NUM_PINS] = PIOS_ADC_CHANNEL_MAPPING;
 
 static bool PIOS_ADC_validate(struct pios_adc_dev *dev)
@@ -126,7 +126,7 @@ int32_t PIOS_ADC_Init(const struct pios_adc_cfg *cfg)
     GPIO_InitTypeDef GPIO_InitStructure;
     GPIO_StructInit(&GPIO_InitStructure);
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AIN;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
 
     /* Enable each ADC pin in the array */
     for (int32_t i = 0; i < PIOS_ADC_NUM_PINS; i++) {
@@ -174,11 +174,11 @@ void PIOS_ADC_Config(uint32_t oversampling)
     ADC_InitTypeDef ADC_InitStructure;
     ADC_StructInit(&ADC_InitStructure);
     ADC_InitStructure.ADC_Mode = ADC_Mode_RegSimult;
-    ADC_InitStructure.ADC_ScanConvMode       = ENABLE;
+    ADC_InitStructure.ADC_ScanConvMode = ENABLE;
     ADC_InitStructure.ADC_ContinuousConvMode = ENABLE;
-    ADC_InitStructure.ADC_ExternalTrigConv   = ADC_ExternalTrigConv_None;
+    ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None;
     ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
-    ADC_InitStructure.ADC_NbrOfChannel       = ((PIOS_ADC_NUM_CHANNELS + 1) >> 1);
+    ADC_InitStructure.ADC_NbrOfChannel = ((PIOS_ADC_NUM_CHANNELS + 1) >> 1);
     ADC_Init(ADC1, &ADC_InitStructure);
 
 #if (PIOS_ADC_USE_ADC2)
@@ -225,7 +225,7 @@ void PIOS_ADC_Config(uint32_t oversampling)
     DMA_InitTypeDef dma_init = pios_adc_dev->cfg->dma.rx.init;
     dma_init.DMA_MemoryBaseAddr = (uint32_t)&pios_adc_dev->raw_data_buffer[0];
     dma_init.DMA_MemoryInc = DMA_MemoryInc_Enable;
-    dma_init.DMA_BufferSize     = pios_adc_dev->dma_half_buffer_size; /* x2 for double buffer /2 for 32-bit xfr */
+    dma_init.DMA_BufferSize = pios_adc_dev->dma_half_buffer_size; /* x2 for double buffer /2 for 32-bit xfr */
     DMA_Init(pios_adc_dev->cfg->dma.rx.channel, &dma_init);
     DMA_Cmd(pios_adc_dev->cfg->dma.rx.channel, ENABLE);
 

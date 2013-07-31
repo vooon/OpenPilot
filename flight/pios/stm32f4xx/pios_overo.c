@@ -53,9 +53,9 @@ static void PIOS_OVERO_TxStart(uint32_t overo_id, uint16_t tx_bytes_avail);
 static void PIOS_OVERO_RxStart(uint32_t overo_id, uint16_t rx_bytes_avail);
 
 const struct pios_com_driver pios_overo_com_driver = {
-    .set_baud   = NULL,
-    .tx_start   = PIOS_OVERO_TxStart,
-    .rx_start   = PIOS_OVERO_RxStart,
+    .set_baud = NULL,
+    .tx_start = PIOS_OVERO_TxStart,
+    .rx_start = PIOS_OVERO_RxStart,
     .bind_tx_cb = PIOS_OVERO_RegisterTxCallback,
     .bind_rx_cb = PIOS_OVERO_RegisterRxCallback,
 };
@@ -66,16 +66,16 @@ enum pios_overo_dev_magic {
 };
 
 struct pios_overo_dev {
-    enum pios_overo_dev_magic   magic;
+    enum pios_overo_dev_magic magic;
     const struct pios_overo_cfg *cfg;
 
-    int8_t   writing_buffer;
+    int8_t writing_buffer;
     uint32_t writing_offset;
 
     uint32_t packets;
 
-    uint8_t  tx_buffer[2][PACKET_SIZE];
-    uint8_t  rx_buffer[2][PACKET_SIZE];
+    uint8_t tx_buffer[2][PACKET_SIZE];
+    uint8_t rx_buffer[2][PACKET_SIZE];
 
     pios_com_callback rx_in_cb;
     uint32_t rx_in_context;
@@ -103,12 +103,12 @@ static struct pios_overo_dev *PIOS_OVERO_alloc(void)
         return NULL;
     }
 
-    overo_dev->rx_in_cb       = 0;
-    overo_dev->rx_in_context  = 0;
-    overo_dev->tx_out_cb      = 0;
+    overo_dev->rx_in_cb = 0;
+    overo_dev->rx_in_context = 0;
+    overo_dev->tx_out_cb = 0;
     overo_dev->tx_out_context = 0;
     overo_dev->packets = 0;
-    overo_dev->magic   = PIOS_OVERO_DEV_MAGIC;
+    overo_dev->magic = PIOS_OVERO_DEV_MAGIC;
     return overo_dev;
 }
 
@@ -268,7 +268,7 @@ int32_t PIOS_OVERO_Init(uint32_t *overo_id, const struct pios_overo_cfg *cfg)
     DMA_DeInit(overo_dev->cfg->dma.rx.channel);
     dma_init = overo_dev->cfg->dma.rx.init;
     dma_init.DMA_Memory0BaseAddr = (uint32_t)overo_dev->rx_buffer[0];
-    dma_init.DMA_MemoryInc  = DMA_MemoryInc_Enable;
+    dma_init.DMA_MemoryInc = DMA_MemoryInc_Enable;
     dma_init.DMA_BufferSize = PACKET_SIZE;
     DMA_Init(overo_dev->cfg->dma.rx.channel, &dma_init);
     DMA_DoubleBufferModeConfig(overo_dev->cfg->dma.rx.channel, (uint32_t)overo_dev->rx_buffer[1], DMA_Memory_0);
@@ -277,7 +277,7 @@ int32_t PIOS_OVERO_Init(uint32_t *overo_id, const struct pios_overo_cfg *cfg)
     DMA_DeInit(overo_dev->cfg->dma.tx.channel);
     dma_init = overo_dev->cfg->dma.tx.init;
     dma_init.DMA_Memory0BaseAddr = (uint32_t)overo_dev->tx_buffer[0];
-    dma_init.DMA_MemoryInc  = DMA_MemoryInc_Enable;
+    dma_init.DMA_MemoryInc = DMA_MemoryInc_Enable;
     dma_init.DMA_BufferSize = PACKET_SIZE;
     DMA_Init(overo_dev->cfg->dma.tx.channel, &dma_init);
     DMA_DoubleBufferModeConfig(overo_dev->cfg->dma.tx.channel, (uint32_t)overo_dev->tx_buffer[1], DMA_Memory_0);

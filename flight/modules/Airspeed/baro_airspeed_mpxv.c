@@ -106,7 +106,7 @@ void baro_airspeedGetMPXV(AirspeedSensorData *airspeedSensor, AirspeedSettingsDa
     float alpha = airspeedSettings->SamplePeriod / (airspeedSettings->SamplePeriod + ANALOG_BARO_AIRSPEED_TIME_CONSTANT_MS); // Low pass filter.
 
     airspeedSensor->CalibratedAirspeed = PIOS_MPXV_CalcAirspeed(&sensor, airspeedSensor->SensorValue) * (alpha) + airspeedSensor->CalibratedAirspeed * (1.0f - alpha);
-    airspeedSensor->SensorConnected    = AIRSPEEDSENSOR_SENSORCONNECTED_TRUE;
+    airspeedSensor->SensorConnected = AIRSPEEDSENSOR_SENSORCONNECTED_TRUE;
 }
 
 #endif /* if defined(PIOS_INCLUDE_MPXV) */

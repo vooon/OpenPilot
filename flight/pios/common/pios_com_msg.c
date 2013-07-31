@@ -40,10 +40,10 @@ struct pios_com_msg_dev {
     uint32_t lower_id;
     const struct pios_com_driver *driver;
 
-    uint8_t  rx_msg_buffer[PIOS_COM_MSG_MAX_LEN];
+    uint8_t rx_msg_buffer[PIOS_COM_MSG_MAX_LEN];
     volatile bool rx_msg_full;
 
-    uint8_t  tx_msg_buffer[PIOS_COM_MSG_MAX_LEN];
+    uint8_t tx_msg_buffer[PIOS_COM_MSG_MAX_LEN];
     volatile bool tx_msg_full;
 };
 
@@ -62,8 +62,8 @@ int32_t PIOS_COM_MSG_Init(uint32_t *com_id, const struct pios_com_driver *driver
 
     struct pios_com_msg_dev *com_dev = &com_msg_dev;
 
-    com_dev->driver      = driver;
-    com_dev->lower_id    = lower_id;
+    com_dev->driver = driver;
+    com_dev->lower_id = lower_id;
 
     com_dev->rx_msg_full = false;
     (com_dev->driver->bind_rx_cb)(lower_id, PIOS_COM_MSG_RxInCallback, (uint32_t)com_dev);

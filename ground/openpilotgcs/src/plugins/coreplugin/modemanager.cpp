@@ -163,7 +163,7 @@ void ModeManager::objectAdded(QObject *obj)
     m_modeStack->insertTab(index, mode->widget(), mode->icon(), mode->name());
 
     // Register mode shortcut
-    ActionManager *am   = m_mainWindow->actionManager();
+    ActionManager *am = m_mainWindow->actionManager();
     const QString shortcutId = QLatin1String("GCS.Mode.") + mode->uniqueModeName();
     QShortcut *shortcut = new QShortcut(m_mainWindow);
     shortcut->setWhatsThis(tr("Switch to %1 mode").arg(mode->name()));
@@ -311,7 +311,7 @@ void ModeManager::reorderModes(QMap<QString, int> priorities)
     m_isReprioritizing = true;
     IMode *current = currentMode();
     // Bubble sort
-    bool swapped   = false;
+    bool swapped = false;
     do {
         swapped = false;
         for (int i = 0; i < m_modes.count() - 1; ++i) {
@@ -334,7 +334,7 @@ void ModeManager::reorderModes(QMap<QString, int> priorities)
 
 void ModeManager::setFocusToCurrentMode()
 {
-    IMode *mode     = currentMode();
+    IMode *mode = currentMode();
 
     QTC_ASSERT(mode, return );
     QWidget *widget = mode->widget();

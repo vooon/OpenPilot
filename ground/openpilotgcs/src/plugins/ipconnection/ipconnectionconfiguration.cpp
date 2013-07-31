@@ -46,9 +46,9 @@ IUAVGadgetConfiguration *IPconnectionConfiguration::clone()
 {
     IPconnectionConfiguration *m = new IPconnectionConfiguration(this->classId());
 
-    m->m_Port     = m_Port;
+    m->m_Port = m_Port;
     m->m_HostName = m_HostName;
-    m->m_UseTCP   = m_UseTCP;
+    m->m_UseTCP = m_UseTCP;
     return m;
 }
 
@@ -84,8 +84,8 @@ void IPconnectionConfiguration::restoresettings()
     settings->beginReadArray("Current");
     settings->setArrayIndex(0);
     m_HostName = (settings->value(QLatin1String("HostName"), tr("")).toString());
-    m_Port     = (settings->value(QLatin1String("Port"), tr("")).toInt());
-    m_UseTCP   = (settings->value(QLatin1String("UseTCP"), tr("")).toInt());
+    m_Port = (settings->value(QLatin1String("Port"), tr("")).toInt());
+    m_UseTCP = (settings->value(QLatin1String("UseTCP"), tr("")).toInt());
     settings->endArray();
     settings->endGroup();
 }

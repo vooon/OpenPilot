@@ -74,11 +74,11 @@ public:
                                         const QString &settingsId = QString(),
                                         QWidget *parent = 0) = 0;
 
-    virtual ActionManager *actionManager() const         = 0;
-    virtual UniqueIDManager *uniqueIDManager() const     = 0;
-    virtual MessageManager *messageManager() const       = 0;
-    virtual VariableManager *variableManager() const     = 0;
-    virtual ThreadManager *threadManager() const         = 0;
+    virtual ActionManager *actionManager() const = 0;
+    virtual UniqueIDManager *uniqueIDManager() const = 0;
+    virtual MessageManager *messageManager() const = 0;
+    virtual VariableManager *variableManager() const = 0;
+    virtual ThreadManager *threadManager() const = 0;
     virtual ModeManager *modeManager() const = 0;
     virtual ConnectionManager *connectionManager() const = 0;
     virtual UAVGadgetInstanceManager *uavGadgetInstanceManager() const = 0;
@@ -86,23 +86,23 @@ public:
 
     virtual QSettings *settings(QSettings::Scope scope = QSettings::UserScope) const = 0;
     virtual SettingsDatabase *settingsDatabase() const = 0;
-    virtual void readMainSettings(QSettings *qs, bool workspaceDiffOnly = false)     = 0;
+    virtual void readMainSettings(QSettings *qs, bool workspaceDiffOnly = false) = 0;
     virtual void saveMainSettings(QSettings *qs) = 0;
     virtual void readSettings(IConfigurablePlugin *plugin, QSettings *qs = 0) = 0;
     virtual void saveSettings(IConfigurablePlugin *plugin, QSettings *qs = 0) = 0;
     virtual void deleteSettings() = 0;
 
-    virtual QString resourcePath() const    = 0;
+    virtual QString resourcePath() const = 0;
 
     virtual QMainWindow *mainWindow() const = 0;
 
     // adds and removes additional active contexts, this context is appended to the
     // currently active contexts. call updateContext after changing
-    virtual IContext *currentContextObject() const      = 0;
-    virtual void addAdditionalContext(int context)      = 0;
-    virtual void removeAdditionalContext(int context)   = 0;
+    virtual IContext *currentContextObject() const = 0;
+    virtual void addAdditionalContext(int context) = 0;
+    virtual void removeAdditionalContext(int context) = 0;
     virtual bool hasContext(int context) const = 0;
-    virtual void addContextObject(IContext *context)    = 0;
+    virtual void addContextObject(IContext *context) = 0;
     virtual void removeContextObject(IContext *context) = 0;
 
     virtual void updateContext() = 0;

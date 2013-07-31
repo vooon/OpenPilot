@@ -75,7 +75,7 @@ void MapDataDelegate::setEditorData(QWidget *editor,
     if (className.contains("QComboBox")) {
         int value = index.model()->data(index, Qt::EditRole).toInt();
         QComboBox *comboBox = static_cast<QComboBox *>(editor);
-        int x     = comboBox->findData(value);
+        int x = comboBox->findData(value);
         qDebug() << "VALUE=" << x;
         comboBox->setCurrentIndex(x);
     } else {

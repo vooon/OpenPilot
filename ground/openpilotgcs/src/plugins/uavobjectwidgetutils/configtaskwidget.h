@@ -54,15 +54,15 @@ class UAVOBJECTWIDGETUTILS_EXPORT ConfigTaskWidget : public QWidget {
 public:
     struct shadow {
         QWidget *widget;
-        double  scale;
-        bool    isLimited;
+        double scale;
+        bool isLimited;
     };
     struct objectToWidget {
         UAVObject *object;
         UAVObjectField *field;
-        QWidget   *widget;
+        QWidget *widget;
         int index;
-        double    scale;
+        double scale;
         bool isLimited;
         QList<shadow *> shadowsList;
         QString   getUnits() const
@@ -91,8 +91,8 @@ public:
         QString url;
         buttonTypeEnum buttonType;
         QList<int>     buttonGroup;
-        double  scale;
-        bool    haslimits;
+        double scale;
+        bool haslimits;
     };
 
     ConfigTaskWidget(QWidget *parent = 0);

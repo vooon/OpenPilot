@@ -38,7 +38,7 @@
 namespace Utils {
 QTCREATOR_UTILS_EXPORT QString winErrorMessage(unsigned long error)
 {
-    QString rc    = QString::fromLatin1("#%1: ").arg(error);
+    QString rc = QString::fromLatin1("#%1: ").arg(error);
     ushort *lpMsgBuf;
 
     const int len = FormatMessage(
@@ -81,7 +81,7 @@ QTCREATOR_UTILS_EXPORT QString winGetDLLVersion(WinDLLVersionType t,
     // Now go ahead, read version info resource
     DWORD dummy = 0;
     const LPCTSTR fileName = reinterpret_cast<LPCTSTR>(name.utf16()); // MinGWsy
-    const DWORD infoSize   = (*getFileVersionInfoSizeW)(fileName, &dummy);
+    const DWORD infoSize = (*getFileVersionInfoSizeW)(fileName, &dummy);
     if (infoSize == 0) {
         *errorMessage = QString::fromLatin1("Unable to determine the size of the version information of %1: %2").arg(name, winErrorMessage(GetLastError()));
         return QString();

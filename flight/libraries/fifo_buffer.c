@@ -45,7 +45,7 @@ uint16_t fifoBuf_getUsed(t_fifo_buffer *buf)
 { // return the number of bytes available in the rx buffer
     uint16_t rd = buf->rd;
     uint16_t wr = buf->wr;
-    uint16_t buf_size  = buf->buf_size;
+    uint16_t buf_size = buf->buf_size;
 
     uint16_t num_bytes = wr - rd;
 
@@ -58,7 +58,7 @@ uint16_t fifoBuf_getUsed(t_fifo_buffer *buf)
 
 uint16_t fifoBuf_getFree(t_fifo_buffer *buf)
 { // return the free space size in the buffer
-    uint16_t buf_size  = buf->buf_size;
+    uint16_t buf_size = buf->buf_size;
 
     uint16_t num_bytes = fifoBuf_getUsed(buf);
 
@@ -73,7 +73,7 @@ void fifoBuf_clearData(t_fifo_buffer *buf)
 void fifoBuf_removeData(t_fifo_buffer *buf, uint16_t len)
 { // remove a number of bytes from the buffer
     uint16_t rd = buf->rd;
-    uint16_t buf_size  = buf->buf_size;
+    uint16_t buf_size = buf->buf_size;
 
     // get number of bytes available
     uint16_t num_bytes = fifoBuf_getUsed(buf);
@@ -108,9 +108,9 @@ int16_t fifoBuf_getBytePeek(t_fifo_buffer *buf)
 
 int16_t fifoBuf_getByte(t_fifo_buffer *buf)
 { // get a data byte from the buffer
-    uint16_t rd        = buf->rd;
-    uint16_t buf_size  = buf->buf_size;
-    uint8_t *buff      = buf->buf_ptr;
+    uint16_t rd = buf->rd;
+    uint16_t buf_size = buf->buf_size;
+    uint8_t *buff = buf->buf_ptr;
 
     // get number of bytes available
     uint16_t num_bytes = fifoBuf_getUsed(buf);
@@ -130,9 +130,9 @@ int16_t fifoBuf_getByte(t_fifo_buffer *buf)
 
 uint16_t fifoBuf_getDataPeek(t_fifo_buffer *buf, void *data, uint16_t len)
 { // get data from the buffer without removing it
-    uint16_t rd        = buf->rd;
-    uint16_t buf_size  = buf->buf_size;
-    uint8_t *buff      = buf->buf_ptr;
+    uint16_t rd = buf->rd;
+    uint16_t buf_size = buf->buf_size;
+    uint8_t *buff = buf->buf_ptr;
 
     // get number of bytes available
     uint16_t num_bytes = fifoBuf_getUsed(buf);
@@ -153,7 +153,7 @@ uint16_t fifoBuf_getDataPeek(t_fifo_buffer *buf, void *data, uint16_t len)
             j = num_bytes;
         }
         memcpy(p + i, buff + rd, j);
-        i  += j;
+        i += j;
         num_bytes -= j;
         rd += j;
         if (rd >= buf_size) {
@@ -166,9 +166,9 @@ uint16_t fifoBuf_getDataPeek(t_fifo_buffer *buf, void *data, uint16_t len)
 
 uint16_t fifoBuf_getData(t_fifo_buffer *buf, void *data, uint16_t len)
 { // get data from our rx buffer
-    uint16_t rd        = buf->rd;
-    uint16_t buf_size  = buf->buf_size;
-    uint8_t *buff      = buf->buf_ptr;
+    uint16_t rd = buf->rd;
+    uint16_t buf_size = buf->buf_size;
+    uint8_t *buff = buf->buf_ptr;
 
     // get number of bytes available
     uint16_t num_bytes = fifoBuf_getUsed(buf);
@@ -189,7 +189,7 @@ uint16_t fifoBuf_getData(t_fifo_buffer *buf, void *data, uint16_t len)
             j = num_bytes;
         }
         memcpy(p + i, buff + rd, j);
-        i  += j;
+        i += j;
         num_bytes -= j;
         rd += j;
         if (rd >= buf_size) {
@@ -204,9 +204,9 @@ uint16_t fifoBuf_getData(t_fifo_buffer *buf, void *data, uint16_t len)
 
 uint16_t fifoBuf_putByte(t_fifo_buffer *buf, const uint8_t b)
 { // add a data byte to the buffer
-    uint16_t wr        = buf->wr;
-    uint16_t buf_size  = buf->buf_size;
-    uint8_t *buff      = buf->buf_ptr;
+    uint16_t wr = buf->wr;
+    uint16_t buf_size = buf->buf_size;
+    uint8_t *buff = buf->buf_ptr;
 
     uint16_t num_bytes = fifoBuf_getFree(buf);
 
@@ -226,9 +226,9 @@ uint16_t fifoBuf_putByte(t_fifo_buffer *buf, const uint8_t b)
 
 uint16_t fifoBuf_putData(t_fifo_buffer *buf, const void *data, uint16_t len)
 { // add data to the buffer
-    uint16_t wr        = buf->wr;
-    uint16_t buf_size  = buf->buf_size;
-    uint8_t *buff      = buf->buf_ptr;
+    uint16_t wr = buf->wr;
+    uint16_t buf_size = buf->buf_size;
+    uint8_t *buff = buf->buf_ptr;
 
     uint16_t num_bytes = fifoBuf_getFree(buf);
 
@@ -248,7 +248,7 @@ uint16_t fifoBuf_putData(t_fifo_buffer *buf, const void *data, uint16_t len)
             j = num_bytes;
         }
         memcpy(buff + wr, p + i, j);
-        i  += j;
+        i += j;
         num_bytes -= j;
         wr += j;
         if (wr >= buf_size) {
@@ -263,7 +263,7 @@ uint16_t fifoBuf_putData(t_fifo_buffer *buf, const void *data, uint16_t len)
 
 void fifoBuf_init(t_fifo_buffer *buf, const void *buffer, const uint16_t buffer_size)
 {
-    buf->buf_ptr  = (uint8_t *)buffer;
+    buf->buf_ptr = (uint8_t *)buffer;
     buf->rd = 0;
     buf->wr = 0;
     buf->buf_size = buffer_size;

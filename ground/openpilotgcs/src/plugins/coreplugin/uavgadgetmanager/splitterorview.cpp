@@ -46,7 +46,7 @@ SplitterOrView::SplitterOrView(Core::UAVGadgetManager *uavGadgetManager, Core::I
     m_uavGadgetManager(uavGadgetManager),
     m_splitter(0)
 {
-    m_view   = new UAVGadgetView(m_uavGadgetManager, uavGadget, this);
+    m_view = new UAVGadgetView(m_uavGadgetManager, uavGadget, this);
     m_layout = new QStackedLayout(this);
     m_layout->addWidget(m_view);
 }
@@ -302,7 +302,7 @@ void SplitterOrView::unsplitAll(IUAVGadget *currentGadget)
     delete m_splitter;
     m_splitter = 0;
 
-    m_view     = new UAVGadgetView(m_uavGadgetManager, currentGadget, this);
+    m_view = new UAVGadgetView(m_uavGadgetManager, currentGadget, this);
     m_layout->addWidget(m_view);
 }
 

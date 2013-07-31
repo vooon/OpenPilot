@@ -58,7 +58,7 @@ PathActionEditorGadgetWidget::PathActionEditorGadgetWidget(QWidget *parent) : QL
     Q_ASSERT(objManager != NULL);
     pathactionObj = PathAction::GetInstance(objManager);
     Q_ASSERT(pathactionObj != NULL);
-    waypointObj   = Waypoint::GetInstance(objManager);
+    waypointObj = Waypoint::GetInstance(objManager);
     Q_ASSERT(waypointObj != NULL);
 
     // Connect the signals
@@ -85,7 +85,7 @@ void PathActionEditorGadgetWidget::addPathActionInstance()
     Q_ASSERT(objManager != NULL);
 
     qDebug() << "Instances before: " << objManager->getNumInstances(pathactionObj->getObjID());
-    PathAction *obj   = new PathAction();
+    PathAction *obj = new PathAction();
     quint32 newInstId = objManager->getNumInstances(pathactionObj->getObjID());
     obj->initialize(newInstId, obj->getMetaObject());
     objManager->registerObject(obj);
@@ -101,7 +101,7 @@ void PathActionEditorGadgetWidget::addWaypointInstance()
     Q_ASSERT(objManager != NULL);
 
     qDebug() << "Instances before: " << objManager->getNumInstances(waypointObj->getObjID());
-    Waypoint *obj     = new Waypoint();
+    Waypoint *obj = new Waypoint();
     quint32 newInstId = objManager->getNumInstances(waypointObj->getObjID());
     obj->initialize(newInstId, obj->getMetaObject());
     objManager->registerObject(obj);

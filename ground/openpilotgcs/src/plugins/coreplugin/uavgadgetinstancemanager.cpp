@@ -55,7 +55,7 @@ UAVGadgetInstanceManager::UAVGadgetInstanceManager(QObject *parent) :
         if (!m_factories.contains(f)) {
             m_factories.append(f);
             QString classId = f->classId();
-            QString name    = f->name();
+            QString name = f->name();
             QIcon icon = f->icon();
             m_classIdNameMap.insert(classId, name);
             m_classIdIconMap.insert(classId, icon);
@@ -354,7 +354,7 @@ void UAVGadgetInstanceManager::cloneConfiguration(IUAVGadgetConfiguration *confi
     config->setProvisionalName(name);
     IUAVGadgetFactory *f = factory(config->classId());
     IOptionsPage *p = f->createOptionsPage(config);
-    IOptionsPage *page   = new UAVGadgetOptionsPageDecorator(p, config);
+    IOptionsPage *page = new UAVGadgetOptionsPageDecorator(p, config);
     page->setIcon(f->icon());
     m_provisionalConfigs.append(config);
     m_provisionalOptionsPages.append(page);
@@ -369,13 +369,13 @@ QString UAVGadgetInstanceManager::suggestName(QString classId, QString name)
     QString last = name.split(" ").last();
     bool ok;
     int num = last.toInt(&ok);
-    int i   = 1;
+    int i = 1;
 
     if (ok) {
         QStringList n = name.split(" ");
         n.removeLast();
         name = n.join(" ");
-        i    = num + 1;
+        i = num + 1;
     }
     do {
         suggestedName = name + " " + QString::number(i);

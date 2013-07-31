@@ -129,11 +129,11 @@ int32_t PIOS_COM_Init(uint32_t *com_id, const struct pios_com_driver *driver, ui
         goto out_fail;
     }
 
-    com_dev->driver   = driver;
+    com_dev->driver = driver;
     com_dev->lower_id = lower_id;
 
-    com_dev->has_rx   = has_rx;
-    com_dev->has_tx   = has_tx;
+    com_dev->has_rx = has_rx;
+    com_dev->has_tx = has_tx;
 
     if (has_rx) {
         fifoBuf_init(&com_dev->rx, rx_buffer, rx_buffer_len);
@@ -338,7 +338,7 @@ int32_t PIOS_COM_SendBuffer(uint32_t com_id, const uint8_t *buffer, uint16_t len
 
     PIOS_Assert(com_dev->has_tx);
 
-    uint32_t max_frag_len  = fifoBuf_getSize(&com_dev->tx);
+    uint32_t max_frag_len = fifoBuf_getSize(&com_dev->tx);
     uint32_t bytes_to_send = len;
     while (bytes_to_send) {
         uint32_t frag_size;

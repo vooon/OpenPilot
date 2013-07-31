@@ -111,17 +111,17 @@ void WorkspaceSettings::readSettings(QSettings *qs)
     m_numberOfWorkspaces = qs->value(QLatin1String("NumberOfWorkspaces"), 2).toInt();
     m_previousNumberOfWorkspaces = m_numberOfWorkspaces;
     for (int i = 1; i <= MAX_WORKSPACES; ++i) {
-        QString numberString    = QString::number(i);
-        QString defaultName     = "Workspace" + numberString;
+        QString numberString = QString::number(i);
+        QString defaultName = "Workspace" + numberString;
         QString defaultIconName = "Icon" + numberString;
-        QString name     = qs->value(defaultName, defaultName).toString();
+        QString name = qs->value(defaultName, defaultName).toString();
         QString iconName = qs->value(defaultIconName, ":/core/images/openpilot_logo_64.png").toString();
         m_names.append(name);
         m_iconNames.append(iconName);
         m_modeNames.append(QString("Mode") + QString::number(i));
     }
     m_tabBarPlacementIndex = qs->value(QLatin1String("TabBarPlacementIndex"), 1).toInt(); // 1 == "Bottom"
-    m_allowTabBarMovement  = qs->value(QLatin1String("AllowTabBarMovement"), false).toBool();
+    m_allowTabBarMovement = qs->value(QLatin1String("AllowTabBarMovement"), false).toBool();
     qs->endGroup();
     QTabWidget::TabPosition pos = m_tabBarPlacementIndex == 0 ? QTabWidget::North : QTabWidget::South;
     emit tabBarSettingsApplied(pos, m_allowTabBarMovement);
@@ -134,8 +134,8 @@ void WorkspaceSettings::saveSettings(QSettings *qs)
     for (int i = 0; i < MAX_WORKSPACES; ++i) {
         QString mode = QString("Mode") + QString::number(i + 1);
         int j = m_modeNames.indexOf(mode);
-        QString numberString    = QString::number(i + 1);
-        QString defaultName     = "Workspace" + numberString;
+        QString numberString = QString::number(i + 1);
+        QString defaultName = "Workspace" + numberString;
         QString defaultIconName = "Icon" + numberString;
         qs->setValue(defaultName, m_names.at(j));
         qs->setValue(defaultIconName, m_iconNames.at(j));
@@ -165,7 +165,7 @@ void WorkspaceSettings::apply()
         }
     }
     m_tabBarPlacementIndex = m_page->comboBoxTabBarPlacement->currentIndex();
-    m_allowTabBarMovement  = m_page->checkBoxAllowTabMovement->isChecked();
+    m_allowTabBarMovement = m_page->checkBoxAllowTabMovement->isChecked();
     QTabWidget::TabPosition pos = m_tabBarPlacementIndex == 0 ? QTabWidget::North : QTabWidget::South;
     emit tabBarSettingsApplied(pos, m_allowTabBarMovement);
 }
@@ -240,7 +240,7 @@ void WorkspaceSettings::newModeOrder(QVector<IMode *> modes)
             int p = modeNames.indexOf(m_modeNames.at(i));
             int q = modeNames.indexOf(m_modeNames.at(j));
             bool nonShowingMode = (p == -1 && q >= 0);
-            bool pqBothFound    = (p >= 0 && q >= 0);
+            bool pqBothFound = (p >= 0 && q >= 0);
             if (nonShowingMode || (pqBothFound && (priorities.at(q) > priorities.at(p)))) {
                 m_names.swap(i, j);
                 m_iconNames.swap(i, j);

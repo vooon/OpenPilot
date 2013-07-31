@@ -110,7 +110,7 @@ void JoystickControl::changePosition(double x, double y)
  */
 void JoystickControl::mouseMoveEvent(QMouseEvent *event)
 {
-    QPointF point   = m_joystickArea->mapFromScene(mapToScene(event->pos()));
+    QPointF point = m_joystickArea->mapFromScene(mapToScene(event->pos()));
     QSizeF areaSize = m_joystickArea->boundingRect().size();
 
     double y = -(point.y() / areaSize.height() - 0.5) * 2.0;

@@ -38,11 +38,11 @@ Point MercatorProjection::FromLatLngToPixel(double lat, double lng, const int &z
     lat = Clip(lat, MinLatitude, MaxLatitude);
     lng = Clip(lng, MinLongitude, MaxLongitude);
 
-    double x     = (lng + 180) / 360;
+    double x = (lng + 180) / 360;
     double sinLatitude = sin(lat * M_PI / 180);
-    double y     = 0.5 - log((1 + sinLatitude) / (1 - sinLatitude)) / (4 * M_PI);
+    double y = 0.5 - log((1 + sinLatitude) / (1 - sinLatitude)) / (4 * M_PI);
 
-    Size s       = GetTileMatrixSizePixel(zoom);
+    Size s = GetTileMatrixSizePixel(zoom);
     int mapSizeX = s.Width();
     int mapSizeY = s.Height();
 

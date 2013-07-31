@@ -52,7 +52,7 @@ void QextSerialEnumerator::iterateServicesOSX(io_object_t service, QList<QextPor
 
     while ((usbService = IOIteratorNext(service))) {
         QextPortInfo info;
-        info.vendorID  = 0;
+        info.vendorID = 0;
         info.productID = 0;
         getServiceDetailsOSX(usbService, &info);
         infoList.append(info);
@@ -62,10 +62,10 @@ void QextSerialEnumerator::iterateServicesOSX(io_object_t service, QList<QextPor
 bool QextSerialEnumerator::getServiceDetailsOSX(io_object_t service, QextPortInfo *portInfo)
 {
     bool retval = true;
-    CFTypeRef bsdPathAsCFString     = NULL;
+    CFTypeRef bsdPathAsCFString = NULL;
     CFTypeRef productNameAsCFString = NULL;
-    CFTypeRef vendorIdAsCFNumber    = NULL;
-    CFTypeRef productIdAsCFNumber   = NULL;
+    CFTypeRef vendorIdAsCFNumber = NULL;
+    CFTypeRef productIdAsCFNumber = NULL;
 
     // check the name of the modem's callout device
     bsdPathAsCFString = IORegistryEntryCreateCFProperty(service, CFSTR(kIOCalloutDeviceKey),
@@ -104,7 +104,7 @@ bool QextSerialEnumerator::getServiceDetailsOSX(io_object_t service, QextPortInf
         char path[MAXPATHLEN];
         if (CFStringGetCString((CFStringRef)bsdPathAsCFString, path,
                                PATH_MAX, kCFStringEncodingUTF8)) {
-            portInfo->physName   = path;
+            portInfo->physName = path;
             portInfo->friendName = path;
         }
         CFRelease(bsdPathAsCFString);
@@ -170,7 +170,7 @@ void QextSerialEnumerator::onDeviceDiscoveredOSX(io_object_t service)
 {
     QextPortInfo info;
 
-    info.vendorID  = 0;
+    info.vendorID = 0;
     info.productID = 0;
     if (getServiceDetailsOSX(service, &info)) {
         emit deviceDiscovered(info);
@@ -185,7 +185,7 @@ void QextSerialEnumerator::onDeviceTerminatedOSX(io_object_t service)
 {
     QextPortInfo info;
 
-    info.vendorID  = 0;
+    info.vendorID = 0;
     info.productID = 0;
     if (getServiceDetailsOSX(service, &info)) {
         emit deviceRemoved(info);
@@ -226,8 +226,8 @@ void QextSerialEnumerator::setUpNotifications()
     }
 
     // Retain an additional reference since each call to IOServiceAddMatchingNotification consumes one.
-    classesToMatch      = (CFMutableDictionaryRef)CFRetain(classesToMatch);
-    cdcClassesToMatch   = (CFMutableDictionaryRef)CFRetain(cdcClassesToMatch);
+    classesToMatch = (CFMutableDictionaryRef)CFRetain(classesToMatch);
+    cdcClassesToMatch = (CFMutableDictionaryRef)CFRetain(cdcClassesToMatch);
 
     notificationPortRef = IONotificationPortCreate(masterPort);
     if (notificationPortRef == NULL) {

@@ -46,8 +46,8 @@ static bool PIOS_Flash_Internal_GetSectorInfo(uint32_t address, uint8_t *sector_
     if (sector <= 127) {
         /* address lies within this sector */
         *sector_number = sector;
-        *sector_start  = sector * 1024 + 0x08000000;
-        *sector_size   = 1024;
+        *sector_start = sector * 1024 + 0x08000000;
+        *sector_size = 1024;
         return true;
     }
 
@@ -231,7 +231,7 @@ static int32_t PIOS_Flash_Internal_WriteData(uintptr_t flash_id, uint32_t addr, 
     uint16_t x = 0;
     FLASH_Status status;
     for (x = 0; x < numberOfhWords; ++x) {
-        offset     = 2 * x;
+        offset = 2 * x;
         hword_data = (data[offset + 1] << 8) | data[offset];
 
         if (hword_data != *(uint16_t *)(temp_addr + offset)) {
@@ -244,7 +244,7 @@ static int32_t PIOS_Flash_Internal_WriteData(uintptr_t flash_id, uint32_t addr, 
 
     uint16_t mod = len % 2;
     if (mod == 1) {
-        offset     = 2 * x;
+        offset = 2 * x;
         hword_data = 0xFF00 | data[offset];
         if (hword_data != *(uint16_t *)(temp_addr + offset)) {
             status = FLASH_ProgramHalfWord(temp_addr + offset, hword_data);
@@ -295,10 +295,10 @@ static int32_t PIOS_Flash_Internal_ReadData(uintptr_t flash_id, uint32_t addr, u
 /* Provide a flash driver to external drivers */
 const struct pios_flash_driver pios_internal_flash_driver = {
     .start_transaction = PIOS_Flash_Internal_StartTransaction,
-    .end_transaction   = PIOS_Flash_Internal_EndTransaction,
+    .end_transaction = PIOS_Flash_Internal_EndTransaction,
     .erase_sector = PIOS_Flash_Internal_EraseSector,
-    .write_data   = PIOS_Flash_Internal_WriteData,
-    .read_data    = PIOS_Flash_Internal_ReadData,
+    .write_data = PIOS_Flash_Internal_WriteData,
+    .read_data = PIOS_Flash_Internal_ReadData,
 };
 
 #endif /* PIOS_INCLUDE_FLASH_INTERNAL */

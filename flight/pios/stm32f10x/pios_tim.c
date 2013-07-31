@@ -11,7 +11,7 @@ enum pios_tim_dev_magic {
 struct pios_tim_dev {
     enum pios_tim_dev_magic magic;
 
-    const struct pios_tim_channel   *channels;
+    const struct pios_tim_channel *channels;
     uint8_t num_channels;
 
     const struct pios_tim_callbacks *callbacks;
@@ -118,9 +118,9 @@ int32_t PIOS_TIM_InitChannels(uint32_t *tim_id, const struct pios_tim_channel *c
     }
 
     /* Bind the configuration to the device instance */
-    tim_dev->channels     = channels;
+    tim_dev->channels = channels;
     tim_dev->num_channels = num_channels;
-    tim_dev->callbacks    = callbacks;
+    tim_dev->callbacks = callbacks;
     tim_dev->context = context;
 
     /* Configure the pins */
@@ -337,7 +337,7 @@ for (uint8_t i = 0; i < pios_pwm_cfg.num_channels; i++) {
 
             /* Switch polarity of input capture */
             TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Falling;
-            TIM_ICInitStructure.TIM_Channel    = channel.channel;
+            TIM_ICInitStructure.TIM_Channel = channel.channel;
             TIM_ICInit(channel.timer, &TIM_ICInitStructure);
         } else {
             /* Capture computation */
@@ -355,7 +355,7 @@ for (uint8_t i = 0; i < pios_pwm_cfg.num_channels; i++) {
 
             /* Switch polarity of input capture */
             TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;
-            TIM_ICInitStructure.TIM_Channel    = channel.channel;
+            TIM_ICInitStructure.TIM_Channel = channel.channel;
             TIM_ICInit(channel.timer, &TIM_ICInitStructure);
         }
     }

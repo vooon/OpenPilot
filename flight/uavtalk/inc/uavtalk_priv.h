@@ -33,16 +33,16 @@
 
 // Private types and constants
 typedef struct {
-    uint8_t  sync;
-    uint8_t  type;
+    uint8_t sync;
+    uint8_t type;
     uint16_t size;
     uint32_t objId;
 } uavtalk_min_header;
 #define UAVTALK_MIN_HEADER_LENGTH sizeof(uavtalk_min_header)
 
 typedef struct {
-    uint8_t  sync;
-    uint8_t  type;
+    uint8_t sync;
+    uint8_t type;
     uint16_t size;
     uint32_t objId;
     uint16_t instId;
@@ -59,13 +59,13 @@ typedef uint8_t uavtalk_checksum;
 typedef struct {
     UAVObjHandle obj;
     uint8_t type;
-    uint16_t     packet_size;
-    uint32_t     objId;
-    uint16_t     instId;
-    uint32_t     length;
-    uint8_t  instanceLength;
-    uint8_t  timestampLength;
-    uint8_t  cs;
+    uint16_t packet_size;
+    uint32_t objId;
+    uint16_t instId;
+    uint32_t length;
+    uint8_t instanceLength;
+    uint8_t timestampLength;
+    uint8_t cs;
     uint16_t timestamp;
     uint32_t rxCount;
     UAVTalkRxState state;
@@ -75,16 +75,16 @@ typedef struct {
 typedef struct {
     uint8_t canari;
     UAVTalkOutputStream outStream;
-    xSemaphoreHandle    lock;
-    xSemaphoreHandle    transLock;
-    xSemaphoreHandle    respSema;
+    xSemaphoreHandle lock;
+    xSemaphoreHandle transLock;
+    xSemaphoreHandle respSema;
     UAVObjHandle respObj;
-    uint16_t     respInstId;
+    uint16_t respInstId;
     UAVTalkStats stats;
     UAVTalkInputProcessor iproc;
-    uint8_t      *rxBuffer;
-    uint32_t     txSize;
-    uint8_t      *txBuffer;
+    uint8_t *rxBuffer;
+    uint32_t txSize;
+    uint8_t *txBuffer;
 } UAVTalkConnectionData;
 
 #define UAVTALK_CANARI          0xCA

@@ -36,29 +36,29 @@ PlotData::PlotData(QString p_uavObject, QString p_uavField)
 
     if (p_uavField.contains("-")) {
         QStringList fieldSubfield = p_uavField.split("-", QString::SkipEmptyParts);
-        uavField     = fieldSubfield.at(0);
-        uavSubField  = fieldSubfield.at(1);
+        uavField = fieldSubfield.at(0);
+        uavSubField = fieldSubfield.at(1);
         haveSubField = true;
     } else {
-        uavField     = p_uavField;
+        uavField = p_uavField;
         haveSubField = false;
     }
 
-    xData           = new QVector<double>();
-    yData           = new QVector<double>();
-    yDataHistory    = new QVector<double>();
+    xData = new QVector<double>();
+    yData = new QVector<double>();
+    yDataHistory = new QVector<double>();
 
-    curve           = 0;
-    scalePower      = 0;
+    curve = 0;
+    scalePower = 0;
     meanSamples = 1;
-    meanSum         = 0.0f;
+    meanSum = 0.0f;
 // mathFunction=0;
-    correctionSum   = 0.0f;
+    correctionSum = 0.0f;
     correctionCount = 0;
-    yMinimum        = 0;
-    yMaximum        = 0;
+    yMinimum = 0;
+    yMaximum = 0;
 
-    m_xWindowSize   = 0;
+    m_xWindowSize = 0;
 }
 
 double PlotData::valueAsDouble(UAVObject *obj, UAVObjectField *field)

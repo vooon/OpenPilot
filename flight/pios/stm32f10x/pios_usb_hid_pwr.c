@@ -25,7 +25,7 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 __IO uint32_t bDeviceState = UNCONNECTED; /* USB device status */
-__IO bool fSuspendEnabled  = TRUE;       /* true when suspend is possible */
+__IO bool fSuspendEnabled = TRUE; /* true when suspend is possible */
 
 struct {
     __IO RESUME_STATE eState;
@@ -133,7 +133,7 @@ void Suspend(void)
     /* ... */
 
     /* macrocell enters suspend mode */
-    wCNTR  = _GetCNTR();
+    wCNTR = _GetCNTR();
     wCNTR |= CNTR_FSUSP;
     _SetCNTR(wCNTR);
 #endif /* STM32F10X_CL */
@@ -144,7 +144,7 @@ void Suspend(void)
 
 #ifndef STM32F10X_CL
     /* force low-power mode in the macrocell */
-    wCNTR  = _GetCNTR();
+    wCNTR = _GetCNTR();
     wCNTR |= CNTR_LPMODE;
     _SetCNTR(wCNTR);
 #endif /* STM32F10X_CL */
@@ -193,7 +193,7 @@ void Resume_Init(void)
 
 #ifndef STM32F10X_CL
     /* CNTR_LPMODE = 0 */
-    wCNTR  = _GetCNTR();
+    wCNTR = _GetCNTR();
     wCNTR &= (~CNTR_LPMODE);
     _SetCNTR(wCNTR);
 #endif /* STM32F10X_CL */
@@ -240,11 +240,11 @@ void Resume(RESUME_STATE eResumeSetVal)
         break;
     case RESUME_INTERNAL:
         Resume_Init();
-        ResumeS.eState   = RESUME_START;
+        ResumeS.eState = RESUME_START;
         break;
     case RESUME_LATER:
         ResumeS.bESOFcnt = 2;
-        ResumeS.eState   = RESUME_WAIT;
+        ResumeS.eState = RESUME_WAIT;
         break;
     case RESUME_WAIT:
         ResumeS.bESOFcnt--;
@@ -256,11 +256,11 @@ void Resume(RESUME_STATE eResumeSetVal)
 #ifdef STM32F10X_CL
         OTGD_FS_SetRemoteWakeup();
 #else
-        wCNTR  = _GetCNTR();
+        wCNTR = _GetCNTR();
         wCNTR |= CNTR_RESUME;
         _SetCNTR(wCNTR);
 #endif /* STM32F10X_CL */
-        ResumeS.eState   = RESUME_ON;
+        ResumeS.eState = RESUME_ON;
         ResumeS.bESOFcnt = 10;
         break;
     case RESUME_ON:
@@ -271,7 +271,7 @@ void Resume(RESUME_STATE eResumeSetVal)
 #ifdef STM32F10X_CL
         OTGD_FS_ResetRemoteWakeup();
 #else
-        wCNTR  = _GetCNTR();
+        wCNTR = _GetCNTR();
         wCNTR &= (~CNTR_RESUME);
         _SetCNTR(wCNTR);
 #endif /* STM32F10X_CL */

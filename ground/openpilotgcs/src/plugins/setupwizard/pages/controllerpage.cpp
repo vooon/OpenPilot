@@ -91,7 +91,7 @@ bool ControllerPage::anyControllerConnected()
 SetupWizard::CONTROLLER_TYPE ControllerPage::getControllerType()
 {
     ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
-    UAVObjectUtilManager *utilMngr     = pm->getObject<UAVObjectUtilManager>();
+    UAVObjectUtilManager *utilMngr = pm->getObject<UAVObjectUtilManager>();
     int id = utilMngr->getBoardModel();
 
     switch (id) {

@@ -67,30 +67,30 @@ bool PIOS_I2C_ESC_SetSpeed(uint8_t speed[4])
         {
             .info = __func__,
             .addr = MK_I2C_ADDR + 0,
-            .rw   = PIOS_I2C_TXN_WRITE,
-            .len  = sizeof(speed[0]),
-            .buf  = &speed[0],
+            .rw = PIOS_I2C_TXN_WRITE,
+            .len = sizeof(speed[0]),
+            .buf = &speed[0],
         },
         {
             .info = __func__,
             .addr = MK_I2C_ADDR + 1,
-            .rw   = PIOS_I2C_TXN_WRITE,
-            .len  = sizeof(speed[1]),
-            .buf  = &speed[1],
+            .rw = PIOS_I2C_TXN_WRITE,
+            .len = sizeof(speed[1]),
+            .buf = &speed[1],
         },
         {
             .info = __func__,
             .addr = MK_I2C_ADDR + 2,
-            .rw   = PIOS_I2C_TXN_WRITE,
-            .len  = sizeof(speed[2]),
-            .buf  = &speed[2],
+            .rw = PIOS_I2C_TXN_WRITE,
+            .len = sizeof(speed[2]),
+            .buf = &speed[2],
         },
         {
             .info = __func__,
             .addr = MK_I2C_ADDR + 3,
-            .rw   = PIOS_I2C_TXN_WRITE,
-            .len  = sizeof(speed[3]),
-            .buf  = &speed[3],
+            .rw = PIOS_I2C_TXN_WRITE,
+            .len = sizeof(speed[3]),
+            .buf = &speed[3],
         }
     };
 
@@ -113,9 +113,9 @@ bool PIOS_SetMKSpeed(uint8_t motornum, uint8_t speed)
         {
             .info = __func__,
             .addr = MK_I2C_ADDR + motornum,
-            .rw   = PIOS_I2C_TXN_WRITE,
-            .len  = sizeof(speed),
-            .buf  = &speed,
+            .rw = PIOS_I2C_TXN_WRITE,
+            .len = sizeof(speed),
+            .buf = &speed,
         }
     };
 
@@ -134,9 +134,9 @@ bool PIOS_SetAstec4Address(uint8_t new_address)
         {
             .info = __func__,
             .addr = ASTEC4_I2C_ADDR,
-            .rw   = PIOS_I2C_TXN_WRITE,
-            .len  = sizeof(data),
-            .buf  = &data[0],
+            .rw = PIOS_I2C_TXN_WRITE,
+            .len = sizeof(data),
+            .buf = &data[0],
         }
     };
 
@@ -164,9 +164,9 @@ bool PIOS_SetAstec4Speed(uint8_t motornum, uint8_t speed)
         {
             .info = __func__,
             .addr = ASTEC4_I2C_ADDR,
-            .rw   = PIOS_I2C_TXN_WRITE,
-            .len  = sizeof(speeds),
-            .buf  = &speeds[0],
+            .rw = PIOS_I2C_TXN_WRITE,
+            .len = sizeof(speeds),
+            .buf = &speeds[0],
         }
     };
 

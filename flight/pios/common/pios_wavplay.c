@@ -119,8 +119,8 @@ typedef enum {
  * @{
  */
 static WAVE_FormatTypeDef WAVE_Format;
-static ErrorCode WaveFileStatus  = Unvalid_RIFF_ID;
-static uint16_t TIM6ARRValue     = 1088;
+static ErrorCode WaveFileStatus = Unvalid_RIFF_ID;
+static uint16_t TIM6ARRValue = 1088;
 uint32_t WaveDataLength = 0;
 static uint32_t SpeechDataOffset = 0x00;
 static uint32_t wavelen = 0;
@@ -176,7 +176,7 @@ void Set_WaveDataLength(uint32_t value)
 static uint32_t ReadUnit(uint8_t *buffer, uint8_t idx, uint8_t NbrOfBytes, Endianness BytesFormat)
 {
     uint32_t index = 0;
-    uint32_t Temp  = 0;
+    uint32_t Temp = 0;
 
     for (index = 0; index < NbrOfBytes; index++) {
         Temp |= buffer[idx + index] << (index * 8);
@@ -209,7 +209,7 @@ static uint32_t ReadUnit(uint8_t *buffer, uint8_t idx, uint8_t NbrOfBytes, Endia
  */
 static ErrorCode WavePlayer_WaveParsing(uint8_t *DirName, uint8_t *FileName, uint32_t *FileLen)
 {
-    uint32_t Temp     = 0x00;
+    uint32_t Temp = 0x00;
     uint32_t ExtraFormatBytes = 0;
     __IO uint32_t err = 0;
     uint32_t number_of_clusters;
@@ -286,10 +286,10 @@ static ErrorCode WavePlayer_WaveParsing(uint8_t *DirName, uint8_t *FileName, uin
     }
 
     /* Read the Byte Rate ------------------------------------------------------*/
-    WAVE_Format.ByteRate      = ReadUnit(buffer1, 28, 4, LittleEndian);
+    WAVE_Format.ByteRate = ReadUnit(buffer1, 28, 4, LittleEndian);
 
     /* Read the block alignment ------------------------------------------------*/
-    WAVE_Format.BlockAlign    = ReadUnit(buffer1, 32, 2, LittleEndian);
+    WAVE_Format.BlockAlign = ReadUnit(buffer1, 32, 2, LittleEndian);
 
     /* Read the number of bits per sample --------------------------------------*/
     WAVE_Format.BitsPerSample = ReadUnit(buffer1, 34, 2, LittleEndian);
@@ -323,7 +323,7 @@ static ErrorCode WavePlayer_WaveParsing(uint8_t *DirName, uint8_t *FileName, uin
 
     /* Read the number of sample data ------------------------------------------*/
     WAVE_Format.DataSize = ReadUnit(buffer1, SpeechDataOffset, 4, LittleEndian);
-    SpeechDataOffset    += 4;
+    SpeechDataOffset += 4;
     wavecounter = SpeechDataOffset;
     PIOS_FREAD(&file, buffer1, SECTOR_SIZE, &i);
     PIOS_FREAD(&file, buffer2, SECTOR_SIZE, &i);
@@ -383,13 +383,13 @@ void PIOS_WavPlay_Init(const struct pios_dac_cfg *cfg)
     DAC_InitTypeDef DAC_InitStructure;
 
     /* DAC channel 1 & 2 (DAC_OUT1 = PA.4)(DAC_OUT2 = PA.5) configuration */
-    GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_4;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
 
 
-    NVIC_InitStructure.NVIC_IRQChannel    = TIM6_DAC_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannel = TIM6_DAC_IRQn;
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_LOW;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
@@ -399,16 +399,16 @@ void PIOS_WavPlay_Init(const struct pios_dac_cfg *cfg)
 
     /* Time base configuration */
     TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
-    TIM_TimeBaseStructure.TIM_Period        = TIM6_PERIOD;
-    TIM_TimeBaseStructure.TIM_Prescaler     = 0;
+    TIM_TimeBaseStructure.TIM_Period = TIM6_PERIOD;
+    TIM_TimeBaseStructure.TIM_Prescaler = 0;
     TIM_TimeBaseStructure.TIM_ClockDivision = 0;
-    TIM_TimeBaseStructure.TIM_CounterMode   = TIM_CounterMode_Up;
+    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
     TIM_TimeBaseInit(TIM6, &TIM_TimeBaseStructure);
 
     /* TIM6 TRGO selection */
     TIM_SelectOutputTrigger(TIM6, TIM_TRGOSource_Update);
 
-    NVIC_InitStructure.NVIC_IRQChannel    = DMA1_Stream5_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannel = DMA1_Stream5_IRQn;
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_LOW;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
@@ -416,21 +416,21 @@ void PIOS_WavPlay_Init(const struct pios_dac_cfg *cfg)
 
     /* DMA1_Stream5 channel7 configuration **************************************/
     DMA_DeInit(DMA1_Stream5);
-    DMA_InitStructure.DMA_Channel            = DMA_Channel_7;
+    DMA_InitStructure.DMA_Channel = DMA_Channel_7;
     DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&DAC->DHR8R1;
-    DMA_InitStructure.DMA_Memory0BaseAddr    = (uint32_t)&buffer1;
-    DMA_InitStructure.DMA_DIR                = DMA_DIR_MemoryToPeripheral;
-    DMA_InitStructure.DMA_BufferSize         = BUFFERSIZE;
-    DMA_InitStructure.DMA_PeripheralInc      = DMA_PeripheralInc_Disable;
-    DMA_InitStructure.DMA_MemoryInc          = DMA_MemoryInc_Enable;
+    DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)&buffer1;
+    DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
+    DMA_InitStructure.DMA_BufferSize = BUFFERSIZE;
+    DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+    DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
     DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
-    DMA_InitStructure.DMA_MemoryDataSize     = DMA_MemoryDataSize_Byte;
-    DMA_InitStructure.DMA_Mode               = DMA_Mode_Circular;
-    DMA_InitStructure.DMA_Priority           = DMA_Priority_High;
-    DMA_InitStructure.DMA_FIFOMode           = DMA_FIFOMode_Disable;
-    DMA_InitStructure.DMA_FIFOThreshold      = DMA_FIFOThreshold_Full;
-    DMA_InitStructure.DMA_MemoryBurst        = DMA_MemoryBurst_Single;
-    DMA_InitStructure.DMA_PeripheralBurst    = DMA_PeripheralBurst_Single;
+    DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
+    DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
+    DMA_InitStructure.DMA_Priority = DMA_Priority_High;
+    DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;
+    DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
+    DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
+    DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
     DMA_Init(DMA1_Stream5, &DMA_InitStructure);
     /* Configure double buffering */
     DMA_DoubleBufferModeConfig(DMA1_Stream5, (uint32_t)&buffer2, DMA_Memory_0);
@@ -446,7 +446,7 @@ void PIOS_WavPlay_Init(const struct pios_dac_cfg *cfg)
 
     DAC_InitStructure.DAC_Trigger = DAC_Trigger_T6_TRGO;
     DAC_InitStructure.DAC_WaveGeneration = DAC_WaveGeneration_None;
-    DAC_InitStructure.DAC_OutputBuffer   = DAC_OutputBuffer_Enable;
+    DAC_InitStructure.DAC_OutputBuffer = DAC_OutputBuffer_Enable;
     DAC_Init(DAC_Channel_1, &DAC_InitStructure);
 
     DAC_Cmd(DAC_Channel_1, ENABLE);
@@ -527,7 +527,7 @@ void DMA1_Stream5_IRQHandler(void) __attribute__((alias("DAC_DMA_Handler")));
  */
 void DAC_DMA_Handler(void)
 {
-    uint8_t status     = 0;
+    uint8_t status = 0;
     uint32_t bytesRead = 0;
 
     if (DMA_GetFlagStatus(dev_cfg->dma.tx.channel, DMA_FLAG_TCIF5)) { // whole double buffer filled

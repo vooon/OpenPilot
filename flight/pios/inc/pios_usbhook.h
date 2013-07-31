@@ -41,10 +41,10 @@ struct pios_usbhook_descriptor {
 };
 
 enum usb_string_desc {
-    USB_STRING_DESC_LANG    = 0,
-    USB_STRING_DESC_VENDOR  = 1,
+    USB_STRING_DESC_LANG = 0,
+    USB_STRING_DESC_VENDOR = 1,
     USB_STRING_DESC_PRODUCT = 2,
-    USB_STRING_DESC_SERIAL  = 3,
+    USB_STRING_DESC_SERIAL = 3,
 } __attribute__((packed));
 
 extern void PIOS_USBHOOK_RegisterDevice(const uint8_t *desc, uint16_t desc_size);

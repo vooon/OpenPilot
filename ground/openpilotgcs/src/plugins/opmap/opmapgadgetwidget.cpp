@@ -90,13 +90,13 @@ OPMapGadgetWidget::OPMapGadgetWidget(QWidget *parent) : QWidget(parent)
     // **************
 
     m_widget = NULL;
-    m_map    = NULL;
+    m_map = NULL;
     findPlaceCompleter = NULL;
 
-    m_mouse_waypoint   = NULL;
+    m_mouse_waypoint = NULL;
 
-    pm   = NULL;
-    obm  = NULL;
+    pm = NULL;
+    obm = NULL;
     obum = NULL;
 
     m_prev_tile_number = 0;
@@ -107,7 +107,7 @@ OPMapGadgetWidget::OPMapGadgetWidget(QWidget *parent) : QWidget(parent)
 
     m_maxUpdateRate = max_update_rate_list[4]; // 2 seconds //SHOULDN'T THIS BE LOADED FROM THE USER PREFERENCES?
 
-    m_telemetry_connected  = false;
+    m_telemetry_connected = false;
 
     m_context_menu_lat_lon = m_mouse_lat_lon = internals::PointLatLng(0, 0);
 
@@ -115,16 +115,16 @@ OPMapGadgetWidget::OPMapGadgetWidget(QWidget *parent) : QWidget(parent)
 
     pm = ExtensionSystem::PluginManager::instance();
     if (pm) {
-        obm  = pm->getObject<UAVObjectManager>();
+        obm = pm->getObject<UAVObjectManager>();
         obum = pm->getObject<UAVObjectUtilManager>();
     }
 
     // **************
     // get current location
 
-    double latitude  = 0;
+    double latitude = 0;
     double longitude = 0;
-    double altitude  = 0;
+    double altitude = 0;
 
     // current position
     getUAVPosition(latitude, longitude, altitude);
@@ -134,9 +134,9 @@ OPMapGadgetWidget::OPMapGadgetWidget(QWidget *parent) : QWidget(parent)
     // **************
     // default home position
 
-    m_home_position.coord    = pos_lat_lon;
+    m_home_position.coord = pos_lat_lon;
     m_home_position.altitude = altitude;
-    m_home_position.locked   = false;
+    m_home_position.locked = false;
 
     // **************
     // create the widget that holds the user controls and the map
@@ -218,8 +218,8 @@ OPMapGadgetWidget::OPMapGadgetWidget(QWidget *parent) : QWidget(parent)
         m_map->GPS->SetUAVPos(m_home_position.coord, 0.0); // set the GPS position
     }
 #ifdef USE_PATHPLANNER
-    model    = new flightDataModel(this);
-    table    = new pathPlanner();
+    model = new flightDataModel(this);
+    table = new pathPlanner();
     selectionModel = new QItemSelectionModel(model);
     mapProxy = new modelMapProxy(this, m_map, model, selectionModel);
     table->setModel(model, selectionModel);
@@ -584,10 +584,10 @@ void OPMapGadgetWidget::updatePosition()
 
     GPSPositionSensor::DataFields gpsPositionData = gpsPositionObj->getData();
 
-    gps_heading   = gpsPositionData.Heading;
-    gps_latitude  = gpsPositionData.Latitude;
+    gps_heading = gpsPositionData.Heading;
+    gps_latitude = gpsPositionData.Latitude;
     gps_longitude = gpsPositionData.Longitude;
-    gps_altitude  = gpsPositionData.Altitude;
+    gps_altitude = gpsPositionData.Altitude;
 
     gps_pos = internals::PointLatLng(gps_latitude * 1e-7, gps_longitude * 1e-7);
 
@@ -613,7 +613,7 @@ void OPMapGadgetWidget::updatePosition()
 
     GyroState::DataFields gyroStateData = gyroStateObj->getData();
 
-    double NED[3]  = { positionStateData.North, positionStateData.East, positionStateData.Down };
+    double NED[3] = { positionStateData.North, positionStateData.East, positionStateData.Down };
     double vNED[3] = { velocityStateData.North, velocityStateData.East, velocityStateData.Down };
 
     // Set the position and heading estimates in the painter module
@@ -680,7 +680,7 @@ void OPMapGadgetWidget::updateMousePos()
     QGraphicsItem *item = m_map->itemAt(p);
 
     // find out if we are over the home position
-    mapcontrol::HomeItem *home   = qgraphicsitem_cast<mapcontrol::HomeItem *>(item);
+    mapcontrol::HomeItem *home = qgraphicsitem_cast<mapcontrol::HomeItem *>(item);
 
     // find out if we have a waypoint under the mouse cursor
     mapcontrol::WayPointItem *wp = qgraphicsitem_cast<mapcontrol::WayPointItem *>(item);
@@ -724,7 +724,7 @@ void OPMapGadgetWidget::zoomChanged(double zoomt, double zoom, double zoomd)
         return;
     }
 
-    QString s  = "tot:" + QString::number(zoomt, 'f', 1) + " rea:" + QString::number(zoom, 'f', 1) + " dig:" + QString::number(zoomd, 'f', 1);
+    QString s = "tot:" + QString::number(zoomt, 'f', 1) + " rea:" + QString::number(zoom, 'f', 1) + " dig:" + QString::number(zoomd, 'f', 1);
     m_widget->labelMapZoom->setText(s);
 
     int i_zoom = (int)(zoomt + 0.5);
@@ -933,7 +933,7 @@ void OPMapGadgetWidget::setHome(QPointF pos)
         return;
     }
 
-    double latitude  = pos.x();
+    double latitude = pos.x();
     double longitude = pos.y();
 
     if (latitude > 90) {
@@ -967,7 +967,7 @@ void OPMapGadgetWidget::setHome(internals::PointLatLng pos_lat_lon, double altit
     }
     ; // nan prevention
 
-    double latitude  = pos_lat_lon.Lat();
+    double latitude = pos_lat_lon.Lat();
     double longitude = pos_lat_lon.Lng();
 
     if (latitude != latitude) {
@@ -988,7 +988,7 @@ void OPMapGadgetWidget::setHome(internals::PointLatLng pos_lat_lon, double altit
 
     // *********
 
-    m_home_position.coord    = internals::PointLatLng(latitude, longitude);
+    m_home_position.coord = internals::PointLatLng(latitude, longitude);
     m_home_position.altitude = altitude;
 
     m_map->Home->SetCoord(m_home_position.coord);
@@ -1057,8 +1057,8 @@ void OPMapGadgetWidget::setMaxUpdateRate(int update_rate)
     }
 
     int list_size = sizeof(max_update_rate_list) / sizeof(max_update_rate_list[0]);
-    int min_rate  = max_update_rate_list[0];
-    int max_rate  = max_update_rate_list[list_size - 1];
+    int min_rate = max_update_rate_list[0];
+    int max_rate = max_update_rate_list[list_size - 1];
 
     if (update_rate < min_rate) {
         update_rate = min_rate;
@@ -1110,7 +1110,7 @@ void OPMapGadgetWidget::setHomePosition(QPointF pos)
         return;
     }
 
-    double latitude  = pos.y();
+    double latitude = pos.y();
     double longitude = pos.x();
 
     if (latitude != latitude || longitude != longitude) {
@@ -1137,7 +1137,7 @@ void OPMapGadgetWidget::setPosition(QPointF pos)
         return;
     }
 
-    double latitude  = pos.y();
+    double latitude = pos.y();
     double longitude = pos.x();
 
     if (latitude != latitude || longitude != longitude) {
@@ -2127,8 +2127,8 @@ double OPMapGadgetWidget::bearing(internals::PointLatLng from, internals::PointL
 // double delta_lat = lat2 - lat1;
     double delta_lon = lon2 - lon1;
 
-    double y    = sin(delta_lon) * cos(lat2);
-    double x    = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(delta_lon);
+    double y = sin(delta_lon) * cos(lat2);
+    double x = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(delta_lon);
     double bear = atan2(y, x) * rad_to_deg;
 
     bear += 360;
@@ -2152,7 +2152,7 @@ internals::PointLatLng OPMapGadgetWidget::destPoint(internals::PointLatLng sourc
 
     bear *= deg_to_rad;
 
-    double ad   = dist / earth_mean_radius;
+    double ad = dist / earth_mean_radius;
 
     double lat2 = asin(sin(lat1) * cos(ad) + cos(lat1) * sin(ad) * cos(bear));
     double lon2 = lon1 + atan2(sin(bear) * sin(ad) * cos(lat1), cos(ad) - sin(lat1) * sin(lat2));
@@ -2178,9 +2178,9 @@ bool OPMapGadgetWidget::getUAVPosition(double &latitude, double &longitude, doub
         Q_ASSERT(gpsPositionObj);
 
         GPSPositionSensor::DataFields gpsPositionData = gpsPositionObj->getData();
-        latitude  = gpsPositionData.Latitude / 1.0e7;
+        latitude = gpsPositionData.Latitude / 1.0e7;
         longitude = gpsPositionData.Longitude / 1.0e7;
-        altitude  = gpsPositionData.Altitude;
+        altitude = gpsPositionData.Altitude;
         return true;
     }
     HomeLocation *homeLocation = HomeLocation::GetInstance(obm);
@@ -2191,15 +2191,15 @@ bool OPMapGadgetWidget::getUAVPosition(double &latitude, double &longitude, doub
     homeLLA[1] = homeLocationData.Longitude / 1.0e7;
     homeLLA[2] = homeLocationData.Altitude;
 
-    NED[0]     = positionStateData.North;
-    NED[1]     = positionStateData.East;
-    NED[2]     = positionStateData.Down;
+    NED[0] = positionStateData.North;
+    NED[1] = positionStateData.East;
+    NED[2] = positionStateData.Down;
 
     Utils::CoordinateConversions().NED2LLA_HomeLLA(homeLLA, NED, LLA);
 
-    latitude  = LLA[0];
+    latitude = LLA[0];
     longitude = LLA[1];
-    altitude  = LLA[2];
+    altitude = LLA[2];
 
     if (latitude != latitude) {
         latitude = 0; // nan detection
@@ -2230,7 +2230,7 @@ double OPMapGadgetWidget::getUAV_Yaw()
     }
 
     UAVObject *obj = dynamic_cast<UAVDataObject *>(obm->getObject(QString("AttitudeState")));
-    double yaw     = obj->getField(QString("Yaw"))->getDouble();
+    double yaw = obj->getField(QString("Yaw"))->getDouble();
 
     if (yaw != yaw) {
         yaw = 0; // nan detection
@@ -2256,9 +2256,9 @@ bool OPMapGadgetWidget::getGPSPositionSensor(double &latitude, double &longitude
     if (obum->getGPSPositionSensor(LLA) < 0) {
         return false; // error
     }
-    latitude  = LLA[0];
+    latitude = LLA[0];
     longitude = LLA[1];
-    altitude  = LLA[2];
+    altitude = LLA[2];
 
     return true;
 }
@@ -2309,7 +2309,7 @@ void OPMapGadgetWidget::on_tbFind_clicked()
 {
     QPalette pal = m_widget->leFind->palette();
 
-    int result   = m_map->SetCurrentPositionByKeywords(m_widget->leFind->text());
+    int result = m_map->SetCurrentPositionByKeywords(m_widget->leFind->text());
 
     if (result == core::GeoCoderStatusCode::G_GEO_SUCCESS) {
         pal.setColor(m_widget->leFind->backgroundRole(), Qt::green);

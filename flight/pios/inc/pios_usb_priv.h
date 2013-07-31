@@ -35,7 +35,7 @@
 #include <pios_stm32.h>
 
 struct pios_usb_cfg {
-    struct stm32_irq  irq;
+    struct stm32_irq irq;
     struct stm32_gpio vsense;
     bool vsense_active_low;
 };

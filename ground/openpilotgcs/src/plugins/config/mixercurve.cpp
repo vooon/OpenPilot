@@ -38,7 +38,7 @@ MixerCurve::MixerCurve(QWidget *parent) :
     m_mixerUI->setupUi(this);
 
     // setup some convienence pointers
-    m_curve    = m_mixerUI->CurveWidget;
+    m_curve = m_mixerUI->CurveWidget;
     m_settings = m_mixerUI->CurveSettings;
 
 
@@ -196,9 +196,9 @@ void MixerCurve::GenerateCurve()
     double newValue;
 
     // get the user settings
-    double value1     = getCurveMin();
-    double value2     = getCurveMax();
-    double value3     = getCurveStep();
+    double value1 = getCurveMin();
+    double value2 = getCurveMax();
+    double value3 = getCurveStep();
 
     QString CurveType = m_mixerUI->CurveType->currentText();
 

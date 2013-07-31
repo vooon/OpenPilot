@@ -73,16 +73,16 @@ ScopeGadgetWidget::ScopeGadgetWidget(QWidget *parent) : QwtPlot(parent)
     connect(cm, SIGNAL(deviceAboutToDisconnect()), this, SLOT(stopPlotting()));
     connect(cm, SIGNAL(deviceConnected(QIODevice *)), this, SLOT(startPlotting()));
 
-    m_csvLoggingStarted     = 0;
-    m_csvLoggingEnabled     = 0;
+    m_csvLoggingStarted = 0;
+    m_csvLoggingEnabled = 0;
     m_csvLoggingHeaderSaved = 0;
-    m_csvLoggingDataSaved   = 0;
+    m_csvLoggingDataSaved = 0;
     m_csvLoggingDataUpdated = 0;
-    m_csvLoggingNameSet     = 0;
-    m_csvLoggingConnected   = 0;
+    m_csvLoggingNameSet = 0;
+    m_csvLoggingConnected = 0;
     m_csvLoggingNewFileOnConnect = 0;
     m_csvLoggingPath = QString("./csvlogging/");
-    m_csvLoggingStartTime   = QDateTime::currentDateTime();
+    m_csvLoggingStartTime = QDateTime::currentDateTime();
 
     // Listen to autopilot connection events
     connect(cm, SIGNAL(deviceAboutToDisconnect()), this, SLOT(csvLoggingDisconnect()));
@@ -157,7 +157,7 @@ void ScopeGadgetWidget::wheelEvent(QWheelEvent *e)
         // does *not*. Thus, when zooming with a legend, there will always be a small bias error.
         // In practice, this seems not to be a UI problem.
         QPoint mouse_pos = e->pos(); // Get the mouse coordinate in the frame
-        double zoomLine  = invTransform(QwtPlot::yLeft, mouse_pos.y()); // Transform the y mouse coordinate into a frame value.
+        double zoomLine = invTransform(QwtPlot::yLeft, mouse_pos.y()); // Transform the y mouse coordinate into a frame value.
 
         double zoomScale = 1.1; // THIS IS AN ARBITRARY CONSTANT, AND PERHAPS SHOULD BE IN A DEFINE INSTEAD OF BURIED HERE
 
@@ -250,7 +250,7 @@ void ScopeGadgetWidget::addLegend()
     // -> this is necessary when hiding a legend where some plots are
     // not visible, and the un-hiding it.
     foreach(QwtPlotItem * item, this->itemList()) {
-        bool on    = item->isVisible();
+        bool on = item->isVisible();
         QWidget *w = legend->find(item);
 
         if (w && w->inherits("QwtLegendItem")) {
@@ -411,9 +411,9 @@ void ScopeGadgetWidget::addCurvePlot(QString uavObject, QString uavFieldSubField
     // plotData = new UAVObjectPlotData(uavObject, uavField);
 
     plotData->m_xWindowSize = m_xWindowSize;
-    plotData->scalePower    = scaleOrderFactor;
-    plotData->meanSamples   = meanSamples;
-    plotData->mathFunction  = mathFunction;
+    plotData->scalePower = scaleOrderFactor;
+    plotData->meanSamples = meanSamples;
+    plotData->mathFunction = mathFunction;
 
     // If the y-bounds are supplied, set them
     if (plotData->yMinimum != plotData->yMaximum) {
@@ -555,9 +555,9 @@ int ScopeGadgetWidget::csvLoggingStart()
         if (m_csvLoggingEnabled) {
             if ((!m_csvLoggingNewFileOnConnect) || (m_csvLoggingNewFileOnConnect && m_csvLoggingConnected)) {
                 QDateTime NOW = QDateTime::currentDateTime();
-                m_csvLoggingStartTime   = NOW;
+                m_csvLoggingStartTime = NOW;
                 m_csvLoggingHeaderSaved = 0;
-                m_csvLoggingDataSaved   = 0;
+                m_csvLoggingDataSaved = 0;
                 m_csvLoggingBuffer.clear();
                 QDir PathCheck(m_csvLoggingPath);
                 if (!PathCheck.exists()) {
@@ -687,7 +687,7 @@ int ScopeGadgetWidget::csvLoggingInsertData()
 
 void ScopeGadgetWidget::csvLoggingSetName(QString newName)
 {
-    m_csvLoggingName    = newName;
+    m_csvLoggingName = newName;
     m_csvLoggingNameSet = 1;
 }
 
@@ -701,7 +701,7 @@ void ScopeGadgetWidget::csvLoggingConnect()
 void ScopeGadgetWidget::csvLoggingDisconnect()
 {
     m_csvLoggingHeaderSaved = 0;
-    m_csvLoggingConnected   = 0;
+    m_csvLoggingConnected = 0;
     if (m_csvLoggingNewFileOnConnect) {
         csvLoggingStop();
     }

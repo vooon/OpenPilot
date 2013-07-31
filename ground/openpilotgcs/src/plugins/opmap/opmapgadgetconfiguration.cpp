@@ -47,31 +47,31 @@ OPMapGadgetConfiguration::OPMapGadgetConfiguration(QString classId, QSettings *q
 {
     // if a saved configuration exists load it
     if (qSettings != 0) {
-        QString mapProvider    = qSettings->value("mapProvider").toString();
+        QString mapProvider = qSettings->value("mapProvider").toString();
         int zoom = qSettings->value("defaultZoom").toInt();
-        double latitude        = qSettings->value("defaultLatitude").toDouble();
-        double longitude       = qSettings->value("defaultLongitude").toDouble();
+        double latitude = qSettings->value("defaultLatitude").toDouble();
+        double longitude = qSettings->value("defaultLongitude").toDouble();
         bool useOpenGL = qSettings->value("useOpenGL").toBool();
         bool showTileGridLines = qSettings->value("showTileGridLines").toBool();
-        QString accessMode     = qSettings->value("accessMode").toString();
-        bool useMemoryCache    = qSettings->value("useMemoryCache").toBool();
-        QString cacheLocation  = qSettings->value("cacheLocation").toString();
-        QString uavSymbol      = qSettings->value("uavSymbol").toString();
-        int max_update_rate    = qSettings->value("maxUpdateRate").toInt();
+        QString accessMode = qSettings->value("accessMode").toString();
+        bool useMemoryCache = qSettings->value("useMemoryCache").toBool();
+        QString cacheLocation = qSettings->value("cacheLocation").toString();
+        QString uavSymbol = qSettings->value("uavSymbol").toString();
+        int max_update_rate = qSettings->value("maxUpdateRate").toInt();
 
         m_opacity = qSettings->value("overlayOpacity", 1).toReal();
 
         if (!mapProvider.isEmpty()) {
             m_mapProvider = mapProvider;
         }
-        m_defaultZoom       = zoom;
-        m_defaultLatitude   = latitude;
-        m_defaultLongitude  = longitude;
+        m_defaultZoom = zoom;
+        m_defaultLatitude = latitude;
+        m_defaultLongitude = longitude;
         m_useOpenGL = useOpenGL;
         m_showTileGridLines = showTileGridLines;
         m_uavSymbol = uavSymbol;
 
-        m_maxUpdateRate     = max_update_rate;
+        m_maxUpdateRate = max_update_rate;
         if (m_maxUpdateRate < 100 || m_maxUpdateRate > 5000) {
             m_maxUpdateRate = 2000;
         }
@@ -90,17 +90,17 @@ IUAVGadgetConfiguration *OPMapGadgetConfiguration::clone()
 {
     OPMapGadgetConfiguration *m = new OPMapGadgetConfiguration(this->classId());
 
-    m->m_mapProvider       = m_mapProvider;
-    m->m_defaultZoom       = m_defaultZoom;
-    m->m_defaultLatitude   = m_defaultLatitude;
-    m->m_defaultLongitude  = m_defaultLongitude;
+    m->m_mapProvider = m_mapProvider;
+    m->m_defaultZoom = m_defaultZoom;
+    m->m_defaultLatitude = m_defaultLatitude;
+    m->m_defaultLongitude = m_defaultLongitude;
     m->m_useOpenGL = m_useOpenGL;
     m->m_showTileGridLines = m_showTileGridLines;
     m->m_accessMode = m_accessMode;
-    m->m_useMemoryCache    = m_useMemoryCache;
-    m->m_cacheLocation     = m_cacheLocation;
+    m->m_useMemoryCache = m_useMemoryCache;
+    m->m_cacheLocation = m_cacheLocation;
     m->m_uavSymbol = m_uavSymbol;
-    m->m_maxUpdateRate     = m_maxUpdateRate;
+    m->m_maxUpdateRate = m_maxUpdateRate;
     m->m_opacity = m_opacity;
 
     return m;

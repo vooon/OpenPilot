@@ -244,7 +244,7 @@ bool NotifyTableModel::dropMimeData(const QMimeData *data, Qt::DropAction action
     }
     ;
 
-    QModelIndex idxTopLeft  = index(beginRow, 0, QModelIndex());
+    QModelIndex idxTopLeft = index(beginRow, 0, QModelIndex());
     QModelIndex idxBotRight = index(beginRow, columnCount(QModelIndex()), QModelIndex());
     emit dataChanged(idxTopLeft, idxBotRight);
     return true;

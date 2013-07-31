@@ -102,9 +102,9 @@ void XplaneSimulator::transmitUpdate()
         ActuatorDesired::DataFields actData = actDesired->getData();
         float ailerons = actData.Roll;
         float elevator = actData.Pitch;
-        float rudder   = actData.Yaw;
+        float rudder = actData.Yaw;
         float throttle = actData.Throttle > 0 ? actData.Throttle : 0;
-        float none     = -999;
+        float none = -999;
         // quint32 none = *((quint32*)&tmp); // get float as 4 bytes
 
         quint32 code;
@@ -189,32 +189,32 @@ void XplaneSimulator::transmitUpdate()
  */
 void XplaneSimulator::processUpdate(const QByteArray & dataBuf)
 {
-    float altitude_msl     = 0;
-    float altitude_agl     = 0;
-    float latitude         = 0;
-    float longitude        = 0;
-    float airspeed_keas    = 0;
+    float altitude_msl = 0;
+    float altitude_agl = 0;
+    float latitude = 0;
+    float longitude = 0;
+    float airspeed_keas = 0;
     float groundspeed_ktgs = 0;
-    float pitch         = 0;
-    float roll          = 0;
-    float heading       = 0;
-    float pressure      = 0;
-    float temperature   = 0;
-    float velX          = 0;
-    float velY          = 0;
-    float velZ          = 0;
-    float dstX          = 0;
-    float dstY          = 0;
-    float dstZ          = 0;
-    float accX          = 0;
-    float accY          = 0;
-    float accZ          = 0;
-    float rollRate_rad  = 0;
+    float pitch = 0;
+    float roll = 0;
+    float heading = 0;
+    float pressure = 0;
+    float temperature = 0;
+    float velX = 0;
+    float velY = 0;
+    float velZ = 0;
+    float dstX = 0;
+    float dstY = 0;
+    float dstZ = 0;
+    float accX = 0;
+    float accY = 0;
+    float accZ = 0;
+    float rollRate_rad = 0;
     float pitchRate_rad = 0;
-    float yawRate_rad   = 0;
+    float yawRate_rad = 0;
 
     // QString str;
-    QByteArray & buf    = const_cast<QByteArray &>(dataBuf);
+    QByteArray & buf = const_cast<QByteArray &>(dataBuf);
     QString data(buf);
 
     if (data.left(4) == "DATA") { // check type of packet
@@ -228,20 +228,20 @@ void XplaneSimulator::processUpdate(const QByteArray & dataBuf)
         do {
             switch (buf[0]) { // switch by id
             case XplaneSimulator::LatitudeLongitudeAltitude:
-                latitude     = *((float *)(buf.data() + 4 * 1));
-                longitude    = *((float *)(buf.data() + 4 * 2));
+                latitude = *((float *)(buf.data() + 4 * 1));
+                longitude = *((float *)(buf.data() + 4 * 2));
                 altitude_msl = *((float *)(buf.data() + 4 * 3)) * FT2M;
                 altitude_agl = *((float *)(buf.data() + 4 * 4)) * FT2M;
                 break;
 
             case XplaneSimulator::Speed:
-                airspeed_keas    = *((float *)(buf.data() + 4 * 2));
+                airspeed_keas = *((float *)(buf.data() + 4 * 2));
                 groundspeed_ktgs = *((float *)(buf.data() + 4 * 4));
                 break;
 
             case XplaneSimulator::PitchRollHeading:
-                pitch   = *((float *)(buf.data() + 4 * 1));
-                roll    = *((float *)(buf.data() + 4 * 2));
+                pitch = *((float *)(buf.data() + 4 * 1));
+                roll = *((float *)(buf.data() + 4 * 2));
                 heading = *((float *)(buf.data() + 4 * 3));
                 break;
 
@@ -252,7 +252,7 @@ void XplaneSimulator::processUpdate(const QByteArray & dataBuf)
              */
 
             case XplaneSimulator::AtmosphereWeather:
-                pressure    = *((float *)(buf.data() + 4 * 1)) * INHG2KPA;
+                pressure = *((float *)(buf.data() + 4 * 1)) * INHG2KPA;
                 temperature = *((float *)(buf.data() + 4 * 2));
                 break;
 
@@ -267,8 +267,8 @@ void XplaneSimulator::processUpdate(const QByteArray & dataBuf)
 
             case XplaneSimulator::AngularVelocities: // In [rad/s]
                 pitchRate_rad = *((float *)(buf.data() + 4 * 1));
-                rollRate_rad  = *((float *)(buf.data() + 4 * 2));
-                yawRate_rad   = *((float *)(buf.data() + 4 * 3));
+                rollRate_rad = *((float *)(buf.data() + 4 * 2));
+                yawRate_rad = *((float *)(buf.data() + 4 * 3));
                 break;
 
             case XplaneSimulator::Gload:
@@ -292,9 +292,9 @@ void XplaneSimulator::processUpdate(const QByteArray & dataBuf)
         memset(&out, 0, sizeof(Output2Hardware));
 
         // Update GPS Position objects
-        out.latitude    = latitude * 1e7;
-        out.longitude   = longitude * 1e7;
-        out.altitude    = altitude_msl;
+        out.latitude = latitude * 1e7;
+        out.longitude = longitude * 1e7;
+        out.altitude = altitude_msl;
         out.agl = altitude_agl;
         out.groundspeed = groundspeed_ktgs * 1.15 * 1.6089 / 3.6; // Convert from [kts] to [m/s]
 
@@ -302,32 +302,32 @@ void XplaneSimulator::processUpdate(const QByteArray & dataBuf)
 
         // Update BaroSensor object
         out.temperature = temperature;
-        out.pressure    = pressure;
+        out.pressure = pressure;
 
         // Update attState object
-        out.roll      = roll;       // roll;
-        out.pitch     = pitch;     // pitch
-        out.heading   = heading; // yaw
+        out.roll = roll; // roll;
+        out.pitch = pitch; // pitch
+        out.heading = heading; // yaw
 
 
-        out.dstN      = dstY;
-        out.dstE      = dstX;
-        out.dstD      = -dstZ;
+        out.dstN = dstY;
+        out.dstE = dstX;
+        out.dstD = -dstZ;
 
         // Update VelocityState.{North,East,Down}
-        out.velNorth  = velY;
-        out.velEast   = velX;
-        out.velDown   = -velZ;
+        out.velNorth = velY;
+        out.velEast = velX;
+        out.velDown = -velZ;
 
         // Update gyroscope sensor data
-        out.rollRate  = rollRate_rad;
+        out.rollRate = rollRate_rad;
         out.pitchRate = pitchRate_rad;
-        out.yawRate   = yawRate_rad;
+        out.yawRate = yawRate_rad;
 
         // Update accelerometer sensor data
-        out.accX      = accX;
-        out.accY      = accY;
-        out.accZ      = -accZ;
+        out.accX = accX;
+        out.accY = accY;
+        out.accZ = -accZ;
 
         updateUAVOs(out);
     }

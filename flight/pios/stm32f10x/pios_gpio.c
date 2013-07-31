@@ -57,9 +57,9 @@ void PIOS_GPIO_Enable(uint8_t Pin)
 
     GPIO_InitTypeDef GPIO_InitStructure;
 
-    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_Out_PP;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-    GPIO_InitStructure.GPIO_Pin   = GPIO_PIN[Pin];
+    GPIO_InitStructure.GPIO_Pin = GPIO_PIN[Pin];
     GPIO_Init(GPIO_PORT[Pin], &GPIO_InitStructure);
 
     /* GPIO's Off */

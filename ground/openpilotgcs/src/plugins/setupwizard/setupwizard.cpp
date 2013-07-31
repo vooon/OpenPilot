@@ -341,7 +341,7 @@ bool SetupWizard::canAutoUpdate() const
     ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
 
     Q_ASSERT(pm);
-    UploaderGadgetFactory *uploader    = pm->getObject<UploaderGadgetFactory>();
+    UploaderGadgetFactory *uploader = pm->getObject<UploaderGadgetFactory>();
     Q_ASSERT(uploader);
     return uploader->isAutoUpdateCapable();
 }

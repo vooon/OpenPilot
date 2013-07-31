@@ -327,7 +327,7 @@ static unsigned dbl2stri(char *outbfr, double dbl, unsigned dec_digits)
     }
 
     // printf("mult=%u\n", mult) ;
-    uint wholeNum   = (uint)dbl;
+    uint wholeNum = (uint)dbl;
     uint decimalNum = (uint)((dbl - wholeNum) * mult);
 
     // *******************************************
@@ -337,7 +337,7 @@ static unsigned dbl2stri(char *outbfr, double dbl, unsigned dec_digits)
     idx = 0;
     while (wholeNum != 0) {
         tbfr[idx++] = '0' + (wholeNum % 10);
-        wholeNum   /= 10;
+        wholeNum /= 10;
     }
     // printf("%.3f: whole=%s, dec=%d\n", dbl, tbfr, decimalNum) ;
     if (idx == 0) {
@@ -377,7 +377,7 @@ static unsigned dbl2stri(char *outbfr, double dbl, unsigned dec_digits)
     *output = 0;
 
     // prepare output
-    output  = (outbfr == 0) ? local_bfr : outbfr;
+    output = (outbfr == 0) ? local_bfr : outbfr;
     return my_strlen(output);
 }
 
@@ -438,10 +438,10 @@ static int printi(char * *out, int i, int b, int sg, int width, int pad, int let
     }
     if (sg && b == 10 && i < 0) {
         neg = 1;
-        u   = (unsigned)-i;
+        u = (unsigned)-i;
     }
     // make sure print_buf is NULL-term
-    s  = print_buf + PRINT_BUF_LEN - 1;
+    s = print_buf + PRINT_BUF_LEN - 1;
     *s = '\0';
 
 
@@ -451,7 +451,7 @@ static int printi(char * *out, int i, int b, int sg, int width, int pad, int let
             t += letbase - '0' - 10;
         }
         *--s = t + '0';
-        u   /= b;  // lint !e573  Warning 573: Signed-unsigned mix with divide
+        u /= b; // lint !e573  Warning 573: Signed-unsigned mix with divide
     }
     if (neg) {
         if (width && (pad & PAD_ZERO)) {
@@ -484,7 +484,7 @@ static int print(char * *out, int *varg)
         if (*format == '%') {
             dec_width = 6;
             ++format;
-            width     = pad = 0;
+            width = pad = 0;
             if (*format == '\0') {
                 break;
             }
@@ -509,7 +509,7 @@ static int print(char * *out, int *varg)
                 while (1) {
                     if (*format == '.') {
                         post_decimal = 1;
-                        dec_width    = 0;
+                        dec_width = 0;
                         format++;
                     } else if ((*format >= '0' && *format <= '9')) {
                         if (post_decimal) {
@@ -557,7 +557,7 @@ static int print(char * *out, int *varg)
                 /* char are converted to int then pushed on the stack */
                 scr[0] = *varg++;
                 scr[1] = '\0';
-                pc    += prints(out, scr, width, pad);
+                pc += prints(out, scr, width, pad);
                 use_leading_plus = 0; // reset this flag after printing one value
                 break;
 
@@ -578,7 +578,7 @@ static int print(char * *out, int *varg)
 #else
                 double *dblptr = (double *)varg; // lint !e740 !e826  convert to double pointer
 #endif
-                double dbl     = *dblptr++;   // increment double pointer
+                double dbl = *dblptr++; // increment double pointer
                 varg = (int *)dblptr; // lint !e740  copy updated pointer back to base pointer
                 char bfr[81];
                 // unsigned slen =

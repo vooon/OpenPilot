@@ -60,7 +60,7 @@ MixerCurveWidget::MixerCurveWidget(QWidget *parent) : QGraphicsView(parent)
     setFrameStyle(QFrame::NoFrame);
     setStyleSheet("background:transparent");
 
-    QGraphicsScene *scene  = new QGraphicsScene(this);
+    QGraphicsScene *scene = new QGraphicsScene(this);
     QSvgRenderer *renderer = new QSvgRenderer();
     plot = new QGraphicsSvgItem();
     renderer->load(QString(":/uavobjectwidgetutils/images/curve-bg.svg"));

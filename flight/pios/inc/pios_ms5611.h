@@ -57,8 +57,8 @@ struct pios_ms5611_cfg {
 };
 
 enum pios_ms5611_osr {
-    MS5611_OSR_256  = 0,
-    MS5611_OSR_512  = 2,
+    MS5611_OSR_256 = 0,
+    MS5611_OSR_512 = 2,
     MS5611_OSR_1024 = 4,
     MS5611_OSR_2048 = 6,
     MS5611_OSR_4096 = 8,

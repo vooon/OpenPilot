@@ -125,7 +125,7 @@ void PathCompiler::doAddWaypoint(waypoint newWaypointInternal, int /*position*/)
     /* TODO: If a waypoint is inserted not at the end shift them all by one and */
     /* add the data there */
 
-    UAVObjectManager *objManager     = getObjectManager();
+    UAVObjectManager *objManager = getObjectManager();
 
     // Format the data from the map into a UAVO
     Waypoint::DataFields newWaypoint = InternalToUavo(newWaypointInternal);
@@ -194,7 +194,7 @@ void PathCompiler::doUpdateWaypoints(PathCompiler::waypoint changedWaypoint, int
     // Mirror over the updated position.  We don't just use the changedWaypoint
     // because things like action might need to be preserved
     Waypoint::DataFields changedWaypointUAVO = InternalToUavo(changedWaypoint);
-    Waypoint::DataFields oldWaypointUAVO     = waypointInst->getData();
+    Waypoint::DataFields oldWaypointUAVO = waypointInst->getData();
     oldWaypointUAVO.Position[0] = changedWaypointUAVO.Position[0];
     oldWaypointUAVO.Position[1] = changedWaypointUAVO.Position[1];
     // Don't take the altitude from the map for now
@@ -227,7 +227,7 @@ void PathCompiler::doDelWaypoint(int index)
         Waypoint *waypointDest = Waypoint::GetInstance(objManager, i);
         Q_ASSERT(waypointDest);
 
-        Waypoint *waypointSrc  = Waypoint::GetInstance(objManager, i + 1);
+        Waypoint *waypointSrc = Waypoint::GetInstance(objManager, i + 1);
         Q_ASSERT(waypointSrc);
 
         if (!waypointDest || !waypointSrc) {
@@ -302,7 +302,7 @@ void PathCompiler::doUpdateFromUAV(UAVObject *obj)
     QList <waypoint> waypoints;
     waypoints.clear();
     int numWaypoints = objManager->getNumInstances(waypointObj->getObjID());
-    bool stopped     = false;
+    bool stopped = false;
     for (int i = 0; i < numWaypoints && !stopped; i++) {
         Waypoint *waypoint = Waypoint::GetInstance(objManager, i);
         Q_ASSERT(waypoint);
@@ -348,14 +348,14 @@ struct PathCompiler::waypoint PathCompiler::UavoToInternal(Waypoint::DataFields 
     homeLLA[1] = homeLocationData.Longitude / 10e6;
     homeLLA[2] = homeLocationData.Altitude;
 
-    NED[0]     = uavo.Position[Waypoint::POSITION_NORTH];
-    NED[1]     = uavo.Position[Waypoint::POSITION_EAST];
-    NED[2]     = uavo.Position[Waypoint::POSITION_DOWN];
+    NED[0] = uavo.Position[Waypoint::POSITION_NORTH];
+    NED[1] = uavo.Position[Waypoint::POSITION_EAST];
+    NED[2] = uavo.Position[Waypoint::POSITION_DOWN];
     Utils::CoordinateConversions().GetLLA(homeLLA, NED, LLA);
 
-    internalWaypoint.latitude  = LLA[0];
+    internalWaypoint.latitude = LLA[0];
     internalWaypoint.longitude = LLA[1];
-    internalWaypoint.altitude  = LLA[2];
+    internalWaypoint.altitude = LLA[2];
     return internalWaypoint;
 }
 
@@ -384,21 +384,21 @@ Waypoint::DataFields PathCompiler::InternalToUavo(waypoint internal)
     homeLLA[2] = homeLocationData.Altitude;
 
     // TODO: Give the point a concept of altitude
-    LLA[0]     = internal.latitude;
-    LLA[1]     = internal.longitude;
-    LLA[2]     = internal.altitude;
+    LLA[0] = internal.latitude;
+    LLA[1] = internal.longitude;
+    LLA[2] = internal.altitude;
 
     Utils::CoordinateConversions().GetNED(homeLLA, LLA, NED);
 
     uavo.Position[Waypoint::POSITION_NORTH] = NED[0];
-    uavo.Position[Waypoint::POSITION_EAST]  = NED[1];
-    uavo.Position[Waypoint::POSITION_DOWN]  = NED[2];
+    uavo.Position[Waypoint::POSITION_EAST] = NED[1];
+    uavo.Position[Waypoint::POSITION_DOWN] = NED[2];
 
     uavo.Action = Waypoint::ACTION_PATHTONEXT;
 
     uavo.Velocity[Waypoint::VELOCITY_NORTH] = 5;
-    uavo.Velocity[Waypoint::VELOCITY_EAST]  = 0;
-    uavo.Velocity[Waypoint::VELOCITY_DOWN]  = 0;
+    uavo.Velocity[Waypoint::VELOCITY_EAST] = 0;
+    uavo.Velocity[Waypoint::VELOCITY_DOWN] = 0;
 
     return uavo;
 }

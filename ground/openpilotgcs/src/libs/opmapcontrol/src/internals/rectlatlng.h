@@ -46,7 +46,7 @@ public:
         this->lat = lat;
         this->widthLng = widthLng;
         this->heightLat = heightLat;
-        isempty   = false;
+        isempty = false;
     }
     RectLatLng(PointLatLng const & location, SizeLatLng const & size)
     {
@@ -54,7 +54,7 @@ public:
         this->lat = location.Lat();
         this->widthLng = size.WidthLng();
         this->heightLat = size.HeightLat();
-        isempty   = false;
+        isempty = false;
     }
     RectLatLng()
     {
@@ -62,7 +62,7 @@ public:
         this->lat = 0;
         this->widthLng = 0;
         this->heightLat = 0;
-        isempty   = true;
+        isempty = true;
     }
 
     static RectLatLng FromLTRB(double const & lng, double const & lat, double const & rightLng, double const & bottomLat)
@@ -77,7 +77,7 @@ public:
     {
         this->lng = value.Lng();
         this->lat = value.Lat();
-        isempty   = false;
+        isempty = false;
     }
     PointLatLng LocationRightBottom()
     {
@@ -92,7 +92,7 @@ public:
     }
     void SetSize(SizeLatLng const & value)
     {
-        this->widthLng  = value.WidthLng();
+        this->widthLng = value.WidthLng();
         this->heightLat = value.HeightLat();
         isempty = false;
     }
@@ -103,7 +103,7 @@ public:
     void SetLng(double const & value)
     {
         this->lng = value;
-        isempty   = false;
+        isempty = false;
     }
 
 
@@ -114,7 +114,7 @@ public:
     void SetLat(double const & value)
     {
         this->lat = value;
-        isempty   = false;
+        isempty = false;
     }
 
     double WidthLng() const
@@ -204,10 +204,10 @@ public:
     }
     static RectLatLng Intersect(RectLatLng const & a, RectLatLng const & b)
     {
-        double lng  = std::max(a.Lng(), b.Lng());
+        double lng = std::max(a.Lng(), b.Lng());
         double num2 = std::min((double)(a.Lng() + a.WidthLng()), (double)(b.Lng() + b.WidthLng()));
 
-        double lat  = std::max(a.Lat(), b.Lat());
+        double lat = std::max(a.Lat(), b.Lat());
         double num4 = std::min((double)(a.Lat() + a.HeightLat()), (double)(b.Lat() + b.HeightLat()));
 
         if ((num2 >= lng) && (num4 >= lat)) {
@@ -222,9 +222,9 @@ public:
 
     static RectLatLng Union(RectLatLng const & a, RectLatLng const & b)
     {
-        double lng  = std::min(a.Lng(), b.Lng());
+        double lng = std::min(a.Lng(), b.Lng());
         double num2 = std::max((double)(a.Lng() + a.WidthLng()), (double)(b.Lng() + b.WidthLng()));
-        double lat  = std::min(a.Lat(), b.Lat());
+        double lat = std::min(a.Lat(), b.Lat());
         double num4 = std::max((double)(a.Lat() + a.HeightLat()), (double)(b.Lat() + b.HeightLat()));
 
         return RectLatLng(lng, lat, num2 - lng, num4 - lat);
@@ -250,7 +250,7 @@ private:
     double lat;
     double widthLng;
     double heightLat;
-    bool   isempty;
+    bool isempty;
 };
 }
 #endif // RECTLATLNG_H

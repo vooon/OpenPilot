@@ -35,13 +35,13 @@
 
 volatile bool Simulator::isStarted = false;
 
-const float Simulator::GEE      = 9.81;
-const float Simulator::FT2M     = 0.3048;
-const float Simulator::KT2MPS   = 0.514444444;
+const float Simulator::GEE = 9.81;
+const float Simulator::FT2M = 0.3048;
+const float Simulator::KT2MPS = 0.514444444;
 const float Simulator::INHG2KPA = 3.386;
 const float Simulator::FPS2CMPS = 30.48;
-const float Simulator::DEG2RAD  = (M_PI / 180.0);
-const float Simulator::RAD2DEG  = (180.0 / M_PI);
+const float Simulator::DEG2RAD = (M_PI / 180.0);
+const float Simulator::RAD2DEG = (180.0 / M_PI);
 
 
 Simulator::Simulator(const SimulatorSettings & params) :
@@ -64,23 +64,23 @@ Simulator::Simulator(const SimulatorSettings & params) :
     emit myStart();
 
     QTime currentTime = QTime::currentTime();
-    gpsPosTime        = currentTime;
-    groundTruthTime   = currentTime;
-    gcsRcvrTime       = currentTime;
-    attRawTime        = currentTime;
-    baroAltTime       = currentTime;
+    gpsPosTime = currentTime;
+    groundTruthTime = currentTime;
+    gcsRcvrTime = currentTime;
+    attRawTime = currentTime;
+    baroAltTime = currentTime;
     battTime = currentTime;
     airspeedStateTime = currentTime;
 
     // Define standard atmospheric constants
-    airParameters.univGasConstant  = 8.31447; // [J/(mol·K)]
-    airParameters.dryAirConstant   = 287.058;  // [J/(kg*K)]
-    airParameters.groundDensity    = 1.225;     // [kg/m^3]
+    airParameters.univGasConstant = 8.31447; // [J/(mol·K)]
+    airParameters.dryAirConstant = 287.058; // [J/(kg*K)]
+    airParameters.groundDensity = 1.225; // [kg/m^3]
     airParameters.groundTemp = 15 + 273.15; // [K]
-    airParameters.tempLapseRate    = 0.0065;    // [deg/m]
+    airParameters.tempLapseRate = 0.0065; // [deg/m]
     airParameters.M = 0.0289644; // [kg/mol]
     airParameters.relativeHumidity = 20; // [%]
-    airParameters.seaLevelPress    = 101.325;   // [kPa]
+    airParameters.seaLevelPress = 101.325; // [kPa]
 }
 
 Simulator::~Simulator()
@@ -141,25 +141,25 @@ void Simulator::onStart()
     // Get required UAVObjects
     ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
     UAVObjectManager *objManager = pm->getObject<UAVObjectManager>();
-    actDesired     = ActuatorDesired::GetInstance(objManager);
-    actCommand     = ActuatorCommand::GetInstance(objManager);
+    actDesired = ActuatorDesired::GetInstance(objManager);
+    actCommand = ActuatorCommand::GetInstance(objManager);
     manCtrlCommand = ManualControlCommand::GetInstance(objManager);
-    gcsReceiver    = GCSReceiver::GetInstance(objManager);
-    flightStatus   = FlightStatus::GetInstance(objManager);
-    posHome       = HomeLocation::GetInstance(objManager);
-    velState      = VelocityState::GetInstance(objManager);
-    posState      = PositionState::GetInstance(objManager);
-    baroAlt       = BaroSensor::GetInstance(objManager);
-    flightBatt    = FlightBatteryState::GetInstance(objManager);
+    gcsReceiver = GCSReceiver::GetInstance(objManager);
+    flightStatus = FlightStatus::GetInstance(objManager);
+    posHome = HomeLocation::GetInstance(objManager);
+    velState = VelocityState::GetInstance(objManager);
+    posState = PositionState::GetInstance(objManager);
+    baroAlt = BaroSensor::GetInstance(objManager);
+    flightBatt = FlightBatteryState::GetInstance(objManager);
     airspeedState = AirspeedState::GetInstance(objManager);
-    attState      = AttitudeState::GetInstance(objManager);
-    attSettings   = AttitudeSettings::GetInstance(objManager);
-    accelState    = AccelState::GetInstance(objManager);
-    gyroState     = GyroState::GetInstance(objManager);
+    attState = AttitudeState::GetInstance(objManager);
+    attSettings = AttitudeSettings::GetInstance(objManager);
+    accelState = AccelState::GetInstance(objManager);
+    gyroState = GyroState::GetInstance(objManager);
     gpsPos = GPSPositionSensor::GetInstance(objManager);
     gpsVel = GPSVelocitySensor::GetInstance(objManager);
-    telStats      = GCSTelemetryStats::GetInstance(objManager);
-    groundTruth   = GroundTruth::GetInstance(objManager);
+    telStats = GCSTelemetryStats::GetInstance(objManager);
+    groundTruth = GroundTruth::GetInstance(objManager);
 
     // Listen to autopilot connection events
     TelemetryManager *telMngr = pm->getObject<TelemetryManager>();
@@ -173,7 +173,7 @@ void Simulator::onStart()
         onAutopilotConnect();
     }
 
-    inSocket  = new QUdpSocket();
+    inSocket = new QUdpSocket();
     outSocket = new QUdpSocket();
     setupUdpPorts(settings.hostAddress, settings.inPort, settings.outPort);
 
@@ -406,9 +406,9 @@ void Simulator::updateUAVOs(Output2Hardware out)
         // the plane's location:
         memset(&homeData, 0, sizeof(HomeLocation::DataFields));
         // Update homelocation
-        homeData.Latitude  = out.latitude;   // Already in *10^7 integer format
+        homeData.Latitude = out.latitude; // Already in *10^7 integer format
         homeData.Longitude = out.longitude; // Already in *10^7 integer format
-        homeData.Altitude  = out.agl;
+        homeData.Altitude = out.agl;
         double LLA[3];
         LLA[0] = out.latitude;
         LLA[1] = out.longitude;
@@ -425,7 +425,7 @@ void Simulator::updateUAVOs(Output2Hardware out)
         initE = out.dstE;
         initD = out.dstD;
 
-        once  = true;
+        once = true;
     }
 
     /*******************************/
@@ -437,14 +437,14 @@ void Simulator::updateUAVOs(Output2Hardware out)
     groundTruthData.AccelerationXYZ[1] = out.accY;
     groundTruthData.AccelerationXYZ[2] = out.accZ;
 
-    groundTruthData.AngularRates[0]    = out.rollRate;
-    groundTruthData.AngularRates[1]    = out.pitchRate;
-    groundTruthData.AngularRates[2]    = out.yawRate;
+    groundTruthData.AngularRates[0] = out.rollRate;
+    groundTruthData.AngularRates[1] = out.pitchRate;
+    groundTruthData.AngularRates[2] = out.yawRate;
 
     groundTruthData.CalibratedAirspeed = out.calibratedAirspeed;
-    groundTruthData.TrueAirspeed   = out.trueAirspeed;
-    groundTruthData.AngleOfAttack  = out.angleOfAttack;
-    groundTruthData.AngleOfSlip    = out.angleOfSlip;
+    groundTruthData.TrueAirspeed = out.trueAirspeed;
+    groundTruthData.AngleOfAttack = out.angleOfAttack;
+    groundTruthData.AngleOfSlip = out.angleOfSlip;
 
     groundTruthData.PositionNED[0] = out.dstN - initN;
     groundTruthData.PositionNED[1] = out.dstE - initD;
@@ -471,9 +471,9 @@ void Simulator::updateUAVOs(Output2Hardware out)
         /*****************************************/
     } else if (settings.attActSim) {
         // take all data from simulator
-        attStateData.Roll  = out.roll + noise.attStateData.Roll;   // roll;
+        attStateData.Roll = out.roll + noise.attStateData.Roll; // roll;
         attStateData.Pitch = out.pitch + noise.attStateData.Pitch; // pitch
-        attStateData.Yaw   = out.heading + noise.attStateData.Yaw; // Yaw
+        attStateData.Yaw = out.heading + noise.attStateData.Yaw; // Yaw
         float rpy[3];
         float quat[4];
         rpy[0] = attStateData.Roll;
@@ -496,8 +496,8 @@ void Simulator::updateUAVOs(Output2Hardware out)
         float dT = out.delT;
 
         AttitudeSettings::DataFields attSettData = attSettings->getData();
-        float accelKp     = attSettData.AccelKp * 0.1666666666666667;
-        float accelKi     = attSettData.AccelKp * 0.1666666666666667;
+        float accelKp = attSettData.AccelKp * 0.1666666666666667;
+        float accelKi = attSettData.AccelKp * 0.1666666666666667;
         float yawBiasRate = attSettData.YawBiasRate;
 
         // calibrate sensors on arming
@@ -549,10 +549,10 @@ void Simulator::updateUAVOs(Output2Hardware out)
         qdot[3] = (-q[2] * gyro[0] + q[1] * gyro[1] + q[0] * gyro[2]) * dT * M_PI / 180 / 2;
 
         // Take a time step
-        q[0]   += qdot[0];
-        q[1]   += qdot[1];
-        q[2]   += qdot[2];
-        q[3]   += qdot[3];
+        q[0] += qdot[0];
+        q[1] += qdot[1];
+        q[2] += qdot[2];
+        q[3] += qdot[3];
 
         if (q[0] < 0) {
             q[0] = -q[0];
@@ -581,30 +581,30 @@ void Simulator::updateUAVOs(Output2Hardware out)
         // Quaternion2RPY
         {
             float q0s, q1s, q2s, q3s;
-            q0s     = q[0] * q[0];
-            q1s     = q[1] * q[1];
-            q2s     = q[2] * q[2];
-            q3s     = q[3] * q[3];
+            q0s = q[0] * q[0];
+            q1s = q[1] * q[1];
+            q2s = q[2] * q[2];
+            q3s = q[3] * q[3];
 
             float R13, R11, R12, R23, R33;
-            R13     = 2 * (q[1] * q[3] - q[0] * q[2]);
-            R11     = q0s + q1s - q2s - q3s;
-            R12     = 2 * (q[1] * q[2] + q[0] * q[3]);
-            R23     = 2 * (q[2] * q[3] + q[0] * q[1]);
-            R33     = q0s - q1s - q2s + q3s;
+            R13 = 2 * (q[1] * q[3] - q[0] * q[2]);
+            R11 = q0s + q1s - q2s - q3s;
+            R12 = 2 * (q[1] * q[2] + q[0] * q[3]);
+            R23 = 2 * (q[2] * q[3] + q[0] * q[1]);
+            R33 = q0s - q1s - q2s + q3s;
 
             rpy2[1] = RAD2DEG * asinf(-R13); // pitch always between -pi/2 to pi/2
             rpy2[2] = RAD2DEG * atan2f(R12, R11);
             rpy2[0] = RAD2DEG * atan2f(R23, R33);
         }
 
-        attStateData.Roll  = rpy2[0];
+        attStateData.Roll = rpy2[0];
         attStateData.Pitch = rpy2[1];
-        attStateData.Yaw   = rpy2[2];
-        attStateData.q1    = q[0];
-        attStateData.q2    = q[1];
-        attStateData.q3    = q[2];
-        attStateData.q4    = q[3];
+        attStateData.Yaw = rpy2[2];
+        attStateData.q1 = q[0];
+        attStateData.q2 = q[1];
+        attStateData.q3 = q[2];
+        attStateData.q4 = q[3];
 
         // Set UAVO
         attState->setData(attStateData);
@@ -635,15 +635,15 @@ void Simulator::updateUAVOs(Output2Hardware out)
             // Update GPS Position objects
             GPSPositionSensor::DataFields gpsPosData;
             memset(&gpsPosData, 0, sizeof(GPSPositionSensor::DataFields));
-            gpsPosData.Altitude        = out.altitude + noise.gpsPosData.Altitude;
-            gpsPosData.Heading         = out.heading + noise.gpsPosData.Heading;
-            gpsPosData.Groundspeed     = out.groundspeed + noise.gpsPosData.Groundspeed;
-            gpsPosData.Latitude        = out.latitude + noise.gpsPosData.Latitude;    // Already in *10^7 integer format
-            gpsPosData.Longitude       = out.longitude + noise.gpsPosData.Longitude; // Already in *10^7 integer format
+            gpsPosData.Altitude = out.altitude + noise.gpsPosData.Altitude;
+            gpsPosData.Heading = out.heading + noise.gpsPosData.Heading;
+            gpsPosData.Groundspeed = out.groundspeed + noise.gpsPosData.Groundspeed;
+            gpsPosData.Latitude = out.latitude + noise.gpsPosData.Latitude; // Already in *10^7 integer format
+            gpsPosData.Longitude = out.longitude + noise.gpsPosData.Longitude; // Already in *10^7 integer format
             gpsPosData.GeoidSeparation = 0.0;
             gpsPosData.PDOP = 3.0;
             gpsPosData.VDOP = gpsPosData.PDOP * 1.5;
-            gpsPosData.Satellites      = 10;
+            gpsPosData.Satellites = 10;
             gpsPosData.Status = GPSPositionSensor::STATUS_FIX3D;
 
             gpsPos->setData(gpsPosData);
@@ -652,8 +652,8 @@ void Simulator::updateUAVOs(Output2Hardware out)
             GPSVelocitySensor::DataFields gpsVelData;
             memset(&gpsVelData, 0, sizeof(GPSVelocitySensor::DataFields));
             gpsVelData.North = out.velNorth + noise.gpsVelData.North;
-            gpsVelData.East  = out.velEast + noise.gpsVelData.East;
-            gpsVelData.Down  = out.velDown + noise.gpsVelData.Down;
+            gpsVelData.East = out.velEast + noise.gpsVelData.East;
+            gpsVelData.Down = out.velDown + noise.gpsVelData.Down;
 
             gpsVel->setData(gpsVelData);
 
@@ -668,16 +668,16 @@ void Simulator::updateUAVOs(Output2Hardware out)
             VelocityState::DataFields velocityStateData;
             memset(&velocityStateData, 0, sizeof(VelocityState::DataFields));
             velocityStateData.North = out.velNorth + noise.velocityStateData.North;
-            velocityStateData.East  = out.velEast + noise.velocityStateData.East;
-            velocityStateData.Down  = out.velDown + noise.velocityStateData.Down;
+            velocityStateData.East = out.velEast + noise.velocityStateData.East;
+            velocityStateData.Down = out.velDown + noise.velocityStateData.Down;
             velState->setData(velocityStateData);
 
             // Update PositionState.{Nort,East,Down}
             PositionState::DataFields positionStateData;
             memset(&positionStateData, 0, sizeof(PositionState::DataFields));
             positionStateData.North = (out.dstN - initN) + noise.positionStateData.North;
-            positionStateData.East  = (out.dstE - initE) + noise.positionStateData.East;
-            positionStateData.Down  = (out.dstD /*-initD*/) + noise.positionStateData.Down;
+            positionStateData.East = (out.dstE - initE) + noise.positionStateData.East;
+            positionStateData.Down = (out.dstD /*-initD*/) + noise.positionStateData.Down;
             posState->setData(positionStateData);
 
             groundTruthTime = groundTruthTime.addMSecs(settings.groundTruthRate);
@@ -712,9 +712,9 @@ void Simulator::updateUAVOs(Output2Hardware out)
         if (baroAltTime.msecsTo(currentTime) >= settings.baroAltRate) {
             BaroSensor::DataFields baroAltData;
             memset(&baroAltData, 0, sizeof(BaroSensor::DataFields));
-            baroAltData.Altitude    = out.altitude + noise.baroAltData.Altitude;
+            baroAltData.Altitude = out.altitude + noise.baroAltData.Altitude;
             baroAltData.Temperature = out.temperature + noise.baroAltData.Temperature;
-            baroAltData.Pressure    = out.pressure + noise.baroAltData.Pressure;
+            baroAltData.Pressure = out.pressure + noise.baroAltData.Pressure;
             baroAlt->setData(baroAltData);
 
             baroAltTime = baroAltTime.addMSecs(settings.baroAltRate);
@@ -782,7 +782,7 @@ void Simulator::updateUAVOs(Output2Hardware out)
  */
 float Simulator::airDensityFromAltitude(float alt, AirParameters air, float gravity)
 {
-    float p   = airPressureFromAltitude(alt, air, gravity);
+    float p = airPressureFromAltitude(alt, air, gravity);
     float rho = p * air.M / (air.univGasConstant * (air.groundTemp - air.tempLapseRate * alt));
 
     return rho;

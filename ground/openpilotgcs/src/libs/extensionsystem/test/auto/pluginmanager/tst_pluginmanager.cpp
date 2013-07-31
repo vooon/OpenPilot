@@ -154,7 +154,7 @@ void tst_PluginManager::addRemoveObjects()
 
 void tst_PluginManager::getObject()
 {
-    MyClass2 *object2   = new MyClass2;
+    MyClass2 *object2 = new MyClass2;
     MyClass11 *object11 = new MyClass11;
 
     m_pm->addObject(object2);
@@ -173,8 +173,8 @@ void tst_PluginManager::getObject()
 
 void tst_PluginManager::getObjects()
 {
-    MyClass1 *object1   = new MyClass1;
-    MyClass2 *object2   = new MyClass2;
+    MyClass1 *object1 = new MyClass1;
+    MyClass2 *object2 = new MyClass2;
     MyClass11 *object11 = new MyClass11;
 
     m_pm->addObject(object2);

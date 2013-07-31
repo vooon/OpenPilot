@@ -28,12 +28,12 @@
 namespace mapcontrol {
 Configuration::Configuration()
 {
-    EmptytileBrush   = Qt::cyan;
-    MissingDataFont  = QFont("Times", 10, QFont::Bold);
-    EmptyTileText    = "We are sorry, but we don't\nhave imagery at this zoom\nlevel for this region.";
+    EmptytileBrush = Qt::cyan;
+    MissingDataFont = QFont("Times", 10, QFont::Bold);
+    EmptyTileText = "We are sorry, but we don't\nhave imagery at this zoom\nlevel for this region.";
     EmptyTileBorders = QPen(Qt::white);
     ScalePen = QPen(Qt::blue);
-    SelectionPen     = QPen(Qt::blue);
+    SelectionPen = QPen(Qt::blue);
     DragButton = Qt::LeftButton;
 }
 void Configuration::SetAccessMode(core::AccessMode::Types const & type)

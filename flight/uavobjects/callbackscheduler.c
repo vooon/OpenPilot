@@ -41,7 +41,7 @@ struct DelayedCallbackTaskStruct {
     DelayedCallbackInfo *queueCursor[CALLBACK_PRIORITY_LOW + 1];
     xTaskHandle callbackSchedulerTaskHandle;
     signed char name[3];
-    uint32_t    stackSize;
+    uint32_t stackSize;
     DelayedCallbackPriorityTask priorityTask;
     xSemaphoreHandle signal;
     struct DelayedCallbackTaskStruct *next;
@@ -51,8 +51,8 @@ struct DelayedCallbackTaskStruct {
  * callback information
  */
 struct DelayedCallbackInfoStruct {
-    DelayedCallback   cb;
-    bool volatile     waiting;
+    DelayedCallback cb;
+    bool volatile waiting;
     uint32_t volatile scheduletime;
     struct DelayedCallbackTaskStruct *task;
     struct DelayedCallbackInfoStruct *next;
@@ -76,7 +76,7 @@ static int32_t runNextCallback(struct DelayedCallbackTaskStruct *task, DelayedCa
 int32_t CallbackSchedulerInitialize()
 {
     // Initialize variables
-    schedulerTasks   = NULL;
+    schedulerTasks = NULL;
     schedulerStarted = false;
 
     // Create mutex
@@ -266,12 +266,12 @@ DelayedCallbackInfo *DelayedCallbackCreate(
         // initialize structure
         for (DelayedCallbackPriority p = 0; p <= CALLBACK_PRIORITY_LOW; p++) {
             task->callbackQueue[p] = NULL;
-            task->queueCursor[p]   = NULL;
+            task->queueCursor[p] = NULL;
         }
-        task->name[0]      = 'C';
-        task->name[1]      = 'a' + t;
-        task->name[2]      = 0;
-        task->stackSize    = ((STACK_SIZE > stacksize) ? STACK_SIZE : stacksize);
+        task->name[0] = 'C';
+        task->name[1] = 'a' + t;
+        task->name[2] = 0;
+        task->stackSize = ((STACK_SIZE > stacksize) ? STACK_SIZE : stacksize);
         task->priorityTask = priorityTask;
         task->next = NULL;
 
@@ -318,10 +318,10 @@ DelayedCallbackInfo *DelayedCallbackCreate(
         xSemaphoreGiveRecursive(mutex);
         return NULL; // error - not enough memory
     }
-    info->next    = NULL;
+    info->next = NULL;
     info->waiting = false;
     info->scheduletime = 0;
-    info->task    = task;
+    info->task = task;
     info->cb = cb;
 
     // add to scheduling queue
@@ -341,7 +341,7 @@ DelayedCallbackInfo *DelayedCallbackCreate(
 static int32_t runNextCallback(struct DelayedCallbackTaskStruct *task, DelayedCallbackPriority priority)
 {
     int32_t result = MAX_SLEEP;
-    int32_t diff   = 0;
+    int32_t diff = 0;
 
     // no such queue
     if (priority > CALLBACK_PRIORITY_LOW) {

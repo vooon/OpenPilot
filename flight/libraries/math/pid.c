@@ -36,7 +36,7 @@
 static float bound(float val, float range);
 
 // ! Store the shared time constant for the derivative cutoff.
-static float deriv_tau   = 7.9577e-3f;
+static float deriv_tau = 7.9577e-3f;
 
 // ! Store the setpoint weight to apply for the derivative term
 static float deriv_gamma = 1.0f;
@@ -52,10 +52,10 @@ float pid_apply(struct pid *pid, const float err, float dT)
 {
     // Scale up accumulator by 1000 while computing to avoid losing precision
     pid->iAccumulator += err * (pid->i * dT * 1000.0f);
-    pid->iAccumulator  = bound(pid->iAccumulator, pid->iLim * 1000.0f);
+    pid->iAccumulator = bound(pid->iAccumulator, pid->iLim * 1000.0f);
 
     // Calculate DT1 term
-    float diff  = (err - pid->lastErr);
+    float diff = (err - pid->lastErr);
     float dterm = 0;
     pid->lastErr = err;
     if (pid->d > 0.0f && dT > 0.0f) {
@@ -83,11 +83,11 @@ float pid_apply_setpoint(struct pid *pid, const float setpoint, const float meas
 
     // Scale up accumulator by 1000 while computing to avoid losing precision
     pid->iAccumulator += err * (pid->i * dT * 1000.0f);
-    pid->iAccumulator  = bound(pid->iAccumulator, pid->iLim * 1000.0f);
+    pid->iAccumulator = bound(pid->iAccumulator, pid->iLim * 1000.0f);
 
     // Calculate DT1 term,
     float dterm = 0;
-    float diff  = ((deriv_gamma * setpoint - measured) - pid->lastErr);
+    float diff = ((deriv_gamma * setpoint - measured) - pid->lastErr);
     pid->lastErr = (deriv_gamma * setpoint - measured);
     if (pid->d > 0.0f && dT > 0.0f) {
         dterm = pid->lastDer + dT / (dT + deriv_tau) * ((diff * pid->d / dT) - pid->lastDer);
@@ -119,7 +119,7 @@ void pid_zero(struct pid *pid)
  */
 void pid_configure_derivative(float cutoff, float g)
 {
-    deriv_tau   = 1.0f / (2 * M_PI_F * cutoff);
+    deriv_tau = 1.0f / (2 * M_PI_F * cutoff);
     deriv_gamma = g;
 }
 
@@ -136,9 +136,9 @@ void pid_configure(struct pid *pid, float p, float i, float d, float iLim)
         return;
     }
 
-    pid->p    = p;
-    pid->i    = i;
-    pid->d    = d;
+    pid->p = p;
+    pid->i = i;
+    pid->d = d;
     pid->iLim = iLim;
 }
 

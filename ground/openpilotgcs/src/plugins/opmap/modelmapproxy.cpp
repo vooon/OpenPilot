@@ -153,7 +153,7 @@ void modelMapProxy::refreshOverlays()
         return;
     }
     WayPointItem *wp_current = NULL;
-    WayPointItem *wp_next    = NULL;
+    WayPointItem *wp_next = NULL;
     int wp_jump;
     int wp_error;
     overlayType wp_next_overlay;
@@ -164,10 +164,10 @@ void modelMapProxy::refreshOverlays()
     createOverlay(wp_current, myMap->Home, wp_current_overlay, Qt::green);
     for (int x = 0; x < model->rowCount(); ++x) {
         wp_current = findWayPointNumber(x);
-        wp_jump    = model->data(model->index(x, flightDataModel::JUMPDESTINATION)).toInt() - 1;
-        wp_error   = model->data(model->index(x, flightDataModel::ERRORDESTINATION)).toInt() - 1;
-        wp_next_overlay  = overlayTranslate(model->data(model->index(x + 1, flightDataModel::MODE)).toInt());
-        wp_jump_overlay  = overlayTranslate(model->data(model->index(wp_jump, flightDataModel::MODE)).toInt());
+        wp_jump = model->data(model->index(x, flightDataModel::JUMPDESTINATION)).toInt() - 1;
+        wp_error = model->data(model->index(x, flightDataModel::ERRORDESTINATION)).toInt() - 1;
+        wp_next_overlay = overlayTranslate(model->data(model->index(x + 1, flightDataModel::MODE)).toInt());
+        wp_jump_overlay = overlayTranslate(model->data(model->index(wp_jump, flightDataModel::MODE)).toInt());
         wp_error_overlay = overlayTranslate(model->data(model->index(wp_error, flightDataModel::MODE)).toInt());
         createOverlay(wp_current, findWayPointNumber(wp_error), wp_error_overlay, Qt::red);
         switch (model->data(model->index(x, flightDataModel::COMMAND)).toInt()) {
@@ -240,18 +240,18 @@ void modelMapProxy::dataChanged(const QModelIndex &topLeft, const QModelIndex &b
         break;
     case flightDataModel::WPDESCRITPTION:
         index = model->index(x, flightDataModel::WPDESCRITPTION);
-        desc  = index.data(Qt::DisplayRole).toString();
+        desc = index.data(Qt::DisplayRole).toString();
         item->SetDescription(desc);
         break;
     case flightDataModel::LATPOSITION:
         latlng = item->Coord();
-        index  = model->index(x, flightDataModel::LATPOSITION);
+        index = model->index(x, flightDataModel::LATPOSITION);
         latlng.SetLat(index.data(Qt::DisplayRole).toDouble());
         item->SetCoord(latlng);
         break;
     case flightDataModel::LNGPOSITION:
         latlng = item->Coord();
-        index  = model->index(x, flightDataModel::LNGPOSITION);
+        index = model->index(x, flightDataModel::LNGPOSITION);
         latlng.SetLng(index.data(Qt::DisplayRole).toDouble());
         item->SetCoord(latlng);
         break;
@@ -274,7 +274,7 @@ void modelMapProxy::dataChanged(const QModelIndex &topLeft, const QModelIndex &b
         item->setRelativeCoord(distBearing);
         break;
     case flightDataModel::ISRELATIVE:
-        index    = model->index(x, flightDataModel::ISRELATIVE);
+        index = model->index(x, flightDataModel::ISRELATIVE);
         relative = index.data(Qt::DisplayRole).toBool();
         if (relative) {
             item->setWPType(mapcontrol::WayPointItem::relative);
@@ -283,7 +283,7 @@ void modelMapProxy::dataChanged(const QModelIndex &topLeft, const QModelIndex &b
         }
         break;
     case flightDataModel::ALTITUDE:
-        index    = model->index(x, flightDataModel::ALTITUDE);
+        index = model->index(x, flightDataModel::ALTITUDE);
         altitude = index.data(Qt::DisplayRole).toDouble();
         item->SetAltitude(altitude);
         break;
@@ -304,21 +304,21 @@ void modelMapProxy::rowsInserted(const QModelIndex &parent, int first, int last)
         distBearingAltitude distBearing;
         double altitude;
         bool relative;
-        index    = model->index(x, flightDataModel::WPDESCRITPTION);
+        index = model->index(x, flightDataModel::WPDESCRITPTION);
         QString desc = index.data(Qt::DisplayRole).toString();
-        index    = model->index(x, flightDataModel::LATPOSITION);
+        index = model->index(x, flightDataModel::LATPOSITION);
         latlng.SetLat(index.data(Qt::DisplayRole).toDouble());
-        index    = model->index(x, flightDataModel::LNGPOSITION);
+        index = model->index(x, flightDataModel::LNGPOSITION);
         latlng.SetLng(index.data(Qt::DisplayRole).toDouble());
-        index    = model->index(x, flightDataModel::DISRELATIVE);
+        index = model->index(x, flightDataModel::DISRELATIVE);
         distBearing.distance = index.data(Qt::DisplayRole).toDouble();
-        index    = model->index(x, flightDataModel::BEARELATIVE);
+        index = model->index(x, flightDataModel::BEARELATIVE);
         distBearing.setBearingFromDegrees(index.data(Qt::DisplayRole).toDouble());
-        index    = model->index(x, flightDataModel::ALTITUDERELATIVE);
+        index = model->index(x, flightDataModel::ALTITUDERELATIVE);
         distBearing.altitudeRelative = index.data(Qt::DisplayRole).toFloat();
-        index    = model->index(x, flightDataModel::ISRELATIVE);
+        index = model->index(x, flightDataModel::ISRELATIVE);
         relative = index.data(Qt::DisplayRole).toBool();
-        index    = model->index(x, flightDataModel::ALTITUDE);
+        index = model->index(x, flightDataModel::ALTITUDE);
         altitude = index.data(Qt::DisplayRole).toDouble();
         if (relative) {
             item = myMap->WPInsert(distBearing, desc, x);

@@ -178,8 +178,8 @@ void ConfigCameraStabilizationWidget::updateObjectsFromWidgets()
     // Save state of the module enable checkbox first.
     // Do not use setData() member on whole object, if possible, since it triggers
     // unnessesary UAVObect update.
-    quint8 enableModule    = ui->enableCameraStabilization->isChecked() ?
-                             HwSettings::OPTIONALMODULES_ENABLED : HwSettings::OPTIONALMODULES_DISABLED;
+    quint8 enableModule = ui->enableCameraStabilization->isChecked() ?
+                          HwSettings::OPTIONALMODULES_ENABLED : HwSettings::OPTIONALMODULES_DISABLED;
     HwSettings *hwSettings = HwSettings::GetInstance(getObjectManager());
 
     hwSettings->setOptionalModules(HwSettings::OPTIONALMODULES_CAMERASTAB, enableModule);

@@ -72,7 +72,7 @@ void ImportExportGadgetWidget::changeEvent(QEvent *e)
 
 void ImportExportGadgetWidget::on_exportButton_clicked()
 {
-    QString file   = filename;
+    QString file = filename;
     QString filter = tr("GCS Settings file (*.xml)");
 
     file = QFileDialog::getSaveFileName(this, tr("Save GCS Settings too file .."), QFileInfo(file).absoluteFilePath(), filter).trimmed();
@@ -120,9 +120,9 @@ QList<Core::IConfigurablePlugin *> ImportExportGadgetWidget::getConfigurables()
 
 void ImportExportGadgetWidget::exportConfiguration(const QString & fileName)
 {
-    bool doGeneral    = ui->checkBoxGeneral->isChecked();
+    bool doGeneral = ui->checkBoxGeneral->isChecked();
     bool doAllGadgets = ui->checkBoxAllGadgets->isChecked();
-    bool doPlugins    = ui->checkBoxPlugins->isChecked();
+    bool doPlugins = ui->checkBoxPlugins->isChecked();
 
     QSettings::Format format = XmlConfig::XmlSettingsFormat;
     QSettings qs(fileName, format);
@@ -150,7 +150,7 @@ void ImportExportGadgetWidget::writeError(const QString & msg) const
 
 void ImportExportGadgetWidget::on_importButton_clicked()
 {
-    QString file   = filename;
+    QString file = filename;
     QString filter = tr("GCS Settings file (*.xml)");
 
     file = QFileDialog::getOpenFileName(this, tr("Load GCS Settings from file .."), QFileInfo(file).absoluteFilePath(), filter).trimmed();
@@ -179,9 +179,9 @@ void ImportExportGadgetWidget::on_importButton_clicked()
 
 void ImportExportGadgetWidget::importConfiguration(const QString & fileName)
 {
-    bool doGeneral    = ui->checkBoxGeneral->isChecked();
+    bool doGeneral = ui->checkBoxGeneral->isChecked();
     bool doAllGadgets = ui->checkBoxAllGadgets->isChecked();
-    bool doPlugins    = ui->checkBoxPlugins->isChecked();
+    bool doPlugins = ui->checkBoxPlugins->isChecked();
 
     QSettings qs(fileName, XmlConfig::XmlSettingsFormat);
 

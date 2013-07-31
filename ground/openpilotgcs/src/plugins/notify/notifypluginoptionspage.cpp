@@ -74,7 +74,7 @@ QWidget *NotifyPluginOptionsPage::createPage(QWidget * /* parent */)
     _optionsPage.reset(new Ui::NotifyPluginOptionsPage());
     // main widget
     QWidget *optionsPageWidget = new QWidget;
-    _dynamicFieldWidget    = NULL;
+    _dynamicFieldWidget = NULL;
     _dynamicFieldCondition = NULL;
     resetFieldType();
     // save ref to form, needed for binding dynamic fields in future
@@ -638,7 +638,7 @@ void NotifyPluginOptionsPage::on_toggled_checkEnableSound(bool state)
 {
     bool state1 = 1 ^ state;
 
-    QList<Phonon::Path> listOutputs  = _testSound->outputPaths();
+    QList<Phonon::Path> listOutputs = _testSound->outputPaths();
     Phonon::AudioOutput *audioOutput = (Phonon::AudioOutput *)listOutputs.last().sink();
     audioOutput->setMuted(state1);
 }

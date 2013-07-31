@@ -95,7 +95,7 @@ int opHID_hidapi::enumerate(struct hid_device_info * *current_device_pptr, int *
         *current_device_pptr = hid_enumerate(USB_VID, 0x0);
 
         // Display the list of devices found (for debug)
-        current_device_ptr   = *current_device_pptr;
+        current_device_ptr = *current_device_pptr;
 
         while (current_device_ptr) {
             OPHID_DEBUG("HID Device Found");
@@ -130,8 +130,8 @@ int opHID_hidapi::enumerate(struct hid_device_info * *current_device_pptr, int *
 int opHID_hidapi::open(int max, int vid, int pid, int usage_page, int usage)
 {
     int devices_found = false;
-    struct hid_device_info *current_device_ptr    = NULL;
-    struct hid_device_info *tmp_device_ptr        = NULL;
+    struct hid_device_info *current_device_ptr = NULL;
+    struct hid_device_info *tmp_device_ptr = NULL;
     struct hid_device_info * *current_device_pptr = &current_device_ptr;
 
     OPHID_TRACE("IN");

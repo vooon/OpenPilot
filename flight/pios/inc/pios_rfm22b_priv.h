@@ -575,23 +575,23 @@ enum pios_rfm22b_state {
 
 #define RFM22B_RX_PACKET_STATS_LEN 4
 enum pios_rfm22b_rx_packet_status {
-    RADIO_GOOD_RX_PACKET      = 0x00,
+    RADIO_GOOD_RX_PACKET = 0x00,
     RADIO_CORRECTED_RX_PACKET = 0x01,
-    RADIO_ERROR_RX_PACKET     = 0x2,
-    RADIO_RESENT_TX_PACKET    = 0x3
+    RADIO_ERROR_RX_PACKET = 0x2,
+    RADIO_RESENT_TX_PACKET = 0x3
 };
 
 typedef struct {
     uint32_t pairID;
-    int8_t   rssi;
-    int8_t   afc_correction;
-    uint8_t  lastContact;
+    int8_t rssi;
+    int8_t afc_correction;
+    uint8_t lastContact;
 } rfm22b_pair_stats;
 
 enum pios_rfm22b_chip_power_state {
-    RFM22B_IDLE_STATE    = 0x00,
-    RFM22B_RX_STATE      = 0x01,
-    RFM22B_TX_STATE      = 0x10,
+    RFM22B_IDLE_STATE = 0x00,
+    RFM22B_RX_STATE = 0x01,
+    RFM22B_TX_STATE = 0x10,
     RFM22B_INVALID_STATE = 0x11
 };
 
@@ -599,11 +599,11 @@ enum pios_rfm22b_chip_power_state {
 typedef union {
     struct {
         uint8_t state : 2;
-        bool    frequency_error : 1;
-        bool    header_error : 1;
-        bool    rx_fifo_empty : 1;
-        bool    fifo_underflow : 1;
-        bool    fifo_overflow : 1;
+        bool frequency_error : 1;
+        bool header_error : 1;
+        bool rx_fifo_empty : 1;
+        bool fifo_underflow : 1;
+        bool fifo_overflow : 1;
     };
     uint8_t raw;
 } rfm22b_device_status_reg;
@@ -662,20 +662,20 @@ typedef struct {
 
 struct pios_rfm22b_dev {
     enum pios_rfm22b_dev_magic magic;
-    struct pios_rfm22b_cfg     cfg;
+    struct pios_rfm22b_cfg cfg;
 
     // The SPI bus information
-    uint32_t    spi_id;
-    uint32_t    slave_num;
+    uint32_t spi_id;
+    uint32_t slave_num;
 
     // Should this modem ack as a coordinator.
-    bool        coordinator;
+    bool coordinator;
 
     // The device ID
-    uint32_t    deviceID;
+    uint32_t deviceID;
 
     // The coodinator ID (0 if this modem is a coordinator).
-    uint32_t    coordinatorID;
+    uint32_t coordinatorID;
 
     // The task handle
     xTaskHandle taskHandle;
@@ -684,7 +684,7 @@ struct pios_rfm22b_dev {
     rfm22b_pair_stats pair_stats[OPLINKSTATUS_PAIRIDS_NUMELEM];
 
     // ISR pending semaphore
-    xSemaphoreHandle  isrPending;
+    xSemaphoreHandle isrPending;
 
     // The COM callback functions.
     pios_com_callback rx_in_cb;
@@ -693,10 +693,10 @@ struct pios_rfm22b_dev {
     uint32_t tx_out_context;
 
     // the transmit power to use for data transmissions
-    uint8_t  tx_power;
+    uint8_t tx_power;
 
     // The RF datarate lookup index.
-    uint8_t  datarate;
+    uint8_t datarate;
 
     // The radio state machine state
     enum pios_radio_state state;
@@ -715,18 +715,18 @@ struct pios_rfm22b_dev {
     enum pios_rfm22b_state rfm22b_state;
 
     // The packet statistics
-    struct rfm22b_stats    stats;
+    struct rfm22b_stats stats;
 
     // Stats
     uint16_t errors;
 
     // RSSI in dBm
-    int8_t   rssi_dBm;
+    int8_t rssi_dBm;
 
     // The tx data packet
-    uint8_t  tx_packet[RFM22B_MAX_PACKET_LEN];
+    uint8_t tx_packet[RFM22B_MAX_PACKET_LEN];
     // The current tx packet
-    uint8_t  *tx_packet_handle;
+    uint8_t *tx_packet_handle;
     // The tx data read index
     uint16_t tx_data_rd;
     // The tx data write index
@@ -735,52 +735,52 @@ struct pios_rfm22b_dev {
     uint16_t tx_seq;
 
     // The rx data packet
-    uint8_t  rx_packet[RFM22B_MAX_PACKET_LEN];
+    uint8_t rx_packet[RFM22B_MAX_PACKET_LEN];
     // The rx data packet
-    uint8_t  *rx_packet_handle;
+    uint8_t *rx_packet_handle;
     // The receive buffer write index
     uint16_t rx_buffer_wr;
     // The receive buffer write index
     uint16_t rx_packet_len;
 
     // The PPM buffer
-    int16_t  ppm[RFM22B_PPM_NUM_CHANNELS];
+    int16_t ppm[RFM22B_PPM_NUM_CHANNELS];
     // The PPM packet received callback.
     PPMReceivedCallback ppm_callback;
 
     // The id that the packet was received from
-    uint32_t     rx_destination_id;
+    uint32_t rx_destination_id;
     // The maximum packet length (including header, etc.)
-    uint8_t      max_packet_len;
+    uint8_t max_packet_len;
     // The packet transmit time in ms.
-    uint8_t      packet_time;
+    uint8_t packet_time;
     // Do all packets originate from the coordinator modem?
-    bool         one_way_link;
+    bool one_way_link;
     // Should this modem send PPM data?
-    bool         ppm_send_mode;
+    bool ppm_send_mode;
     // Should this modem receive PPM data?
-    bool         ppm_recv_mode;
+    bool ppm_recv_mode;
     // Are we sending / receiving only PPM data?
-    bool         ppm_only_mode;
+    bool ppm_only_mode;
 
     // The channel list
-    uint8_t      channels[RFM22B_NUM_CHANNELS];
+    uint8_t channels[RFM22B_NUM_CHANNELS];
     // The number of frequency hopping channels.
-    uint8_t      num_channels;
+    uint8_t num_channels;
     // The frequency hopping step size
-    float        frequency_step_size;
+    float frequency_step_size;
     // current frequency hop channel
-    uint8_t      channel;
+    uint8_t channel;
     // current frequency hop channel index
-    uint8_t      channel_index;
+    uint8_t channel_index;
     // afc correction reading (in Hz)
-    int8_t       afc_correction_Hz;
+    int8_t afc_correction_Hz;
 
     // The packet timers.
     portTickType packet_start_ticks;
     portTickType tx_complete_ticks;
     portTickType time_delta;
-    bool         on_sync_channel;
+    bool on_sync_channel;
 };
 
 

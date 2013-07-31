@@ -38,9 +38,9 @@ static bool PIOS_ETASV3_Read(uint8_t *buffer, uint8_t len)
         {
             .info = __func__,
             .addr = ETASV3_I2C_ADDR,
-            .rw   = PIOS_I2C_TXN_READ,
-            .len  = len,
-            .buf  = buffer,
+            .rw = PIOS_I2C_TXN_READ,
+            .len = len,
+            .buf = buffer,
         }
     };
 

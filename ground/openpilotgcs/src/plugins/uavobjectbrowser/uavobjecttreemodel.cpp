@@ -68,9 +68,9 @@ void UAVObjectTreeModel::setupModelData(UAVObjectManager *objManager, bool categ
     // root
     QList<QVariant> rootData;
     rootData << tr("Property") << tr("Value") << tr("Unit");
-    m_rootItem        = new TreeItem(rootData);
+    m_rootItem = new TreeItem(rootData);
 
-    m_settingsTree    = new TopTreeItem(tr("Settings"), m_rootItem);
+    m_settingsTree = new TopTreeItem(tr("Settings"), m_rootItem);
     m_settingsTree->setHighlightManager(m_highlightManager);
     m_rootItem->appendChild(m_settingsTree);
     m_nonSettingsTree = new TopTreeItem(tr("Data Objects"), m_rootItem);
@@ -101,7 +101,7 @@ void UAVObjectTreeModel::addDataObject(UAVDataObject *obj, bool categorize)
 {
     TopTreeItem *root = obj->isSettings() ? m_settingsTree : m_nonSettingsTree;
 
-    TreeItem *parent  = root;
+    TreeItem *parent = root;
 
     if (categorize && obj->getCategory() != 0 && !obj->getCategory().isEmpty()) {
         QStringList categoryPath = obj->getCategory().split('/');
@@ -291,7 +291,7 @@ QModelIndex UAVObjectTreeModel::parent(const QModelIndex &index) const
         return QModelIndex();
     }
 
-    TreeItem *childItem  = static_cast<TreeItem *>(index.internalPointer());
+    TreeItem *childItem = static_cast<TreeItem *>(index.internalPointer());
     TreeItem *parentItem = childItem->parent();
 
     if (parentItem == m_rootItem) {

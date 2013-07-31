@@ -31,8 +31,8 @@ struct QextPortInfo {
     QString physName; ///< Physical name.
     QString friendName; ///< Friendly name.
     QString enumName; ///< Enumerator name.
-    int     vendorID;       ///< Vendor ID.
-    int     productID;      ///< Product ID
+    int vendorID; ///< Vendor ID.
+    int productID; ///< Product ID
 };
 
 #ifdef Q_OS_WIN

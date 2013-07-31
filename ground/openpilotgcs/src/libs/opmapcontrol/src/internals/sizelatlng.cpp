@@ -33,7 +33,7 @@ SizeLatLng::SizeLatLng() : heightLat(0), widthLng(0)
 SizeLatLng::SizeLatLng(PointLatLng const &  pt)
 {
     this->heightLat = pt.Lat();
-    this->widthLng  = pt.Lng();
+    this->widthLng = pt.Lng();
 }
 SizeLatLng operator+(SizeLatLng const &  sz1, SizeLatLng const &  sz2)
 {

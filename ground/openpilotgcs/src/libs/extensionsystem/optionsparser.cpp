@@ -35,7 +35,7 @@ using namespace ExtensionSystem::Internal;
 
 static const char *END_OF_OPTIONS = "--";
 const char *OptionsParser::NO_LOAD_OPTION = "-noload";
-const char *OptionsParser::TEST_OPTION    = "-test";
+const char *OptionsParser::TEST_OPTION = "-test";
 
 OptionsParser::OptionsParser(const QStringList &args,
                              const QMap<QString, bool> &appOptions,

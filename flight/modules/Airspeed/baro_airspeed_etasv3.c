@@ -52,9 +52,9 @@
 
 // Private functions
 
-static uint16_t calibrationCount  = 0;
+static uint16_t calibrationCount = 0;
 static uint16_t calibrationCount2 = 0;
-static uint32_t calibrationSum    = 0;
+static uint32_t calibrationSum = 0;
 
 
 void baro_airspeedGetETASV3(AirspeedSensorData *airspeedSensor, AirspeedSettingsData *airspeedSettings)
@@ -62,7 +62,7 @@ void baro_airspeedGetETASV3(AirspeedSensorData *airspeedSensor, AirspeedSettings
     // Check to see if airspeed sensor is returning airspeedSensor
     airspeedSensor->SensorValue = PIOS_ETASV3_ReadAirspeed();
     if (airspeedSensor->SensorValue == (uint16_t)-1) {
-        airspeedSensor->SensorConnected    = AIRSPEEDSENSOR_SENSORCONNECTED_FALSE;
+        airspeedSensor->SensorConnected = AIRSPEEDSENSOR_SENSORCONNECTED_FALSE;
         airspeedSensor->CalibratedAirspeed = 0;
         return;
     }
@@ -72,7 +72,7 @@ void baro_airspeedGetETASV3(AirspeedSensorData *airspeedSensor, AirspeedSettings
         // Calibrate sensor by averaging zero point value
         if (calibrationCount <= CALIBRATION_IDLE_MS / airspeedSettings->SamplePeriod) {
             calibrationCount++;
-            calibrationSum    = 0;
+            calibrationSum = 0;
             calibrationCount2 = 0;
             return;
         } else if (calibrationCount <= (CALIBRATION_IDLE_MS + CALIBRATION_COUNT_MS) / airspeedSettings->SamplePeriod) {
@@ -82,8 +82,8 @@ void baro_airspeedGetETASV3(AirspeedSensorData *airspeedSensor, AirspeedSettings
             if (calibrationCount > (CALIBRATION_IDLE_MS + CALIBRATION_COUNT_MS) / airspeedSettings->SamplePeriod) {
                 airspeedSettings->ZeroPoint = (int16_t)(((float)calibrationSum) / calibrationCount2);
                 AirspeedSettingsZeroPointSet(&airspeedSettings->ZeroPoint);
-                calibrationCount  = 0;
-                calibrationSum    = 0;
+                calibrationCount = 0;
+                calibrationSum = 0;
                 calibrationCount2 = 0;
             }
             return;
@@ -92,7 +92,7 @@ void baro_airspeedGetETASV3(AirspeedSensorData *airspeedSensor, AirspeedSettings
 
     // Compute airspeed
     airspeedSensor->CalibratedAirspeed = airspeedSettings->Scale * sqrtf((float)abs(airspeedSensor->SensorValue - airspeedSettings->ZeroPoint));
-    airspeedSensor->SensorConnected    = AIRSPEEDSENSOR_SENSORCONNECTED_TRUE;
+    airspeedSensor->SensorConnected = AIRSPEEDSENSOR_SENSORCONNECTED_TRUE;
 }
 
 

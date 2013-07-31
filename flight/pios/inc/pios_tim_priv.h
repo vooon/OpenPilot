@@ -11,10 +11,10 @@ struct pios_tim_clock_cfg {
 
 struct pios_tim_channel {
     TIM_TypeDef *timer;
-    uint8_t     timer_chan;
+    uint8_t timer_chan;
 
     struct stm32_gpio pin;
-    uint32_t    remap;
+    uint32_t remap;
 };
 
 struct pios_tim_callbacks {

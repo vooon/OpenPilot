@@ -61,7 +61,7 @@ static bool magbaroEnabled;
 #define alt_ds_size 4
 static int32_t alt_ds_temp = 0;
 static int32_t alt_ds_pres = 0;
-static int alt_ds_count    = 0;
+static int alt_ds_count = 0;
 #endif
 
 #if defined(PIOS_INCLUDE_HMC5883)
@@ -116,8 +116,8 @@ int32_t MagBaroInitialize()
         BaroSensorInitialize();
 
         // init down-sampling data
-        alt_ds_temp  = 0;
-        alt_ds_pres  = 0;
+        alt_ds_temp = 0;
+        alt_ds_pres = 0;
         alt_ds_count = 0;
 #endif
     }
@@ -130,9 +130,9 @@ MODULE_INITCALL(MagBaroInitialize, MagBaroStart);
 #if defined(PIOS_INCLUDE_HMC5883)
 static const struct pios_hmc5883_cfg pios_hmc5883_cfg = {
 #ifdef PIOS_HMC5883_HAS_GPIOS
-    .exti_cfg  = 0,
+    .exti_cfg = 0,
 #endif
-    .M_ODR     = PIOS_HMC5883_ODR_15,
+    .M_ODR = PIOS_HMC5883_ODR_15,
     .Meas_Conf = PIOS_HMC5883_MEASCONF_NORMAL,
     .Gain = PIOS_HMC5883_GAIN_1_9,
     .Mode = PIOS_HMC5883_MODE_CONTINUOUS,
@@ -179,15 +179,15 @@ static void magbaroTask(__attribute__((unused)) void *parameters)
         alt_ds_pres += PIOS_BMP085_GetPressure();
 
         if (++alt_ds_count >= alt_ds_size) {
-            alt_ds_count     = 0;
+            alt_ds_count = 0;
 
             // Convert from 1/10ths of degC to degC
             data.Temperature = alt_ds_temp / (10.0f * alt_ds_size);
-            alt_ds_temp   = 0;
+            alt_ds_temp = 0;
 
             // Convert from Pa to kPa
             data.Pressure = alt_ds_pres / (1000.0f * alt_ds_size);
-            alt_ds_pres   = 0;
+            alt_ds_pres = 0;
 
             // Compute the current altitude (all pressures in kPa)
             data.Altitude = 44330.0f * (1.0f - powf((data.Pressure / (BMP085_P0 / 1000.0f)), (1.0f / 5.255f)));

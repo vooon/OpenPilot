@@ -35,8 +35,8 @@ bool UAVObjectGeneratorMatlab::generate(UAVObjectParser *parser, QString templat
     fieldSizeStrMatlab << "1" << "2" << "4"
                        << "1" << "2" << "4" << "4" << "1";
 
-    QDir matlabTemplatePath    = QDir(templatepath + QString(MATLAB_CODE_DIR));
-    QDir matlabOutputPath      = QDir(outputpath + QString("matlab"));
+    QDir matlabTemplatePath = QDir(templatepath + QString(MATLAB_CODE_DIR));
+    QDir matlabOutputPath = QDir(outputpath + QString("matlab"));
     matlabOutputPath.mkpath(matlabOutputPath.absolutePath());
 
     QString matlabCodeTemplate = readFile(matlabTemplatePath.absoluteFilePath("uavobject.m.template"));
@@ -48,7 +48,7 @@ bool UAVObjectGeneratorMatlab::generate(UAVObjectParser *parser, QString templat
 
     for (int objidx = 0; objidx < parser->getNumObjects(); ++objidx) {
         ObjectInfo *info = parser->getObjectByIndex(objidx);
-        int numBytes     = parser->getNumBytes(objidx);
+        int numBytes = parser->getNumBytes(objidx);
         process_object(info, numBytes);
     }
 

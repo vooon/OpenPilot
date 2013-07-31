@@ -50,23 +50,23 @@ UploaderGadgetConfiguration::UploaderGadgetConfiguration(QString classId, QSetti
         ParityType parity;
         StopBitsType stopbits;
 
-        int ispeed    = qSettings->value("defaultSpeed").toInt();
+        int ispeed = qSettings->value("defaultSpeed").toInt();
         int idatabits = qSettings->value("defaultDataBits").toInt();
-        int iflow     = qSettings->value("defaultFlow").toInt();
-        int iparity   = qSettings->value("defaultParity").toInt();
+        int iflow = qSettings->value("defaultFlow").toInt();
+        int iparity = qSettings->value("defaultParity").toInt();
         int istopbits = qSettings->value("defaultStopBits").toInt();
-        QString port  = qSettings->value("defaultPort").toString();
+        QString port = qSettings->value("defaultPort").toString();
 
         databits = (DataBitsType)idatabits;
-        flow     = (FlowType)iflow;
-        parity   = (ParityType)iparity;
+        flow = (FlowType)iflow;
+        parity = (ParityType)iparity;
         stopbits = (StopBitsType)istopbits;
-        speed    = (BaudRateType)ispeed;
-        m_defaultPort     = port;
-        m_defaultSpeed    = speed;
+        speed = (BaudRateType)ispeed;
+        m_defaultPort = port;
+        m_defaultSpeed = speed;
         m_defaultDataBits = databits;
-        m_defaultFlow     = flow;
-        m_defaultParity   = parity;
+        m_defaultFlow = flow;
+        m_defaultParity = parity;
         m_defaultStopBits = stopbits;
     }
 }
@@ -79,12 +79,12 @@ IUAVGadgetConfiguration *UploaderGadgetConfiguration::clone()
 {
     UploaderGadgetConfiguration *m = new UploaderGadgetConfiguration(this->classId());
 
-    m->m_defaultSpeed    = m_defaultSpeed;
+    m->m_defaultSpeed = m_defaultSpeed;
     m->m_defaultDataBits = m_defaultDataBits;
-    m->m_defaultFlow     = m_defaultFlow;
-    m->m_defaultParity   = m_defaultParity;
+    m->m_defaultFlow = m_defaultFlow;
+    m->m_defaultParity = m_defaultParity;
     m->m_defaultStopBits = m_defaultStopBits;
-    m->m_defaultPort     = m_defaultPort;
+    m->m_defaultPort = m_defaultPort;
     return m;
 }
 

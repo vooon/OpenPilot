@@ -32,7 +32,7 @@
 #define PIOS_RCVR_H
 
 struct pios_rcvr_driver {
-    void    (*init)(uint32_t id);
+    void (*init)(uint32_t id);
     int32_t (*read)(uint32_t id, uint8_t channel);
     xSemaphoreHandle (*get_semaphore)(uint32_t id, uint8_t channel);
 };
@@ -44,9 +44,9 @@ extern xSemaphoreHandle PIOS_RCVR_GetSemaphore(uint32_t rcvr_id, uint8_t channel
 /*! Define error codes for PIOS_RCVR_Get */
 enum PIOS_RCVR_errors {
     /*! Indicates that a failsafe condition or missing receiver detected for that channel */
-    PIOS_RCVR_TIMEOUT  = -1,
+    PIOS_RCVR_TIMEOUT = -1,
     /*! Channel is invalid for this driver (usually out of range supported) */
-    PIOS_RCVR_INVALID  = -2,
+    PIOS_RCVR_INVALID = -2,
     /*! Indicates that the driver for this channel has not been initialized */
     PIOS_RCVR_NODRIVER = -3
 };

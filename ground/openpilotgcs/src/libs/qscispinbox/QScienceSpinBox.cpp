@@ -38,9 +38,9 @@ void QScienceSpinBox::initLocalValues(QWidget *parent)
 
     if (str.size() == 6) {
         delimiter = str.at(4);
-        thousand  = QChar((ushort)0);
+        thousand = QChar((ushort)0);
     } else if (str.size() == 7) {
-        thousand  = str.at(1);
+        thousand = str.at(1);
         delimiter = str.at(5);
     }
     Q_ASSERT(!delimiter.isNull());
@@ -143,23 +143,23 @@ bool QScienceSpinBox::isIntermediateValue(const QString &str) const
     // I know QString::number() uses CLocale so I use dot
     const QString minstr = QString::number(minimum(), 'f', QDoubleSpinBox::decimals());
     qint64 min_left = minstr.left(minstr.indexOf(dot)).toLongLong();
-    qint64 min_right     = minstr.mid(minstr.indexOf(dot) + 1).toLongLong();
+    qint64 min_right = minstr.mid(minstr.indexOf(dot) + 1).toLongLong();
 
     const QString maxstr = QString::number(maximum(), 'f', QDoubleSpinBox::decimals());
     qint64 max_left = maxstr.left(maxstr.indexOf(dot)).toLongLong();
-    qint64 max_right     = maxstr.mid(maxstr.indexOf(dot) + 1).toLongLong();
+    qint64 max_right = maxstr.mid(maxstr.indexOf(dot) + 1).toLongLong();
 
     /*!
      * determine left and right long values (left and right of delimiter)
      */
-    const int dotindex   = str.indexOf(delimiter);
-    const bool negative  = maximum() < 0;
-    qint64 left  = 0, right = 0;
-    bool doleft  = true;
+    const int dotindex = str.indexOf(delimiter);
+    const bool negative = maximum() < 0;
+    qint64 left = 0, right = 0;
+    bool doleft = true;
     bool doright = true;
     // no separator -> everthing in left
     if (dotindex == -1) {
-        left    = str.toLongLong();
+        left = str.toLongLong();
         doright = false;
     }
     // separator on left or contains '+'
@@ -170,7 +170,7 @@ bool QScienceSpinBox::isIntermediateValue(const QString &str) const
             return false;
         }
         doleft = false;
-        right  = str.mid(dotindex + 1).toLongLong();
+        right = str.mid(dotindex + 1).toLongLong();
     }
     // contains '-'
     else if (dotindex == 1 && str.at(0) == QLatin1Char('-')) {
@@ -180,7 +180,7 @@ bool QScienceSpinBox::isIntermediateValue(const QString &str) const
             return false;
         }
         doleft = false;
-        right  = str.mid(dotindex + 1).toLongLong();
+        right = str.mid(dotindex + 1).toLongLong();
     } else {
         left = str.left(dotindex).toLongLong();
         if (dotindex == str.size() - 1) { // nothing right of Separator
@@ -228,8 +228,8 @@ bool QScienceSpinBox::isIntermediateValue(const QString &str) const
         if (match != max_left) {
             max_right = negative ? 0 : dec;
         }
-        qint64 tmpl    = negative ? max_right : min_right;
-        qint64 tmpr    = negative ? min_right : max_right;
+        qint64 tmpl = negative ? max_right : min_right;
+        qint64 tmpr = negative ? min_right : max_right;
         const bool ret = isIntermediateValueHelper(right, tmpl, tmpr);
         QSBDEBUG() << __FILE__ << __LINE__ << "returns" << ret;
         return ret;
@@ -268,12 +268,12 @@ QVariant QScienceSpinBox::validateAndInterpret(
     const double min = minimum();
 
     // removes prefix & suffix
-    QString copy     = stripped(input, &pos);
+    QString copy = stripped(input, &pos);
     QSBDEBUG() << "input" << input << "copy" << copy;
 
-    int len    = copy.size();
+    int len = copy.size();
     double num = min;
-    const bool plus  = max >= 0;
+    const bool plus = max >= 0;
     const bool minus = min <= 0;
 
     // Test possible 'Intermediate' reasons
@@ -451,7 +451,7 @@ end:
     }
 
     // save (private) cache values
-    cachedText  = prefix() + copy + suffix();
+    cachedText = prefix() + copy + suffix();
     cachedState = state;
     cachedValue = QVariant(num);
     // return resulting valid num
@@ -471,16 +471,16 @@ QString QScienceSpinBox::stripped(const QString &t, int *pos) const
     QString suffixtext = suffix();
 
     if (specialValueText().size() == 0 || text != specialValueText()) {
-        int from     = 0;
-        int size     = text.size();
+        int from = 0;
+        int size = text.size();
         bool changed = false;
         if (prefixtext.size() && text.startsWith(prefixtext)) {
-            from   += prefixtext.size();
-            size   -= from;
+            from += prefixtext.size();
+            size -= from;
             changed = true;
         }
         if (suffixtext.size() && text.endsWith(suffixtext)) {
-            size   -= suffixtext.size();
+            size -= suffixtext.size();
             changed = true;
         }
         if (changed) {
@@ -508,7 +508,7 @@ bool QScienceSpinBox::isIntermediateValueHelper(qint64 num, qint64 min, qint64 m
         QSBDEBUG("returns true 0");
         return true;
     }
-    qint64 tmp    = num;
+    qint64 tmp = num;
 
     int numDigits = 0;
     int digits[10];

@@ -286,7 +286,7 @@ void OsgEarthItemRenderer::initScene()
         qWarning() << Q_FUNC_INFO << sceneFile << " doesn't look like an osgEarth file";
     }
 
-    m_gw     = new osgViewer::GraphicsWindowEmbedded(0, 0, w, h);
+    m_gw = new osgViewer::GraphicsWindowEmbedded(0, 0, w, h);
 
     m_viewer = new osgViewer::Viewer();
     m_viewer->setThreadingModel(osgViewer::Viewer::SingleThreaded);
@@ -329,9 +329,9 @@ void OsgEarthItemRenderer::updateFrame()
     osg::Vec3d upVector(0.0f, 0.0f, 1.0f);
 
     eye = positionMatrix.preMult(eye);
-    upVector    = positionMatrix.preMult(upVector);
+    upVector = positionMatrix.preMult(upVector);
     upVector.normalize();
-    viewVector  = positionMatrix2.preMult(viewVector) - eye;
+    viewVector = positionMatrix2.preMult(viewVector) - eye;
     viewVector.normalize();
     viewVector *= 10.0;
 
@@ -339,16 +339,16 @@ void OsgEarthItemRenderer::updateFrame()
     // currently assuming yaw, pitch, roll
     osg::Quat q;
     q.makeRotate(-m_item->yaw() * M_PI / 180.0, upVector);
-    upVector   = q * upVector;
+    upVector = q * upVector;
     viewVector = q * viewVector;
 
     osg::Vec3d side = viewVector ^ upVector;
     q.makeRotate(m_item->pitch() * M_PI / 180.0, side);
-    upVector   = q * upVector;
+    upVector = q * upVector;
     viewVector = q * viewVector;
 
     q.makeRotate(m_item->roll() * M_PI / 180.0, viewVector);
-    upVector   = q * upVector;
+    upVector = q * upVector;
     viewVector = q * viewVector;
 
     osg::Vec3d center = eye + viewVector;

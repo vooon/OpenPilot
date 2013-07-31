@@ -41,15 +41,15 @@ UAVObjectBrowserConfiguration::UAVObjectBrowserConfiguration(QString classId, QS
     if (qSettings != 0) {
         QColor recent = qSettings->value("recentlyUpdatedColor").value<QColor>();
         QColor manual = qSettings->value("manuallyChangedColor").value<QColor>();
-        int timeout   = qSettings->value("recentlyUpdatedTimeout").toInt();
-        bool hilight  = qSettings->value("onlyHilightChangedValues").toBool();
+        int timeout = qSettings->value("recentlyUpdatedTimeout").toInt();
+        bool hilight = qSettings->value("onlyHilightChangedValues").toBool();
 
-        m_useCategorizedView       = qSettings->value("CategorizedView").toBool();
-        m_useScientificView        = qSettings->value("ScientificView").toBool();
+        m_useCategorizedView = qSettings->value("CategorizedView").toBool();
+        m_useScientificView = qSettings->value("ScientificView").toBool();
         m_showMetaData = qSettings->value("showMetaData").toBool();
-        m_recentlyUpdatedColor     = recent;
-        m_manuallyChangedColor     = manual;
-        m_recentlyUpdatedTimeout   = timeout;
+        m_recentlyUpdatedColor = recent;
+        m_manuallyChangedColor = manual;
+        m_recentlyUpdatedTimeout = timeout;
         m_onlyHilightChangedValues = hilight;
     }
 }
@@ -58,12 +58,12 @@ IUAVGadgetConfiguration *UAVObjectBrowserConfiguration::clone()
 {
     UAVObjectBrowserConfiguration *m = new UAVObjectBrowserConfiguration(this->classId());
 
-    m->m_recentlyUpdatedColor     = m_recentlyUpdatedColor;
-    m->m_manuallyChangedColor     = m_manuallyChangedColor;
-    m->m_recentlyUpdatedTimeout   = m_recentlyUpdatedTimeout;
+    m->m_recentlyUpdatedColor = m_recentlyUpdatedColor;
+    m->m_manuallyChangedColor = m_manuallyChangedColor;
+    m->m_recentlyUpdatedTimeout = m_recentlyUpdatedTimeout;
     m->m_onlyHilightChangedValues = m_onlyHilightChangedValues;
     m->m_useCategorizedView = m_useCategorizedView;
-    m->m_useScientificView  = m_useScientificView;
+    m->m_useScientificView = m_useScientificView;
     m->m_showMetaData = m_showMetaData;
     return m;
 }

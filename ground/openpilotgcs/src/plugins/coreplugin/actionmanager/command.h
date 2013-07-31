@@ -53,18 +53,18 @@ public:
     };
 
     virtual void setDefaultKeySequence(const QKeySequence &key) = 0;
-    virtual QKeySequence defaultKeySequence() const  = 0;
+    virtual QKeySequence defaultKeySequence() const = 0;
     virtual QKeySequence keySequence() const = 0;
     virtual void setDefaultText(const QString &text) = 0;
     virtual QString defaultText() const = 0;
 
     virtual int id() const = 0;
 
-    virtual QAction *action() const     = 0;
+    virtual QAction *action() const = 0;
     virtual QShortcut *shortcut() const = 0;
 
-    virtual void setAttribute(CommandAttribute attr)       = 0;
-    virtual void removeAttribute(CommandAttribute attr)    = 0;
+    virtual void setAttribute(CommandAttribute attr) = 0;
+    virtual void removeAttribute(CommandAttribute attr) = 0;
     virtual bool hasAttribute(CommandAttribute attr) const = 0;
 
     virtual bool isActive() const = 0;

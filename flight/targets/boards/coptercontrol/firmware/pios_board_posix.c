@@ -59,15 +59,15 @@ void PIOS_Board_Init(void)
 
 
 const struct pios_udp_cfg pios_udp0_cfg = {
-    .ip   = "0.0.0.0",
+    .ip = "0.0.0.0",
     .port = 9000,
 };
 const struct pios_udp_cfg pios_udp1_cfg = {
-    .ip   = "0.0.0.0",
+    .ip = "0.0.0.0",
     .port = 9001,
 };
 const struct pios_udp_cfg pios_udp2_cfg = {
-    .ip   = "0.0.0.0",
+    .ip = "0.0.0.0",
     .port = 9002,
 };
 
@@ -76,7 +76,7 @@ const struct pios_udp_cfg pios_udp2_cfg = {
  * AUX USART
  */
 const struct pios_udp_cfg pios_udp3_cfg = {
-    .ip   = "0.0.0.0",
+    .ip = "0.0.0.0",
     .port = 9003,
 };
 #endif
@@ -119,20 +119,20 @@ extern const struct pios_com_driver pios_udp_com_driver;
 
 struct pios_com_dev pios_com_devs[] = {
     {
-        .id     = PIOS_UDP_TELEM,
+        .id = PIOS_UDP_TELEM,
         .driver = &pios_udp_com_driver,
     },
     {
-        .id     = PIOS_UDP_GPS,
+        .id = PIOS_UDP_GPS,
         .driver = &pios_udp_com_driver,
     },
     {
-        .id     = PIOS_UDP_LOCAL,
+        .id = PIOS_UDP_LOCAL,
         .driver = &pios_udp_com_driver,
     },
 #ifdef PIOS_COM_AUX
     {
-        .id     = PIOS_UDP_AUX,
+        .id = PIOS_UDP_AUX,
         .driver = &pios_udp_com_driver,
     },
 #endif

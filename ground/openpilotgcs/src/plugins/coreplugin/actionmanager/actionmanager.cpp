@@ -479,7 +479,7 @@ ActionContainer *ActionManagerPrivate::actionContainer(int uid) const
 
 static const char *settingsGroup = "KeyBindings";
 static const char *idKey = "ID";
-static const char *sequenceKey   = "Keysequence";
+static const char *sequenceKey = "Keysequence";
 
 void ActionManagerPrivate::readSettings(QSettings *settings)
 {
@@ -506,9 +506,9 @@ void ActionManagerPrivate::saveSettings(QSettings *settings)
 
     const IdCmdMap::const_iterator cmdcend = m_idCmdMap.constEnd();
     for (IdCmdMap::const_iterator j = m_idCmdMap.constBegin(); j != cmdcend; ++j) {
-        const int id        = j.key();
+        const int id = j.key();
         CommandPrivate *cmd = j.value();
-        QKeySequence key    = cmd->keySequence();
+        QKeySequence key = cmd->keySequence();
         if (key != cmd->defaultKeySequence()) {
             const QString sid = UniqueIDManager::instance()->stringForUniqueIdentifier(id);
             settings->setArrayIndex(count);

@@ -64,7 +64,7 @@ int32_t PIOS_DELAY_WaituS(uint32_t uS)
 {
     struct timespec wait, rest;
 
-    wait.tv_sec  = 0;
+    wait.tv_sec = 0;
     wait.tv_nsec = 1000 * uS;
     while (!nanosleep(&wait, &rest)) {
         wait = rest;
@@ -89,7 +89,7 @@ int32_t PIOS_DELAY_WaitmS(uint32_t mS)
 {
     struct timespec wait, rest;
 
-    wait.tv_sec  = mS / 1000;
+    wait.tv_sec = mS / 1000;
     wait.tv_nsec = (mS % 1000) * 1000000;
     while (!nanosleep(&wait, &rest)) {
         wait = rest;
@@ -109,7 +109,7 @@ uint32_t PIOS_DELAY_GetRaw()
 uint32_t PIOS_DELAY_DiffuS(uint32_t ref)
 {
     uint32_t diff_clock = clock() - ref;
-    uint32_t diff_us    = diff_clock; // (CLOCKS_PER_SEC / 1000);
+    uint32_t diff_us = diff_clock; // (CLOCKS_PER_SEC / 1000);
 
     return diff_us;
 }

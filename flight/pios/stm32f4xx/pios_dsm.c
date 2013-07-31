@@ -58,22 +58,22 @@ enum pios_dsm_dev_magic {
 
 struct pios_dsm_state {
     uint16_t channel_data[PIOS_DSM_NUM_INPUTS];
-    uint8_t  received_data[DSM_FRAME_LENGTH];
-    uint8_t  receive_timer;
-    uint8_t  failsafe_timer;
-    uint8_t  frame_found;
-    uint8_t  byte_count;
+    uint8_t received_data[DSM_FRAME_LENGTH];
+    uint8_t receive_timer;
+    uint8_t failsafe_timer;
+    uint8_t frame_found;
+    uint8_t byte_count;
 #ifdef DSM_LOST_FRAME_COUNTER
-    uint8_t  frames_lost_last;
+    uint8_t frames_lost_last;
     uint16_t frames_lost;
 #endif
 };
 
 struct pios_dsm_dev {
-    enum pios_dsm_dev_magic   magic;
+    enum pios_dsm_dev_magic magic;
     const struct pios_dsm_cfg *cfg;
     enum pios_dsm_proto proto;
-    struct pios_dsm_state     state;
+    struct pios_dsm_state state;
 };
 
 /* Allocate DSM device descriptor */
@@ -163,12 +163,12 @@ static void PIOS_DSM_ResetState(struct pios_dsm_dev *dsm_dev)
 {
     struct pios_dsm_state *state = &(dsm_dev->state);
 
-    state->receive_timer    = 0;
-    state->failsafe_timer   = 0;
-    state->frame_found      = 0;
+    state->receive_timer = 0;
+    state->failsafe_timer = 0;
+    state->frame_found = 0;
 #ifdef DSM_LOST_FRAME_COUNTER
     state->frames_lost_last = 0;
-    state->frames_lost      = 0;
+    state->frames_lost = 0;
 #endif
     PIOS_DSM_ResetChannels(dsm_dev);
 }
@@ -223,7 +223,7 @@ static int PIOS_DSM_UnrollChannels(struct pios_dsm_dev *dsm_dev)
     }
 
     /* unroll channels */
-    uint8_t *s    = &(state->received_data[2]);
+    uint8_t *s = &(state->received_data[2]);
     uint16_t mask = (resolution == 10) ? 0x03ff : 0x07ff;
 
     for (int i = 0; i < DSM_CHANNELS_PER_FRAME; i++) {
@@ -305,7 +305,7 @@ int32_t PIOS_DSM_Init(uint32_t *dsm_id,
     }
 
     /* Bind the configuration to the device instance */
-    dsm_dev->cfg   = cfg;
+    dsm_dev->cfg = cfg;
     dsm_dev->proto = proto;
 
     /* Bind the receiver if requested */
@@ -406,8 +406,8 @@ static void PIOS_DSM_Supervisor(uint32_t dsm_id)
 
     /* waiting for new frame if no bytes were received in 8ms */
     if (++state->receive_timer > 4) {
-        state->frame_found   = 1;
-        state->byte_count    = 0;
+        state->frame_found = 1;
+        state->byte_count = 0;
         state->receive_timer = 0;
     }
 

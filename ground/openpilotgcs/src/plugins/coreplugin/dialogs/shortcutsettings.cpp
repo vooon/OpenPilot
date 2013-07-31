@@ -82,7 +82,7 @@ QWidget *ShortcutSettings::createPage(QWidget *parent)
 {
     m_keyNum = m_key[0] = m_key[1] = m_key[2] = m_key[3] = 0;
 
-    m_page   = new Ui_ShortcutSettings();
+    m_page = new Ui_ShortcutSettings();
     QWidget *w = new QWidget(parent);
     m_page->setupUi(w);
 
@@ -301,8 +301,8 @@ void ShortcutSettings::initialize()
         QTreeWidgetItem *item = 0;
         ShortcutItem *s = new ShortcutItem;
         m_scitems << s;
-        item      = new QTreeWidgetItem(m_page->commandList);
-        s->m_cmd  = c;
+        item = new QTreeWidgetItem(m_page->commandList);
+        s->m_cmd = c;
         s->m_item = item;
 
         item->setText(0, uidm->stringForUniqueIdentifier(c->id()));

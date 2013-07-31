@@ -28,15 +28,15 @@
 
 
 namespace internals {
-const double PureProjection::PI      = M_PI;
+const double PureProjection::PI = M_PI;
 const double PureProjection::HALF_PI = (M_PI * 0.5);
-const double PureProjection::TWO_PI  = (M_PI * 2.0);
-const double PureProjection::EPSLoN  = 1.0e-10;
+const double PureProjection::TWO_PI = (M_PI * 2.0);
+const double PureProjection::EPSLoN = 1.0e-10;
 const double PureProjection::MAX_VAL = 4;
 const double PureProjection::MAXLONG = 2147483647;
 const double PureProjection::DBLLONG = 4.61168601e18;
-const double PureProjection::R2D     = 180 / M_PI;
-const double PureProjection::D2R     = M_PI / 180;
+const double PureProjection::R2D = 180 / M_PI;
+const double PureProjection::D2R = M_PI / 180;
 
 Point PureProjection::FromLatLngToPixel(const PointLatLng &p, const int &zoom)
 {
@@ -82,7 +82,7 @@ QList<Point> PureProjection::GetAreaTileList(const RectLatLng &rect, const int &
 {
     QList<Point> ret;
 
-    Point topLeft     = FromPixelToTileXY(FromLatLngToPixel(rect.LocationTopLeft(), zoom));
+    Point topLeft = FromPixelToTileXY(FromLatLngToPixel(rect.LocationTopLeft(), zoom));
     Point rightBottom = FromPixelToTileXY(FromLatLngToPixel(rect.Bottom(), rect.Right(), zoom));
 
     for (int x = (topLeft.X() - padding); x <= (rightBottom.X() + padding); x++) {
@@ -182,9 +182,9 @@ void PureProjection::FromGeodeticToCartesian(double Lat, double Lng, double Heig
     Lat = (PI / 180) * Lat;
     Lng = (PI / 180) * Lng;
 
-    double B  = Axis() * (1.0 - Flattening());
+    double B = Axis() * (1.0 - Flattening());
     double ee = 1.0 - (B / Axis()) * (B / Axis());
-    double N  = (Axis() / sqrt(1.0 - ee * sin(Lat) * sin(Lat)));
+    double N = (Axis() / sqrt(1.0 - ee * sin(Lat) * sin(Lat)));
 
     X = (N + Height) * cos(Lat) * cos(Lng);
     Y = (N + Height) * cos(Lat) * sin(Lng);
@@ -196,11 +196,11 @@ void PureProjection::FromCartesianTGeodetic(const double &X, const double &Y, co
 
     Lng = atan2(Y, X);
 
-    double P     = sqrt(X * X + Y * Y);
+    double P = sqrt(X * X + Y * Y);
     double Theta = atan2(Z, (P * (1.0 - Flattening())));
-    double st    = sin(Theta);
-    double ct    = cos(Theta);
-    Lat  = atan2(Z + E / (1.0 - Flattening()) * Axis() * st * st * st, P - E * Axis() * ct * ct * ct);
+    double st = sin(Theta);
+    double ct = cos(Theta);
+    Lat = atan2(Z + E / (1.0 - Flattening()) * Axis() * st * st * st, P - E * Axis() * ct * ct * ct);
 
     Lat /= (PI / 180);
     Lng /= (PI / 180);
@@ -218,16 +218,16 @@ double PureProjection::courseBetweenLatLng(PointLatLng const & p1, PointLatLng c
 
 double PureProjection::DistanceBetweenLatLng(PointLatLng const & p1, PointLatLng const & p2)
 {
-    double R    = 6371; // km
+    double R = 6371; // km
     double lat1 = p1.Lat();
     double lat2 = p2.Lat();
     double lon1 = p1.Lng();
     double lon2 = p2.Lng();
     double dLat = (lat2 - lat1) * (PI / 180);
     double dLon = (lon2 - lon1) * (PI / 180);
-    double a    = sin(dLat / 2) * sin(dLat / 2) + cos(lat1 * (PI / 180)) * cos(lat2 * (PI / 180)) * sin(dLon / 2) * sin(dLon / 2);
-    double c    = 2 * atan2(sqrt(a), sqrt(1 - a));
-    double d    = R * c;
+    double a = sin(dLat / 2) * sin(dLat / 2) + cos(lat1 * (PI / 180)) * cos(lat2 * (PI / 180)) * sin(dLon / 2) * sin(dLon / 2);
+    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    double d = R * c;
 
     return d;
 }
@@ -235,7 +235,7 @@ double PureProjection::DistanceBetweenLatLng(PointLatLng const & p1, PointLatLng
 void PureProjection::offSetFromLatLngs(PointLatLng p1, PointLatLng p2, double &distance, double &bearing)
 {
     distance = DistanceBetweenLatLng(p1, p2) * 1000;
-    bearing  = courseBetweenLatLng(p1, p2);
+    bearing = courseBetweenLatLng(p1, p2);
 }
 
 double PureProjection::myfmod(double x, double y)
@@ -246,11 +246,11 @@ double PureProjection::myfmod(double x, double y)
 PointLatLng PureProjection::translate(PointLatLng p1, double distance, double bearing)
 {
     PointLatLng ret;
-    double d    = distance;
-    double tc   = bearing;
+    double d = distance;
+    double tc = bearing;
     double lat1 = p1.Lat() * M_PI / 180;
     double lon1 = p1.Lng() * M_PI / 180;
-    double R    = 6378137;
+    double R = 6378137;
     double lat2 = asin(sin(lat1) * cos(d / R) + cos(lat1) * sin(d / R) * cos(tc));
     double lon2 = lon1 + atan2(sin(tc) * sin(d / R) * cos(lat1),
                                cos(d / R) - sin(lat1) * sin(lat2));

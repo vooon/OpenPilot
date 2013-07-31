@@ -186,12 +186,12 @@ osg::Camera *OsgViewerWidget::createCamera(int x, int y, int w, int h, const std
 
     traits->windowName = name;
     traits->windowDecoration = windowDecoration;
-    traits->x       = x;
-    traits->y       = y;
-    traits->width   = w;
-    traits->height  = h;
+    traits->x = x;
+    traits->y = y;
+    traits->width = w;
+    traits->height = h;
     traits->doubleBuffer = true;
-    traits->alpha   = ds->getMinimumNumAlphaBits();
+    traits->alpha = ds->getMinimumNumAlphaBits();
     traits->stencil = ds->getMinimumNumStencilBits();
     traits->sampleBuffers = ds->getMultiSamples();
     traits->samples = ds->getNumMultiSamples();
@@ -256,7 +256,7 @@ void OsgViewerWidget::paintEvent(QPaintEvent *event)
     ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
     UAVObjectManager *objMngr = pm->getObject<UAVObjectManager>();
 
-    PositionState *positionStateObj    = PositionState::GetInstance(objMngr);
+    PositionState *positionStateObj = PositionState::GetInstance(objMngr);
     PositionState::DataFields positionState = positionStateObj->getData();
     double NED[3] = { positionState.North, positionState.East, positionState.Down };
 

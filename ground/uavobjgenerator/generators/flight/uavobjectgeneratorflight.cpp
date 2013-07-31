@@ -35,15 +35,15 @@ bool UAVObjectGeneratorFlight::generate(UAVObjectParser *parser, QString templat
 
     QString flightObjInit, objInc, objFileNames, objNames;
     qint32 sizeCalc;
-    flightCodePath            = QDir(templatepath + QString(FLIGHT_CODE_DIR));
-    flightOutputPath          = QDir(outputpath + QString("flight"));
+    flightCodePath = QDir(templatepath + QString(FLIGHT_CODE_DIR));
+    flightOutputPath = QDir(outputpath + QString("flight"));
     flightOutputPath.mkpath(flightOutputPath.absolutePath());
 
-    flightCodeTemplate        = readFile(flightCodePath.absoluteFilePath("uavobject.c.template"));
-    flightIncludeTemplate     = readFile(flightCodePath.absoluteFilePath("inc/uavobject.h.template"));
-    flightInitTemplate        = readFile(flightCodePath.absoluteFilePath("uavobjectsinit.c.template"));
+    flightCodeTemplate = readFile(flightCodePath.absoluteFilePath("uavobject.c.template"));
+    flightIncludeTemplate = readFile(flightCodePath.absoluteFilePath("inc/uavobject.h.template"));
+    flightInitTemplate = readFile(flightCodePath.absoluteFilePath("uavobjectsinit.c.template"));
     flightInitIncludeTemplate = readFile(flightCodePath.absoluteFilePath("inc/uavobjectsinit.h.template"));
-    flightMakeTemplate        = readFile(flightCodePath.absoluteFilePath("Makefile.inc.template"));
+    flightMakeTemplate = readFile(flightCodePath.absoluteFilePath("Makefile.inc.template"));
 
     if (flightCodeTemplate.isNull() || flightIncludeTemplate.isNull() || flightInitTemplate.isNull()) {
         cerr << "Error: Could not open flight template files." << endl;
@@ -109,7 +109,7 @@ bool UAVObjectGeneratorFlight::process_object(ObjectInfo *info)
 
     // Prepare output strings
     QString outInclude = flightIncludeTemplate;
-    QString outCode    = flightCodeTemplate;
+    QString outCode = flightCodeTemplate;
 
     // Replace common tags
     replaceCommonTags(outInclude, info);

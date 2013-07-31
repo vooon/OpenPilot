@@ -44,9 +44,9 @@ DialGadgetWidget::DialGadgetWidget(QWidget *parent) : QGraphicsView(parent)
 
     m_renderer = new QSvgRenderer();
 
-    obj1    = NULL;
-    obj2    = NULL;
-    obj3    = NULL;
+    obj1 = NULL;
+    obj2 = NULL;
+    obj3 = NULL;
     m_text1 = NULL;
     m_text2 = NULL;
     m_text3 = NULL; // Should be initialized to NULL otherwise the setFont method
@@ -108,8 +108,8 @@ void DialGadgetWidget::connectNeedles(QString object1, QString nfield1,
             connect(obj1, SIGNAL(objectUpdated(UAVObject *)), this, SLOT(updateNeedle1(UAVObject *)));
             if (nfield1.contains("-")) {
                 QStringList fieldSubfield = nfield1.split("-", QString::SkipEmptyParts);
-                field1        = fieldSubfield.at(0);
-                subfield1     = fieldSubfield.at(1);
+                field1 = fieldSubfield.at(0);
+                subfield1 = fieldSubfield.at(1);
                 haveSubField1 = true;
             } else {
                 field1 = nfield1;
@@ -128,8 +128,8 @@ void DialGadgetWidget::connectNeedles(QString object1, QString nfield1,
             connect(obj2, SIGNAL(objectUpdated(UAVObject *)), this, SLOT(updateNeedle2(UAVObject *)));
             if (nfield2.contains("-")) {
                 QStringList fieldSubfield = nfield2.split("-", QString::SkipEmptyParts);
-                field2        = fieldSubfield.at(0);
-                subfield2     = fieldSubfield.at(1);
+                field2 = fieldSubfield.at(0);
+                subfield2 = fieldSubfield.at(1);
                 haveSubField2 = true;
             } else {
                 field2 = nfield2;
@@ -148,8 +148,8 @@ void DialGadgetWidget::connectNeedles(QString object1, QString nfield1,
             connect(obj3, SIGNAL(objectUpdated(UAVObject *)), this, SLOT(updateNeedle3(UAVObject *)));
             if (nfield3.contains("-")) {
                 QStringList fieldSubfield = nfield3.split("-", QString::SkipEmptyParts);
-                field3        = fieldSubfield.at(0);
-                subfield3     = fieldSubfield.at(1);
+                field3 = fieldSubfield.at(0);
+                subfield3 = fieldSubfield.at(1);
                 haveSubField3 = true;
             } else {
                 field3 = nfield3;
@@ -256,9 +256,9 @@ void DialGadgetWidget::setDialFile(QString dfn, QString bg, QString fg, QString 
         m_background->setFlags(QGraphicsItem::ItemClipsChildrenToShape |
                                QGraphicsItem::ItemClipsToShape);
         m_foreground = new QGraphicsSvgItem();
-        m_needle1    = new QGraphicsSvgItem();
-        m_needle2    = new QGraphicsSvgItem();
-        m_needle3    = new QGraphicsSvgItem();
+        m_needle1 = new QGraphicsSvgItem();
+        m_needle2 = new QGraphicsSvgItem();
+        m_needle3 = new QGraphicsSvgItem();
         m_needle1->setParentItem(m_background);
         m_needle2->setParentItem(m_background);
         m_needle3->setParentItem(m_background);
@@ -311,14 +311,14 @@ void DialGadgetWidget::setDialFile(QString dfn, QString bg, QString fg, QString 
         }
 
         rotateN1 = false;
-        horizN1  = false;
-        vertN1   = false;
+        horizN1 = false;
+        vertN1 = false;
         rotateN2 = false;
-        horizN2  = false;
-        vertN2   = false;
+        horizN2 = false;
+        vertN2 = false;
         rotateN3 = false;
-        horizN3  = false;
-        vertN3   = false;
+        horizN3 = false;
+        vertN3 = false;
 
         // Now setup the rotation/translation settings:
         // this is UGLY UGLY UGLY, sorry...
@@ -431,9 +431,9 @@ void DialGadgetWidget::setDialFile(QString dfn, QString bg, QString fg, QString 
         m_background = new QGraphicsSvgItem();
         m_background->setSharedRenderer(m_renderer);
         l_scene->addItem(m_background);
-        m_text1   = NULL;
-        m_text2   = NULL;
-        m_text3   = NULL;
+        m_text1 = NULL;
+        m_text2 = NULL;
+        m_text3 = NULL;
         m_needle1 = NULL;
         m_needle2 = NULL;
         m_needle3 = NULL;

@@ -127,12 +127,12 @@ int32_t FixedWingPathFollowerInitialize()
 MODULE_INITCALL(FixedWingPathFollowerInitialize, FixedWingPathFollowerStart);
 
 static float northVelIntegral = 0;
-static float eastVelIntegral  = 0;
-static float downVelIntegral  = 0;
+static float eastVelIntegral = 0;
+static float downVelIntegral = 0;
 
-static float courseIntegral   = 0;
-static float speedIntegral    = 0;
-static float powerIntegral    = 0;
+static float courseIntegral = 0;
+static float speedIntegral = 0;
+static float powerIntegral = 0;
 static float airspeedErrorInt = 0;
 
 // correct speed by measured airspeed
@@ -197,7 +197,7 @@ static void pathfollowerTask(__attribute__((unused)) void *parameters)
             }
             break;
         case FLIGHTSTATUS_FLIGHTMODE_PATHPLANNER:
-            pathStatus.UID    = pathDesired.UID;
+            pathStatus.UID = pathDesired.UID;
             pathStatus.Status = PATHSTATUS_STATUS_INPROGRESS;
             switch (pathDesired.Mode) {
             case PATHDESIRED_MODE_FLYENDPOINT:
@@ -229,11 +229,11 @@ static void pathfollowerTask(__attribute__((unused)) void *parameters)
         default:
             // Be cleaner and get rid of global variables
             northVelIntegral = 0;
-            eastVelIntegral  = 0;
-            downVelIntegral  = 0;
-            courseIntegral   = 0;
-            speedIntegral    = 0;
-            powerIntegral    = 0;
+            eastVelIntegral = 0;
+            downVelIntegral = 0;
+            courseIntegral = 0;
+            speedIntegral = 0;
+            powerIntegral = 0;
 
             break;
         }
@@ -292,7 +292,7 @@ static void updatePathVelocity()
     // calculate velocity - can be zero if waypoints are too close
     VelocityDesiredData velocityDesired;
     velocityDesired.North = progress.path_direction[0];
-    velocityDesired.East  = progress.path_direction[1];
+    velocityDesired.East = progress.path_direction[1];
 
     float error_speed = progress.error * fixedwingpathfollowerSettings.HorizontalPosP;
 
@@ -327,15 +327,15 @@ static void updatePathVelocity()
 
     // calculate correction - can also be zero if correction vector is 0 or no error present
     velocityDesired.North += progress.correction_direction[0] * error_speed;
-    velocityDesired.East  += progress.correction_direction[1] * error_speed;
+    velocityDesired.East += progress.correction_direction[1] * error_speed;
 
     // scale to correct length
     float l = sqrtf(velocityDesired.North * velocityDesired.North + velocityDesired.East * velocityDesired.East);
     velocityDesired.North *= groundspeed / l;
-    velocityDesired.East  *= groundspeed / l;
+    velocityDesired.East *= groundspeed / l;
 
     float downError = altitudeSetpoint - positionState.Down;
-    velocityDesired.Down   = downError * fixedwingpathfollowerSettings.VerticalPosP;
+    velocityDesired.Down = downError * fixedwingpathfollowerSettings.VerticalPosP;
 
     // update pathstatus
     pathStatus.error = progress.error;
@@ -354,13 +354,13 @@ static void updateFixedAttitude(float *attitude)
     StabilizationDesiredData stabDesired;
 
     StabilizationDesiredGet(&stabDesired);
-    stabDesired.Roll     = attitude[0];
-    stabDesired.Pitch    = attitude[1];
-    stabDesired.Yaw      = attitude[2];
+    stabDesired.Roll = attitude[0];
+    stabDesired.Pitch = attitude[1];
+    stabDesired.Yaw = attitude[2];
     stabDesired.Throttle = attitude[3];
-    stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_ROLL]  = STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE;
+    stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_ROLL] = STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE;
     stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_PITCH] = STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE;
-    stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_YAW]   = STABILIZATIONDESIRED_STABILIZATIONMODE_RATE;
+    stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_YAW] = STABILIZATIONDESIRED_STABILIZATIONMODE_RATE;
     StabilizationDesiredSet(&stabDesired);
 }
 
@@ -425,10 +425,10 @@ static uint8_t updateFixedDesiredAttitude()
     // note that airspeedStateBias is ( calibratedAirspeed - groundSpeed ) at the time of measurement,
     // but thanks to accelerometers,  groundspeed reacts faster to changes in direction
     // than airspeed and gps sensors alone
-    indicatedAirspeedState   = groundspeedState + indicatedAirspeedStateBias;
+    indicatedAirspeedState = groundspeedState + indicatedAirspeedStateBias;
 
     // Desired ground speed
-    groundspeedDesired       = sqrtf(velocityDesired.North * velocityDesired.North + velocityDesired.East * velocityDesired.East);
+    groundspeedDesired = sqrtf(velocityDesired.North * velocityDesired.North + velocityDesired.East * velocityDesired.East);
     indicatedAirspeedDesired = bound(groundspeedDesired + indicatedAirspeedStateBias,
                                      fixedwingpathfollowerSettings.HorizontalVelMin,
                                      fixedwingpathfollowerSettings.HorizontalVelMax);
@@ -445,7 +445,7 @@ static uint8_t updateFixedDesiredAttitude()
 
     // Error condition: plane too slow or too fast
     fixedwingpathfollowerStatus.Errors[FIXEDWINGPATHFOLLOWERSTATUS_ERRORS_HIGHSPEED] = 0;
-    fixedwingpathfollowerStatus.Errors[FIXEDWINGPATHFOLLOWERSTATUS_ERRORS_LOWSPEED]  = 0;
+    fixedwingpathfollowerStatus.Errors[FIXEDWINGPATHFOLLOWERSTATUS_ERRORS_LOWSPEED] = 0;
     if (indicatedAirspeedState > systemSettings.AirSpeedMax * fixedwingpathfollowerSettings.Safetymargins[FIXEDWINGPATHFOLLOWERSETTINGS_SAFETYMARGINS_OVERSPEED]) {
         fixedwingpathfollowerStatus.Errors[FIXEDWINGPATHFOLLOWERSTATUS_ERRORS_OVERSPEED] = 1;
         result = 0;
@@ -494,9 +494,9 @@ static uint8_t updateFixedDesiredAttitude()
                    speedErrorToPowerCommandComponent;
 
     // Output internal state to telemetry
-    fixedwingpathfollowerStatus.Error[FIXEDWINGPATHFOLLOWERSTATUS_ERROR_POWER]       = descentspeedError;
+    fixedwingpathfollowerStatus.Error[FIXEDWINGPATHFOLLOWERSTATUS_ERROR_POWER] = descentspeedError;
     fixedwingpathfollowerStatus.ErrorInt[FIXEDWINGPATHFOLLOWERSTATUS_ERRORINT_POWER] = powerIntegral;
-    fixedwingpathfollowerStatus.Command[FIXEDWINGPATHFOLLOWERSTATUS_COMMAND_POWER]   = powerCommand;
+    fixedwingpathfollowerStatus.Command[FIXEDWINGPATHFOLLOWERSTATUS_COMMAND_POWER] = powerCommand;
 
     // set throttle
     stabDesired.Throttle = bound(fixedwingpathfollowerSettings.ThrottleLimit[FIXEDWINGPATHFOLLOWERSETTINGS_THROTTLELIMIT_NEUTRAL] + powerCommand,
@@ -547,9 +547,9 @@ static uint8_t updateFixedDesiredAttitude()
                      + airspeedErrorInt * fixedwingpathfollowerSettings.SpeedPI[FIXEDWINGPATHFOLLOWERSETTINGS_SPEEDPI_KI]
                      ) + verticalSpeedToPitchCommandComponent;
 
-    fixedwingpathfollowerStatus.Error[FIXEDWINGPATHFOLLOWERSTATUS_ERROR_SPEED]       = airspeedError;
+    fixedwingpathfollowerStatus.Error[FIXEDWINGPATHFOLLOWERSTATUS_ERROR_SPEED] = airspeedError;
     fixedwingpathfollowerStatus.ErrorInt[FIXEDWINGPATHFOLLOWERSTATUS_ERRORINT_SPEED] = airspeedErrorInt;
-    fixedwingpathfollowerStatus.Command[FIXEDWINGPATHFOLLOWERSTATUS_COMMAND_SPEED]   = pitchCommand;
+    fixedwingpathfollowerStatus.Command[FIXEDWINGPATHFOLLOWERSTATUS_COMMAND_SPEED] = pitchCommand;
 
     stabDesired.Pitch = bound(fixedwingpathfollowerSettings.PitchLimit[FIXEDWINGPATHFOLLOWERSETTINGS_PITCHLIMIT_NEUTRAL] + pitchCommand,
                               fixedwingpathfollowerSettings.PitchLimit[FIXEDWINGPATHFOLLOWERSETTINGS_PITCHLIMIT_MIN],
@@ -611,12 +611,12 @@ static uint8_t updateFixedDesiredAttitude()
     courseIntegral = bound(courseIntegral + courseError * dT * fixedwingpathfollowerSettings.CoursePI[FIXEDWINGPATHFOLLOWERSETTINGS_COURSEPI_KI],
                            -fixedwingpathfollowerSettings.CoursePI[FIXEDWINGPATHFOLLOWERSETTINGS_COURSEPI_ILIMIT],
                            fixedwingpathfollowerSettings.CoursePI[FIXEDWINGPATHFOLLOWERSETTINGS_COURSEPI_ILIMIT]);
-    courseCommand  = (courseError * fixedwingpathfollowerSettings.CoursePI[FIXEDWINGPATHFOLLOWERSETTINGS_COURSEPI_KP] +
-                      courseIntegral);
+    courseCommand = (courseError * fixedwingpathfollowerSettings.CoursePI[FIXEDWINGPATHFOLLOWERSETTINGS_COURSEPI_KP] +
+                     courseIntegral);
 
-    fixedwingpathfollowerStatus.Error[FIXEDWINGPATHFOLLOWERSTATUS_ERROR_COURSE]       = courseError;
+    fixedwingpathfollowerStatus.Error[FIXEDWINGPATHFOLLOWERSTATUS_ERROR_COURSE] = courseError;
     fixedwingpathfollowerStatus.ErrorInt[FIXEDWINGPATHFOLLOWERSTATUS_ERRORINT_COURSE] = courseIntegral;
-    fixedwingpathfollowerStatus.Command[FIXEDWINGPATHFOLLOWERSTATUS_COMMAND_COURSE]   = courseCommand;
+    fixedwingpathfollowerStatus.Command[FIXEDWINGPATHFOLLOWERSTATUS_COMMAND_COURSE] = courseCommand;
 
     stabDesired.Roll = bound(fixedwingpathfollowerSettings.RollLimit[FIXEDWINGPATHFOLLOWERSETTINGS_ROLLLIMIT_NEUTRAL] +
                              courseCommand,
@@ -633,9 +633,9 @@ static uint8_t updateFixedDesiredAttitude()
     stabDesired.Yaw = 0;
 
 
-    stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_ROLL]  = STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE;
+    stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_ROLL] = STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE;
     stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_PITCH] = STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE;
-    stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_YAW]   = STABILIZATIONDESIRED_STABILIZATIONMODE_NONE;
+    stabDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_YAW] = STABILIZATIONDESIRED_STABILIZATIONMODE_NONE;
 
     StabilizationDesiredSet(&stabDesired);
 

@@ -53,7 +53,7 @@ struct pios_gcsrcvr_dev {
     enum pios_gcsrcvr_dev_magic magic;
 
     uint8_t supv_timer;
-    bool    Fresh;
+    bool Fresh;
 };
 
 static struct pios_gcsrcvr_dev *global_gcsrcvr_dev;

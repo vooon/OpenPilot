@@ -90,7 +90,7 @@ QTreeWidgetItem *WelcomeModeTreeWidget::addItem(const QString &label, const QStr
     QBoxLayout *lay = new QVBoxLayout;
     lay->setContentsMargins(3, 2, 0, 0);
     lay->addWidget(lbl);
-    QWidget *wdg    = new QWidget;
+    QWidget *wdg = new QWidget;
     wdg->setLayout(lay);
     setItemWidget(item, 1, wdg);
     item->setData(0, Qt::UserRole, data);
@@ -104,7 +104,7 @@ void WelcomeModeTreeWidget::slotAddNewsItem(const QString &title, const QString 
 {
     int itemWidth = width() - header()->sectionSize(0);
     QFont f = font();
-    QString elidedText  = QFontMetrics(f).elidedText(description, Qt::ElideRight, itemWidth);
+    QString elidedText = QFontMetrics(f).elidedText(description, Qt::ElideRight, itemWidth);
 
     f.setBold(true);
     QString elidedTitle = QFontMetrics(f).elidedText(title, Qt::ElideRight, itemWidth);

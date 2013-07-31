@@ -91,7 +91,7 @@ void GpsSnrWidget::drawSat(int index)
         int availableWidth = (int)((scene->width() - 2) / MAX_SATTELITES);
 
         // 2 pixels, one on each side.
-        qreal width  = availableWidth - 2;
+        qreal width = availableWidth - 2;
         // SNR = 1-99 (0 is special)..
         qreal height = int((scene->height() / 99) * snr + 0.5);
         // 1 for showing a pixel of white to the left.
@@ -102,7 +102,7 @@ void GpsSnrWidget::drawSat(int index)
         boxes[index]->setRect(0, 0, width - 1, height - 1);
         boxes[index]->setPos(x, y);
 
-        QRectF boxRect    = boxes[index]->boundingRect();
+        QRectF boxRect = boxes[index]->boundingRect();
         QString prnString = QString().number(prn);
         if (prnString.length() == 1) {
             prnString = "0" + prnString;
@@ -111,7 +111,7 @@ void GpsSnrWidget::drawSat(int index)
         QRectF textRect = satTexts[index]->boundingRect();
 
         QTransform matrix;
-        qreal scale     = 0.85 * (boxRect.width() / textRect.width());
+        qreal scale = 0.85 * (boxRect.width() / textRect.width());
         matrix.translate(boxRect.width() / 2, boxRect.height());
         matrix.scale(scale, scale);
         matrix.translate(-textRect.width() / 2, -textRect.height());
@@ -125,7 +125,7 @@ void GpsSnrWidget::drawSat(int index)
         textRect = satSNRs[index]->boundingRect();
 
         matrix.reset();
-        scale    = 0.85 * (boxRect.width() / textRect.width());
+        scale = 0.85 * (boxRect.width() / textRect.width());
         matrix.translate(boxRect.width() / 2, 0);
         matrix.scale(scale, scale);
         matrix.translate(-textRect.width() / 2, -textRect.height());

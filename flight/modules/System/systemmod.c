@@ -124,7 +124,7 @@ int32_t SystemModStart(void)
 {
     // Initialize vars
     stackOverflow = false;
-    mallocFailed  = false;
+    mallocFailed = false;
     // Create system task
     xTaskCreate(systemTask, (signed char *)"System", STACK_SIZE_BYTES / 4, NULL, TASK_PRIORITY, &systemTaskHandle);
     // Register task
@@ -271,16 +271,16 @@ static void systemTask(__attribute__((unused)) void *parameters)
         oplinkStatus.HeapRemaining = xPortGetFreeHeapSize();
         oplinkStatus.DeviceID = PIOS_RFM22B_DeviceID(pios_rfm22b_id);
         oplinkStatus.RxGood = radio_stats.rx_good;
-        oplinkStatus.RxCorrected   = radio_stats.rx_corrected;
+        oplinkStatus.RxCorrected = radio_stats.rx_corrected;
         oplinkStatus.RxErrors = radio_stats.rx_error;
         oplinkStatus.RxMissed = radio_stats.rx_missed;
-        oplinkStatus.RxFailure     = radio_stats.rx_failure;
-        oplinkStatus.TxDropped     = radio_stats.tx_dropped;
+        oplinkStatus.RxFailure = radio_stats.rx_failure;
+        oplinkStatus.TxDropped = radio_stats.tx_dropped;
         oplinkStatus.TxResent = radio_stats.tx_resent;
-        oplinkStatus.TxFailure     = radio_stats.tx_failure;
-        oplinkStatus.Resets      = radio_stats.resets;
-        oplinkStatus.Timeouts    = radio_stats.timeouts;
-        oplinkStatus.RSSI        = radio_stats.rssi;
+        oplinkStatus.TxFailure = radio_stats.tx_failure;
+        oplinkStatus.Resets = radio_stats.resets;
+        oplinkStatus.Timeouts = radio_stats.timeouts;
+        oplinkStatus.RSSI = radio_stats.rssi;
         oplinkStatus.LinkQuality = radio_stats.link_quality;
         if (first_time) {
             first_time = false;
@@ -294,8 +294,8 @@ static void systemTask(__attribute__((unused)) void *parameters)
             prev_tx_count = tx_count;
             prev_rx_count = rx_count;
         }
-        oplinkStatus.TXSeq     = radio_stats.tx_seq;
-        oplinkStatus.RXSeq     = radio_stats.rx_seq;
+        oplinkStatus.TXSeq = radio_stats.tx_seq;
+        oplinkStatus.RXSeq = radio_stats.rx_seq;
         oplinkStatus.LinkState = radio_stats.link_state;
         OPLinkStatusSet(&oplinkStatus);
 #endif /* if defined(PIOS_INCLUDE_RFM22B) */
@@ -426,9 +426,9 @@ static void taskMonitorForEachCallback(uint16_t task_id, const struct pios_task_
     // By convention, there is a direct mapping between task monitor task_id's and members
     // of the TaskInfoXXXXElem enums
     PIOS_DEBUG_Assert(task_id < TASKINFO_RUNNING_NUMELEM);
-    taskData->Running[task_id]        = task_info->is_running ? TASKINFO_RUNNING_TRUE : TASKINFO_RUNNING_FALSE;
+    taskData->Running[task_id] = task_info->is_running ? TASKINFO_RUNNING_TRUE : TASKINFO_RUNNING_FALSE;
     taskData->StackRemaining[task_id] = task_info->stack_remaining;
-    taskData->RunningTime[task_id]    = task_info->running_time_percentage;
+    taskData->RunningTime[task_id] = task_info->running_time_percentage;
 }
 #endif
 
@@ -476,8 +476,8 @@ static uint16_t GetFreeIrqStackSize(void)
 #if !defined(ARCH_POSIX) && !defined(ARCH_WIN32) && defined(CHECK_IRQ_STACK)
     extern uint32_t _irq_stack_top;
     extern uint32_t _irq_stack_end;
-    uint32_t pattern    = 0x0000A5A5;
-    uint32_t *ptr       = &_irq_stack_end;
+    uint32_t pattern = 0x0000A5A5;
+    uint32_t *ptr = &_irq_stack_end;
 
 #if 1 /* the ugly way accurate but takes more time, useful for debugging */
     uint32_t stack_size = (((uint32_t)&_irq_stack_top - (uint32_t)&_irq_stack_end) & ~3) / 4;
@@ -511,7 +511,7 @@ static void updateStats()
 
     // Get stats and update
     SystemStatsGet(&stats);
-    stats.FlightTime    = xTaskGetTickCount() * portTICK_RATE_MS;
+    stats.FlightTime = xTaskGetTickCount() * portTICK_RATE_MS;
 #if defined(ARCH_POSIX) || defined(ARCH_WIN32)
     // POSIX port of FreeRTOS doesn't have xPortGetFreeHeapSize()
     stats.HeapRemaining = 10240;
@@ -529,12 +529,12 @@ static void updateStats()
 #if !defined(ARCH_POSIX) && !defined(ARCH_WIN32)
     if (pios_uavo_settings_fs_id) {
         PIOS_FLASHFS_GetStats(pios_uavo_settings_fs_id, &fsStats);
-        stats.SysSlotsFree   = fsStats.num_free_slots;
+        stats.SysSlotsFree = fsStats.num_free_slots;
         stats.SysSlotsActive = fsStats.num_active_slots;
     }
     if (pios_user_fs_id) {
         PIOS_FLASHFS_GetStats(pios_user_fs_id, &fsStats);
-        stats.UsrSlotsFree   = fsStats.num_free_slots;
+        stats.UsrSlotsFree = fsStats.num_free_slots;
         stats.UsrSlotsActive = fsStats.num_active_slots;
     }
 #endif
@@ -543,11 +543,11 @@ static void updateStats()
         uint32_t dT = (xTaskGetTickCount() - lastTickCount) * portTICK_RATE_MS; // in ms
         stats.CPULoad = 100 - (uint8_t)roundf(100.0f * ((float)idleCounter / ((float)dT / 1000.0f)) / (float)IDLE_COUNTS_PER_SEC_AT_NO_LOAD);
     } // else: TickCount has wrapped, do not calc now
-    lastTickCount    = now;
+    lastTickCount = now;
     idleCounterClear = 1;
 #if defined(PIOS_INCLUDE_ADC) && defined(PIOS_ADC_USE_TEMP_SENSOR)
     float temp_voltage = PIOS_ADC_PinGetVolt(PIOS_ADC_TEMPERATURE_PIN);
-    stats.CPUTemp    = PIOS_CONVERT_VOLT_TO_CPU_TEMP(temp_voltage);;
+    stats.CPUTemp = PIOS_CONVERT_VOLT_TO_CPU_TEMP(temp_voltage);;
 #endif
     SystemStatsSet(&stats);
 }
@@ -610,9 +610,9 @@ static void updateSystemAlarms()
     if (objStats.lastCallbackErrorID || objStats.lastQueueErrorID || evStats.lastErrorID) {
         SystemStatsData sysStats;
         SystemStatsGet(&sysStats);
-        sysStats.EventSystemWarningID    = evStats.lastErrorID;
+        sysStats.EventSystemWarningID = evStats.lastErrorID;
         sysStats.ObjectManagerCallbackID = objStats.lastCallbackErrorID;
-        sysStats.ObjectManagerQueueID    = objStats.lastQueueErrorID;
+        sysStats.ObjectManagerQueueID = objStats.lastQueueErrorID;
         SystemStatsSet(&sysStats);
     }
 }

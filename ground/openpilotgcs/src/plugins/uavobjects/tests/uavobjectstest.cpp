@@ -66,9 +66,9 @@ void UAVObjectsTest::runTest()
 
         // Set data
         ExampleObject1::DataFields data = obj1->getData();
-        data.Field1    = 1;
-        data.Field2    = 2;
-        data.Field3    = 3;
+        data.Field1 = 1;
+        data.Field2 = 2;
+        data.Field3 = 3;
         data.Field4[0] = 4.1;
         data.Field4[1] = 4.2;
         data.Field4[2] = 4.3;
@@ -91,9 +91,9 @@ void UAVObjectsTest::runTest()
         // Pack, unpack testing
         quint8 *buf = new quint8[obj1->getNumBytes()];
         obj1->pack(buf);
-        data.Field1    = 10;
-        data.Field2    = 20;
-        data.Field3    = 30;
+        data.Field1 = 10;
+        data.Field2 = 20;
+        data.Field3 = 30;
         data.Field4[0] = 40.1;
         data.Field4[1] = 40.2;
         data.Field4[2] = 40.3;
@@ -102,9 +102,9 @@ void UAVObjectsTest::runTest()
 
         // Save, load testing
         obj1->save();
-        data.Field1    = 10;
-        data.Field2    = 20;
-        data.Field3    = 30;
+        data.Field1 = 10;
+        data.Field2 = 20;
+        data.Field3 = 30;
         data.Field4[0] = 40.1;
         data.Field4[1] = 40.2;
         data.Field4[2] = 40.3;
@@ -123,7 +123,7 @@ void UAVObjectsTest::runTest()
         UAVObject *obj = objMngr->getObject(objname);
         QList<UAVObjectField *> fields = obj->getFields();
         // qint8
-        UAVObjectFieldInt8 *fieldint8  = dynamic_cast< UAVObjectFieldInt8 * >(fields[0]);
+        UAVObjectFieldInt8 *fieldint8 = dynamic_cast< UAVObjectFieldInt8 * >(fields[0]);
         if (fieldint8 != NULL) {
             fieldint8->setValue(10);
             qint8 value = fieldint8->getValue();
@@ -134,7 +134,7 @@ void UAVObjectsTest::runTest()
         if (fieldenum != NULL) {
             QStringList options = fieldenum->getOptions();
             fieldenum->setSelected(options[1]);
-            QString selected    = fieldenum->getSelected();
+            QString selected = fieldenum->getSelected();
             sout << selected;
         }
 

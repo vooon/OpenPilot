@@ -43,11 +43,11 @@ static void PIOS_USB_HID_TxStart(uint32_t usbhid_id, uint16_t tx_bytes_avail);
 static void PIOS_USB_HID_RxStart(uint32_t usbhid_id, uint16_t rx_bytes_avail);
 
 const struct pios_com_driver pios_usb_hid_com_driver = {
-    .tx_start   = PIOS_USB_HID_TxStart,
-    .rx_start   = PIOS_USB_HID_RxStart,
+    .tx_start = PIOS_USB_HID_TxStart,
+    .rx_start = PIOS_USB_HID_RxStart,
     .bind_tx_cb = PIOS_USB_HID_RegisterTxCallback,
     .bind_rx_cb = PIOS_USB_HID_RegisterRxCallback,
-    .available  = PIOS_USB_CheckAvailable,
+    .available = PIOS_USB_CheckAvailable,
 };
 
 enum pios_usb_hid_dev_magic {
@@ -55,7 +55,7 @@ enum pios_usb_hid_dev_magic {
 };
 
 struct pios_usb_hid_dev {
-    enum pios_usb_hid_dev_magic   magic;
+    enum pios_usb_hid_dev_magic magic;
     const struct pios_usb_hid_cfg *cfg;
 
     uint32_t lower_id;
@@ -65,12 +65,12 @@ struct pios_usb_hid_dev {
     pios_com_callback tx_out_cb;
     uint32_t tx_out_context;
 
-    bool     usb_if_enabled;
+    bool usb_if_enabled;
 
-    uint8_t  rx_packet_buffer[PIOS_USB_BOARD_HID_DATA_LENGTH] __attribute__((aligned(4)));
+    uint8_t rx_packet_buffer[PIOS_USB_BOARD_HID_DATA_LENGTH] __attribute__((aligned(4)));
     volatile bool rx_active;
 
-    uint8_t  tx_packet_buffer[PIOS_USB_BOARD_HID_DATA_LENGTH] __attribute__((aligned(4)));
+    uint8_t tx_packet_buffer[PIOS_USB_BOARD_HID_DATA_LENGTH] __attribute__((aligned(4)));
     volatile bool tx_active;
 
     uint32_t rx_dropped;
@@ -122,9 +122,9 @@ static bool PIOS_USB_HID_IF_Setup(uint32_t usb_hid_id, struct usb_setup_request 
 static void PIOS_USB_HID_IF_CtrlDataOut(uint32_t usb_hid_id, const struct usb_setup_request *req);
 
 static struct pios_usb_ifops usb_hid_ifops = {
-    .init   = PIOS_USB_HID_IF_Init,
+    .init = PIOS_USB_HID_IF_Init,
     .deinit = PIOS_USB_HID_IF_DeInit,
-    .setup  = PIOS_USB_HID_IF_Setup,
+    .setup = PIOS_USB_HID_IF_Setup,
     .ctrl_data_out = PIOS_USB_HID_IF_CtrlDataOut,
 };
 
@@ -145,7 +145,7 @@ int32_t PIOS_USB_HID_Init(uint32_t *usbhid_id, const struct pios_usb_hid_cfg *cf
 
     /* Bind the configuration to the device instance */
     usb_hid_dev->cfg = cfg;
-    usb_hid_dev->lower_id  = lower_id;
+    usb_hid_dev->lower_id = lower_id;
 
     /* Rx and Tx are not active yet */
     usb_hid_dev->rx_active = false;
@@ -169,7 +169,7 @@ static struct pios_usbhook_descriptor hid_desc;
 void PIOS_USB_HID_RegisterHidDescriptor(const uint8_t *desc, uint16_t length)
 {
     hid_desc.descriptor = desc;
-    hid_desc.length     = length;
+    hid_desc.length = length;
 }
 
 static struct pios_usbhook_descriptor hid_report_desc;
@@ -177,7 +177,7 @@ static struct pios_usbhook_descriptor hid_report_desc;
 void PIOS_USB_HID_RegisterHidReport(const uint8_t *desc, uint16_t length)
 {
     hid_report_desc.descriptor = desc;
-    hid_report_desc.length     = length;
+    hid_report_desc.length = length;
 }
 
 static bool PIOS_USB_HID_SendReport(struct pios_usb_hid_dev *usb_hid_dev)
@@ -427,7 +427,7 @@ static bool PIOS_USB_HID_IF_Setup(uint32_t usb_hid_id, struct usb_setup_request 
         case USB_HID_REQ_SET_IDLE:
             /* Idle rates are currently ignored but decoded for debugging */
             hid_idle.idle_period = req->wValue & 0xFF00 >> 8;
-            hid_idle.report_id   = req->wValue & 0x00FF;
+            hid_idle.report_id = req->wValue & 0x00FF;
             break;
         case USB_HID_REQ_GET_PROTOCOL:
             PIOS_USBHOOK_CtrlTx(&hid_protocol, 1);

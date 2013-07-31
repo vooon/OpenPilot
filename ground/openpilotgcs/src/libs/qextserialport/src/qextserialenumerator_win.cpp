@@ -69,7 +69,7 @@ QString QextSerialEnumerator::getDeviceProperty(HDEVINFO devInfo, PSP_DEVINFO_DA
     DWORD buffSize = 0;
 
     SetupDiGetDeviceRegistryProperty(devInfo, devData, property, NULL, NULL, 0, &buffSize);
-    BYTE *buff     = new BYTE[buffSize];
+    BYTE *buff = new BYTE[buffSize];
     SetupDiGetDeviceRegistryProperty(devInfo, devData, property, NULL, buff, buffSize, NULL);
     QString result = TCHARToQString(buff);
     delete[] buff;
@@ -196,7 +196,7 @@ bool QextSerialEnumerator::getDeviceDetailsWin(QextPortInfo *portInfo, HDEVINFO 
     QRegExp idRx("VID_(\\w+)&PID_(\\w+)");
     if (hardwareIDs.toUpper().contains(idRx)) {
         bool dummy;
-        portInfo->vendorID  = idRx.cap(1).toInt(&dummy, 16);
+        portInfo->vendorID = idRx.cap(1).toInt(&dummy, 16);
         portInfo->productID = idRx.cap(2).toInt(&dummy, 16);
         // qDebug() << "got vid:" << vid << "pid:" << pid;
     }

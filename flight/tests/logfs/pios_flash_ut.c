@@ -171,8 +171,8 @@ static int32_t PIOS_Flash_UT_ReadData(uintptr_t flash_id, uint32_t addr, uint8_t
 /* Provide a flash driver to external drivers */
 const struct pios_flash_driver pios_ut_flash_driver = {
     .start_transaction = PIOS_Flash_UT_StartTransaction,
-    .end_transaction   = PIOS_Flash_UT_EndTransaction,
+    .end_transaction = PIOS_Flash_UT_EndTransaction,
     .erase_sector = PIOS_Flash_UT_EraseSector,
-    .write_data   = PIOS_Flash_UT_WriteData,
-    .read_data    = PIOS_Flash_UT_ReadData,
+    .write_data = PIOS_Flash_UT_WriteData,
+    .read_data = PIOS_Flash_UT_ReadData,
 };

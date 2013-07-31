@@ -47,11 +47,11 @@ namespace QtConcurrent {
 class QTCONCURRENT_EXPORT MultiTaskBase : public QObject, public QRunnable {
     Q_OBJECT
 protected slots:
-    virtual void cancelSelf()  = 0;
+    virtual void cancelSelf() = 0;
     virtual void setFinished() = 0;
     virtual void setProgressRange(int min, int max) = 0;
     virtual void setProgressValue(int value) = 0;
-    virtual void setProgressText(QString value)     = 0;
+    virtual void setProgressText(QString value) = 0;
 };
 
 template <typename Class, typename R>

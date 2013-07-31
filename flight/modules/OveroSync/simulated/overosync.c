@@ -70,7 +70,7 @@ struct overosync {
     uint32_t loading_transaction_id;
     xSemaphoreHandle transaction_lock;
     xSemaphoreHandle buffer_lock;
-    volatile bool    transaction_done;
+    volatile bool transaction_done;
     uint32_t sent_bytes;
     uint32_t write_pointer;
     uint32_t sent_objects;
@@ -121,10 +121,10 @@ int32_t OveroSyncStart(void)
         return -1;
     }
 
-    overosync->active_transaction_id  = 0;
+    overosync->active_transaction_id = 0;
     overosync->loading_transaction_id = 0;
-    overosync->write_pointer   = 0;
-    overosync->sent_bytes      = 0;
+    overosync->write_pointer = 0;
+    overosync->sent_bytes = 0;
     overosync->framesync_error = 0;
 
     // Process all registered objects and connect queue for updates
@@ -171,8 +171,8 @@ static void overoSyncTask(__attribute__((unused)) void *parameters)
 
     // Kick off SPI transfers (once one is completed another will automatically transmit)
     overosync->transaction_done = true;
-    overosync->sent_objects     = 0;
-    overosync->failed_objects   = 0;
+    overosync->sent_objects = 0;
+    overosync->failed_objects = 0;
     overosync->received_objects = 0;
 
     portTickType lastUpdateTime = xTaskGetTickCount();
@@ -197,13 +197,13 @@ static void overoSyncTask(__attribute__((unused)) void *parameters)
             if (((portTickType)(updateTime - lastUpdateTime)) > 1000) {
                 // Update stats.  This will trigger a local send event too
                 OveroSyncStatsData syncStats;
-                syncStats.Send      = overosync->sent_bytes;
-                syncStats.Received  = 0;
+                syncStats.Send = overosync->sent_bytes;
+                syncStats.Received = 0;
                 syncStats.Connected = syncStats.Send > 500 ? OVEROSYNCSTATS_CONNECTED_TRUE : OVEROSYNCSTATS_CONNECTED_FALSE;
-                syncStats.DroppedUpdates  = overosync->failed_objects;
+                syncStats.DroppedUpdates = overosync->failed_objects;
                 OveroSyncStatsSet(&syncStats);
                 overosync->failed_objects = 0;
-                overosync->sent_bytes     = 0;
+                overosync->sent_bytes = 0;
                 lastUpdateTime = updateTime;
             }
         }
@@ -223,7 +223,7 @@ static int32_t packData(uint8_t *data, int32_t length)
     xSemaphoreTake(overosync->buffer_lock, portMAX_DELAY);
 
     portTickType tickTime = xTaskGetTickCount();
-    uint64_t packetSize   = data[2] + (data[3] << 8);
+    uint64_t packetSize = data[2] + (data[3] << 8);
     fwrite((void *)&tickTime, 1, sizeof(tickTime), fid);
     fwrite((void *)&packetSize, sizeof(packetSize), 1, fid);
     fwrite((void *)data, 1, length, fid);

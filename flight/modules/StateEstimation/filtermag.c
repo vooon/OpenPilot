@@ -43,7 +43,7 @@
 
 // Private types
 struct data {
-    HomeLocationData    homeLocation;
+    HomeLocationData homeLocation;
     RevoCalibrationData revoCalibration;
     float magBias[3];
 };
@@ -59,8 +59,8 @@ static void magOffsetEstimation(struct data *this, float mag[3]);
 
 int32_t filterMagInitialize(stateFilter *handle)
 {
-    handle->init      = &init;
-    handle->filter    = &filter;
+    handle->init = &init;
+    handle->filter = &filter;
     handle->localdata = pvPortMalloc(sizeof(struct data));
     HomeLocationInitialize();
     return STACK_REQUIRED;
@@ -118,12 +118,12 @@ static void magOffsetEstimation(struct data *this, float mag[3])
         return;
     }
 
-    float B1[3]     = { mag->x, mag->y, mag->z };
+    float B1[3] = { mag->x, mag->y, mag->z };
     float norm_diff = sqrtf(powf(B2[0] - B1[0], 2) + powf(B2[1] - B1[1], 2) + powf(B2[2] - B1[2], 2));
     if (norm_diff > MIN_NORM_DIFFERENCE) {
-        float norm_b1    = sqrtf(B1[0] * B1[0] + B1[1] * B1[1] + B1[2] * B1[2]);
-        float norm_b2    = sqrtf(B2[0] * B2[0] + B2[1] * B2[1] + B2[2] * B2[2]);
-        float scale      = cal.MagBiasNullingRate * (norm_b2 - norm_b1) / norm_diff;
+        float norm_b1 = sqrtf(B1[0] * B1[0] + B1[1] * B1[1] + B1[2] * B1[2]);
+        float norm_b2 = sqrtf(B2[0] * B2[0] + B2[1] * B2[1] + B2[2] * B2[2]);
+        float scale = cal.MagBiasNullingRate * (norm_b2 - norm_b1) / norm_diff;
         float b_error[3] = { (B2[0] - B1[0]) * scale, (B2[1] - B1[1]) * scale, (B2[2] - B1[2]) * scale };
 
         magBias.x += b_error[0];
@@ -137,8 +137,8 @@ static void magOffsetEstimation(struct data *this, float mag[3])
     }
 #else // if 0
 
-    const float Rxy  = sqrtf(this->homeLocation.Be[0] * this->homeLocation.Be[0] + this->homeLocation.Be[1] * this->homeLocation.Be[1]);
-    const float Rz   = this->homeLocation.Be[2];
+    const float Rxy = sqrtf(this->homeLocation.Be[0] * this->homeLocation.Be[0] + this->homeLocation.Be[1] * this->homeLocation.Be[1]);
+    const float Rz = this->homeLocation.Be[2];
 
     const float rate = this->revoCalibration.MagBiasNullingRate;
     float Rot[3][3];

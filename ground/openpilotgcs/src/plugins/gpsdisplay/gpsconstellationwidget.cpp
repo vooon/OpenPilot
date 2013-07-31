@@ -133,7 +133,7 @@ void GpsConstellationWidget::updateSat(int index, int prn, int elevation, int az
         }
         satIcons[index]->show();
 
-        QRectF iconRect   = satIcons[index]->boundingRect();
+        QRectF iconRect = satIcons[index]->boundingRect();
         QString prnString = QString().number(prn);
         if (prnString.length() == 1) {
             prnString = "0" + prnString;
@@ -142,7 +142,7 @@ void GpsConstellationWidget::updateSat(int index, int prn, int elevation, int az
         QRectF textRect = satTexts[index]->boundingRect();
 
         QTransform matrix;
-        qreal scale     = 0.70 * (iconRect.width() / textRect.width());
+        qreal scale = 0.70 * (iconRect.width() / textRect.width());
         matrix.translate(iconRect.width() / 2, iconRect.height() / 2);
         matrix.scale(scale, scale);
         matrix.translate(-textRect.width() / 2, -textRect.height() / 2);
@@ -165,7 +165,7 @@ QPointF GpsConstellationWidget::polarToCoord(int elevation, int azimuth)
 
 
     rad_elevation = M_PI * elevation / 180;
-    rad_azimuth   = M_PI * azimuth / 180;
+    rad_azimuth = M_PI * azimuth / 180;
 
     x = cos(rad_elevation) * sin(rad_azimuth);
     y = -cos(rad_elevation) * cos(rad_azimuth);

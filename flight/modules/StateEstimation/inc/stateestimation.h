@@ -33,15 +33,15 @@
 #include <openpilot.h>
 
 typedef enum {
-    SENSORUPDATES_gyro         = 1 << 0,
-        SENSORUPDATES_accel    = 1 << 1,
-        SENSORUPDATES_mag      = 1 << 2,
+    SENSORUPDATES_gyro = 1 << 0,
+        SENSORUPDATES_accel = 1 << 1,
+        SENSORUPDATES_mag = 1 << 2,
         SENSORUPDATES_attitude = 1 << 3,
-        SENSORUPDATES_pos      = 1 << 4,
-        SENSORUPDATES_vel      = 1 << 5,
+        SENSORUPDATES_pos = 1 << 4,
+        SENSORUPDATES_vel = 1 << 5,
         SENSORUPDATES_airspeed = 1 << 6,
-        SENSORUPDATES_baro     = 1 << 7,
-        SENSORUPDATES_lla      = 1 << 8,
+        SENSORUPDATES_baro = 1 << 7,
+        SENSORUPDATES_lla = 1 << 8,
 } sensorUpdates;
 
 typedef struct {

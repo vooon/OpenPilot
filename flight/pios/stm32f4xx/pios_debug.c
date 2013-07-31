@@ -48,7 +48,7 @@ void PIOS_DEBUG_Init(__attribute__((unused)) const struct pios_tim_channel *chan
     PIOS_Assert(num_channels);
 
     /* Store away the GPIOs we've been given */
-    debug_channels     = channels;
+    debug_channels = channels;
     debug_num_channels = num_channels;
 
     /* Configure the GPIOs we've been given */
@@ -58,11 +58,11 @@ void PIOS_DEBUG_Init(__attribute__((unused)) const struct pios_tim_channel *chan
         // Initialise pins as standard output pins
         GPIO_InitTypeDef GPIO_InitStructure;
         GPIO_StructInit(&GPIO_InitStructure);
-        GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_OUT;
+        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
         GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-        GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
+        GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
         GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-        GPIO_InitStructure.GPIO_Pin   = chan->pin.init.GPIO_Pin;
+        GPIO_InitStructure.GPIO_Pin = chan->pin.init.GPIO_Pin;
 
         /* Initialize the GPIO */
         GPIO_Init(chan->pin.gpio, &GPIO_InitStructure);

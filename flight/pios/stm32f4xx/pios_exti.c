@@ -153,7 +153,7 @@ int32_t PIOS_EXTI_Init(const struct pios_exti_cfg *cfg)
     PIOS_Assert(cfg >= &__start__exti);
     PIOS_Assert(cfg < &__stop__exti);
 
-    uint8_t cfg_index  = cfg - &__start__exti;
+    uint8_t cfg_index = cfg - &__start__exti;
 
     /* Connect this config to the requested vector */
     uint8_t line_index = PIOS_EXTI_line_to_index(cfg->line);
@@ -171,7 +171,7 @@ int32_t PIOS_EXTI_Init(const struct pios_exti_cfg *cfg)
 
     /* Set up the EXTI interrupt source */
     uint8_t exti_source_port = PIOS_EXTI_gpio_port_to_exti_source_port(cfg->pin.gpio);
-    uint8_t exti_source_pin  = PIOS_EXTI_gpio_pin_to_exti_source_pin(cfg->pin.init.GPIO_Pin);
+    uint8_t exti_source_pin = PIOS_EXTI_gpio_pin_to_exti_source_pin(cfg->pin.init.GPIO_Pin);
     SYSCFG_EXTILineConfig(exti_source_port, exti_source_pin);
     EXTI_Init(&cfg->exti.init);
 

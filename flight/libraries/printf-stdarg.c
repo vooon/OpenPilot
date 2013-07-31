@@ -109,10 +109,10 @@ static int printi(char * *out, int i, int b, int sg, int width, int pad, int let
 
     if (sg && b == 10 && i < 0) {
         neg = 1;
-        u   = -i;
+        u = -i;
     }
 
-    s  = print_buf + PRINT_BUF_LEN - 1;
+    s = print_buf + PRINT_BUF_LEN - 1;
     *s = '\0';
 
     while (u) {
@@ -121,7 +121,7 @@ static int printi(char * *out, int i, int b, int sg, int width, int pad, int let
             t += letbase - '0' - 10;
         }
         *--s = t + '0';
-        u   /= b;
+        u /= b;
     }
 
     if (neg) {
@@ -190,7 +190,7 @@ static int print(char * *out, const char *format, va_list args)
                 /* char are converted to int then pushed on the stack */
                 scr[0] = (char)va_arg(args, int);
                 scr[1] = '\0';
-                pc    += prints(out, scr, width, pad);
+                pc += prints(out, scr, width, pad);
                 continue;
             }
         } else {

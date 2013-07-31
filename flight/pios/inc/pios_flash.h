@@ -30,7 +30,7 @@
 #include <stdint.h>
 
 struct pios_flash_chunk {
-    uint8_t  *addr;
+    uint8_t *addr;
     uint32_t len;
 };
 

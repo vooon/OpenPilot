@@ -100,9 +100,9 @@ static void exampleTask(__attribute__((unused)) void *parameters)
         }
 
         // Update the data
-        data.Field1    += step;
-        data.Field2    += step;
-        data.Field3    += step;
+        data.Field1 += step;
+        data.Field2 += step;
+        data.Field3 += step;
         data.Field4[0] += step;
         data.Field4[1] += step;
 

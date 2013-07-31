@@ -43,18 +43,18 @@ DFUObject::DFUObject(bool _debug, bool _use_serial, QString portname) :
 
     if (use_serial) {
         PortSettings settings;
-        settings.BaudRate    = BAUD57600;
-        settings.DataBits    = DATA_8;
+        settings.BaudRate = BAUD57600;
+        settings.DataBits = DATA_8;
         settings.FlowControl = FLOW_OFF;
         settings.Parity = PAR_NONE;
-        settings.StopBits    = STOP_1;
+        settings.StopBits = STOP_1;
         settings.Timeout_Millisec = 1000;
         info = new port(settings, portname);
-        info->rxBuf      = sspRxBuf;
-        info->rxBufSize  = MAX_PACKET_DATA_LEN;
-        info->txBuf      = sspTxBuf;
-        info->txBufSize  = MAX_PACKET_DATA_LEN;
-        info->max_retry  = 10;
+        info->rxBuf = sspRxBuf;
+        info->rxBufSize = MAX_PACKET_DATA_LEN;
+        info->txBuf = sspTxBuf;
+        info->txBufSize = MAX_PACKET_DATA_LEN;
+        info->max_retry = 10;
         info->timeoutLen = 1000;
         if (info->status() != port::open) {
             cout << "Could not open serial port\n";
@@ -200,16 +200,16 @@ bool DFUObject::StartUpload(qint32 const & numberOfBytes, TransferTypes const & 
         lastPacketCount = pad;
     }
     char buf[BUF_LEN];
-    buf[0]  = 0x02; // reportID
-    buf[1]  = setStartBit(OP_DFU::Upload); // DFU Command
-    buf[2]  = numberOfPackets >> 24; // DFU Count
-    buf[3]  = numberOfPackets >> 16; // DFU Count
-    buf[4]  = numberOfPackets >> 8; // DFU Count
-    buf[5]  = numberOfPackets; // DFU Count
-    buf[6]  = (int)type; // DFU Data0
-    buf[7]  = lastPacketCount; // DFU Data1
-    buf[8]  = crc >> 24;
-    buf[9]  = crc >> 16;
+    buf[0] = 0x02; // reportID
+    buf[1] = setStartBit(OP_DFU::Upload); // DFU Command
+    buf[2] = numberOfPackets >> 24; // DFU Count
+    buf[3] = numberOfPackets >> 16; // DFU Count
+    buf[4] = numberOfPackets >> 8; // DFU Count
+    buf[5] = numberOfPackets; // DFU Count
+    buf[6] = (int)type; // DFU Data0
+    buf[7] = lastPacketCount; // DFU Data1
+    buf[8] = crc >> 24;
+    buf[9] = crc >> 16;
     buf[10] = crc >> 8;
     buf[11] = crc;
     if (debug) {
@@ -266,10 +266,10 @@ bool DFUObject::UploadData(qint32 const & numberOfBytes, QByteArray & data)
             packetsize = 14;
         }
         // qDebug()<<packetcount;
-        buf[2]  = packetcount >> 24; // DFU Count
-        buf[3]  = packetcount >> 16; // DFU Count
-        buf[4]  = packetcount >> 8; // DFU Count
-        buf[5]  = packetcount; // DFU Count
+        buf[2] = packetcount >> 24; // DFU Count
+        buf[3] = packetcount >> 16; // DFU Count
+        buf[4] = packetcount >> 8; // DFU Count
+        buf[5] = packetcount; // DFU Count
         char *pointer = data.data();
         pointer = pointer + 4 * 14 * packetcount;
         // qDebug()<<"Packet Number="<<packetcount<<"Data0="<<(int)data[0]<<" Data1="<<(int)data[1]<<" Data0="<<(int)data[2]<<" Data0="<<(int)data[3]<<" buf6="<<(int)buf[6]<<" buf7="<<(int)buf[7]<<" buf8="<<(int)buf[8]<<" buf9="<<(int)buf[9];
@@ -371,7 +371,7 @@ bool DFUObject::DownloadFirmware(QByteArray *firmwareArray, int device)
     if (isRunning()) {
         return false;
     }
-    requestedOperation  = OP_DFU::Download;
+    requestedOperation = OP_DFU::Download;
     requestSize = devices[device].SizeOfCode;
     requestTransferType = OP_DFU::FW;
     requestStorage = firmwareArray;
@@ -718,7 +718,7 @@ bool DFUObject::UploadFirmware(const QString &sfile, const bool &verify, int dev
         return false;
     }
     requestedOperation = OP_DFU::Upload;
-    requestFilename    = sfile;
+    requestFilename = sfile;
     requestDevice = device;
     requestVerify = verify;
     start();
@@ -884,7 +884,7 @@ OP_DFU::Status DFUObject::CompareFirmware(const QString &sfile, const CompareTyp
 void DFUObject::CopyWords(char *source, char *destination, int count)
 {
     for (int x = 0; x < count; x = x + 4) {
-        *(destination + x)     = source[x + 3];
+        *(destination + x) = source[x + 3];
         *(destination + x + 1) = source[x + 2];
         *(destination + x + 2) = source[x + 1];
         *(destination + x + 3) = source[x + 0];
@@ -981,7 +981,7 @@ quint32 DFUObject::CRC32WideFast(quint32 Crc, quint32 Size, quint32 *Buffer)
             0x2608EDB8, 0x22C9F00F, 0x2F8AD6D6, 0x2B4BCB61, 0x350C9B64, 0x31CD86D3, 0x3C8EA00A, 0x384FBDBD
         };
 
-        Crc     = Crc ^ *((quint32 *)Buffer); // Apply all 32-bits
+        Crc = Crc ^ *((quint32 *)Buffer); // Apply all 32-bits
 
         Buffer += 1;
 
@@ -1011,12 +1011,12 @@ quint32 DFUObject::CRCFromQBArray(QByteArray array, quint32 Size)
     quint32 t[Size / 4];
     for (int x = 0; x < array.length() / 4; x++) {
         quint32 aux = 0;
-        aux  = (char)array[x * 4 + 3] & 0xFF;
-        aux  = aux << 8;
+        aux = (char)array[x * 4 + 3] & 0xFF;
+        aux = aux << 8;
         aux += (char)array[x * 4 + 2] & 0xFF;
-        aux  = aux << 8;
+        aux = aux << 8;
         aux += (char)array[x * 4 + 1] & 0xFF;
-        aux  = aux << 8;
+        aux = aux << 8;
         aux += (char)array[x * 4 + 0] & 0xFF;
         t[x] = aux;
     }

@@ -71,7 +71,7 @@ void USBMonitor::deviceEventReceived()
     dev = udev_monitor_receive_device(this->monitor);
     if (dev) {
         // this->monitorNotifier->setEnabled(0);
-        QString action  = QString(udev_device_get_action(dev));
+        QString action = QString(udev_device_get_action(dev));
         QString devtype = QString(udev_device_get_devtype(dev));
         qDebug() << "[DEBUG] Action: " << action << " device: " << devtype;
         if (action == "add" && devtype == "usb_device") {
@@ -116,7 +116,7 @@ USBMonitor *USBMonitor::m_instance = 0;
  */
 USBMonitor::USBMonitor(QObject *parent) : QThread(parent)
 {
-    m_instance    = this;
+    m_instance = this;
 
     this->context = udev_new();
 
@@ -179,7 +179,7 @@ QList<USBPortInfo> USBMonitor::availableDevices()
         /* Get the filename of the /sys entry for the device
            and create a udev_device object (dev) representing it */
         path = udev_list_entry_get_name(dev_list_entry);
-        dev  = udev_device_new_from_syspath(this->context, path);
+        dev = udev_device_new_from_syspath(this->context, path);
         OPHID_DEBUG("Found path: %s", path);
         if (QString(udev_device_get_devtype(dev)) == "usb_device") {
             OPHID_DEBUG("Added path: %s", path);
@@ -244,11 +244,11 @@ USBPortInfo USBMonitor::makePortInfo(struct udev_device *dev)
     USBPortInfo prtInfo;
     bool ok;
 
-    prtInfo.vendorID     = QString(udev_device_get_sysattr_value(dev, "idVendor")).toInt(&ok, 16);
-    prtInfo.productID    = QString(udev_device_get_sysattr_value(dev, "idProduct")).toInt(&ok, 16);
+    prtInfo.vendorID = QString(udev_device_get_sysattr_value(dev, "idVendor")).toInt(&ok, 16);
+    prtInfo.productID = QString(udev_device_get_sysattr_value(dev, "idProduct")).toInt(&ok, 16);
     prtInfo.serialNumber = QString(udev_device_get_sysattr_value(dev, "serial"));
     prtInfo.manufacturer = QString(udev_device_get_sysattr_value(dev, "manufacturer"));
-    prtInfo.product   = QString(udev_device_get_sysattr_value(dev, "product"));
+    prtInfo.product = QString(udev_device_get_sysattr_value(dev, "product"));
 // prtInfo.UsagePage = QString(udev_device_get_sysattr_value(dev,""));
 // prtInfo.Usage = QString(udev_device_get_sysattr_value(dev,""));
     prtInfo.bcdDevice = QString(udev_device_get_sysattr_value(dev, "bcdDevice")).toInt(&ok, 16);

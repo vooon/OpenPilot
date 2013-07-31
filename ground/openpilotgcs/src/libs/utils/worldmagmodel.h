@@ -43,7 +43,7 @@
 typedef struct {
     double EditionDate;
     double epoch; // Base time of Geomagnetic model epoch (yrs)
-    char   ModelName[20];
+    char ModelName[20];
 // double Main_Field_Coeff_G[WMM_NUMTERMS];	// C - Gauss coefficients of main geomagnetic model (nT)
 // double Main_Field_Coeff_H[WMM_NUMTERMS];	// C - Gauss coefficients of main geomagnetic model (nT)
 // double Secular_Var_Coeff_G[WMM_NUMTERMS];	// CD - Gauss coefficients of secular geomagnetic model (nT/yr)
@@ -75,9 +75,9 @@ typedef struct {
 } WMMtype_CoordSpherical;
 
 typedef struct {
-    int    Year;
-    int    Month;
-    int    Day;
+    int Year;
+    int Month;
+    int Day;
     double DecimalYear;
 } WMMtype_Date;
 

@@ -79,26 +79,26 @@ void PIOS_BMP085_EndOfConversion(void)
 
 static const struct pios_exti_cfg pios_exti_bmp085_cfg __exti_config = {
     .vector = PIOS_BMP085_EndOfConversion,
-    .line   = PIOS_BMP085_EOC_EXTI_LINE,
-    .pin    = {
+    .line = PIOS_BMP085_EOC_EXTI_LINE,
+    .pin = {
         .gpio = PIOS_BMP085_EOC_GPIO_PORT,
         .init = {
-            .GPIO_Pin  = PIOS_BMP085_EOC_GPIO_PIN,
+            .GPIO_Pin = PIOS_BMP085_EOC_GPIO_PIN,
             .GPIO_Mode = GPIO_Mode_IN_FLOATING,
         },
     },
-    .irq                                       = {
-        .init                                  = {
-            .NVIC_IRQChannel    = PIOS_BMP085_EOC_IRQn,
+    .irq = {
+        .init = {
+            .NVIC_IRQChannel = PIOS_BMP085_EOC_IRQn,
             .NVIC_IRQChannelPreemptionPriority = PIOS_BMP085_EOC_PRIO,
-            .NVIC_IRQChannelSubPriority        = 0,
+            .NVIC_IRQChannelSubPriority = 0,
             .NVIC_IRQChannelCmd = ENABLE,
         },
     },
-    .exti                                      = {
-        .init                                  = {
-            .EXTI_Line    = PIOS_BMP085_EOC_EXTI_LINE,
-            .EXTI_Mode    = EXTI_Mode_Interrupt,
+    .exti = {
+        .init = {
+            .EXTI_Line = PIOS_BMP085_EOC_EXTI_LINE,
+            .EXTI_Mode = EXTI_Mode_Interrupt,
             .EXTI_Trigger = EXTI_Trigger_Rising,
             .EXTI_LineCmd = ENABLE,
         },
@@ -131,7 +131,7 @@ void PIOS_BMP085_Init(void)
 
     /* Configure XCLR pin as push/pull alternate funtion output */
     GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.GPIO_Pin  = PIOS_BMP085_XCLR_GPIO_PIN;
+    GPIO_InitStructure.GPIO_Pin = PIOS_BMP085_XCLR_GPIO_PIN;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
     GPIO_Init(PIOS_BMP085_XCLR_GPIO_PORT, &GPIO_InitStructure);
 
@@ -152,13 +152,13 @@ void PIOS_BMP085_Init(void)
     CalibData.AC6 = (Data[10] << 8) | Data[11];
 
     /* Parameters B1, B2 */
-    CalibData.B1  = (Data[12] << 8) | Data[13];
-    CalibData.B2  = (Data[14] << 8) | Data[15];
+    CalibData.B1 = (Data[12] << 8) | Data[13];
+    CalibData.B2 = (Data[14] << 8) | Data[15];
 
     /* Parameters MB, MC, MD */
-    CalibData.MB  = (Data[16] << 8) | Data[17];
-    CalibData.MC  = (Data[18] << 8) | Data[19];
-    CalibData.MD  = (Data[20] << 8) | Data[21];
+    CalibData.MB = (Data[16] << 8) | Data[17];
+    CalibData.MC = (Data[18] << 8) | Data[19];
+    CalibData.MD = (Data[20] << 8) | Data[21];
 }
 
 /**
@@ -224,7 +224,7 @@ void PIOS_BMP085_ReadADC(void)
         X3 = ((X1 + X2) + 2) >> 2;
         B4 = (CalibData.AC4 * (uint32_t)(X3 + 32768)) >> 15;
         B7 = ((uint32_t)RawPressure - B3) * (50000 >> BMP085_OVERSAMPLING);
-        P  = B7 < 0x80000000 ? (B7 * 2) / B4 : (B7 / B4) * 2;
+        P = B7 < 0x80000000 ? (B7 * 2) / B4 : (B7 / B4) * 2;
 
         X1 = (P >> 8) * (P >> 8);
         X1 = (X1 * 3038) >> 16;
@@ -263,17 +263,17 @@ bool PIOS_BMP085_Read(uint8_t address, uint8_t *buffer, uint8_t len)
         {
             .info = __func__,
             .addr = BMP085_I2C_ADDR,
-            .rw   = PIOS_I2C_TXN_WRITE,
-            .len  = sizeof(addr_buffer),
-            .buf  = addr_buffer,
+            .rw = PIOS_I2C_TXN_WRITE,
+            .len = sizeof(addr_buffer),
+            .buf = addr_buffer,
         }
         ,
         {
             .info = __func__,
             .addr = BMP085_I2C_ADDR,
-            .rw   = PIOS_I2C_TXN_READ,
-            .len  = len,
-            .buf  = buffer,
+            .rw = PIOS_I2C_TXN_READ,
+            .len = len,
+            .buf = buffer,
         }
     };
 
@@ -299,9 +299,9 @@ bool PIOS_BMP085_Write(uint8_t address, uint8_t buffer)
         {
             .info = __func__,
             .addr = BMP085_I2C_ADDR,
-            .rw   = PIOS_I2C_TXN_WRITE,
-            .len  = sizeof(data),
-            .buf  = data,
+            .rw = PIOS_I2C_TXN_WRITE,
+            .len = sizeof(data),
+            .buf = data,
         }
         ,
     };
@@ -317,7 +317,7 @@ bool PIOS_BMP085_Write(uint8_t address, uint8_t buffer)
 int32_t PIOS_BMP085_Test()
 {
     // TODO: Is there a better way to test this than just checking that pressure/temperature has changed?
-    uint32_t passed    = 1;
+    uint32_t passed = 1;
     uint32_t cur_value = 0;
 
     cur_value = Temperature;

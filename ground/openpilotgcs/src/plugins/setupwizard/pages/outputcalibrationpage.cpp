@@ -69,9 +69,9 @@ void OutputCalibrationPage::setupVehicle()
         m_vehicleElementIds << "tri" << "tri-frame" << "tri-m1" << "tri-m2" << "tri-m3" << "tri-s1";
         m_vehicleHighlightElementIndexes << 0 << 1 << 2 << 3 << 4 << 4 << 4;
         m_channelIndex << 0 << 0 << 1 << 2 << 3 << 3 << 3;
-        m_actuatorSettings[3].channelMin     = 1500;
+        m_actuatorSettings[3].channelMin = 1500;
         m_actuatorSettings[3].channelNeutral = 1500;
-        m_actuatorSettings[3].channelMax     = 1500;
+        m_actuatorSettings[3].channelMax = 1500;
         getWizard()->setActuatorSettings(m_actuatorSettings);
         break;
     case SetupWizard::MULTI_ROTOR_QUAD_X:
@@ -157,7 +157,7 @@ void OutputCalibrationPage::setupVehicleHighlightedPart()
 {
     qreal dimOpaque = m_currentWizardIndex == 0 ? 1.0 : 0.3;
     qreal highlightOpaque = 1.0;
-    int highlightedIndex  = m_vehicleHighlightElementIndexes[m_currentWizardIndex];
+    int highlightedIndex = m_vehicleHighlightElementIndexes[m_currentWizardIndex];
 
     for (int i = 0; i < m_vehicleItems.size(); i++) {
         QGraphicsSvgItem *item = m_vehicleItems[i];
@@ -287,7 +287,7 @@ bool OutputCalibrationPage::checkAlarms()
     UAVObjectManager *uavObjectManager = pm->getObject<UAVObjectManager>();
 
     Q_ASSERT(uavObjectManager);
-    SystemAlarms *systemAlarms    = SystemAlarms::GetInstance(uavObjectManager);
+    SystemAlarms *systemAlarms = SystemAlarms::GetInstance(uavObjectManager);
     Q_ASSERT(systemAlarms);
     SystemAlarms::DataFields data = systemAlarms->getData();
 
@@ -335,7 +335,7 @@ void OutputCalibrationPage::on_motorNeutralSlider_valueChanged(int value)
 void OutputCalibrationPage::on_servoCenterButton_toggled(bool checked)
 {
     ui->servoCenterButton->setText(checked ? tr("Stop") : tr("Start"));
-    quint16 channel   = getCurrentChannel();
+    quint16 channel = getCurrentChannel();
     quint16 safeValue = m_actuatorSettings[channel].channelNeutral;
     onStartButtonToggle(ui->servoCenterButton, channel, safeValue, safeValue, ui->servoCenterSlider);
 }
@@ -344,7 +344,7 @@ void OutputCalibrationPage::on_servoCenterSlider_valueChanged(int position)
 {
     Q_UNUSED(position);
     if (ui->servoCenterButton->isChecked()) {
-        quint16 value   = ui->servoCenterSlider->value();
+        quint16 value = ui->servoCenterSlider->value();
         m_calibrationUtil->setChannelOutputValue(value);
         quint16 channel = getCurrentChannel();
         m_actuatorSettings[channel].channelNeutral = value;
@@ -363,7 +363,7 @@ void OutputCalibrationPage::on_servoCenterSlider_valueChanged(int position)
 void OutputCalibrationPage::on_servoMinAngleButton_toggled(bool checked)
 {
     ui->servoMinAngleButton->setText(checked ? tr("Stop") : tr("Start"));
-    quint16 channel   = getCurrentChannel();
+    quint16 channel = getCurrentChannel();
     quint16 safeValue = m_actuatorSettings[channel].channelNeutral;
     onStartButtonToggle(ui->servoMinAngleButton, channel, m_actuatorSettings[channel].channelMin, safeValue, ui->servoMinAngleSlider);
 }
@@ -382,7 +382,7 @@ void OutputCalibrationPage::on_servoMinAngleSlider_valueChanged(int position)
 void OutputCalibrationPage::on_servoMaxAngleButton_toggled(bool checked)
 {
     ui->servoMaxAngleButton->setText(checked ? tr("Stop") : tr("Start"));
-    quint16 channel   = getCurrentChannel();
+    quint16 channel = getCurrentChannel();
     quint16 safeValue = m_actuatorSettings[channel].channelNeutral;
     onStartButtonToggle(ui->servoMaxAngleButton, channel, m_actuatorSettings[channel].channelMax, safeValue, ui->servoMaxAngleSlider);
 }

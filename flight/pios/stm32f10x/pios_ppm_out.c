@@ -46,18 +46,18 @@ enum pios_ppm_out_dev_magic {
 };
 
 struct pios_ppm_out_dev {
-    enum pios_ppm_out_dev_magic   magic;
+    enum pios_ppm_out_dev_magic magic;
     const struct pios_ppm_out_cfg *cfg;
 
     uint32_t TriggeringPeriod;
     uint32_t ChannelSum;
-    uint8_t  NumChannelCounter;
+    uint8_t NumChannelCounter;
     uint16_t ChannelValue[PIOS_PPM_OUT_MAX_CHANNELS];
 
-    uint8_t  SupvTimer;
-    bool     Fresh;
-    bool     Tracking;
-    bool     Enabled;
+    uint8_t SupvTimer;
+    bool Fresh;
+    bool Tracking;
+    bool Enabled;
 };
 
 static void PIOS_PPM_Out_Supervisor(uint32_t ppm_id);
@@ -102,7 +102,7 @@ static struct pios_ppm_out_dev *PIOS_PPM_alloc(void)
 static void PIOS_PPM_OUT_tim_edge_cb(uint32_t tim_id, uint32_t context, uint8_t chan_idx, uint16_t count);
 static const struct pios_tim_callbacks tim_out_callbacks = {
     .overflow = NULL,
-    .edge     = PIOS_PPM_OUT_tim_edge_cb,
+    .edge = PIOS_PPM_OUT_tim_edge_cb,
 };
 
 int32_t PIOS_PPM_Out_Init(uint32_t *ppm_out_id, const struct pios_ppm_out_cfg *cfg)
@@ -116,13 +116,13 @@ int32_t PIOS_PPM_Out_Init(uint32_t *ppm_out_id, const struct pios_ppm_out_cfg *c
         return -1;
     }
     ppm_dev->magic = PIOS_PPM_OUT_DEV_MAGIC;
-    *ppm_out_id    = (uint32_t)ppm_dev;
+    *ppm_out_id = (uint32_t)ppm_dev;
 
     // Bind the configuration to the device instance
-    ppm_dev->cfg   = cfg;
+    ppm_dev->cfg = cfg;
 
     // Set up the state variables
-    ppm_dev->TriggeringPeriod  = PIOS_PPM_OUT_HIGH_PULSE_US;
+    ppm_dev->TriggeringPeriod = PIOS_PPM_OUT_HIGH_PULSE_US;
     ppm_dev->ChannelSum = 0;
     ppm_dev->NumChannelCounter = 0;
 
@@ -165,17 +165,17 @@ int32_t PIOS_PPM_Out_Init(uint32_t *ppm_out_id, const struct pios_ppm_out_cfg *c
 
     TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
     TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
-    TIM_TimeBaseStructure.TIM_CounterMode   = TIM_CounterMode_Up;
-    TIM_TimeBaseStructure.TIM_Prescaler     = (PIOS_MASTER_CLOCK / 1000000) - 1;
+    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+    TIM_TimeBaseStructure.TIM_Prescaler = (PIOS_MASTER_CLOCK / 1000000) - 1;
     TIM_TimeBaseStructure.TIM_Period = ((1000000 / 100) - 1);
     TIM_TimeBaseInit(chan->timer, &TIM_TimeBaseStructure);
     PIOS_PPM_Out_Enable_Disable(ppm_dev, false);
 
     // Configure the supervisor
     ppm_dev->SupvTimer = 0;
-    ppm_dev->Fresh     = FALSE;
-    ppm_dev->Tracking  = FALSE;
-    ppm_dev->Enabled   = FALSE;
+    ppm_dev->Fresh = FALSE;
+    ppm_dev->Tracking = FALSE;
+    ppm_dev->Enabled = FALSE;
     if (!PIOS_RTC_RegisterTickCallback(PIOS_PPM_Out_Supervisor, (uint32_t)ppm_dev)) {
         PIOS_DEBUG_Assert(0);
     }

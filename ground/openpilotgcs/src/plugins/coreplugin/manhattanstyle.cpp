@@ -235,7 +235,7 @@ QRect ManhattanStyle::subControlRect(ComplexControl control, const QStyleOptionC
         const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(option);
         const QComboBox *combo = qobject_cast<const QComboBox *>(widget);
         QRect comboRect = cb->rect;
-        int newWidth    = combo->view()->sizeHintForColumn(0);
+        int newWidth = combo->view()->sizeHintForColumn(0);
         if (newWidth > comboRect.width()) {
             // Set new rectangle, only width matters, list height is set by
             // combination of number of combo box items and setMaxVisibleItems
@@ -468,11 +468,11 @@ void ManhattanStyle::drawPrimitive(PrimitiveElement element, const QStyleOption 
 
     bool animating = (option->state & State_Animating);
     int state = option->state;
-    QRect rect     = option->rect;
+    QRect rect = option->rect;
     QRect oldRect;
     QRect newRect;
     if (widget && (element == PE_PanelButtonTool) && !animating) {
-        QWidget *w   = const_cast<QWidget *> (widget);
+        QWidget *w = const_cast<QWidget *> (widget);
         int oldState = w->property("_q_stylestate").toInt();
         oldRect = w->property("_q_stylerect").toRect();
         newRect = w->rect();
@@ -490,9 +490,9 @@ void ManhattanStyle::drawPrimitive(PrimitiveElement element, const QStyleOption 
         if (doTransition) {
             QImage startImage(option->rect.size(), QImage::Format_ARGB32_Premultiplied);
             QImage endImage(option->rect.size(), QImage::Format_ARGB32_Premultiplied);
-            Animation *anim  = d->animator.widgetAnimation(widget);
+            Animation *anim = d->animator.widgetAnimation(widget);
             QStyleOption opt = *option;
-            opt.state  = (QStyle::State)oldState;
+            opt.state = (QStyle::State)oldState;
             opt.state |= (State)State_Animating;
             startImage.fill(0);
             Transition *t = new Transition;
@@ -587,7 +587,7 @@ void ManhattanStyle::drawPrimitive(PrimitiveElement element, const QStyleOption 
         painter->save();
         QLinearGradient grad(option->rect.topLeft(), QPoint(rect.center().x(), rect.bottom()));
         QColor startColor = Utils::StyleHelper::shadowColor().darker(164);
-        QColor endColor   = Utils::StyleHelper::baseColor().darker(130);
+        QColor endColor = Utils::StyleHelper::baseColor().darker(130);
         grad.setColorAt(0, startColor);
         grad.setColorAt(1, endColor);
         painter->fillRect(option->rect, grad);
@@ -646,7 +646,7 @@ void ManhattanStyle::drawPrimitive(PrimitiveElement element, const QStyleOption 
         }
 
         painter->setPen(Qt::NoPen);
-        QColor dark  = Utils::StyleHelper::borderColor();
+        QColor dark = Utils::StyleHelper::borderColor();
         dark.setAlphaF(0.4);
 
         QColor light = Utils::StyleHelper::baseColor();
@@ -674,7 +674,7 @@ void ManhattanStyle::drawPrimitive(PrimitiveElement element, const QStyleOption 
             break;
         }
 
-        QRect r  = option->rect;
+        QRect r = option->rect;
         int size = qMin(r.height(), r.width());
         QPixmap pixmap;
         QString pixmapName;
@@ -772,7 +772,7 @@ void ManhattanStyle::drawControl(ControlElement element, const QStyleOption *opt
             bool dis = !(mbi->state & State_Enabled);
             Utils::StyleHelper::menuGradient(painter, option->rect, option->rect);
             QStyleOptionMenuItem item = *mbi;
-            item.rect    = mbi->rect;
+            item.rect = mbi->rect;
             QPalette pal = mbi->palette;
             pal.setBrush(QPalette::ButtonText, dis ? Qt::gray : Qt::black);
             item.palette = pal;
@@ -797,7 +797,7 @@ void ManhattanStyle::drawControl(ControlElement element, const QStyleOption *opt
                 painter->drawPoint(r.topLeft());
                 painter->drawPoint(r.topRight());
 
-                QPalette pal   = mbi->palette;
+                QPalette pal = mbi->palette;
                 uint alignment = Qt::AlignCenter | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine;
                 if (!styleHint(SH_UnderlineShortcut, mbi, widget)) {
                     alignment |= Qt::TextHideMnemonic;
@@ -814,13 +814,13 @@ void ManhattanStyle::drawControl(ControlElement element, const QStyleOption *opt
     case CE_ComboBoxLabel:
         if (const QStyleOptionComboBox * cb = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
             if (panelWidget(widget)) {
-                QRect editRect     = subControlRect(CC_ComboBox, cb, SC_ComboBoxEditField, widget);
+                QRect editRect = subControlRect(CC_ComboBox, cb, SC_ComboBoxEditField, widget);
                 QPalette customPal = cb->palette;
 
                 if (!cb->currentIcon.isNull()) {
                     QIcon::Mode mode = cb->state & State_Enabled ? QIcon::Normal
                                        : QIcon::Disabled;
-                    QPixmap pixmap   = cb->currentIcon.pixmap(cb->iconSize, mode);
+                    QPixmap pixmap = cb->currentIcon.pixmap(cb->iconSize, mode);
                     QRect iconRect(editRect);
                     iconRect.setWidth(cb->iconSize.width() + 4);
                     iconRect = alignedRect(cb->direction,
@@ -872,7 +872,7 @@ void ManhattanStyle::drawControl(ControlElement element, const QStyleOption *opt
         }
         int sx = x;
         int sy = y;
-        int s  = 4;
+        int s = 4;
         painter->setPen(dark);
         if (option->direction == Qt::RightToLeft) {
             sx = x + sw;
@@ -909,17 +909,17 @@ void ManhattanStyle::drawControl(ControlElement element, const QStyleOption *opt
 
         QPixmap pixmap;
         QPainter *p = painter;
-        QRect rect  = option->rect;
+        QRect rect = option->rect;
         if (Utils::StyleHelper::usePixmapCache() && !QPixmapCache::find(key, pixmap)) {
             pixmap = QPixmap(option->rect.size());
             p = new QPainter(&pixmap);
-            rect   = QRect(0, 0, option->rect.width(), option->rect.height());
+            rect = QRect(0, 0, option->rect.width(), option->rect.height());
         }
 
         bool horizontal = option->state & State_Horizontal;
         // Map offset for global window gradient
-        QPoint offset   = widget->window()->mapToGlobal(option->rect.topLeft()) -
-                          widget->mapToGlobal(option->rect.topLeft());
+        QPoint offset = widget->window()->mapToGlobal(option->rect.topLeft()) -
+                        widget->mapToGlobal(option->rect.topLeft());
         QRect gradientSpan;
         if (widget) {
             gradientSpan = QRect(offset, widget->window()->size());
@@ -978,7 +978,7 @@ void ManhattanStyle::drawComplexControl(ComplexControl control, const QStyleOpti
     case CC_ToolButton:
         if (const QStyleOptionToolButton * toolbutton = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
             QRect button, menuarea;
-            button   = subControlRect(control, toolbutton, SC_ToolButton, widget);
+            button = subControlRect(control, toolbutton, SC_ToolButton, widget);
             menuarea = subControlRect(control, toolbutton, SC_ToolButtonMenu, widget);
 
             State bflags = toolbutton->state;
@@ -1001,7 +1001,7 @@ void ManhattanStyle::drawComplexControl(ComplexControl control, const QStyleOpti
             QStyleOption tool(0);
             tool.palette = toolbutton->palette;
             if (toolbutton->subControls & SC_ToolButton) {
-                tool.rect  = button;
+                tool.rect = button;
                 tool.state = bflags;
                 drawPrimitive(PE_PanelButtonTool, &tool, painter, widget);
             }
@@ -1028,12 +1028,12 @@ void ManhattanStyle::drawComplexControl(ComplexControl control, const QStyleOpti
             QStyleOptionToolButton label = *toolbutton;
             label.palette = panelPalette(option->palette);
             int fw = pixelMetric(PM_DefaultFrameWidth, option, widget);
-            label.rect    = button.adjusted(fw, fw, -fw, -fw);
+            label.rect = button.adjusted(fw, fw, -fw, -fw);
             drawControl(CE_ToolButtonLabel, &label, painter, widget);
 
             if (toolbutton->subControls & SC_ToolButtonMenu) {
                 tool.state = mflags;
-                tool.rect  = menuarea.adjusted(1, 1, -1, -1);
+                tool.rect = menuarea.adjusted(1, 1, -1, -1);
                 if (mflags & (State_Sunken | State_On | State_Raised)) {
                     painter->setPen(Qt::gray);
                     painter->drawLine(tool.rect.topLeft(), tool.rect.bottomLeft());
@@ -1055,8 +1055,8 @@ void ManhattanStyle::drawComplexControl(ComplexControl control, const QStyleOpti
                 QRect ir = toolbutton->rect.adjusted(1, 1, -1, -1);
                 QStyleOptionToolButton newBtn = *toolbutton;
                 newBtn.palette = panelPalette(option->palette);
-                newBtn.rect    = QRect(ir.right() - arrowSize - 1,
-                                       ir.height() - arrowSize - 2, arrowSize, arrowSize);
+                newBtn.rect = QRect(ir.right() - arrowSize - 1,
+                                    ir.height() - arrowSize - 2, arrowSize, arrowSize);
                 drawPrimitive(PE_IndicatorArrowDown, &newBtn, painter, widget);
             }
         }
@@ -1096,7 +1096,7 @@ void ManhattanStyle::drawComplexControl(ComplexControl control, const QStyleOpti
             painter->restore();
             // Draw arrow
             int menuButtonWidth = 12;
-            int left  = !reverse ? rect.right() - menuButtonWidth : rect.left();
+            int left = !reverse ? rect.right() - menuButtonWidth : rect.left();
             int right = !reverse ? rect.right() : rect.left() + menuButtonWidth;
             QRect arrowRect((left + right) / 2 + (reverse ? 6 : -6), rect.center().y() - 3, 9, 9);
             if (option->state & State_On) {

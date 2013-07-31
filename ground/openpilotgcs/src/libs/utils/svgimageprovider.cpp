@@ -97,7 +97,7 @@ QImage SvgImageProvider::requestImage(const QString &id, QSize *size, const QSiz
     int parametersPos = element.indexOf('?');
     if (parametersPos != -1) {
         parameters = element.mid(parametersPos + 1);
-        element    = element.left(parametersPos);
+        element = element.left(parametersPos);
     }
 
     int hSlicesCount = 0;
@@ -131,8 +131,8 @@ QImage SvgImageProvider::requestImage(const QString &id, QSize *size, const QSiz
         return QImage();
     }
 
-    qreal xScale  = 1.0;
-    qreal yScale  = 1.0;
+    qreal xScale = 1.0;
+    qreal yScale = 1.0;
 
     QSize docSize = renderer->defaultSize();
 
@@ -158,8 +158,8 @@ QImage SvgImageProvider::requestImage(const QString &id, QSize *size, const QSiz
         }
 
         QRectF elementBounds = renderer->boundsOnElement(element);
-        int elementWidth     = qRound(elementBounds.width() * xScale);
-        int elementHeigh     = qRound(elementBounds.height() * yScale);
+        int elementWidth = qRound(elementBounds.width() * xScale);
+        int elementHeigh = qRound(elementBounds.height() * yScale);
         int w = elementWidth;
         int h = elementHeigh;
         int x = 0;
@@ -241,7 +241,7 @@ QRectF SvgImageProvider::scaledElementBounds(const QString &svgFile, const QStri
     QMatrix matrix = renderer->matrixForElement(elementName);
     elementBounds = matrix.mapRect(elementBounds);
 
-    QSize docSize  = renderer->defaultSize();
+    QSize docSize = renderer->defaultSize();
     return QRectF(elementBounds.x() / docSize.width(),
                   elementBounds.y() / docSize.height(),
                   elementBounds.width() / docSize.width(),

@@ -232,7 +232,7 @@ public:
     void SetProjection(PureProjection *value)
     {
         projection = value;
-        tileRect   = Rectangle(core::Point(0, 0), value->TileSize());
+        tileRect = Rectangle(core::Point(0, 0), value->TileSize());
     }
     bool IsDragging() const
     {

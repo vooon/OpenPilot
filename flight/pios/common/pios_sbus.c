@@ -55,17 +55,17 @@ enum pios_sbus_dev_magic {
 
 struct pios_sbus_state {
     uint16_t channel_data[PIOS_SBUS_NUM_INPUTS];
-    uint8_t  received_data[SBUS_FRAME_LENGTH - 2];
-    uint8_t  receive_timer;
-    uint8_t  failsafe_timer;
-    uint8_t  frame_found;
-    uint8_t  byte_count;
+    uint8_t received_data[SBUS_FRAME_LENGTH - 2];
+    uint8_t receive_timer;
+    uint8_t failsafe_timer;
+    uint8_t frame_found;
+    uint8_t byte_count;
 };
 
 struct pios_sbus_dev {
-    enum pios_sbus_dev_magic   magic;
+    enum pios_sbus_dev_magic magic;
     const struct pios_sbus_cfg *cfg;
-    struct pios_sbus_state     state;
+    struct pios_sbus_state state;
 };
 
 /* Allocate S.Bus device descriptor */
@@ -117,9 +117,9 @@ static void PIOS_SBus_ResetChannels(struct pios_sbus_state *state)
 /* Reset S.Bus receiver state */
 static void PIOS_SBus_ResetState(struct pios_sbus_state *state)
 {
-    state->receive_timer  = 0;
+    state->receive_timer = 0;
     state->failsafe_timer = 0;
-    state->frame_found    = 0;
+    state->frame_found = 0;
     PIOS_SBus_ResetChannels(state);
 }
 
@@ -195,7 +195,7 @@ static int32_t PIOS_SBus_Get(uint32_t rcvr_id, uint8_t channel)
  */
 static void PIOS_SBus_UnrollChannels(struct pios_sbus_state *state)
 {
-    uint8_t *s  = state->received_data;
+    uint8_t *s = state->received_data;
     uint16_t *d = state->channel_data;
 
 #define F(v, s) (((v) >> (s)) & 0x7ff)
@@ -329,8 +329,8 @@ static void PIOS_SBus_Supervisor(uint32_t sbus_id)
 
     /* waiting for new frame if no bytes were received in 3.2ms */
     if (++state->receive_timer > 2) {
-        state->frame_found   = 1;
-        state->byte_count    = 0;
+        state->frame_found = 1;
+        state->byte_count = 0;
         state->receive_timer = 0;
     }
 

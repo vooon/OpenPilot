@@ -52,7 +52,7 @@
 
 // ! cBuffer structure
 typedef struct struct_cBuffer {
-    unsigned char  *dataptr;                 ///< the physical memory address where the buffer is stored
+    unsigned char *dataptr; ///< the physical memory address where the buffer is stored
     unsigned short size; ///< the allocated size of the buffer
     unsigned short datalength; ///< the length of the data currently in the buffer
     unsigned short dataindex; ///< the index into the buffer where the data starts

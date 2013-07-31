@@ -220,7 +220,7 @@ void LoggingThread::retrieveSettings()
     queue.clear();
     // Get all objects, add metaobjects, settings and data objects with OnChange update mode to the queue
     // Get UAVObjectManager instance
-    ExtensionSystem::PluginManager *pm   = ExtensionSystem::PluginManager::instance();
+    ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
     UAVObjectManager *objMngr = pm->getObject<UAVObjectManager>();
     QList< QList<UAVDataObject *> > objs = objMngr->getDataObjects();
     for (int n = 0; n < objs.length(); ++n) {
@@ -264,9 +264,9 @@ void LoggingThread::transactionCompleted(UAVObject *obj, bool success)
     obj->disconnect(this);
     // Process next object if telemetry is still available
     // Get stats objects
-    ExtensionSystem::PluginManager *pm     = ExtensionSystem::PluginManager::instance();
+    ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
     UAVObjectManager *objManager = pm->getObject<UAVObjectManager>();
-    GCSTelemetryStats *gcsStatsObj         = GCSTelemetryStats::GetInstance(objManager);
+    GCSTelemetryStats *gcsStatsObj = GCSTelemetryStats::GetInstance(objManager);
     GCSTelemetryStats::DataFields gcsStats = gcsStatsObj->getData();
     if (gcsStats.Status == GCSTelemetryStats::STATUS_CONNECTED) {
         retrieveNextObject();
@@ -309,7 +309,7 @@ bool LoggingPlugin::initialize(const QStringList & args, QString *errMsg)
 
 
     // Add Menu entry
-    Core::ActionManager *am   = Core::ICore::instance()->actionManager();
+    Core::ActionManager *am = Core::ICore::instance()->actionManager();
     Core::ActionContainer *ac = am->actionContainer(Core::Constants::M_TOOLS);
 
     // Command to start logging

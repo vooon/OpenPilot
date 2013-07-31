@@ -55,8 +55,8 @@ static int32_t filter(stateFilter *self, stateEstimation *state);
 
 int32_t filterAirInitialize(stateFilter *handle)
 {
-    handle->init      = &init;
-    handle->filter    = &filter;
+    handle->init = &init;
+    handle->filter = &filter;
     handle->localdata = pvPortMalloc(sizeof(struct data));
     return STACK_REQUIRED;
 }

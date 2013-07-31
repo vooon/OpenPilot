@@ -197,7 +197,7 @@ void ConfigStabilizationWidget::processLinkedWidgets(QWidget *widget)
 void ConfigStabilizationWidget::onBoardConnected()
 {
     ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
-    UAVObjectUtilManager *utilMngr     = pm->getObject<UAVObjectUtilManager>();
+    UAVObjectUtilManager *utilMngr = pm->getObject<UAVObjectUtilManager>();
 
     Q_ASSERT(utilMngr);
     boardModel = utilMngr->getBoardModel();

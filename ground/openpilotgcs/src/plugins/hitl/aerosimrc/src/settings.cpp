@@ -30,10 +30,10 @@
 Settings::Settings(QString settingsPath, QObject *parent) :
     QObject(parent)
 {
-    settings     = new QSettings(settingsPath + "/cc_plugin.ini", QSettings::IniFormat);
+    settings = new QSettings(settingsPath + "/cc_plugin.ini", QSettings::IniFormat);
     // default settings
-    sendToHost   = "127.0.0.1";
-    sendToPort   = 40100;
+    sendToHost = "127.0.0.1";
+    sendToPort = 40100;
     listenOnHost = "127.0.0.1";
     listenOnPort = 40200;
     channels.reserve(60);
@@ -43,7 +43,7 @@ Settings::Settings(QString settingsPath, QObject *parent) :
     for (quint8 i = 0; i < 8; ++i) {
         outputMap << 255;
     }
-    sendToRX   = true;
+    sendToRX = true;
     takeFromTX = true;
     videoModes << 1 << 50 << 50 << 800 << 600;
 }
@@ -53,8 +53,8 @@ void Settings::read()
     // network
     listenOnHost = settings->value("listen_on_host", listenOnHost).toString();
     listenOnPort = settings->value("listen_on_port", listenOnPort).toInt();
-    sendToHost   = settings->value("send_to_host", sendToHost).toString();
-    sendToPort   = settings->value("send_to_port", sendToPort).toInt();
+    sendToHost = settings->value("send_to_host", sendToHost).toString();
+    sendToPort = settings->value("send_to_port", sendToPort).toInt();
 
     QString allChannels = settings->value("all_channels").toString();
     QString chan;

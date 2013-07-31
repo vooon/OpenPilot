@@ -45,8 +45,8 @@ enum pios_flashfs_logfs_dev_magic {
 
 struct logfs_state {
     enum pios_flashfs_logfs_dev_magic magic;
-    const struct flashfs_logfs_cfg    *cfg;
-    bool    mounted;
+    const struct flashfs_logfs_cfg *cfg;
+    bool mounted;
     uint8_t active_arena_id;
 
     /* NOTE: num_active_slots + num_free_slots will not typically add
@@ -94,9 +94,9 @@ enum arena_state {
      * For this to work the underlying flash driver has to
      * check each halfword if it has changed before writing.
      */
-    ARENA_STATE_ERASED   = 0xFFFFFFFF,
+    ARENA_STATE_ERASED = 0xFFFFFFFF,
     ARENA_STATE_RESERVED = 0xE6E6FFFF,
-    ARENA_STATE_ACTIVE   = 0xE6E66666,
+    ARENA_STATE_ACTIVE = 0xE6E66666,
     ARENA_STATE_OBSOLETE = 0x00000000,
 };
 
@@ -340,9 +340,9 @@ enum slot_state {
      * For this to work the underlying flash driver has to
      * check each halfword if it has changed before writing.
      */
-    SLOT_STATE_EMPTY    = 0xFFFFFFFF,
+    SLOT_STATE_EMPTY = 0xFFFFFFFF,
     SLOT_STATE_RESERVED = 0xFAFAFFFF,
-    SLOT_STATE_ACTIVE   = 0xFAFAAAAA,
+    SLOT_STATE_ACTIVE = 0xFAFAAAAA,
     SLOT_STATE_OBSOLETE = 0x00000000,
 };
 
@@ -421,7 +421,7 @@ static int32_t logfs_unmount_log(struct logfs_state *logfs)
     PIOS_Assert(logfs->mounted);
 
     logfs->num_active_slots = 0;
-    logfs->num_free_slots   = 0;
+    logfs->num_free_slots = 0;
     logfs->mounted = false;
 
     return 0;
@@ -432,8 +432,8 @@ static int32_t logfs_mount_log(struct logfs_state *logfs, uint8_t arena_id)
     PIOS_Assert(!logfs->mounted);
 
     logfs->num_active_slots = 0;
-    logfs->num_free_slots   = 0;
-    logfs->active_arena_id  = arena_id;
+    logfs->num_free_slots = 0;
+    logfs->active_arena_id = arena_id;
 
     /* Scan the log to find out how full it is */
     for (uint16_t slot_id = 1;
@@ -555,10 +555,10 @@ int32_t PIOS_FLASHFS_Logfs_Init(uintptr_t *fs_id, const struct flashfs_logfs_cfg
     }
 
     /* Bind configuration parameters to this filesystem instance */
-    logfs->cfg      = cfg;  /* filesystem configuration */
-    logfs->driver   = driver; /* lower-level flash driver */
+    logfs->cfg = cfg; /* filesystem configuration */
+    logfs->driver = driver; /* lower-level flash driver */
     logfs->flash_id = flash_id; /* lower-level flash device id */
-    logfs->mounted  = false;
+    logfs->mounted = false;
 
     if (logfs->driver->start_transaction(logfs->flash_id) != 0) {
         rc = -1;
@@ -599,7 +599,7 @@ int32_t PIOS_FLASHFS_Logfs_Init(uintptr_t *fs_id, const struct flashfs_logfs_cfg
     }
 
     /* Log has been mounted */
-    rc     = 0;
+    rc = 0;
 
     *fs_id = (uintptr_t)logfs;
 
@@ -775,7 +775,7 @@ static int8_t logfs_delete_object(struct logfs_state *logfs, uint32_t obj_id, ui
         case -1:
             /* Search completed, object not found */
             more = false;
-            rc   = 0;
+            rc = 0;
             break;
         default:
             /* Error occurred during search */
@@ -824,10 +824,10 @@ static int8_t logfs_reserve_free_slot(struct logfs_state *logfs, uint16_t *slot_
     }
 
     /* Mark this slot as RESERVED */
-    slot_hdr->state       = SLOT_STATE_RESERVED;
-    slot_hdr->obj_id      = obj_id;
+    slot_hdr->state = SLOT_STATE_RESERVED;
+    slot_hdr->obj_id = obj_id;
     slot_hdr->obj_inst_id = obj_inst_id;
-    slot_hdr->obj_size    = obj_size;
+    slot_hdr->obj_size = obj_size;
 
     if (logfs->driver->write_data(logfs->flash_id,
                                   slot_addr,
@@ -857,14 +857,14 @@ static int8_t logfs_append_to_log(struct logfs_state *logfs, uint32_t obj_id, ui
     }
 
     /* Compute slot address */
-    uintptr_t slot_addr   = logfs_get_addr(logfs, logfs->active_arena_id, free_slot_id);
+    uintptr_t slot_addr = logfs_get_addr(logfs, logfs->active_arena_id, free_slot_id);
 
     /* Write the data into the reserved slot, starting after the slot header */
     uintptr_t slot_offset = sizeof(slot_hdr);
     while (obj_size > 0) {
         /* Individual writes must fit entirely within a single page buffer. */
         uint16_t page_remaining = logfs->cfg->page_size - (slot_offset % logfs->cfg->page_size);
-        uint16_t write_size     = MIN(obj_size, page_remaining);
+        uint16_t write_size = MIN(obj_size, page_remaining);
         if (logfs->driver->write_data(logfs->flash_id,
                                       slot_addr + slot_offset,
                                       obj_data,
@@ -874,9 +874,9 @@ static int8_t logfs_append_to_log(struct logfs_state *logfs, uint32_t obj_id, ui
         }
 
         /* Update our accounting */
-        obj_data    += write_size;
+        obj_data += write_size;
         slot_offset += write_size;
-        obj_size    -= write_size;
+        obj_size -= write_size;
     }
 
     /* Mark this slot active in one atomic step */
@@ -1173,7 +1173,7 @@ int32_t PIOS_FLASHFS_GetStats(uintptr_t fs_id, struct PIOS_FLASHFS_Stats *stats)
         return -1;
     }
     stats->num_active_slots = logfs->num_active_slots;
-    stats->num_free_slots   = logfs->num_free_slots;
+    stats->num_free_slots = logfs->num_free_slots;
     return 0;
 }
 #endif /* PIOS_INCLUDE_FLASH */

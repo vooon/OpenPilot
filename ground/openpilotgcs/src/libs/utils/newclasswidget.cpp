@@ -48,15 +48,15 @@ struct NewClassWidgetPrivate {
     QString m_headerExtension;
     QString m_sourceExtension;
     QString m_formExtension;
-    bool    m_valid;
-    bool    m_classEdited;
+    bool m_valid;
+    bool m_classEdited;
     // Store the "visible" values to prevent the READ accessors from being
     // fooled by a temporarily hidden widget
-    bool    m_baseClassInputVisible;
-    bool    m_formInputVisible;
-    bool    m_pathInputVisible;
-    bool    m_qobjectCheckBoxVisible;
-    bool    m_formInputCheckable;
+    bool m_baseClassInputVisible;
+    bool m_formInputVisible;
+    bool m_pathInputVisible;
+    bool m_qobjectCheckBoxVisible;
+    bool m_formInputCheckable;
 };
 
 NewClassWidgetPrivate::NewClassWidgetPrivate() :

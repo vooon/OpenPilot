@@ -44,7 +44,7 @@ Core::IUAVGadget *ConfigGadgetFactory::createGadget(QWidget *parent)
     gadgetWidget = new ConfigGadgetWidget(parent);
 
     // Add Menu entry
-    Core::ActionManager *am   = Core::ICore::instance()->actionManager();
+    Core::ActionManager *am = Core::ICore::instance()->actionManager();
     Core::ActionContainer *ac = am->actionContainer(Core::Constants::M_TOOLS);
 
     Core::Command *cmd = am->registerAction(new QAction(this), "ConfigPlugin.ShowInputWizard",

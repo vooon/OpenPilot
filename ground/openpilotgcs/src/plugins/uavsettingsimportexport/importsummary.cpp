@@ -99,7 +99,7 @@ void ImportSummaryDialog::doTheSaving()
     int itemCount = 0;
     ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
     UAVObjectManager *objManager = pm->getObject<UAVObjectManager>();
-    UAVObjectUtilManager *utilManager  = pm->getObject<UAVObjectUtilManager>();
+    UAVObjectUtilManager *utilManager = pm->getObject<UAVObjectUtilManager>();
 
     connect(utilManager, SIGNAL(saveCompleted(int, bool)), this, SLOT(updateSaveCompletion()));
 

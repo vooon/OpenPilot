@@ -50,13 +50,13 @@ public:
     IWizard(QObject *parent = 0) : QObject(parent) {}
     virtual ~IWizard() {}
 
-    virtual Kind kind() const           = 0;
-    virtual QIcon icon() const          = 0;
+    virtual Kind kind() const = 0;
+    virtual QIcon icon() const = 0;
     virtual QString description() const = 0;
-    virtual QString name() const        = 0;
+    virtual QString name() const = 0;
 
-    virtual QString category() const    = 0;
-    virtual QString trCategory() const  = 0;
+    virtual QString category() const = 0;
+    virtual QString trCategory() const = 0;
 
     virtual QStringList runWizard(const QString &path, QWidget *parent) = 0;
 

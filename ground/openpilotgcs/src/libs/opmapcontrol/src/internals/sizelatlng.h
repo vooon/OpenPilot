@@ -40,7 +40,7 @@ public:
 
     SizeLatLng(SizeLatLng const &  size)
     {
-        this->widthLng  = size.widthLng;
+        this->widthLng = size.widthLng;
         this->heightLat = size.heightLat;
     }
 
@@ -50,7 +50,7 @@ public:
     SizeLatLng(double const & heightLat, double const &  widthLng)
     {
         this->heightLat = heightLat;
-        this->widthLng  = widthLng;
+        this->widthLng = widthLng;
     }
 
     friend SizeLatLng operator+(SizeLatLng const &  sz1, SizeLatLng const &  sz2);

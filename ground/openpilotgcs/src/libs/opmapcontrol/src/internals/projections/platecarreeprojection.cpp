@@ -42,7 +42,7 @@ Point PlateCarreeProjection::FromLatLngToPixel(double lat, double lng, const int
     double mapSizeX = s.Width();
     // double mapSizeY = s.Height();
 
-    double scale    = 360.0 / mapSizeX;
+    double scale = 360.0 / mapSizeX;
 
     ret.SetY((int)((90.0 - lat) / scale));
     ret.SetX((int)((lng + 180.0) / scale));
@@ -57,7 +57,7 @@ internals::PointLatLng PlateCarreeProjection::FromPixelToLatLng(const int &x, co
     double mapSizeX = s.Width();
     // double mapSizeY = s.Height();
 
-    double scale    = 360.0 / mapSizeX;
+    double scale = 360.0 / mapSizeX;
 
     ret.SetLat(90 - (y * scale));
     ret.SetLng((x * scale) - 180);

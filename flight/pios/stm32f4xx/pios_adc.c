@@ -72,13 +72,13 @@ enum pios_adc_dev_magic {
 
 struct pios_adc_dev {
     const struct pios_adc_cfg *cfg;
-    ADCCallback      callback_function;
+    ADCCallback callback_function;
 #if defined(PIOS_INCLUDE_FREERTOS)
-    xQueueHandle     data_queue;
+    xQueueHandle data_queue;
 #endif
     volatile int16_t *valid_data_buffer;
     volatile uint8_t adc_oversample;
-    uint8_t  dma_block_size;
+    uint8_t dma_block_size;
     uint16_t dma_half_buffer_size;
 // int16_t fir_coeffs[PIOS_ADC_MAX_SAMPLES+1]  __attribute__ ((aligned(4)));
 // volatile int16_t raw_data_buffer[PIOS_ADC_MAX_SAMPLES]  __attribute__ ((aligned(4)));
@@ -101,8 +101,8 @@ static void init_adc(void);
 
 struct dma_config {
     GPIO_TypeDef *port;
-    uint32_t     pin;
-    uint32_t     channel;
+    uint32_t pin;
+    uint32_t channel;
 };
 
 struct adc_accumulator {
@@ -128,7 +128,7 @@ static void init_pins(void)
 
     GPIO_StructInit(&GPIO_InitStructure);
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AN;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
     for (uint32_t i = 0; i < PIOS_ADC_NUM_PINS; ++i) {
         if (config[i].port == NULL) {
             continue;
@@ -146,18 +146,18 @@ static void init_dma(void)
     /* Configure DMA channel */
     DMA_DeInit(pios_adc_dev->cfg->dma.rx.channel);
     DMA_InitTypeDef DMAInit = pios_adc_dev->cfg->dma.rx.init;
-    DMAInit.DMA_Memory0BaseAddr    = (uint32_t)&adc_raw_buffer[0];
+    DMAInit.DMA_Memory0BaseAddr = (uint32_t)&adc_raw_buffer[0];
     DMAInit.DMA_BufferSize = sizeof(adc_raw_buffer[0]) / sizeof(uint16_t);
     DMAInit.DMA_DIR = DMA_DIR_PeripheralToMemory;
-    DMAInit.DMA_PeripheralInc      = DMA_PeripheralInc_Disable;
+    DMAInit.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
     DMAInit.DMA_MemoryInc = DMA_MemoryInc_Enable;
     DMAInit.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
-    DMAInit.DMA_MemoryDataSize     = DMA_MemoryDataSize_HalfWord;
-    DMAInit.DMA_Mode            = DMA_Mode_Circular;
-    DMAInit.DMA_Priority        = DMA_Priority_Low;
-    DMAInit.DMA_FIFOMode        = DMA_FIFOMode_Disable;
-    DMAInit.DMA_FIFOThreshold   = DMA_FIFOThreshold_HalfFull;
-    DMAInit.DMA_MemoryBurst     = DMA_MemoryBurst_Single;
+    DMAInit.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
+    DMAInit.DMA_Mode = DMA_Mode_Circular;
+    DMAInit.DMA_Priority = DMA_Priority_Low;
+    DMAInit.DMA_FIFOMode = DMA_FIFOMode_Disable;
+    DMAInit.DMA_FIFOThreshold = DMA_FIFOThreshold_HalfFull;
+    DMAInit.DMA_MemoryBurst = DMA_MemoryBurst_Single;
     DMAInit.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
 
     DMA_Init(pios_adc_dev->cfg->dma.rx.channel, &DMAInit); /* channel is actually stream ... */
@@ -189,19 +189,19 @@ static void init_adc(void)
     ADC_CommonInitTypeDef ADC_CommonInitStructure;
     ADC_CommonStructInit(&ADC_CommonInitStructure);
     ADC_CommonInitStructure.ADC_Mode = ADC_Mode_Independent;
-    ADC_CommonInitStructure.ADC_Prescaler        = ADC_Prescaler_Div8;
-    ADC_CommonInitStructure.ADC_DMAAccessMode    = ADC_DMAAccessMode_Disabled;
+    ADC_CommonInitStructure.ADC_Prescaler = ADC_Prescaler_Div8;
+    ADC_CommonInitStructure.ADC_DMAAccessMode = ADC_DMAAccessMode_Disabled;
     ADC_CommonInitStructure.ADC_TwoSamplingDelay = ADC_TwoSamplingDelay_5Cycles;
     ADC_CommonInit(&ADC_CommonInitStructure);
 
     ADC_InitTypeDef ADC_InitStructure;
     ADC_StructInit(&ADC_InitStructure);
-    ADC_InitStructure.ADC_Resolution           = ADC_Resolution_12b;
-    ADC_InitStructure.ADC_ScanConvMode         = ENABLE;
-    ADC_InitStructure.ADC_ContinuousConvMode   = ENABLE;
+    ADC_InitStructure.ADC_Resolution = ADC_Resolution_12b;
+    ADC_InitStructure.ADC_ScanConvMode = ENABLE;
+    ADC_InitStructure.ADC_ContinuousConvMode = ENABLE;
     ADC_InitStructure.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_None;
-    ADC_InitStructure.ADC_DataAlign            = ADC_DataAlign_Right;
-    ADC_InitStructure.ADC_NbrOfConversion      = ((PIOS_ADC_NUM_PINS) /* >> 1*/);
+    ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
+    ADC_InitStructure.ADC_NbrOfConversion = ((PIOS_ADC_NUM_PINS) /* >> 1*/);
     ADC_Init(pios_adc_dev->cfg->adc_dev, &ADC_InitStructure);
 
     /* Enable DMA request */

@@ -203,17 +203,17 @@ void ConsoleProcess::readStubOutput()
             delete m_tempFile;
             m_tempFile = 0;
 
-            m_appPid   = out.mid(4).toInt();
+            m_appPid = out.mid(4).toInt();
             emit processStarted();
         } else if (out.startsWith("exit ")) {
             m_appStatus = QProcess::NormalExit;
-            m_appCode   = out.mid(5).toInt();
-            m_appPid    = 0;
+            m_appCode = out.mid(5).toInt();
+            m_appPid = 0;
             emit processStopped();
         } else if (out.startsWith("crash ")) {
             m_appStatus = QProcess::CrashExit;
-            m_appCode   = out.mid(6).toInt();
-            m_appPid    = 0;
+            m_appCode = out.mid(6).toInt();
+            m_appPid = 0;
             emit processStopped();
         } else {
             emit processError(msgUnexpectedOutput());
@@ -234,8 +234,8 @@ void ConsoleProcess::stubExited()
     m_tempFile = 0;
     if (m_appPid) {
         m_appStatus = QProcess::CrashExit;
-        m_appCode   = -1;
-        m_appPid    = 0;
+        m_appCode = -1;
+        m_appPid = 0;
         emit processStopped(); // Maybe it actually did not, but keep state consistent
     }
     emit wrapperStopped();

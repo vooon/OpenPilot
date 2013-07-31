@@ -43,16 +43,16 @@ public:
     };
     Rectangle(int x, int y, int width, int height)
     {
-        this->x      = x;
-        this->y      = y;
-        this->width  = width;
+        this->x = x;
+        this->y = y;
+        this->width = width;
         this->height = height;
     }
     Rectangle(core::Point location, core::Size size)
     {
-        this->x      = location.X();
-        this->y      = location.Y();
-        this->width  = size.Width();
+        this->x = location.X();
+        this->y = location.Y();
+        this->width = size.Width();
         this->height = size.Height();
     }
     core::Point GetLocation()
@@ -145,9 +145,9 @@ public:
 
     void Inflate(const int &width, const int &height)
     {
-        this->x      -= width;
-        this->y      -= height;
-        this->width  += 2 * width;
+        this->x -= width;
+        this->y -= height;
+        this->width += 2 * width;
         this->height += 2 * height;
     }
     void Inflate(Size &size)
@@ -160,9 +160,9 @@ public:
     {
         Rectangle result = Rectangle::Intersect(rect, *this);
 
-        this->x      = result.X();
-        this->y      = result.Y();
-        this->width  = result.Width();
+        this->x = result.X();
+        this->y = result.Y();
+        this->width = result.Width();
         this->height = result.Height();
     }
     static Rectangle Intersect(Rectangle a, Rectangle b);

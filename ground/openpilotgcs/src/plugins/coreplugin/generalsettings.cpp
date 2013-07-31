@@ -92,12 +92,12 @@ void GeneralSettings::fillLanguageBox() const
         m_page->languageBox->setCurrentIndex(m_page->languageBox->count() - 1);
     }
 
-    const QString creatorTrPath     = Core::ICore::instance()->resourcePath() + QLatin1String("/translations");
+    const QString creatorTrPath = Core::ICore::instance()->resourcePath() + QLatin1String("/translations");
     const QStringList languageFiles = QDir(creatorTrPath).entryList(QStringList(QLatin1String("openpilotgcs*.qm")));
 
     foreach(QString languageFile, languageFiles) {
         int start = languageFile.indexOf(QLatin1Char('_')) + 1;
-        int end   = languageFile.lastIndexOf(QLatin1Char('.'));
+        int end = languageFile.lastIndexOf(QLatin1Char('.'));
         const QString locale = languageFile.mid(start, end - start);
 
         // no need to show a language that creator will not load anyway
@@ -141,10 +141,10 @@ void GeneralSettings::apply()
     StyleHelper::setBaseColor(m_page->colorButton->color());
 
     m_saveSettingsOnExit = m_page->checkBoxSaveOnExit->isChecked();
-    m_useUDPMirror  = m_page->cbUseUDPMirror->isChecked();
+    m_useUDPMirror = m_page->cbUseUDPMirror->isChecked();
     m_useExpertMode = m_page->cbExpertMode->isChecked();
-    m_autoConnect   = m_page->checkAutoConnect->isChecked();
-    m_autoSelect    = m_page->checkAutoSelect->isChecked();
+    m_autoConnect = m_page->checkAutoConnect->isChecked();
+    m_autoSelect = m_page->checkAutoSelect->isChecked();
 }
 
 void GeneralSettings::finish()
@@ -155,11 +155,11 @@ void GeneralSettings::finish()
 void GeneralSettings::readSettings(QSettings *qs)
 {
     qs->beginGroup(QLatin1String("General"));
-    m_language      = qs->value(QLatin1String("OverrideLanguage"), QLocale::system().name()).toString();
+    m_language = qs->value(QLatin1String("OverrideLanguage"), QLocale::system().name()).toString();
     m_saveSettingsOnExit = qs->value(QLatin1String("SaveSettingsOnExit"), m_saveSettingsOnExit).toBool();
-    m_autoConnect   = qs->value(QLatin1String("AutoConnect"), m_autoConnect).toBool();
-    m_autoSelect    = qs->value(QLatin1String("AutoSelect"), m_autoSelect).toBool();
-    m_useUDPMirror  = qs->value(QLatin1String("UDPMirror"), m_useUDPMirror).toBool();
+    m_autoConnect = qs->value(QLatin1String("AutoConnect"), m_autoConnect).toBool();
+    m_autoSelect = qs->value(QLatin1String("AutoSelect"), m_autoSelect).toBool();
+    m_useUDPMirror = qs->value(QLatin1String("UDPMirror"), m_useUDPMirror).toBool();
     m_useExpertMode = qs->value(QLatin1String("ExpertMode"), m_useExpertMode).toBool();
     qs->endGroup();
 }

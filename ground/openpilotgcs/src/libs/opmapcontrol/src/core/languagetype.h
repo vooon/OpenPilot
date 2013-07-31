@@ -97,7 +97,7 @@ public:
     static QString StrByType(Types const & value)
     {
         QMetaObject metaObject = LanguageType().staticMetaObject;
-        QMetaEnum metaEnum     = metaObject.enumerator(metaObject.indexOfEnumerator("Types"));
+        QMetaEnum metaEnum = metaObject.enumerator(metaObject.indexOfEnumerator("Types"));
         QString s = metaEnum.valueToKey(value);
 
         return s;
@@ -105,7 +105,7 @@ public:
     static Types TypeByStr(QString const & value)
     {
         QMetaObject metaObject = LanguageType().staticMetaObject;
-        QMetaEnum metaEnum     = metaObject.enumerator(metaObject.indexOfEnumerator("Types"));
+        QMetaEnum metaEnum = metaObject.enumerator(metaObject.indexOfEnumerator("Types"));
         Types s = (Types)metaEnum.keyToValue(value.toLatin1());
 
         return s;
@@ -114,7 +114,7 @@ public:
     {
         QStringList ret;
         QMetaObject metaObject = LanguageType().staticMetaObject;
-        QMetaEnum metaEnum     = metaObject.enumerator(metaObject.indexOfEnumerator("Types"));
+        QMetaEnum metaEnum = metaObject.enumerator(metaObject.indexOfEnumerator("Types"));
 
         for (int x = 0; x < metaEnum.keyCount(); ++x) {
             ret.append(metaEnum.key(x));

@@ -185,7 +185,7 @@ void TreeItem::apply()
 void TreeItem::setHighlight(bool highlight)
 {
     m_highlight = highlight;
-    m_changed   = false;
+    m_changed = false;
     if (highlight) {
         // Update the expires timestamp
         m_highlightExpires = QTime::currentTime().addMSecs(m_highlightTimeMs);

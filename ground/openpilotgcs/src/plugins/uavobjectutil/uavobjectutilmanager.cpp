@@ -45,20 +45,20 @@
 
 UAVObjectUtilManager::UAVObjectUtilManager()
 {
-    mutex     = new QMutex(QMutex::Recursive);
+    mutex = new QMutex(QMutex::Recursive);
     saveState = IDLE;
     failureTimer.stop();
     failureTimer.setSingleShot(true);
     failureTimer.setInterval(1000);
     connect(&failureTimer, SIGNAL(timeout()), this, SLOT(objectPersistenceOperationFailed()));
 
-    pm   = NULL;
-    obm  = NULL;
+    pm = NULL;
+    obm = NULL;
     obum = NULL;
 
-    pm   = ExtensionSystem::PluginManager::instance();
+    pm = ExtensionSystem::PluginManager::instance();
     if (pm) {
-        obm  = pm->getObject<UAVObjectManager>();
+        obm = pm->getObject<UAVObjectManager>();
         obum = pm->getObject<UAVObjectUtilManager>();
     }
 }
@@ -123,9 +123,9 @@ void UAVObjectUtilManager::saveNextObject()
     saveState = AWAITING_ACK;
     if (obj != NULL) {
         ObjectPersistence::DataFields data;
-        data.Operation  = ObjectPersistence::OPERATION_SAVE;
-        data.Selection  = ObjectPersistence::SELECTION_SINGLEOBJECT;
-        data.ObjectID   = obj->getObjID();
+        data.Operation = ObjectPersistence::OPERATION_SAVE;
+        data.Selection = ObjectPersistence::SELECTION_SINGLEOBJECT;
+        data.ObjectID = obj->getObjID();
         data.InstanceID = obj->getInstID();
         objper->setData(data);
         objper->updated();
@@ -318,13 +318,13 @@ int UAVObjectUtilManager::setHomeLocation(double LLA[3], bool save_to_sdcard)
     Q_ASSERT(homeLocation != NULL);
 
     HomeLocation::DataFields homeLocationData = homeLocation->getData();
-    homeLocationData.Latitude  = LLA[0] * 1e7;
+    homeLocationData.Latitude = LLA[0] * 1e7;
     homeLocationData.Longitude = LLA[1] * 1e7;
-    homeLocationData.Altitude  = LLA[2];
+    homeLocationData.Altitude = LLA[2];
 
-    homeLocationData.Be[0]     = Be[0];
-    homeLocationData.Be[1]     = Be[1];
-    homeLocationData.Be[2]     = Be[2];
+    homeLocationData.Be[0] = Be[0];
+    homeLocationData.Be[1] = Be[1];
+    homeLocationData.Be[2] = Be[2];
 
     homeLocationData.Set = HomeLocation::SET_TRUE;
 
@@ -345,7 +345,7 @@ int UAVObjectUtilManager::getHomeLocation(bool &set, double LLA[3])
 
     HomeLocation::DataFields homeLocationData = homeLocation->getData();
 
-    set    = homeLocationData.Set;
+    set = homeLocationData.Set;
 
     LLA[0] = homeLocationData.Latitude * 1e-7;
     LLA[1] = homeLocationData.Longitude * 1e-7;
@@ -437,27 +437,27 @@ bool UAVObjectUtilManager::descriptionToStructure(QByteArray desc, deviceDescrip
         // Note: the ARM binary is big-endian:
         quint32 gitCommitHash = desc.at(7) & 0xFF;
         for (int i = 1; i < 4; i++) {
-            gitCommitHash  = gitCommitHash << 8;
+            gitCommitHash = gitCommitHash << 8;
             gitCommitHash += desc.at(7 - i) & 0xFF;
         }
         struc.gitHash = QString("%1").arg(gitCommitHash, 8, 16, QChar('0'));
 
         quint32 gitDate = desc.at(11) & 0xFF;
         for (int i = 1; i < 4; i++) {
-            gitDate  = gitDate << 8;
+            gitDate = gitDate << 8;
             gitDate += desc.at(11 - i) & 0xFF;
         }
         struc.gitDate = QDateTime::fromTime_t(gitDate).toUTC().toString("yyyyMMdd HH:mm");
 
         QString gitTag = QString(desc.mid(14, 26));
-        struc.gitTag  = gitTag;
+        struc.gitTag = gitTag;
 
         // TODO: check platform compatibility
         QByteArray targetPlatform = desc.mid(12, 2);
-        struc.boardType     = (int)targetPlatform.at(0);
+        struc.boardType = (int)targetPlatform.at(0);
         struc.boardRevision = (int)targetPlatform.at(1);
         struc.fwHash.clear();
-        struc.fwHash   = desc.mid(40, 20);
+        struc.fwHash = desc.mid(40, 20);
         struc.uavoHash.clear();
         struc.uavoHash = desc.mid(60, 20);
         qDebug() << __FUNCTION__ << ":description from board:";

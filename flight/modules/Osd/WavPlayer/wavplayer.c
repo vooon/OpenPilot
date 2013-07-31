@@ -83,7 +83,7 @@ static void WavPlayerTask(__attribute__((unused)) void *parameters)
     lastSysTime = xTaskGetTickCount();
     uint32_t timeNowMs = xTaskGetTickCount() * portTICK_RATE_MS;
 
-    timeOfLastUpdateMs  = timeNowMs;
+    timeOfLastUpdateMs = timeNowMs;
     timeOfLastCommandMs = timeNowMs;
 #if defined(PIOS_INCLUDE_WAVE)
     WavePlayer_Start();

@@ -49,11 +49,11 @@
  */
 UAVObject::UAVObject(quint32 objID, bool isSingleInst, const QString & name)
 {
-    this->objID  = objID;
+    this->objID = objID;
     this->instID = 0;
     this->isSingleInst = isSingleInst;
-    this->name   = name;
-    this->mutex  = new QMutex(QMutex::Recursive);
+    this->name = name;
+    this->mutex = new QMutex(QMutex::Recursive);
 }
 
 /**
@@ -77,8 +77,8 @@ void UAVObject::initializeFields(QList<UAVObjectField *> & fields, quint8 *data,
     QMutexLocker locker(mutex);
 
     this->numBytes = numBytes;
-    this->data     = data;
-    this->fields   = fields;
+    this->data = data;
+    this->fields = fields;
     // Initialize fields
     quint32 offset = 0;
     for (int n = 0; n < fields.length(); ++n) {
@@ -500,7 +500,7 @@ void UAVObject::MetadataInitialize(UAVObject::Metadata & metadata)
         UPDATEMODE_ONCHANGE << UAVOBJ_TELEMETRY_UPDATE_MODE_SHIFT |
         UPDATEMODE_ONCHANGE << UAVOBJ_GCS_TELEMETRY_UPDATE_MODE_SHIFT;
     metadata.flightTelemetryUpdatePeriod = 0;
-    metadata.gcsTelemetryUpdatePeriod    = 0;
+    metadata.gcsTelemetryUpdatePeriod = 0;
     metadata.loggingUpdatePeriod = 0;
 }
 

@@ -79,28 +79,28 @@ static bool nmeaProcessGPGSV(GPSPositionSensorData *GpsData, bool *gpsDataUpdate
 
 static const struct nmea_parser nmea_parsers[] = {
     {
-        .prefix  = "GPGGA",
+        .prefix = "GPGGA",
         .handler = nmeaProcessGPGGA,
     },
     {
-        .prefix  = "GPVTG",
+        .prefix = "GPVTG",
         .handler = nmeaProcessGPVTG,
     },
     {
-        .prefix  = "GPGSA",
+        .prefix = "GPGSA",
         .handler = nmeaProcessGPGSA,
     },
     {
-        .prefix  = "GPRMC",
+        .prefix = "GPRMC",
         .handler = nmeaProcessGPRMC,
     },
 #if !defined(PIOS_GPS_MINIMAL)
     {
-        .prefix  = "GPZDA",
+        .prefix = "GPZDA",
         .handler = nmeaProcessGPZDA,
     },
     {
-        .prefix  = "GPGSV",
+        .prefix = "GPGSV",
         .handler = nmeaProcessGPGSV,
     },
 #endif // PIOS_GPS_MINIMAL
@@ -109,14 +109,14 @@ static const struct nmea_parser nmea_parsers[] = {
 int parse_nmea_stream(uint8_t c, char *gps_rx_buffer, GPSPositionSensorData *GpsData, struct GPS_RX_STATS *gpsRxStats)
 {
     static uint8_t rx_count = 0;
-    static bool start_flag  = false;
-    static bool found_cr    = false;
+    static bool start_flag = false;
+    static bool found_cr = false;
 
     // detect start while acquiring stream
     if (!start_flag && (c == '$')) { // NMEA identifier found
         start_flag = true;
-        found_cr   = false;
-        rx_count   = 0;
+        found_cr = false;
+        rx_count = 0;
     } else if (!start_flag) {
         return PARSER_ERROR;
     }
@@ -126,8 +126,8 @@ int parse_nmea_stream(uint8_t c, char *gps_rx_buffer, GPSPositionSensorData *Gps
         // Flush the buffer and note the overflow event.
         gpsRxStats->gpsRxOverflow++;
         start_flag = false;
-        found_cr   = false;
-        rx_count   = 0;
+        found_cr = false;
+        rx_count = 0;
         return PARSER_OVERRUN;
     } else {
         gps_rx_buffer[rx_count] = c;
@@ -146,8 +146,8 @@ int parse_nmea_stream(uint8_t c, char *gps_rx_buffer, GPSPositionSensorData *Gps
 
         // prepare to parse next sentence
         start_flag = false;
-        found_cr   = false;
-        rx_count   = 0;
+        found_cr = false;
+        rx_count = 0;
         // Our rxBuffer must look like this now:
         // [0]           = '$'
         // ...           = zero or more bytes of sentence payload
@@ -253,7 +253,7 @@ static bool NMEA_parse_real(int32_t *whole, uint32_t *fract, uint8_t *fract_unit
     field_w = strsep(&s, ".");
     field_f = s;
 
-    *whole  = strtol(field_w, NULL, 10);
+    *whole = strtol(field_w, NULL, 10);
 
     if (field_w) {
         /* decimal was found so we may have a fractional part */
@@ -338,7 +338,7 @@ static bool NMEA_latlon_to_fixed_point(int32_t *latlon, char *nmea_latlon, bool 
         break;
     }
 
-    *latlon  = (num_DDDMM / 100) * 10000000;        /* scale the whole degrees */
+    *latlon = (num_DDDMM / 100) * 10000000; /* scale the whole degrees */
     *latlon += (num_DDDMM % 100) * 10000000 / 60; /* add in the scaled decimal whole minutes */
     *latlon += num_m / 60; /* add in the scaled decimal fractional minutes */
 
@@ -371,7 +371,7 @@ bool NMEA_update_position(char *nmea_sentence, GPSPositionSensorData *GpsData)
 
     // The first parameter starts at the beginning of the message
     params[0] = p;
-    nbParams  = 1;
+    nbParams = 1;
     while (*p != 0) {
         if (*p == '*') {
             // After the * comes the "CRC", we are done,
@@ -487,7 +487,7 @@ static bool nmeaProcessGPGGA(GPSPositionSensorData *GpsData, bool *gpsDataUpdate
     GpsData->Satellites = atoi(param[7]);
 
     // get altitude (in meters mm.m)
-    GpsData->Altitude   = NMEA_real_to_float(param[9]);
+    GpsData->Altitude = NMEA_real_to_float(param[9]);
 
     // geoid separation
     GpsData->GeoidSeparation = NMEA_real_to_float(param[11]);
@@ -525,7 +525,7 @@ static bool nmeaProcessGPRMC(GPSPositionSensorData *GpsData, bool *gpsDataUpdate
     float hms = NMEA_real_to_float(param[1]);
     gpst.Second = (int)hms % 100;
     gpst.Minute = (((int)hms - gpst.Second) / 100) % 100;
-    gpst.Hour   = (int)hms / 10000;
+    gpst.Hour = (int)hms / 10000;
 #endif // PIOS_GPS_MINIMAL
 
     // don't process void sentences
@@ -547,15 +547,15 @@ static bool nmeaProcessGPRMC(GPSPositionSensorData *GpsData, bool *gpsDataUpdate
     GpsData->Groundspeed = NMEA_real_to_float(param[7]) * 0.51444f; // to m/s
 
     // get True course
-    GpsData->Heading     = NMEA_real_to_float(param[8]);
+    GpsData->Heading = NMEA_real_to_float(param[8]);
 
 #if !defined(PIOS_GPS_MINIMAL)
     // get Date of fix
     // TODO: Should really not use a float here to be safe
     float date = NMEA_real_to_float(param[9]);
-    gpst.Year  = (int)date % 100;
+    gpst.Year = (int)date % 100;
     gpst.Month = (((int)date - gpst.Year) / 100) % 100;
-    gpst.Day   = (int)(date / 10000);
+    gpst.Day = (int)(date / 10000);
     gpst.Year += 2000;
     GPSTimeSet(&gpst);
 #endif // PIOS_GPS_MINIMAL
@@ -579,9 +579,9 @@ static bool nmeaProcessGPVTG(GPSPositionSensorData *GpsData, bool *gpsDataUpdate
     DEBUG_MSG(" GroundSpeed=%s %s\n", param[5], param[6]);
 #endif
 
-    *gpsDataUpdated      = false;
+    *gpsDataUpdated = false;
 
-    GpsData->Heading     = NMEA_real_to_float(param[1]);
+    GpsData->Heading = NMEA_real_to_float(param[1]);
     GpsData->Groundspeed = NMEA_real_to_float(param[5]) * 0.51444f; // to m/s
 
     return true;
@@ -614,12 +614,12 @@ static bool nmeaProcessGPZDA(__attribute__((unused)) GPSPositionSensorData *GpsD
     float hms = NMEA_real_to_float(param[1]);
     gpst.Second = (int)hms % 100;
     gpst.Minute = (((int)hms - gpst.Second) / 100) % 100;
-    gpst.Hour   = (int)hms / 10000;
+    gpst.Hour = (int)hms / 10000;
 
     // Get Date
-    gpst.Day    = atoi(param[2]);
-    gpst.Month  = atoi(param[3]);
-    gpst.Year   = atoi(param[4]);
+    gpst.Day = atoi(param[2]);
+    gpst.Month = atoi(param[3]);
+    gpst.Year = atoi(param[4]);
 
     GPSTimeSet(&gpst);
     return true;
@@ -644,7 +644,7 @@ static bool nmeaProcessGPGSV(__attribute__((unused)) GPSPositionSensorData *GpsD
     DEBUG_MSG(" Sats=%s\n", param[3]);
 #endif
 
-    uint8_t nbSentences  = atoi(param[1]);
+    uint8_t nbSentences = atoi(param[1]);
     uint8_t currSentence = atoi(param[2]);
 
     *gpsDataUpdated = false;
@@ -688,10 +688,10 @@ static bool nmeaProcessGPGSV(__attribute__((unused)) GPSPositionSensorData *GpsD
             uint8_t sat_index = ((currSentence - 1) * 4) + i;
 
             // Get sat info
-            gsv_partial.PRN[sat_index]       = atoi(param[parIdx++]);
+            gsv_partial.PRN[sat_index] = atoi(param[parIdx++]);
             gsv_partial.Elevation[sat_index] = NMEA_real_to_float(param[parIdx++]);
-            gsv_partial.Azimuth[sat_index]   = NMEA_real_to_float(param[parIdx++]);
-            gsv_partial.SNR[sat_index]       = atoi(param[parIdx++]);
+            gsv_partial.Azimuth[sat_index] = NMEA_real_to_float(param[parIdx++]);
+            gsv_partial.SNR[sat_index] = atoi(param[parIdx++]);
 #ifdef NMEA_DEBUG_GSV
             DEBUG_MSG(" %d", gsv_partial.PRN[sat_index]);
 #endif
@@ -707,7 +707,7 @@ static bool nmeaProcessGPGSV(__attribute__((unused)) GPSPositionSensorData *GpsD
         /* GSV set has been fully processed.  Update the GPSSatellites object. */
         GPSSatellitesSet(&gsv_partial);
         memset((void *)&gsv_partial, 0, sizeof(gsv_partial));
-        gsv_expected_mask  = 0;
+        gsv_expected_mask = 0;
         gsv_processed_mask = 0;
     }
 

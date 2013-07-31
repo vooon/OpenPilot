@@ -60,7 +60,7 @@ public:
     Tile(const Tile &cSource)
     {
         this->zoom = cSource.zoom;
-        this->pos  = cSource.pos;
+        this->pos = cSource.pos;
     }
     bool HasValue()
     {

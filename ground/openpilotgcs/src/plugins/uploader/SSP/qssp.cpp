@@ -133,18 +133,18 @@ static const uint16_t CRC_TABLE[] = {
 void qssp::ssp_Init(const PortConfig_t *const info)
 {
     thisport->maxRetryCount = info->max_retry;
-    thisport->timeoutLen    = info->timeoutLen;
-    thisport->txBufSize     = info->txBufSize;
-    thisport->rxBufSize     = info->rxBufSize;
+    thisport->timeoutLen = info->timeoutLen;
+    thisport->txBufSize = info->txBufSize;
+    thisport->rxBufSize = info->rxBufSize;
     thisport->txBuf = info->txBuf;
     thisport->rxBuf = info->rxBuf;
-    thisport->retryCount    = 0;
-    thisport->sendSynch     = FALSE;                // TRUE;
+    thisport->retryCount = 0;
+    thisport->sendSynch = FALSE; // TRUE;
     thisport->rxSeqNo = 255;
     thisport->txSeqNo = 255;
-    thisport->SendState     = SSP_IDLE;
-    thisport->InputState    = (ReceiveState)0;
-    thisport->DecodeState   = (decodeState_)0;
+    thisport->SendState = SSP_IDLE;
+    thisport->InputState = (ReceiveState)0;
+    thisport->DecodeState = (decodeState_)0;
     thisport->TxError = 0;
     thisport->RxError = 0;
     thisport->txSeqNo = 0;
@@ -323,7 +323,7 @@ int16_t qssp::ssp_SendData(const uint8_t *data, const uint16_t length)
         }
 #endif // ifdef SYNCH_SEND
         CLEARBIT(thisport->flags, ACK_RECEIVED);
-        thisport->SendState  = SSP_AWAITING_ACK;
+        thisport->SendState = SSP_AWAITING_ACK;
         value = SSP_TX_WAITING;
         thisport->retryCount = 0; // zero out the retry counter for this transmission
         sf_MakePacket(thisport->txBuf, data, length, thisport->txSeqNo);
@@ -436,23 +436,23 @@ void qssp::sf_SendPacket()
  */
 void qssp::sf_MakePacket(uint8_t *txBuf, const uint8_t *pdata, uint16_t length, uint8_t seqNo)
 {
-    uint16_t crc    = 0xffff;
+    uint16_t crc = 0xffff;
     uint16_t bufPos = 0;
     uint8_t b;
 
     // add 1 for the seq. number
     txBuf[LENGTH] = length + 1;
     txBuf[SEQNUM] = seqNo;
-    crc    = sf_crc16(crc, seqNo);
+    crc = sf_crc16(crc, seqNo);
 
     length = length + 2; // add two for the length and seqno bytes which are added before the loop.
     for (bufPos = 2; bufPos < length; bufPos++) {
-        b   = *pdata++;
+        b = *pdata++;
         txBuf[bufPos] = b;
         crc = sf_crc16(crc, b); // update CRC value
     }
     txBuf[bufPos++] = LOWERBYTE(crc);
-    txBuf[bufPos]   = UPPERBYTE(crc);
+    txBuf[bufPos] = UPPERBYTE(crc);
 }
 
 /*!
@@ -759,7 +759,7 @@ int16_t qssp::sf_ReceivePacket()
             thisport->sendSynch = TRUE;
 #endif
             sf_SendAckPacket(thisport->rxBuf[SEQNUM]);
-            thisport->rxSeqNo   = 0;
+            thisport->rxSeqNo = 0;
             value = FALSE;
         } else if (thisport->rxBuf[SEQNUM] == thisport->rxSeqNo) {
             // Already seen this packet, just ack it, don't act on the packet.
@@ -789,18 +789,18 @@ qssp::qssp(port *info, bool debug) : debug(debug)
 {
     thisport = info;
     thisport->maxRetryCount = info->max_retry;
-    thisport->timeoutLen    = info->timeoutLen;
-    thisport->txBufSize     = info->txBufSize;
-    thisport->rxBufSize     = info->rxBufSize;
+    thisport->timeoutLen = info->timeoutLen;
+    thisport->txBufSize = info->txBufSize;
+    thisport->rxBufSize = info->rxBufSize;
     thisport->txBuf = info->txBuf;
     thisport->rxBuf = info->rxBuf;
-    thisport->retryCount    = 0;
-    thisport->sendSynch     = FALSE;                // TRUE;
+    thisport->retryCount = 0;
+    thisport->sendSynch = FALSE; // TRUE;
     thisport->rxSeqNo = 255;
     thisport->txSeqNo = 255;
-    thisport->SendState     = SSP_IDLE;
-    thisport->InputState    = (ReceiveState)0;
-    thisport->DecodeState   = (decodeState_)0;
+    thisport->SendState = SSP_IDLE;
+    thisport->InputState = (ReceiveState)0;
+    thisport->DecodeState = (decodeState_)0;
     thisport->TxError = 0;
     thisport->RxError = 0;
     thisport->txSeqNo = 0;

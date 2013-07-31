@@ -141,7 +141,7 @@ static void pathPlannerTask(__attribute__((unused)) void *parameters)
         WaypointActiveGet(&waypointActive);
 
         if (pathplanner_active == false) {
-            pathplanner_active   = true;
+            pathplanner_active = true;
 
             // This triggers callback to update variable
             waypointActive.Index = 0;
@@ -228,9 +228,9 @@ void updatePathDesired(__attribute__((unused)) UAVObjEvent *ev)
     PathActionInstGet(waypointData.Action, &pathActionData);
 
     pathDesired.End[PATHDESIRED_END_NORTH] = waypointData.Position[WAYPOINT_POSITION_NORTH];
-    pathDesired.End[PATHDESIRED_END_EAST]  = waypointData.Position[WAYPOINT_POSITION_EAST];
-    pathDesired.End[PATHDESIRED_END_DOWN]  = waypointData.Position[WAYPOINT_POSITION_DOWN];
-    pathDesired.EndingVelocity    = waypointData.Velocity;
+    pathDesired.End[PATHDESIRED_END_EAST] = waypointData.Position[WAYPOINT_POSITION_EAST];
+    pathDesired.End[PATHDESIRED_END_DOWN] = waypointData.Position[WAYPOINT_POSITION_DOWN];
+    pathDesired.EndingVelocity = waypointData.Velocity;
     pathDesired.Mode = pathActionData.Mode;
     pathDesired.ModeParameters[0] = pathActionData.ModeParameters[0];
     pathDesired.ModeParameters[1] = pathActionData.ModeParameters[1];
@@ -247,8 +247,8 @@ void updatePathDesired(__attribute__((unused)) UAVObjEvent *ev)
            pathDesired.Start[PATHDESIRED_START_EAST] =  waypoint.Position[WAYPOINT_POSITION_EAST];
            pathDesired.Start[PATHDESIRED_START_DOWN] =  waypoint.Position[WAYPOINT_POSITION_DOWN];*/
         pathDesired.Start[PATHDESIRED_START_NORTH] = positionState.North;
-        pathDesired.Start[PATHDESIRED_START_EAST]  = positionState.East;
-        pathDesired.Start[PATHDESIRED_START_DOWN]  = positionState.Down;
+        pathDesired.Start[PATHDESIRED_START_EAST] = positionState.East;
+        pathDesired.Start[PATHDESIRED_START_DOWN] = positionState.Down;
         pathDesired.StartingVelocity = pathDesired.EndingVelocity;
     } else {
         // Get previous waypoint as start point
@@ -256,8 +256,8 @@ void updatePathDesired(__attribute__((unused)) UAVObjEvent *ev)
         WaypointInstGet(waypointActive.Index - 1, &waypointPrev);
 
         pathDesired.Start[PATHDESIRED_START_NORTH] = waypointPrev.Position[WAYPOINT_POSITION_NORTH];
-        pathDesired.Start[PATHDESIRED_START_EAST]  = waypointPrev.Position[WAYPOINT_POSITION_EAST];
-        pathDesired.Start[PATHDESIRED_START_DOWN]  = waypointPrev.Position[WAYPOINT_POSITION_DOWN];
+        pathDesired.Start[PATHDESIRED_START_EAST] = waypointPrev.Position[WAYPOINT_POSITION_EAST];
+        pathDesired.Start[PATHDESIRED_START_DOWN] = waypointPrev.Position[WAYPOINT_POSITION_DOWN];
         pathDesired.StartingVelocity = waypointPrev.Velocity;
     }
     PathDesiredSet(&pathDesired);
@@ -345,7 +345,7 @@ static uint8_t conditionTimeOut()
 
     // reset timer if waypoint changed
     if (waypointActive.Index != toWaypoint) {
-        toWaypoint  = waypointActive.Index;
+        toWaypoint = waypointActive.Index;
         toStarttime = PIOS_DELAY_GetRaw();
     }
     if (PIOS_DELAY_DiffuS(toStarttime) >= 1e6f * pathAction.ConditionParameters[0]) {

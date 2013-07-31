@@ -78,7 +78,7 @@ typedef struct {
     xQueueHandle radioEventQueue;
 
     // The raw serial Rx buffer
-    uint8_t  serialRxBuf[SERIAL_RX_BUF_LEN];
+    uint8_t serialRxBuf[SERIAL_RX_BUF_LEN];
 
     // Error statistics.
     uint32_t comTxErrors;
@@ -87,7 +87,7 @@ typedef struct {
     uint32_t droppedPackets;
 
     // Should we parse UAVTalk?
-    bool     parseUAVTalk;
+    bool parseUAVTalk;
 
     // The current configured uart speed
     OPLinkSettingsComSpeedOptions comSpeed;
@@ -225,18 +225,18 @@ static int32_t RadioComBridgeInitialize(void)
     OPLinkReceiverInitialize();
 
     // Initialise UAVTalk
-    data->telemUAVTalkCon   = UAVTalkInitialize(&UAVTalkSendHandler);
-    data->radioUAVTalkCon   = UAVTalkInitialize(&RadioSendHandler);
+    data->telemUAVTalkCon = UAVTalkInitialize(&UAVTalkSendHandler);
+    data->radioUAVTalkCon = UAVTalkInitialize(&RadioSendHandler);
 
     // Initialize the queues.
     data->uavtalkEventQueue = xQueueCreate(EVENT_QUEUE_SIZE, sizeof(UAVObjEvent));
-    data->radioEventQueue   = xQueueCreate(EVENT_QUEUE_SIZE, sizeof(UAVObjEvent));
+    data->radioEventQueue = xQueueCreate(EVENT_QUEUE_SIZE, sizeof(UAVObjEvent));
 
     // Initialize the statistics.
-    data->comTxErrors   = 0;
-    data->comTxRetries  = 0;
+    data->comTxErrors = 0;
+    data->comTxRetries = 0;
     data->UAVTalkErrors = 0;
-    data->parseUAVTalk  = true;
+    data->parseUAVTalk = true;
     data->comSpeed = OPLINKSETTINGS_COMSPEED_9600;
     PIOS_COM_RADIO = PIOS_COM_RFM22B;
 
@@ -263,7 +263,7 @@ static void telemetryTxTask(__attribute__((unused)) void *parameters)
             if ((ev.event == EV_UPDATED) || (ev.event == EV_UPDATE_REQ)) {
                 // Send update (with retries)
                 uint32_t retries = 0;
-                int32_t success  = -1;
+                int32_t success = -1;
                 while (retries < MAX_RETRIES && success == -1) {
                     success = UAVTalkSendObject(data->telemUAVTalkCon, ev.obj, 0, 0, RETRY_TIMEOUT_MS) == 0;
                     if (!success) {
@@ -297,7 +297,7 @@ static void radioTxTask(__attribute__((unused)) void *parameters)
             if ((ev.event == EV_UPDATED) || (ev.event == EV_UPDATE_REQ)) {
                 // Send update (with retries)
                 uint32_t retries = 0;
-                int32_t success  = -1;
+                int32_t success = -1;
                 while (retries < MAX_RETRIES && success == -1) {
                     success = UAVTalkSendObject(data->radioUAVTalkCon, ev.obj, 0, 0, RETRY_TIMEOUT_MS) == 0;
                     if (!success) {

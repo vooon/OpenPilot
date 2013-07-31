@@ -41,7 +41,7 @@ AntennaTrackWidget::AntennaTrackWidget(QWidget *parent) : QWidget(parent)
 {
     setupUi(this);
 
-    azimuth_old   = 0;
+    azimuth_old = 0;
     elevation_old = 0;
 }
 
@@ -92,9 +92,9 @@ void AntennaTrackWidget::setPosition(double lat, double lon, double alt)
     QString str3;
     str3.sprintf("%.2f m", alt);
     coord_value_3->setText(str3);
-    TrackData.Latitude  = lat;
+    TrackData.Latitude = lat;
     TrackData.Longitude = lon;
-    TrackData.Altitude  = alt;
+    TrackData.Altitude = alt;
     calcAntennaPosition();
 }
 
@@ -126,9 +126,9 @@ void AntennaTrackWidget::setHomePosition(double lat, double lon, double alt)
     QString str3;
     str3.sprintf("%.2f m", alt);
     bear_value->setText(str3);
-    TrackData.HomeLatitude  = lat;
+    TrackData.HomeLatitude = lat;
     TrackData.HomeLongitude = lon;
-    TrackData.HomeAltitude  = alt;
+    TrackData.HomeAltitude = alt;
     calcAntennaPosition();
 }
 
@@ -139,7 +139,7 @@ void AntennaTrackWidget::calcAntennaPosition(void)
     double azimuth, elevation;
     double gcsAlt = TrackData.HomeAltitude; // Home MSL altitude
     double uavAlt = TrackData.Altitude; // UAV MSL altitude
-    double dAlt   = uavAlt - gcsAlt; // Altitude difference
+    double dAlt = uavAlt - gcsAlt; // Altitude difference
 
     // Convert to radians
     lat1 = TrackData.HomeLatitude * (M_PI / 180); // Home lat
@@ -154,8 +154,8 @@ void AntennaTrackWidget::calcAntennaPosition(void)
             Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLon);
        var brng = Math.atan2(y, x).toDeg();
      **/
-    y    = sin(lon2 - lon1) * cos(lat2);
-    x    = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(lon2 - lon1);
+    y = sin(lon2 - lon1) * cos(lat2);
+    x = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(lon2 - lon1);
     brng = atan2((sin(lon2 - lon1) * cos(lat2)), (cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(lon2 - lon1))) * (180 / M_PI);
     if (brng < 0) {
         brng += 360;
@@ -197,7 +197,7 @@ void AntennaTrackWidget::calcAntennaPosition(void)
     elevation_value->setText(str3);
 
     // servo value 2000-4000
-    int servo   = (int)(2000.0 / 180 * elevation + 2000);
+    int servo = (int)(2000.0 / 180 * elevation + 2000);
     int stepper = (int)(400.0 / 360 * (azimuth - azimuth_old));
 
     // send azimuth and elevation to tracker hardware
@@ -206,7 +206,7 @@ void AntennaTrackWidget::calcAntennaPosition(void)
         if (azimuth_old != azimuth || elevation != elevation_old) {
             port->write(str3.toAscii());
         }
-        azimuth_old   = azimuth;
+        azimuth_old = azimuth;
         elevation_old = elevation;
     }
 }

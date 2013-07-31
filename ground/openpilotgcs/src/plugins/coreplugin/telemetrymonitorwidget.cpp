@@ -18,7 +18,7 @@ TelemetryMonitorWidget::TelemetryMonitorWidget(QWidget *parent) : QGraphicsView(
     setAttribute(Qt::WA_TranslucentBackground);
     setWindowFlags(Qt::FramelessWindowHint);
 
-    QGraphicsScene *scene  = new QGraphicsScene(0, 0, 180, 25, this); // keeping the scene in line with the widget for testing.
+    QGraphicsScene *scene = new QGraphicsScene(0, 0, 180, 25, this); // keeping the scene in line with the widget for testing.
 
     QSvgRenderer *renderer = new QSvgRenderer();
     if (renderer->load(QString(":/core/images/tx-rx.svg"))) {
@@ -68,8 +68,8 @@ TelemetryMonitorWidget::TelemetryMonitorWidget(QWidget *parent) : QGraphicsView(
     }
 
     connected = false;
-    txValue   = 0.0;
-    rxValue   = 0.0;
+    txValue = 0.0;
+    rxValue = 0.0;
 
     setMin(0.0);
     setMax(1200.0);

@@ -73,8 +73,8 @@ void RightPanePlaceHolder::applyStoredSize(int width)
         if (splitter) {
             // A splitter we need to resize the splitter sizes
             QList<int> sizes = splitter->sizes();
-            int index  = splitter->indexOf(this);
-            int diff   = width - sizes.at(index);
+            int index = splitter->indexOf(this);
+            int diff = width - sizes.at(index);
             int adjust = sizes.count() > 1 ? (diff / (sizes.count() - 1)) : 0;
             for (int i = 0; i < sizes.count(); ++i) {
                 if (i != index) {

@@ -42,13 +42,13 @@ enum pios_l3gd20_dev_magic {
 
 #define PIOS_L3GD20_MAX_DOWNSAMPLE 2
 struct l3gd20_dev {
-    uint32_t     spi_id;
-    uint32_t     slave_num;
+    uint32_t spi_id;
+    uint32_t slave_num;
     xQueueHandle queue;
     const struct pios_l3gd20_cfg *cfg;
     enum pios_l3gd20_filter bandwidth;
     enum pios_l3gd20_range range;
-    enum pios_l3gd20_dev_magic   magic;
+    enum pios_l3gd20_dev_magic magic;
 };
 
 // ! Global structure for this device device
@@ -123,7 +123,7 @@ int32_t PIOS_L3GD20_Init(uint32_t spi_id, uint32_t slave_num, const struct pios_
         return -1;
     }
 
-    dev->spi_id    = spi_id;
+    dev->spi_id = spi_id;
     dev->slave_num = slave_num;
     dev->cfg = cfg;
 
@@ -427,7 +427,7 @@ uint8_t PIOS_L3GD20_Test(void)
  */
 bool PIOS_L3GD20_IRQHandler(void)
 {
-    bool woken     = false;
+    bool woken = false;
     struct pios_l3gd20_data data;
     uint8_t buf[7] = { PIOS_L3GD20_GYRO_X_OUT_LSB | 0x80 | 0x40, 0, 0, 0, 0, 0, 0 };
     uint8_t rec[7];

@@ -640,8 +640,8 @@ void QextSerialPort::setTimeout(long millisec)
 {
     QMutexLocker lock(mutex);
 
-    Settings.Timeout_Millisec  = millisec;
-    Posix_Copy_Timeout.tv_sec  = millisec / 1000;
+    Settings.Timeout_Millisec = millisec;
+    Posix_Copy_Timeout.tv_sec = millisec / 1000;
     Posix_Copy_Timeout.tv_usec = millisec % 1000;
     if (isOpen()) {
         if (millisec == -1) {
@@ -681,20 +681,20 @@ bool QextSerialPort::open(OpenMode mode)
             cfmakeraw(&Posix_CommConfig); // Enable raw access
 
             /*set up other port settings*/
-            Posix_CommConfig.c_cflag   |= CREAD | CLOCAL;
-            Posix_CommConfig.c_lflag   &= (~(ICANON | ECHO | ECHOE | ECHOK | ECHONL | ISIG));
-            Posix_CommConfig.c_iflag   &= (~(INPCK | IGNPAR | PARMRK | ISTRIP | ICRNL | IXANY));
-            Posix_CommConfig.c_oflag   &= (~OPOST);
+            Posix_CommConfig.c_cflag |= CREAD | CLOCAL;
+            Posix_CommConfig.c_lflag &= (~(ICANON | ECHO | ECHOE | ECHOK | ECHONL | ISIG));
+            Posix_CommConfig.c_iflag &= (~(INPCK | IGNPAR | PARMRK | ISTRIP | ICRNL | IXANY));
+            Posix_CommConfig.c_oflag &= (~OPOST);
             Posix_CommConfig.c_cc[VMIN] = 0;
 #ifdef _POSIX_VDISABLE // Is a disable character available on this system?
             // Some systems allow for per-device disable-characters, so get the
             // proper value for the configured device
             const long vdisable = fpathconf(fd, _PC_VDISABLE);
-            Posix_CommConfig.c_cc[VINTR]  = vdisable;
-            Posix_CommConfig.c_cc[VQUIT]  = vdisable;
+            Posix_CommConfig.c_cc[VINTR] = vdisable;
+            Posix_CommConfig.c_cc[VQUIT] = vdisable;
             Posix_CommConfig.c_cc[VSTART] = vdisable;
-            Posix_CommConfig.c_cc[VSTOP]  = vdisable;
-            Posix_CommConfig.c_cc[VSUSP]  = vdisable;
+            Posix_CommConfig.c_cc[VSTOP] = vdisable;
+            Posix_CommConfig.c_cc[VSUSP] = vdisable;
 #endif // _POSIX_VDISABLE
             setBaudRate(Settings.BaudRate);
             setDataBits(Settings.DataBits);

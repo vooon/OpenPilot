@@ -40,7 +40,7 @@ void calibration_misalignment(Vector3f & rotationVector,
                                    samples0[i].cast<double>(), samples1[i].cast<double>()));
 
         X.row(i) = observation.axis();
-        y[i]     = reference.angle() - observation.angle();
+        y[i] = reference.angle() - observation.angle();
     }
 
     // Run linear least squares over the result.

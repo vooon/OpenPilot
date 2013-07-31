@@ -67,13 +67,13 @@ public:
     enum GPS_SETTING { GPS_UBX, GPS_NMEA, GPS_DISABLED };
     enum RADIO_SETTING { RADIO_TELEMETRY, RADIO_DISABLED };
 
-    virtual VehicleConfigurationSource::CONTROLLER_TYPE getControllerType() const  = 0;
+    virtual VehicleConfigurationSource::CONTROLLER_TYPE getControllerType() const = 0;
     virtual VehicleConfigurationSource::VEHICLE_TYPE getVehicleType() const = 0;
     virtual VehicleConfigurationSource::VEHICLE_SUB_TYPE getVehicleSubType() const = 0;
-    virtual VehicleConfigurationSource::INPUT_TYPE getInputType() const       = 0;
-    virtual VehicleConfigurationSource::ESC_TYPE getESCType() const           = 0;
+    virtual VehicleConfigurationSource::INPUT_TYPE getInputType() const = 0;
+    virtual VehicleConfigurationSource::ESC_TYPE getESCType() const = 0;
 
-    virtual VehicleConfigurationSource::GPS_SETTING getGPSSetting() const     = 0;
+    virtual VehicleConfigurationSource::GPS_SETTING getGPSSetting() const = 0;
     virtual VehicleConfigurationSource::RADIO_SETTING getRadioSetting() const = 0;
 
     virtual bool isCalibrationPerformed() const = 0;
@@ -84,7 +84,7 @@ public:
 
     virtual bool isRestartNeeded() const = 0;
 
-    virtual QString getSummaryText()     = 0;
+    virtual QString getSummaryText() = 0;
 };
 
 #endif // VEHICLECONFIGURATIONSOURCE_H

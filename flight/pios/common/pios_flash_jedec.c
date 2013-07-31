@@ -62,11 +62,11 @@ enum pios_jedec_dev_magic {
 struct jedec_flash_dev {
     uint32_t spi_id;
     uint32_t slave_num;
-    bool     claimed;
+    bool claimed;
 
-    uint8_t  manufacturer;
-    uint8_t  memorytype;
-    uint8_t  capacity;
+    uint8_t manufacturer;
+    uint8_t memorytype;
+    uint8_t capacity;
 
     const struct pios_flash_jedec_cfg *cfg;
 #if defined(FLASH_FREERTOS)
@@ -99,7 +99,7 @@ static struct jedec_flash_dev *PIOS_Flash_Jedec_alloc(void)
     }
 
     flash_dev->claimed = false;
-    flash_dev->magic   = PIOS_JEDEC_DEV_MAGIC;
+    flash_dev->magic = PIOS_JEDEC_DEV_MAGIC;
 #if defined(FLASH_FREERTOS)
     flash_dev->transaction_lock = xSemaphoreCreateMutex();
 #endif
@@ -134,7 +134,7 @@ int32_t PIOS_Flash_Jedec_Init(uintptr_t *flash_id, uint32_t spi_id, uint32_t sla
         return -1;
     }
 
-    flash_dev->spi_id    = spi_id;
+    flash_dev->spi_id = spi_id;
     flash_dev->slave_num = slave_num;
     flash_dev->cfg = NULL;
 
@@ -231,7 +231,7 @@ static int32_t PIOS_Flash_Jedec_ReadStatus(struct jedec_flash_dev *flash_dev)
     }
 
     uint8_t out[2] = { JEDEC_READ_STATUS, 0 };
-    uint8_t in[2]  = { 0, 0 };
+    uint8_t in[2] = { 0, 0 };
     if (PIOS_SPI_TransferBlock(flash_dev->spi_id, out, in, sizeof(out), NULL) < 0) {
         PIOS_Flash_Jedec_ReleaseBus(flash_dev);
         return -2;
@@ -261,8 +261,8 @@ static int32_t PIOS_Flash_Jedec_ReadID(struct jedec_flash_dev *flash_dev)
     PIOS_Flash_Jedec_ReleaseBus(flash_dev);
 
     flash_dev->manufacturer = in[1];
-    flash_dev->memorytype   = in[2];
-    flash_dev->capacity     = in[3];
+    flash_dev->memorytype = in[2];
+    flash_dev->capacity = in[3];
 
     return flash_dev->manufacturer;
 }
@@ -523,7 +523,7 @@ static int32_t PIOS_Flash_Jedec_WriteChunks(uintptr_t flash_id, uint32_t addr, s
     uint8_t out[4] = { JEDEC_PAGE_WRITE, (addr >> 16) & 0xff, (addr >> 8) & 0xff, addr & 0xff };
 
     /* Can only write one page at a time */
-    uint32_t len   = 0;
+    uint32_t len = 0;
     for (uint32_t i = 0; i < num; i++) {
         len += chunks[i].len;
     }
@@ -609,12 +609,12 @@ static int32_t PIOS_Flash_Jedec_ReadData(uintptr_t flash_id, uint32_t addr, uint
 /* Provide a flash driver to external drivers */
 const struct pios_flash_driver pios_jedec_flash_driver = {
     .start_transaction = PIOS_Flash_Jedec_StartTransaction,
-    .end_transaction   = PIOS_Flash_Jedec_EndTransaction,
-    .erase_chip   = PIOS_Flash_Jedec_EraseChip,
+    .end_transaction = PIOS_Flash_Jedec_EndTransaction,
+    .erase_chip = PIOS_Flash_Jedec_EraseChip,
     .erase_sector = PIOS_Flash_Jedec_EraseSector,
     .write_chunks = PIOS_Flash_Jedec_WriteChunks,
-    .write_data   = PIOS_Flash_Jedec_WriteData,
-    .read_data    = PIOS_Flash_Jedec_ReadData,
+    .write_data = PIOS_Flash_Jedec_WriteData,
+    .read_data = PIOS_Flash_Jedec_ReadData,
 };
 
 #endif /* PIOS_INCLUDE_FLASH */

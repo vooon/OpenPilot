@@ -45,15 +45,15 @@ Device currentDevice;
 uint8_t Buffer[64];
 uint8_t echoBuffer[64];
 uint8_t SendBuffer[64];
-uint8_t Command          = 0;
-uint8_t EchoReqFlag      = 0;
-uint8_t EchoAnsFlag      = 0;
-uint8_t StartFlag        = 0;
-uint32_t Aditionals      = 0;
-uint32_t SizeOfTransfer  = 0;
-uint32_t Expected_CRC    = 0;
+uint8_t Command = 0;
+uint8_t EchoReqFlag = 0;
+uint8_t EchoAnsFlag = 0;
+uint8_t StartFlag = 0;
+uint32_t Aditionals = 0;
+uint32_t SizeOfTransfer = 0;
+uint32_t Expected_CRC = 0;
 uint8_t SizeOfLastPacket = 0;
-uint32_t Next_Packet     = 0;
+uint32_t Next_Packet = 0;
 uint8_t TransferType;
 uint32_t Count = 0;
 uint32_t Data;
@@ -66,7 +66,7 @@ uint32_t Opt[3];
 // Download vars
 uint32_t downSizeOfLastPacket = 0;
 uint32_t downPacketTotal = 0;
-uint32_t downPacketCurrent    = 0;
+uint32_t downPacketCurrent = 0;
 DFUTransfer downType = 0;
 /* Extern variables ----------------------------------------------------------*/
 extern DFUStates DeviceState;
@@ -95,7 +95,7 @@ void DataDownload(__attribute__((unused)) DownloadAction action)
         }
         for (uint8_t x = 0; x < packetSize; ++x) {
             partoffset = (downPacketCurrent * 14 * 4) + (x * 4);
-            offset     = baseOfAdressType(downType) + partoffset;
+            offset = baseOfAdressType(downType) + partoffset;
             if (!flash_read(SendBuffer + (6 + x * 4), offset,
                             currentProgrammingDestination)) {
                 DeviceState = Last_operation_failed;
@@ -104,7 +104,7 @@ void DataDownload(__attribute__((unused)) DownloadAction action)
         downPacketCurrent = downPacketCurrent + 1;
         if (downPacketCurrent > downPacketTotal - 1) {
             DeviceState = Last_operation_Success;
-            Aditionals  = (uint32_t)Download;
+            Aditionals = (uint32_t)Download;
         }
         sendData(SendBuffer + 1, 63);
     }
@@ -119,20 +119,20 @@ void processComand(uint8_t *xReceive_Buffer)
 #endif
     EchoReqFlag = (Command >> 7);
     EchoAnsFlag = (Command >> 6) & 0x01;
-    StartFlag   = (Command >> 5) & 0x01;
-    Count  = xReceive_Buffer[COUNT] << 24;
+    StartFlag = (Command >> 5) & 0x01;
+    Count = xReceive_Buffer[COUNT] << 24;
     Count += xReceive_Buffer[COUNT + 1] << 16;
     Count += xReceive_Buffer[COUNT + 2] << 8;
     Count += xReceive_Buffer[COUNT + 3];
 
-    Data   = xReceive_Buffer[DATA] << 24;
-    Data  += xReceive_Buffer[DATA + 1] << 16;
-    Data  += xReceive_Buffer[DATA + 2] << 8;
-    Data  += xReceive_Buffer[DATA + 3];
-    Data0  = xReceive_Buffer[DATA];
-    Data1  = xReceive_Buffer[DATA + 1];
-    Data2  = xReceive_Buffer[DATA + 2];
-    Data3  = xReceive_Buffer[DATA + 3];
+    Data = xReceive_Buffer[DATA] << 24;
+    Data += xReceive_Buffer[DATA + 1] << 16;
+    Data += xReceive_Buffer[DATA + 2] << 8;
+    Data += xReceive_Buffer[DATA + 3];
+    Data0 = xReceive_Buffer[DATA];
+    Data1 = xReceive_Buffer[DATA + 1];
+    Data2 = xReceive_Buffer[DATA + 2];
+    Data3 = xReceive_Buffer[DATA + 3];
     for (uint32_t i = 0; i < 3; i++) {
         Opt[i] = xReceive_Buffer[DATA + 4 * (i + 1)] << 24 |
                  xReceive_Buffer[DATA + 4 * (i + 1) + 1] << 16 |
@@ -154,7 +154,7 @@ void processComand(uint8_t *xReceive_Buffer)
             }
             DeviceState = DFUidle;
             currentProgrammingDestination = devicesTable[Data0].programmingType;
-            currentDeviceCanRead  = devicesTable[Data0].readWriteFlags & 0x01;
+            currentDeviceCanRead = devicesTable[Data0].readWriteFlags & 0x01;
             currentDeviceCanWrite = devicesTable[Data0].readWriteFlags >> 1
                                     & 0x01;
             currentDevice = devicesTable[Data0];
@@ -168,30 +168,30 @@ void processComand(uint8_t *xReceive_Buffer)
                 break;
             default:
                 DeviceState = Last_operation_failed;
-                Aditionals  = (uint16_t)Command;
+                Aditionals = (uint16_t)Command;
             }
             if (result != 1) {
                 DeviceState = Last_operation_failed;
-                Aditionals  = (uint32_t)Command;
+                Aditionals = (uint32_t)Command;
             }
         }
         break;
     case Upload:
         if ((DeviceState == DFUidle) || (DeviceState == uploading)) {
             if ((StartFlag == 1) && (Next_Packet == 0)) {
-                TransferType     = Data0;
-                SizeOfTransfer   = Count;
-                Next_Packet      = 1;
-                Expected_CRC     = Data2 << 24;
-                Expected_CRC    += Data3 << 16;
-                Expected_CRC    += xReceive_Buffer[DATA + 4] << 8;
-                Expected_CRC    += xReceive_Buffer[DATA + 5];
+                TransferType = Data0;
+                SizeOfTransfer = Count;
+                Next_Packet = 1;
+                Expected_CRC = Data2 << 24;
+                Expected_CRC += Data3 << 16;
+                Expected_CRC += xReceive_Buffer[DATA + 4] << 8;
+                Expected_CRC += xReceive_Buffer[DATA + 5];
                 SizeOfLastPacket = Data1;
 
                 if (isBiggerThanAvailable(TransferType, (SizeOfTransfer - 1)
                                           * 14 * 4 + SizeOfLastPacket * 4) == true) {
                     DeviceState = outsideDevCapabilities;
-                    Aditionals  = (uint32_t)Command;
+                    Aditionals = (uint32_t)Command;
                 } else {
                     uint8_t result = 1;
                     if (TransferType == FW) {
@@ -208,7 +208,7 @@ void processComand(uint8_t *xReceive_Buffer)
                     }
                     if (result != 1) {
                         DeviceState = Last_operation_failed;
-                        Aditionals  = (uint32_t)Command;
+                        Aditionals = (uint32_t)Command;
                     } else {
                         DeviceState = uploading;
                     }
@@ -216,7 +216,7 @@ void processComand(uint8_t *xReceive_Buffer)
             } else if ((StartFlag != 1) && (Next_Packet != 0)) {
                 if (Count > SizeOfTransfer) {
                     DeviceState = too_many_packets;
-                    Aditionals  = Count;
+                    Aditionals = Count;
                 } else if (Count == Next_Packet - 1) {
                     uint8_t numberOfWords = 14;
                     if (Count == SizeOfTransfer - 1) { // is this the last packet?
@@ -229,11 +229,11 @@ void processComand(uint8_t *xReceive_Buffer)
                     case Self_flash:
                         for (uint8_t x = 0; x < numberOfWords; ++x) {
                             offset = 4 * x;
-                            Data   = xReceive_Buffer[DATA + offset] << 24;
-                            Data  += xReceive_Buffer[DATA + 1 + offset] << 16;
-                            Data  += xReceive_Buffer[DATA + 2 + offset] << 8;
-                            Data  += xReceive_Buffer[DATA + 3 + offset];
-                            aux    = baseOfAdressType(TransferType) + (uint32_t)(
+                            Data = xReceive_Buffer[DATA + offset] << 24;
+                            Data += xReceive_Buffer[DATA + 1 + offset] << 16;
+                            Data += xReceive_Buffer[DATA + 2 + offset] << 8;
+                            Data += xReceive_Buffer[DATA + 3 + offset];
+                            aux = baseOfAdressType(TransferType) + (uint32_t)(
                                 Count * 14 * 4 + x * 4);
                             result = 0;
                             for (int retry = 0; retry < MAX_WRI_RETRYS; ++retry) {
@@ -253,17 +253,17 @@ void processComand(uint8_t *xReceive_Buffer)
                     }
                     if (result != 1) {
                         DeviceState = Last_operation_failed;
-                        Aditionals  = (uint32_t)Command;
+                        Aditionals = (uint32_t)Command;
                     }
 
                     ++Next_Packet;
                 } else {
                     DeviceState = wrong_packet_received;
-                    Aditionals  = Count;
+                    Aditionals = Count;
                 }
             } else {
                 DeviceState = Last_operation_failed;
-                Aditionals  = (uint32_t)Command;
+                Aditionals = (uint32_t)Command;
             }
         }
         break;
@@ -286,14 +286,14 @@ void processComand(uint8_t *xReceive_Buffer)
             Buffer[8] = WRFlags >> 8;
             Buffer[9] = WRFlags;
         } else {
-            Buffer[2]  = devicesTable[Data0 - 1].sizeOfCode >> 24;
-            Buffer[3]  = devicesTable[Data0 - 1].sizeOfCode >> 16;
-            Buffer[4]  = devicesTable[Data0 - 1].sizeOfCode >> 8;
-            Buffer[5]  = devicesTable[Data0 - 1].sizeOfCode;
-            Buffer[6]  = Data0;
-            Buffer[7]  = devicesTable[Data0 - 1].BL_Version;
-            Buffer[8]  = devicesTable[Data0 - 1].sizeOfDescription;
-            Buffer[9]  = devicesTable[Data0 - 1].devID;
+            Buffer[2] = devicesTable[Data0 - 1].sizeOfCode >> 24;
+            Buffer[3] = devicesTable[Data0 - 1].sizeOfCode >> 16;
+            Buffer[4] = devicesTable[Data0 - 1].sizeOfCode >> 8;
+            Buffer[5] = devicesTable[Data0 - 1].sizeOfCode;
+            Buffer[6] = Data0;
+            Buffer[7] = devicesTable[Data0 - 1].BL_Version;
+            Buffer[8] = devicesTable[Data0 - 1].sizeOfDescription;
+            Buffer[9] = devicesTable[Data0 - 1].devID;
             Buffer[10] = devicesTable[Data0 - 1].FW_Crc >> 24;
             Buffer[11] = devicesTable[Data0 - 1].FW_Crc >> 16;
             Buffer[12] = devicesTable[Data0 - 1].FW_Crc >> 8;
@@ -355,14 +355,14 @@ void processComand(uint8_t *xReceive_Buffer)
             if (isBiggerThanAvailable(downType, (downPacketTotal - 1) * 14
                                       + downSizeOfLastPacket) == 1) {
                 DeviceState = outsideDevCapabilities;
-                Aditionals  = (uint32_t)Command;
+                Aditionals = (uint32_t)Command;
             } else {
                 downPacketCurrent = 0;
                 DeviceState = downloading;
             }
         } else {
             DeviceState = Last_operation_failed;
-            Aditionals  = (uint32_t)Command;
+            Aditionals = (uint32_t)Command;
         }
         break;
 
@@ -403,15 +403,15 @@ void OPDfuIni(uint8_t discover)
     const struct pios_board_info *bdinfo = &pios_board_info_blob;
     Device dev;
 
-    dev.programmingType   = Self_flash;
-    dev.readWriteFlags    = (BOARD_READABLE | (BOARD_WRITABLE << 1));
-    dev.startOfUserCode   = bdinfo->fw_base;
+    dev.programmingType = Self_flash;
+    dev.readWriteFlags = (BOARD_READABLE | (BOARD_WRITABLE << 1));
+    dev.startOfUserCode = bdinfo->fw_base;
     dev.sizeOfCode = bdinfo->fw_size;
     dev.sizeOfDescription = bdinfo->desc_size;
-    dev.BL_Version  = bdinfo->bl_rev;
-    dev.FW_Crc      = CalcFirmCRC();
+    dev.BL_Version = bdinfo->bl_rev;
+    dev.FW_Crc = CalcFirmCRC();
     dev.devID = (bdinfo->board_type << 8) | (bdinfo->board_rev);
-    dev.devType     = bdinfo->hw_type;
+    dev.devType = bdinfo->hw_type;
     numberOfDevices = 1;
     devicesTable[0] = dev;
     if (discover) {

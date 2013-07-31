@@ -83,7 +83,7 @@ public:
 
     virtual QWidget *createPage(QWidget *parent) = 0;
 
-    virtual void apply()  = 0;
+    virtual void apply() = 0;
     virtual void finish() = 0;
 
 public slots:

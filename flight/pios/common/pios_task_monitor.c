@@ -115,7 +115,7 @@ void PIOS_TASK_MONITOR_ForEachTask(TaskMonitorTaskInfoCallback callback, void *c
      * directly to percentages. */
     uint32_t currentTime = portGET_RUN_TIME_COUNTER_VALUE();
     /* avoid divide-by-zero if the interval is too small */
-    uint32_t deltaTime   = ((currentTime - mLastMonitorTime) / 100) ? : 1;
+    uint32_t deltaTime = ((currentTime - mLastMonitorTime) / 100) ? : 1;
     mLastMonitorTime = currentTime;
 #endif
     /* Update all task information */

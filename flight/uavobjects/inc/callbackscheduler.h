@@ -29,7 +29,7 @@
 // Public types
 typedef enum {
     CALLBACK_PRIORITY_CRITICAL = 0,
-    CALLBACK_PRIORITY_REGULAR  = 1,
+    CALLBACK_PRIORITY_REGULAR = 1,
     CALLBACK_PRIORITY_LOW = 2
 } DelayedCallbackPriority;
 // Use the CallbackPriority to define how frequent a callback needs to be
@@ -57,10 +57,10 @@ typedef enum {
 // Callbacks MUST NOT block execution!
 
 typedef enum {
-    CALLBACK_TASK_AUXILIARY     = (tskIDLE_PRIORITY + 1),
-    CALLBACK_TASK_NAVIGATION    = (tskIDLE_PRIORITY + 2),
+    CALLBACK_TASK_AUXILIARY = (tskIDLE_PRIORITY + 1),
+    CALLBACK_TASK_NAVIGATION = (tskIDLE_PRIORITY + 2),
     CALLBACK_TASK_FLIGHTCONTROL = (tskIDLE_PRIORITY + 3),
-    CALLBACK_TASK_DEVICEDRIVER  = (tskIDLE_PRIORITY + 4),
+    CALLBACK_TASK_DEVICEDRIVER = (tskIDLE_PRIORITY + 4),
 } DelayedCallbackPriorityTask;
 // Use the PriorityTask to define the global importance of callback execution
 // compared to other processes in the system.
@@ -79,9 +79,9 @@ typedef enum {
 // executed! (This does not only apply to callbacks but to all FreeRTOS tasks!)
 
 typedef enum {
-    CALLBACK_UPDATEMODE_NONE     = 0,
-    CALLBACK_UPDATEMODE_SOONER   = 1,
-    CALLBACK_UPDATEMODE_LATER    = 2,
+    CALLBACK_UPDATEMODE_NONE = 0,
+    CALLBACK_UPDATEMODE_SOONER = 1,
+    CALLBACK_UPDATEMODE_LATER = 2,
     CALLBACK_UPDATEMODE_OVERRIDE = 3
 } DelayedCallbackUpdateMode;
 // When scheduling a callback for execution at a time in the future, use the

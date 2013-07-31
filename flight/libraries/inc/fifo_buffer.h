@@ -31,7 +31,7 @@
 // *********************
 
 typedef struct {
-    uint8_t  *buf_ptr;
+    uint8_t *buf_ptr;
     volatile uint16_t rd;
     volatile uint16_t wr;
     uint16_t buf_size;

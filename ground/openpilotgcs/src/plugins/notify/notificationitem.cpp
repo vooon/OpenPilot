@@ -83,21 +83,21 @@ NotificationItem::NotificationItem(QObject *parent)
 
 void NotificationItem::copyTo(NotificationItem *that) const
 {
-    that->isNowPlaying         = isNowPlaying;
-    that->_isPlayed            = _isPlayed;
+    that->isNowPlaying = isNowPlaying;
+    that->_isPlayed = _isPlayed;
     that->_soundCollectionPath = _soundCollectionPath;
-    that->_currentLanguage     = _currentLanguage;
+    that->_currentLanguage = _currentLanguage;
     that->_soundCollectionPath = _soundCollectionPath;
-    that->_dataObject          = _dataObject;
-    that->_objectField         = _objectField;
-    that->_condition           = _condition;
-    that->_sound1        = _sound1;
-    that->_sound2        = _sound2;
-    that->_sound3        = _sound3;
-    that->_sayOrder      = _sayOrder;
-    that->_singleValue   = _singleValue;
-    that->_valueRange2   = _valueRange2;
-    that->_repeatValue   = _repeatValue;
+    that->_dataObject = _dataObject;
+    that->_objectField = _objectField;
+    that->_condition = _condition;
+    that->_sound1 = _sound1;
+    that->_sound2 = _sound2;
+    that->_sound3 = _sound3;
+    that->_sayOrder = _sayOrder;
+    that->_singleValue = _singleValue;
+    that->_valueRange2 = _valueRange2;
+    that->_repeatValue = _repeatValue;
     that->_expireTimeout = _expireTimeout;
     that->_mute = _mute;
 }
@@ -286,7 +286,7 @@ QStringList valueToSoundList(QString value)
         // [1] check, is this number < 20, these numbers played by one wav file
         digitWavs.append(numberParts.at(0));
     } else {
-        int i   = 0;
+        int i = 0;
         // [2] store two lowest digits of number
         int num = numberParts.at(0).right(2).toInt();
         if (num < 20 && num != 0) {

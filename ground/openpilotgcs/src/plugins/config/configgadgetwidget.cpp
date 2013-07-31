@@ -67,49 +67,49 @@ ConfigGadgetWidget::ConfigGadgetWidget(QWidget *parent) : QWidget(parent)
     QIcon *icon = new QIcon();
     icon->addFile(":/configgadget/images/hardware_normal.png", QSize(), QIcon::Normal, QIcon::Off);
     icon->addFile(":/configgadget/images/hardware_selected.png", QSize(), QIcon::Selected, QIcon::Off);
-    qwd  = new DefaultHwSettingsWidget(this);
+    qwd = new DefaultHwSettingsWidget(this);
     ftw->insertTab(ConfigGadgetWidget::hardware, qwd, *icon, QString("Hardware"));
 
     icon = new QIcon();
     icon->addFile(":/configgadget/images/vehicle_normal.png", QSize(), QIcon::Normal, QIcon::Off);
     icon->addFile(":/configgadget/images/vehicle_selected.png", QSize(), QIcon::Selected, QIcon::Off);
-    qwd  = new ConfigVehicleTypeWidget(this);
+    qwd = new ConfigVehicleTypeWidget(this);
     ftw->insertTab(ConfigGadgetWidget::aircraft, qwd, *icon, QString("Vehicle"));
 
     icon = new QIcon();
     icon->addFile(":/configgadget/images/input_normal.png", QSize(), QIcon::Normal, QIcon::Off);
     icon->addFile(":/configgadget/images/input_selected.png", QSize(), QIcon::Selected, QIcon::Off);
-    qwd  = new ConfigInputWidget(this);
+    qwd = new ConfigInputWidget(this);
     ftw->insertTab(ConfigGadgetWidget::input, qwd, *icon, QString("Input"));
 
     icon = new QIcon();
     icon->addFile(":/configgadget/images/output_normal.png", QSize(), QIcon::Normal, QIcon::Off);
     icon->addFile(":/configgadget/images/output_selected.png", QSize(), QIcon::Selected, QIcon::Off);
-    qwd  = new ConfigOutputWidget(this);
+    qwd = new ConfigOutputWidget(this);
     ftw->insertTab(ConfigGadgetWidget::output, qwd, *icon, QString("Output"));
 
     icon = new QIcon();
     icon->addFile(":/configgadget/images/ins_normal.png", QSize(), QIcon::Normal, QIcon::Off);
     icon->addFile(":/configgadget/images/ins_selected.png", QSize(), QIcon::Selected, QIcon::Off);
-    qwd  = new DefaultAttitudeWidget(this);
+    qwd = new DefaultAttitudeWidget(this);
     ftw->insertTab(ConfigGadgetWidget::sensors, qwd, *icon, QString("Attitude"));
 
     icon = new QIcon();
     icon->addFile(":/configgadget/images/stabilization_normal.png", QSize(), QIcon::Normal, QIcon::Off);
     icon->addFile(":/configgadget/images/stabilization_selected.png", QSize(), QIcon::Selected, QIcon::Off);
-    qwd  = new ConfigStabilizationWidget(this);
+    qwd = new ConfigStabilizationWidget(this);
     ftw->insertTab(ConfigGadgetWidget::stabilization, qwd, *icon, QString("Stabilization"));
 
     icon = new QIcon();
     icon->addFile(":/configgadget/images/camstab_normal.png", QSize(), QIcon::Normal, QIcon::Off);
     icon->addFile(":/configgadget/images/camstab_selected.png", QSize(), QIcon::Selected, QIcon::Off);
-    qwd  = new ConfigCameraStabilizationWidget(this);
+    qwd = new ConfigCameraStabilizationWidget(this);
     ftw->insertTab(ConfigGadgetWidget::camerastabilization, qwd, *icon, QString("Gimbal"));
 
     icon = new QIcon();
     icon->addFile(":/configgadget/images/txpid_normal.png", QSize(), QIcon::Normal, QIcon::Off);
     icon->addFile(":/configgadget/images/txpid_selected.png", QSize(), QIcon::Selected, QIcon::Off);
-    qwd  = new ConfigTxPIDWidget(this);
+    qwd = new ConfigTxPIDWidget(this);
     ftw->insertTab(ConfigGadgetWidget::txpid, qwd, *icon, QString("TxPID"));
 
     ftw->setCurrentIndex(ConfigGadgetWidget::hardware);
@@ -139,7 +139,7 @@ ConfigGadgetWidget::ConfigGadgetWidget(QWidget *parent) : QWidget(parent)
     }
 
     // Create the timer that is used to timeout the connection to the OPLink.
-    oplinkTimeout   = new QTimer(this);
+    oplinkTimeout = new QTimer(this);
     connect(oplinkTimeout, SIGNAL(timeout()), this, SLOT(onOPLinkDisconnect()));
     oplinkConnected = false;
 }
@@ -177,7 +177,7 @@ void ConfigGadgetWidget::onAutopilotDisconnect()
     icon = new QIcon();
     icon->addFile(":/configgadget/images/hardware_normal.png", QSize(), QIcon::Normal, QIcon::Off);
     icon->addFile(":/configgadget/images/hardware_selected.png", QSize(), QIcon::Selected, QIcon::Off);
-    qwd  = new DefaultHwSettingsWidget(this);
+    qwd = new DefaultHwSettingsWidget(this);
     ftw->removeTab(ConfigGadgetWidget::hardware);
     ftw->insertTab(ConfigGadgetWidget::hardware, qwd, *icon, QString("Hardware"));
 
@@ -192,14 +192,14 @@ void ConfigGadgetWidget::onAutopilotConnect()
     // First of all, check what Board type we are talking to, and
     // if necessary, remove/add tabs in the config gadget:
     ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
-    UAVObjectUtilManager *utilMngr     = pm->getObject<UAVObjectUtilManager>();
+    UAVObjectUtilManager *utilMngr = pm->getObject<UAVObjectUtilManager>();
     if (utilMngr) {
         int selectedIndex = ftw->currentIndex();
         int board = utilMngr->getBoardModel();
         if ((board & 0xff00) == 1024) {
             // CopterControl family
 
-            QIcon *icon  = new QIcon();
+            QIcon *icon = new QIcon();
             icon->addFile(":/configgadget/images/ins_normal.png", QSize(), QIcon::Normal, QIcon::Off);
             icon->addFile(":/configgadget/images/ins_selected.png", QSize(), QIcon::Selected, QIcon::Off);
             QWidget *qwd = new ConfigCCAttitudeWidget(this);
@@ -209,13 +209,13 @@ void ConfigGadgetWidget::onAutopilotConnect()
             icon = new QIcon();
             icon->addFile(":/configgadget/images/hardware_normal.png", QSize(), QIcon::Normal, QIcon::Off);
             icon->addFile(":/configgadget/images/hardware_selected.png", QSize(), QIcon::Selected, QIcon::Off);
-            qwd  = new ConfigCCHWWidget(this);
+            qwd = new ConfigCCHWWidget(this);
             ftw->removeTab(ConfigGadgetWidget::hardware);
             ftw->insertTab(ConfigGadgetWidget::hardware, qwd, *icon, QString("Hardware"));
         } else if ((board & 0xff00) == 0x0900) {
             // Revolution family
 
-            QIcon *icon  = new QIcon();
+            QIcon *icon = new QIcon();
             icon->addFile(":/configgadget/images/ins_normal.png", QSize(), QIcon::Normal, QIcon::Off);
             icon->addFile(":/configgadget/images/ins_selected.png", QSize(), QIcon::Selected, QIcon::Off);
             QWidget *qwd = new ConfigRevoWidget(this);
@@ -225,7 +225,7 @@ void ConfigGadgetWidget::onAutopilotConnect()
             icon = new QIcon();
             icon->addFile(":/configgadget/images/hardware_normal.png", QSize(), QIcon::Normal, QIcon::Off);
             icon->addFile(":/configgadget/images/hardware_selected.png", QSize(), QIcon::Selected, QIcon::Off);
-            qwd  = new ConfigRevoHWWidget(this);
+            qwd = new ConfigRevoHWWidget(this);
             ftw->removeTab(ConfigGadgetWidget::hardware);
             ftw->insertTab(ConfigGadgetWidget::hardware, qwd, *icon, QString("Hardware"));
         } else {

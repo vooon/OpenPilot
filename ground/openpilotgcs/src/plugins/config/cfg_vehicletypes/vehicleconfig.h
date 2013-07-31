@@ -34,60 +34,60 @@
 #include "actuatorcommand.h"
 
 typedef struct {
-    uint    VTOLMotorN : 4;
-    uint    VTOLMotorS : 4;
-    uint    VTOLMotorE : 4;
-    uint    VTOLMotorW : 4;
-    uint    VTOLMotorNW : 4;
-    uint    VTOLMotorNE : 4;
-    uint    VTOLMotorSW : 4;
-    uint    VTOLMotorSE : 4; // 32 bits
-    uint    TRIYaw : 4;
+    uint VTOLMotorN : 4;
+    uint VTOLMotorS : 4;
+    uint VTOLMotorE : 4;
+    uint VTOLMotorW : 4;
+    uint VTOLMotorNW : 4;
+    uint VTOLMotorNE : 4;
+    uint VTOLMotorSW : 4;
+    uint VTOLMotorSE : 4; // 32 bits
+    uint TRIYaw : 4;
     quint32 padding : 28; // 64 bits
     quint32 padding1;
     quint32 padding2; // 128 bits
 } __attribute__((packed))  multiGUISettingsStruct;
 
 typedef struct {
-    uint    SwashplateType : 3;
-    uint    FirstServoIndex : 2;
-    uint    CorrectionAngle : 9;
-    uint    ccpmCollectivePassthroughState : 1;
-    uint    ccpmLinkCyclicState : 1;
-    uint    ccpmLinkRollState : 1;
-    uint    SliderValue0 : 7;
-    uint    SliderValue1 : 7;
-    uint    SliderValue2 : 7; // 41 bits
-    uint    ServoIndexW : 4;
-    uint    ServoIndexX : 4;
-    uint    ServoIndexY : 4;
-    uint    ServoIndexZ : 4; // 57 bits
-    uint    Throttle : 4;
-    uint    Tail : 4; // 65bits
+    uint SwashplateType : 3;
+    uint FirstServoIndex : 2;
+    uint CorrectionAngle : 9;
+    uint ccpmCollectivePassthroughState : 1;
+    uint ccpmLinkCyclicState : 1;
+    uint ccpmLinkRollState : 1;
+    uint SliderValue0 : 7;
+    uint SliderValue1 : 7;
+    uint SliderValue2 : 7; // 41 bits
+    uint ServoIndexW : 4;
+    uint ServoIndexX : 4;
+    uint ServoIndexY : 4;
+    uint ServoIndexZ : 4; // 57 bits
+    uint Throttle : 4;
+    uint Tail : 4; // 65bits
     quint32 padding : 31; // 96 bits
     quint32 padding1; // 128 bits
 } __attribute__((packed))  heliGUISettingsStruct;
 
 typedef struct {
-    uint    FixedWingThrottle : 4;
-    uint    FixedWingRoll1 : 4;
-    uint    FixedWingRoll2 : 4;
-    uint    FixedWingPitch1 : 4;
-    uint    FixedWingPitch2 : 4;
-    uint    FixedWingYaw1 : 4;
-    uint    FixedWingYaw2 : 4;
-    uint    padding : 4; // 32 bits
+    uint FixedWingThrottle : 4;
+    uint FixedWingRoll1 : 4;
+    uint FixedWingRoll2 : 4;
+    uint FixedWingPitch1 : 4;
+    uint FixedWingPitch2 : 4;
+    uint FixedWingYaw1 : 4;
+    uint FixedWingYaw2 : 4;
+    uint padding : 4; // 32 bits
     quint32 padding1;
     quint32 padding2;
     quint32 padding3; // 128 bits
 } __attribute__((packed))  fixedGUISettingsStruct;
 
 typedef struct {
-    uint    GroundVehicleThrottle1 : 4;
-    uint    GroundVehicleThrottle2 : 4;
-    uint    GroundVehicleSteering1 : 4;
-    uint    GroundVehicleSteering2 : 4;
-    uint    padding : 16; // 32 bits
+    uint GroundVehicleThrottle1 : 4;
+    uint GroundVehicleThrottle2 : 4;
+    uint GroundVehicleSteering1 : 4;
+    uint GroundVehicleSteering2 : 4;
+    uint padding : 16; // 32 bits
     quint32 padding1;
     quint32 padding2;
     quint32 padding3; // 128 bits
@@ -95,9 +95,9 @@ typedef struct {
 
 typedef union {
     uint UAVObject[4]; // 32 bits * 4
-    heliGUISettingsStruct   heli; // 128 bits
-    fixedGUISettingsStruct  fixedwing;
-    multiGUISettingsStruct  multi;
+    heliGUISettingsStruct heli; // 128 bits
+    fixedGUISettingsStruct fixedwing;
+    multiGUISettingsStruct multi;
     groundGUISettingsStruct ground;
 } GUIConfigDataUnion;
 
@@ -121,27 +121,27 @@ public:
 
     /* Enumeration options for field MixerType */
     typedef enum {
-        MIXERTYPE_DISABLED    = 0,
-        MIXERTYPE_MOTOR       = 1,
-        MIXERTYPE_SERVO       = 2,
-        MIXERTYPE_CAMERAROLL  = 3,
+        MIXERTYPE_DISABLED = 0,
+        MIXERTYPE_MOTOR = 1,
+        MIXERTYPE_SERVO = 2,
+        MIXERTYPE_CAMERAROLL = 3,
         MIXERTYPE_CAMERAPITCH = 4,
-        MIXERTYPE_CAMERAYAW   = 5,
-        MIXERTYPE_ACCESSORY0  = 6,
-        MIXERTYPE_ACCESSORY1  = 7,
-        MIXERTYPE_ACCESSORY2  = 8,
-        MIXERTYPE_ACCESSORY3  = 9,
-        MIXERTYPE_ACCESSORY4  = 10,
-        MIXERTYPE_ACCESSORY5  = 11
+        MIXERTYPE_CAMERAYAW = 5,
+        MIXERTYPE_ACCESSORY0 = 6,
+        MIXERTYPE_ACCESSORY1 = 7,
+        MIXERTYPE_ACCESSORY2 = 8,
+        MIXERTYPE_ACCESSORY3 = 9,
+        MIXERTYPE_ACCESSORY4 = 10,
+        MIXERTYPE_ACCESSORY5 = 11
     } MixerTypeElem;
 
     /* Array element names for field MixerVector */
     typedef enum {
         MIXERVECTOR_THROTTLECURVE1 = 0,
         MIXERVECTOR_THROTTLECURVE2 = 1,
-        MIXERVECTOR_ROLL  = 2,
+        MIXERVECTOR_ROLL = 2,
         MIXERVECTOR_PITCH = 3,
-        MIXERVECTOR_YAW   = 4
+        MIXERVECTOR_YAW = 4
     } MixerVectorElem;
 
     static const quint32 CHANNEL_NUMELEM = ActuatorCommand::CHANNEL_NUMELEM;;

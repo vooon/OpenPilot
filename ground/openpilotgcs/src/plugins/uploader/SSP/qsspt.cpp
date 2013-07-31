@@ -33,7 +33,7 @@ void qsspt::run()
 {
     while (!endthread) {
         receivestatus = this->ssp_ReceiveProcess();
-        sendstatus    = this->ssp_SendProcess();
+        sendstatus = this->ssp_SendProcess();
         msleep(1);
         sendbufmutex.lock();
         if (datapending && receivestatus == SSP_TX_IDLE) {
@@ -53,7 +53,7 @@ bool qsspt::sendData(uint8_t *buf, uint16_t size)
     }
     sendbufmutex.lock();
     datapending = true;
-    mbuf  = buf;
+    mbuf = buf;
     msize = size;
     sendbufmutex.unlock();
     msendwait.lock();

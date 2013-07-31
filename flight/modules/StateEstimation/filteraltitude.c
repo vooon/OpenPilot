@@ -44,16 +44,16 @@
 
 // Private types
 struct data {
-    float   state[4]; // state = altitude,velocity,accel_offset,accel
-    float   pos[3]; // position updates from other filters
-    float   vel[3]; // position updates from other filters
-    float   dTA;
-    float   dTA2;
+    float state[4]; // state = altitude,velocity,accel_offset,accel
+    float pos[3]; // position updates from other filters
+    float vel[3]; // position updates from other filters
+    float dTA;
+    float dTA2;
     int32_t lastTime;
-    float   accelLast;
-    float   baroLast;
+    float accelLast;
+    float baroLast;
     int32_t baroLastTime;
-    bool    first_run;
+    bool first_run;
     AltitudeFilterSettingsData settings;
 };
 
@@ -67,8 +67,8 @@ static int32_t filter(stateFilter *self, stateEstimation *state);
 
 int32_t filterAltitudeInitialize(stateFilter *handle)
 {
-    handle->init      = &init;
-    handle->filter    = &filter;
+    handle->init = &init;
+    handle->filter = &filter;
     handle->localdata = pvPortMalloc(sizeof(struct data));
     AttitudeStateInitialize();
     AltitudeFilterSettingsInitialize();
@@ -79,19 +79,19 @@ static int32_t init(stateFilter *self)
 {
     struct data *this = (struct data *)self->localdata;
 
-    this->state[0]  = 0.0f;
-    this->state[1]  = 0.0f;
-    this->state[2]  = 0.0f;
-    this->state[3]  = 0.0f;
-    this->pos[0]    = 0.0f;
-    this->pos[1]    = 0.0f;
-    this->pos[2]    = 0.0f;
-    this->vel[0]    = 0.0f;
-    this->vel[1]    = 0.0f;
-    this->vel[2]    = 0.0f;
+    this->state[0] = 0.0f;
+    this->state[1] = 0.0f;
+    this->state[2] = 0.0f;
+    this->state[3] = 0.0f;
+    this->pos[0] = 0.0f;
+    this->pos[1] = 0.0f;
+    this->pos[2] = 0.0f;
+    this->vel[0] = 0.0f;
+    this->vel[1] = 0.0f;
+    this->vel[2] = 0.0f;
     this->dTA = -1.0f;
-    this->dTA2      = -1.0f;
-    this->baroLast  = 0.0f;
+    this->dTA2 = -1.0f;
+    this->baroLast = 0.0f;
     this->accelLast = 0.0f;
     this->first_run = 1;
     AltitudeFilterSettingsGet(&this->settings);
@@ -108,21 +108,21 @@ static int32_t filter(stateFilter *self, stateEstimation *state)
             this->lastTime = PIOS_DELAY_GetRaw();
         }
         if (IS_SET(state->updated, SENSORUPDATES_baro)) {
-            this->first_run    = 0;
+            this->first_run = 0;
             this->baroLastTime = PIOS_DELAY_GetRaw();
         }
     } else {
         // save existing position and velocity updates so GPS will still work
         if (IS_SET(state->updated, SENSORUPDATES_pos)) {
-            this->pos[0]  = state->pos[0];
-            this->pos[1]  = state->pos[1];
-            this->pos[2]  = state->pos[2];
+            this->pos[0] = state->pos[0];
+            this->pos[1] = state->pos[1];
+            this->pos[2] = state->pos[2];
             state->pos[2] = -this->state[0];
         }
         if (IS_SET(state->updated, SENSORUPDATES_vel)) {
-            this->vel[0]  = state->vel[0];
-            this->vel[1]  = state->vel[1];
-            this->vel[2]  = state->vel[2];
+            this->vel[0] = state->vel[0];
+            this->vel[1] = state->vel[1];
+            this->vel[2] = state->vel[2];
             state->vel[2] = -this->state[1];
         }
         if (IS_SET(state->updated, SENSORUPDATES_accel)) {
@@ -159,14 +159,14 @@ static int32_t filter(stateFilter *self, stateEstimation *state)
             this->state[0] += 0.5f * (speedLast + this->state[1]) * this->dTA;
 
 
-            state->pos[0]   = this->pos[0];
-            state->pos[1]   = this->pos[1];
-            state->pos[2]   = -this->state[0];
+            state->pos[0] = this->pos[0];
+            state->pos[1] = this->pos[1];
+            state->pos[2] = -this->state[0];
             state->updated |= SENSORUPDATES_pos;
 
-            state->vel[0]   = this->vel[0];
-            state->vel[1]   = this->vel[1];
-            state->vel[2]   = -this->state[1];
+            state->vel[0] = this->vel[0];
+            state->vel[1] = this->vel[1];
+            state->vel[2] = -this->state[1];
             state->updated |= SENSORUPDATES_vel;
         }
         if (IS_SET(state->updated, SENSORUPDATES_baro)) {
@@ -185,17 +185,17 @@ static int32_t filter(stateFilter *self, stateEstimation *state)
             } else {
                 this->dTA2 = this->dTA2 * (1.0f - DT_ALPHA) + dT * DT_ALPHA;
             }
-            this->state[1]  = (1.0f - (this->settings.BaroKp * this->settings.BaroKp)) * this->state[1] + (this->settings.BaroKp * this->settings.BaroKp) * (state->baro[0] - this->baroLast) / this->dTA2;
-            this->baroLast  = state->baro[0];
+            this->state[1] = (1.0f - (this->settings.BaroKp * this->settings.BaroKp)) * this->state[1] + (this->settings.BaroKp * this->settings.BaroKp) * (state->baro[0] - this->baroLast) / this->dTA2;
+            this->baroLast = state->baro[0];
 
-            state->pos[0]   = this->pos[0];
-            state->pos[1]   = this->pos[1];
-            state->pos[2]   = -this->state[0];
+            state->pos[0] = this->pos[0];
+            state->pos[1] = this->pos[1];
+            state->pos[2] = -this->state[0];
             state->updated |= SENSORUPDATES_pos;
 
-            state->vel[0]   = this->vel[0];
-            state->vel[1]   = this->vel[1];
-            state->vel[2]   = -this->state[1];
+            state->vel[0] = this->vel[0];
+            state->vel[1] = this->vel[1];
+            state->vel[2] = -this->state[1];
             state->updated |= SENSORUPDATES_vel;
         }
     }

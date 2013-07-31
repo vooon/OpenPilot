@@ -40,64 +40,64 @@ struct device_flash_sector {
 };
 
 static struct device_flash_sector flash_sectors[] = {
-    [0] =  {
-        .start     = 0x08000000,
-        .size      = 16 * 1024,
+    [0] = {
+        .start = 0x08000000,
+        .size = 16 * 1024,
         .st_sector = FLASH_Sector_0,
     },
-    [1] =  {
-        .start     = 0x08004000,
-        .size      = 16 * 1024,
+    [1] = {
+        .start = 0x08004000,
+        .size = 16 * 1024,
         .st_sector = FLASH_Sector_1,
     },
-    [2] =  {
-        .start     = 0x08008000,
-        .size      = 16 * 1024,
+    [2] = {
+        .start = 0x08008000,
+        .size = 16 * 1024,
         .st_sector = FLASH_Sector_2,
     },
-    [3] =  {
-        .start     = 0x0800C000,
-        .size      = 16 * 1024,
+    [3] = {
+        .start = 0x0800C000,
+        .size = 16 * 1024,
         .st_sector = FLASH_Sector_3,
     },
-    [4] =  {
-        .start     = 0x08010000,
-        .size      = 64 * 1024,
+    [4] = {
+        .start = 0x08010000,
+        .size = 64 * 1024,
         .st_sector = FLASH_Sector_4,
     },
-    [5] =  {
-        .start     = 0x08020000,
-        .size      = 128 * 1024,
+    [5] = {
+        .start = 0x08020000,
+        .size = 128 * 1024,
         .st_sector = FLASH_Sector_5,
     },
-    [6] =  {
-        .start     = 0x08040000,
-        .size      = 128 * 1024,
+    [6] = {
+        .start = 0x08040000,
+        .size = 128 * 1024,
         .st_sector = FLASH_Sector_6,
     },
-    [7] =  {
-        .start     = 0x08060000,
-        .size      = 128 * 1024,
+    [7] = {
+        .start = 0x08060000,
+        .size = 128 * 1024,
         .st_sector = FLASH_Sector_7,
     },
-    [8] =  {
-        .start     = 0x08080000,
-        .size      = 128 * 1024,
+    [8] = {
+        .start = 0x08080000,
+        .size = 128 * 1024,
         .st_sector = FLASH_Sector_8,
     },
-    [9] =  {
-        .start     = 0x080A0000,
-        .size      = 128 * 1024,
+    [9] = {
+        .start = 0x080A0000,
+        .size = 128 * 1024,
         .st_sector = FLASH_Sector_9,
     },
     [10] = {
-        .start     = 0x080C0000,
-        .size      = 128 * 1024,
+        .start = 0x080C0000,
+        .size = 128 * 1024,
         .st_sector = FLASH_Sector_10,
     },
     [11] = {
-        .start     = 0x080E0000,
-        .size      = 128 * 1024,
+        .start = 0x080E0000,
+        .size = 128 * 1024,
         .st_sector = FLASH_Sector_11,
     },
 };
@@ -110,8 +110,8 @@ static bool PIOS_Flash_Internal_GetSectorInfo(uint32_t address, uint8_t *sector_
             (address < (sector->start + sector->size))) {
             /* address lies within this sector */
             *sector_number = sector->st_sector;
-            *sector_start  = sector->start;
-            *sector_size   = sector->size;
+            *sector_start = sector->start;
+            *sector_size = sector->size;
             return true;
         }
     }
@@ -345,10 +345,10 @@ static int32_t PIOS_Flash_Internal_ReadData(uintptr_t flash_id, uint32_t addr, u
 /* Provide a flash driver to external drivers */
 const struct pios_flash_driver pios_internal_flash_driver = {
     .start_transaction = PIOS_Flash_Internal_StartTransaction,
-    .end_transaction   = PIOS_Flash_Internal_EndTransaction,
+    .end_transaction = PIOS_Flash_Internal_EndTransaction,
     .erase_sector = PIOS_Flash_Internal_EraseSector,
-    .write_data   = PIOS_Flash_Internal_WriteData,
-    .read_data    = PIOS_Flash_Internal_ReadData,
+    .write_data = PIOS_Flash_Internal_WriteData,
+    .read_data = PIOS_Flash_Internal_ReadData,
 };
 
 #endif /* PIOS_INCLUDE_FLASH_INTERNAL */

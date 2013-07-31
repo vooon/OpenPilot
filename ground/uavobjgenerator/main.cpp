@@ -102,20 +102,20 @@ int main(int argc, char *argv[])
         return RETURN_OK;
     }
 
-    bool verbose       = (arguments_stringlist.removeAll("-v") > 0);
-    bool do_gcs        = (arguments_stringlist.removeAll("-gcs") > 0);
-    bool do_flight     = (arguments_stringlist.removeAll("-flight") > 0);
-    bool do_java       = (arguments_stringlist.removeAll("-java") > 0);
-    bool do_python     = (arguments_stringlist.removeAll("-python") > 0);
-    bool do_matlab     = (arguments_stringlist.removeAll("-matlab") > 0);
-    bool do_wireshark  = (arguments_stringlist.removeAll("-wireshark") > 0);
-    bool do_none       = (arguments_stringlist.removeAll("-none") > 0); //
+    bool verbose = (arguments_stringlist.removeAll("-v") > 0);
+    bool do_gcs = (arguments_stringlist.removeAll("-gcs") > 0);
+    bool do_flight = (arguments_stringlist.removeAll("-flight") > 0);
+    bool do_java = (arguments_stringlist.removeAll("-java") > 0);
+    bool do_python = (arguments_stringlist.removeAll("-python") > 0);
+    bool do_matlab = (arguments_stringlist.removeAll("-matlab") > 0);
+    bool do_wireshark = (arguments_stringlist.removeAll("-wireshark") > 0);
+    bool do_none = (arguments_stringlist.removeAll("-none") > 0); //
 
-    bool do_all        = ((do_gcs || do_flight || do_java || do_python || do_matlab) == false);
+    bool do_all = ((do_gcs || do_flight || do_java || do_python || do_matlab) == false);
     bool do_allObjects = true;
 
     if (arguments_stringlist.length() >= 2) {
-        inputpath    = arguments_stringlist.at(0);
+        inputpath = arguments_stringlist.at(0);
         templatepath = arguments_stringlist.at(1);
     } else {
         // wrong number of arguments
@@ -140,10 +140,10 @@ int main(int argc, char *argv[])
     QDir xmlPath = QDir(inputpath);
     UAVObjectParser *parser = new UAVObjectParser();
 
-    QStringList filters     = QStringList("*.xml");
+    QStringList filters = QStringList("*.xml");
 
     xmlPath.setNameFilters(filters);
-    QFileInfoList xmlList   = xmlPath.entryInfoList();
+    QFileInfoList xmlList = xmlPath.entryInfoList();
 
     // Read in each XML file and parse object(s) in them
 
@@ -161,7 +161,7 @@ int main(int argc, char *argv[])
             cout << "Parsing XML file: " << fileinfo.fileName().toStdString() << endl;
         }
         QString filename = fileinfo.fileName();
-        QString xmlstr   = readFile(fileinfo.absoluteFilePath());
+        QString xmlstr = readFile(fileinfo.absoluteFilePath());
 
         QString res = parser->parseXML(xmlstr, filename);
 

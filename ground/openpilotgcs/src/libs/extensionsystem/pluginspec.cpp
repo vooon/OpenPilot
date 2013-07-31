@@ -359,21 +359,21 @@ QList<PluginSpec *> PluginSpec::dependencySpecs() const
 
 namespace {
 const char *const PLUGIN = "plugin";
-const char *const PLUGIN_NAME    = "name";
+const char *const PLUGIN_NAME = "name";
 const char *const PLUGIN_VERSION = "version";
 const char *const PLUGIN_COMPATVERSION = "compatVersion";
-const char *const VENDOR             = "vendor";
-const char *const COPYRIGHT          = "copyright";
-const char *const LICENSE            = "license";
-const char *const DESCRIPTION        = "description";
+const char *const VENDOR = "vendor";
+const char *const COPYRIGHT = "copyright";
+const char *const LICENSE = "license";
+const char *const DESCRIPTION = "description";
 const char *const URL = "url";
-const char *const DEPENDENCYLIST     = "dependencyList";
-const char *const DEPENDENCY         = "dependency";
-const char *const DEPENDENCY_NAME    = "name";
+const char *const DEPENDENCYLIST = "dependencyList";
+const char *const DEPENDENCY = "dependency";
+const char *const DEPENDENCY_NAME = "name";
 const char *const DEPENDENCY_VERSION = "version";
-const char *const ARGUMENTLIST       = "argumentList";
-const char *const ARGUMENT           = "argument";
-const char *const ARGUMENT_NAME      = "name";
+const char *const ARGUMENTLIST = "argumentList";
+const char *const ARGUMENT = "argument";
+const char *const ARGUMENT_NAME = "name";
 const char *const ARGUMENT_PARAMETER = "parameter";
 }
 /*!
@@ -403,8 +403,8 @@ bool PluginSpecPrivate::read(const QString &fileName)
                                             = url
                                                   = location
                                                         = "";
-    state       = PluginSpec::Invalid;
-    hasError    = false;
+    state = PluginSpec::Invalid;
+    hasError = false;
     errorString = "";
     dependencies.clear();
     QFile file(fileName);
@@ -446,7 +446,7 @@ bool PluginSpecPrivate::read(const QString &fileName)
 bool PluginSpecPrivate::reportError(const QString &err)
 {
     errorString = err;
-    hasError    = true;
+    hasError = true;
     return false;
 }
 
@@ -593,7 +593,7 @@ void PluginSpecPrivate::readArgumentDescription(QXmlStreamReader &reader)
         reader.raiseError(msgAttributeMissing(ARGUMENT, ARGUMENT_NAME));
         return;
     }
-    arg.parameter   = reader.attributes().value(ARGUMENT_PARAMETER).toString();
+    arg.parameter = reader.attributes().value(ARGUMENT_PARAMETER).toString();
     arg.description = reader.readElementText();
     if (reader.tokenType() != QXmlStreamReader::EndElement) {
         reader.raiseError(msgUnexpectedToken());
@@ -737,7 +737,7 @@ bool PluginSpecPrivate::resolveDependencies(const QList<PluginSpec *> &specs)
     }
     if (state != PluginSpec::Read) {
         errorString = QCoreApplication::translate("PluginSpec", "Resolving dependencies failed because state != Read");
-        hasError    = true;
+        hasError = true;
         return false;
     }
     QList<PluginSpec *> resolvedDependencies;
@@ -783,7 +783,7 @@ bool PluginSpecPrivate::loadLibrary()
             return true;
         }
         errorString = QCoreApplication::translate("PluginSpec", "Loading the library failed because state != Resolved");
-        hasError    = true;
+        hasError = true;
         return false;
     }
 #ifdef QT_NO_DEBUG
@@ -810,18 +810,18 @@ bool PluginSpecPrivate::loadLibrary()
 
     PluginLoader loader(libName);
     if (!loader.load()) {
-        hasError    = true;
+        hasError = true;
         errorString = libName + QString::fromLatin1(": ") + loader.errorString();
         return false;
     }
     IPlugin *pluginObject = qobject_cast<IPlugin *>(loader.instance());
     if (!pluginObject) {
-        hasError    = true;
+        hasError = true;
         errorString = QCoreApplication::translate("PluginSpec", "Plugin is not valid (does not derive from IPlugin)");
         loader.unload();
         return false;
     }
-    state  = PluginSpec::Loaded;
+    state = PluginSpec::Loaded;
     plugin = pluginObject;
     plugin->d->pluginSpec = q;
     return true;
@@ -841,18 +841,18 @@ bool PluginSpecPrivate::initializePlugin()
             return true;
         }
         errorString = QCoreApplication::translate("PluginSpec", "Initializing the plugin failed because state != Loaded");
-        hasError    = true;
+        hasError = true;
         return false;
     }
     if (!plugin) {
         errorString = QCoreApplication::translate("PluginSpec", "Internal error: have no plugin instance to initialize");
-        hasError    = true;
+        hasError = true;
         return false;
     }
     QString err;
     if (!plugin->initialize(arguments, &err)) {
         errorString = QCoreApplication::translate("PluginSpec", "Plugin initialization failed: %1").arg(err);
-        hasError    = true;
+        hasError = true;
         return false;
     }
     state = PluginSpec::Initialized;
@@ -873,12 +873,12 @@ bool PluginSpecPrivate::initializeExtensions()
             return true;
         }
         errorString = QCoreApplication::translate("PluginSpec", "Cannot perform extensionsInitialized because state != Initialized");
-        hasError    = true;
+        hasError = true;
         return false;
     }
     if (!plugin) {
         errorString = QCoreApplication::translate("PluginSpec", "Internal error: have no plugin instance to perform extensionsInitialized");
-        hasError    = true;
+        hasError = true;
         return false;
     }
     plugin->extensionsInitialized();
@@ -910,5 +910,5 @@ void PluginSpecPrivate::kill()
     }
     delete plugin;
     plugin = 0;
-    state  = PluginSpec::Deleted;
+    state = PluginSpec::Deleted;
 }

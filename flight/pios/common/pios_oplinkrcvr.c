@@ -55,7 +55,7 @@ struct pios_oplinkrcvr_dev {
     enum pios_oplinkrcvr_dev_magic magic;
 
     uint8_t supv_timer;
-    bool    Fresh;
+    bool Fresh;
 };
 
 static struct pios_oplinkrcvr_dev *global_oplinkrcvr_dev;

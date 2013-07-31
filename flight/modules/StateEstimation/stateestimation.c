@@ -117,7 +117,7 @@ static DelayedCallbackInfo *stateEstimationCallback;
 
 static volatile RevoSettingsData revoSettings;
 static volatile sensorUpdates updatedSensors;
-static int32_t fusionAlgorithm     = -1;
+static int32_t fusionAlgorithm = -1;
 static filterPipeline *filterChain = NULL;
 
 // different filters available to state estimation
@@ -135,17 +135,17 @@ static stateFilter ekf13Filter;
 // preconfigured filter chains selectable via revoSettings.FusionAlgorithm
 static filterPipeline *cfQueue = &(filterPipeline) {
     .filter = &magFilter,
-    .next   = &(filterPipeline) {
+    .next = &(filterPipeline) {
         .filter = &airFilter,
-        .next   = &(filterPipeline) {
+        .next = &(filterPipeline) {
             .filter = &llaFilter,
-            .next   = &(filterPipeline) {
+            .next = &(filterPipeline) {
                 .filter = &baroFilter,
-                .next   = &(filterPipeline) {
+                .next = &(filterPipeline) {
                     .filter = &altitudeFilter,
-                    .next   = &(filterPipeline) {
+                    .next = &(filterPipeline) {
                         .filter = &cfFilter,
-                        .next   = NULL,
+                        .next = NULL,
                     }
                 }
             }
@@ -154,17 +154,17 @@ static filterPipeline *cfQueue = &(filterPipeline) {
 };
 static const filterPipeline *cfmQueue = &(filterPipeline) {
     .filter = &magFilter,
-    .next   = &(filterPipeline) {
+    .next = &(filterPipeline) {
         .filter = &airFilter,
-        .next   = &(filterPipeline) {
+        .next = &(filterPipeline) {
             .filter = &llaFilter,
-            .next   = &(filterPipeline) {
+            .next = &(filterPipeline) {
                 .filter = &baroFilter,
-                .next   = &(filterPipeline) {
+                .next = &(filterPipeline) {
                     .filter = &altitudeFilter,
-                    .next   = &(filterPipeline) {
+                    .next = &(filterPipeline) {
                         .filter = &cfmFilter,
-                        .next   = NULL,
+                        .next = NULL,
                     }
                 }
             }
@@ -173,17 +173,17 @@ static const filterPipeline *cfmQueue = &(filterPipeline) {
 };
 static const filterPipeline *ekf13iQueue = &(filterPipeline) {
     .filter = &magFilter,
-    .next   = &(filterPipeline) {
+    .next = &(filterPipeline) {
         .filter = &airFilter,
-        .next   = &(filterPipeline) {
+        .next = &(filterPipeline) {
             .filter = &llaFilter,
-            .next   = &(filterPipeline) {
+            .next = &(filterPipeline) {
                 .filter = &baroFilter,
-                .next   = &(filterPipeline) {
+                .next = &(filterPipeline) {
                     .filter = &stationaryFilter,
-                    .next   = &(filterPipeline) {
+                    .next = &(filterPipeline) {
                         .filter = &ekf13iFilter,
-                        .next   = NULL,
+                        .next = NULL,
                     }
                 }
             }
@@ -192,15 +192,15 @@ static const filterPipeline *ekf13iQueue = &(filterPipeline) {
 };
 static const filterPipeline *ekf13Queue = &(filterPipeline) {
     .filter = &magFilter,
-    .next   = &(filterPipeline) {
+    .next = &(filterPipeline) {
         .filter = &airFilter,
-        .next   = &(filterPipeline) {
+        .next = &(filterPipeline) {
             .filter = &llaFilter,
-            .next   = &(filterPipeline) {
+            .next = &(filterPipeline) {
                 .filter = &baroFilter,
-                .next   = &(filterPipeline) {
+                .next = &(filterPipeline) {
                     .filter = &ekf13Filter,
-                    .next   = NULL,
+                    .next = NULL,
                 }
             }
         }
@@ -294,7 +294,7 @@ MODULE_INITCALL(StateEstimationInitialize, StateEstimationStart);
 static void StateEstimationCb(void)
 {
     static enum { RUNSTATE_LOAD = 0, RUNSTATE_FILTER = 1, RUNSTATE_SAVE = 2 } runState = RUNSTATE_LOAD;
-    static int8_t alarm     = 0;
+    static int8_t alarm = 0;
     static int8_t lastAlarm = -1;
     static uint16_t alarmcounter = 0;
     static filterPipeline *current;
@@ -361,7 +361,7 @@ static void StateEstimationCb(void)
                     return;
                 } else {
                     // set new fusion algortithm
-                    filterChain     = (filterPipeline *)newFilterChain;
+                    filterChain = (filterPipeline *)newFilterChain;
                     fusionAlgorithm = revoSettings.FusionAlgorithm;
                 }
             }
@@ -384,7 +384,7 @@ static void StateEstimationCb(void)
         // at this point sensor state is stored in "states" with some rudimentary filtering applied
 
         // apply all filters in the current filter chain
-        current  = (filterPipeline *)filterChain;
+        current = (filterPipeline *)filterChain;
 
         // we are not done, re-dispatch self execution
         runState = RUNSTATE_FILTER;
@@ -433,13 +433,13 @@ static void StateEstimationCb(void)
         // but require system to run for a while before decreasing
         // to prevent alarm flapping
         if (alarm >= lastAlarm) {
-            lastAlarm    = alarm;
+            lastAlarm = alarm;
             alarmcounter = 0;
         } else {
             if (alarmcounter < 100) {
                 alarmcounter++;
             } else {
-                lastAlarm    = alarm;
+                lastAlarm = alarm;
                 alarmcounter = 0;
             }
         }

@@ -42,7 +42,7 @@
 
 UAVObjectBrowserWidget::UAVObjectBrowserWidget(QWidget *parent) : QWidget(parent)
 {
-    m_browser     = new Ui_UAVObjectBrowser();
+    m_browser = new Ui_UAVObjectBrowser();
     m_viewoptions = new Ui_viewoptions();
     m_viewoptionsDialog = new QDialog(this);
     m_viewoptions->setupUi(m_viewoptionsDialog);
@@ -156,7 +156,7 @@ void UAVObjectBrowserWidget::requestUpdate()
 
 ObjectTreeItem *UAVObjectBrowserWidget::findCurrentObjectTreeItem()
 {
-    QModelIndex current     = m_browser->treeView->currentIndex();
+    QModelIndex current = m_browser->treeView->currentIndex();
     TreeItem *item = static_cast<TreeItem *>(current.internalPointer());
     ObjectTreeItem *objItem = 0;
 
@@ -210,13 +210,13 @@ void UAVObjectBrowserWidget::updateObjectPersistance(ObjectPersistence::Operatio
 {
     ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
     UAVObjectManager *objManager = pm->getObject<UAVObjectManager>();
-    ObjectPersistence *objper    = dynamic_cast<ObjectPersistence *>(objManager->getObject(ObjectPersistence::NAME));
+    ObjectPersistence *objper = dynamic_cast<ObjectPersistence *>(objManager->getObject(ObjectPersistence::NAME));
 
     if (obj != NULL) {
         ObjectPersistence::DataFields data;
-        data.Operation  = op;
-        data.Selection  = ObjectPersistence::SELECTION_SINGLEOBJECT;
-        data.ObjectID   = obj->getObjID();
+        data.Operation = op;
+        data.Selection = ObjectPersistence::SELECTION_SINGLEOBJECT;
+        data.ObjectID = obj->getObjID();
         data.InstanceID = obj->getInstID();
         objper->setData(data);
         objper->updated();
@@ -228,11 +228,11 @@ void UAVObjectBrowserWidget::currentChanged(const QModelIndex &current, const QM
     Q_UNUSED(previous);
 
     TreeItem *item = static_cast<TreeItem *>(current.internalPointer());
-    bool enable    = true;
+    bool enable = true;
     if (current == QModelIndex()) {
         enable = false;
     }
-    TopTreeItem *top     = dynamic_cast<TopTreeItem *>(item);
+    TopTreeItem *top = dynamic_cast<TopTreeItem *>(item);
     ObjectTreeItem *data = dynamic_cast<ObjectTreeItem *>(item);
     if (top || (data && !data->object())) {
         enable = false;

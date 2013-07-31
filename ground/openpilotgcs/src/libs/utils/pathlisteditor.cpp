@@ -84,12 +84,12 @@ void PathListPlainTextEdit::insertFromMimeData(const QMimeData *source)
 struct PathListEditorPrivate {
     PathListEditorPrivate();
 
-    QHBoxLayout    *layout;
-    QVBoxLayout    *buttonLayout;
-    QToolButton    *toolButton;
+    QHBoxLayout *layout;
+    QVBoxLayout *buttonLayout;
+    QToolButton *toolButton;
     QMenu *buttonMenu;
     QPlainTextEdit *edit;
-    QSignalMapper  *envVarMapper;
+    QSignalMapper *envVarMapper;
     QString fileDialogTitle;
 };
 
@@ -279,8 +279,8 @@ void PathListEditor::insertPathAtCursor(const QString &path)
 {
     // If the cursor is at an empty line or at end(),
     // just insert. Else insert line before
-    QTextCursor cursor     = m_d->edit->textCursor();
-    QTextBlock block       = cursor.block();
+    QTextCursor cursor = m_d->edit->textCursor();
+    QTextBlock block = cursor.block();
     const bool needNewLine = !block.text().isEmpty();
 
     if (needNewLine) {

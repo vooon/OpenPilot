@@ -50,23 +50,23 @@
 // Private types
 struct data {
     AttitudeSettingsData attitudeSettings;
-    HomeLocationData     homeLocation;
-    bool    first_run;
-    bool    useMag;
-    float   currentAccel[3];
-    float   currentMag[3];
-    float   accels_filtered[3];
-    float   grot_filtered[3];
-    float   gyroBias[3];
-    bool    accelUpdated;
-    bool    magUpdated;
-    float   accel_alpha;
-    bool    accel_filter_enabled;
-    float   rollPitchBiasRate;
+    HomeLocationData homeLocation;
+    bool first_run;
+    bool useMag;
+    float currentAccel[3];
+    float currentMag[3];
+    float accels_filtered[3];
+    float grot_filtered[3];
+    float gyroBias[3];
+    bool accelUpdated;
+    bool magUpdated;
+    float accel_alpha;
+    bool accel_filter_enabled;
+    float rollPitchBiasRate;
     int32_t timeval;
     int32_t starttime;
     uint8_t init;
-    bool    magCalibrated;
+    bool magCalibrated;
 };
 
 // Private variables
@@ -101,8 +101,8 @@ static void globalInit(void)
 int32_t filterCFInitialize(stateFilter *handle)
 {
     globalInit();
-    handle->init      = &initwithoutmag;
-    handle->filter    = &filter;
+    handle->init = &initwithoutmag;
+    handle->filter = &filter;
     handle->localdata = pvPortMalloc(sizeof(struct data));
     return STACK_REQUIRED;
 }
@@ -110,8 +110,8 @@ int32_t filterCFInitialize(stateFilter *handle)
 int32_t filterCFMInitialize(stateFilter *handle)
 {
     globalInit();
-    handle->init      = &initwithmag;
-    handle->filter    = &filter;
+    handle->init = &initwithmag;
+    handle->filter = &filter;
     handle->localdata = pvPortMalloc(sizeof(struct data));
     return STACK_REQUIRED;
 }
@@ -136,8 +136,8 @@ static int32_t maininit(stateFilter *self)
 {
     struct data *this = (struct data *)self->localdata;
 
-    this->first_run     = 1;
-    this->accelUpdated  = 0;
+    this->first_run = 1;
+    this->accelUpdated = 0;
     this->magCalibrated = true;
     AttitudeSettingsGet(&this->attitudeSettings);
     HomeLocationGet(&this->homeLocation);
@@ -166,16 +166,16 @@ static int32_t filter(stateFilter *self, stateEstimation *state)
 {
     struct data *this = (struct data *)self->localdata;
 
-    int32_t result    = 0;
+    int32_t result = 0;
 
     if (IS_SET(state->updated, SENSORUPDATES_mag)) {
-        this->magUpdated    = 1;
+        this->magUpdated = 1;
         this->currentMag[0] = state->mag[0];
         this->currentMag[1] = state->mag[1];
         this->currentMag[2] = state->mag[2];
     }
     if (IS_SET(state->updated, SENSORUPDATES_accel)) {
-        this->accelUpdated    = 1;
+        this->accelUpdated = 1;
         this->currentAccel[0] = state->accel[0];
         this->currentAccel[1] = state->accel[1];
         this->currentAccel[2] = state->accel[2];
@@ -189,10 +189,10 @@ static int32_t filter(stateFilter *self, stateEstimation *state)
                 state->attitude[1] = attitude[1];
                 state->attitude[2] = attitude[2];
                 state->attitude[3] = attitude[3];
-                state->updated    |= SENSORUPDATES_attitude;
+                state->updated |= SENSORUPDATES_attitude;
             }
             this->accelUpdated = 0;
-            this->magUpdated   = 0;
+            this->magUpdated = 0;
         }
     }
     return result;
@@ -245,14 +245,14 @@ static int32_t complementaryFilter(struct data *this, float gyro[3], float accel
         // Set initial attitude. Use accels to determine roll and pitch, rotate magnetic measurement accordingly,
         // so pseudo "north" vector can be estimated even if the board is not level
         attitudeState.Roll = atan2f(-accel[1], -accel[2]);
-        float zn  = cosf(attitudeState.Roll) * mag[2] + sinf(attitudeState.Roll) * mag[1];
-        float yn  = cosf(attitudeState.Roll) * mag[1] - sinf(attitudeState.Roll) * mag[2];
+        float zn = cosf(attitudeState.Roll) * mag[2] + sinf(attitudeState.Roll) * mag[1];
+        float yn = cosf(attitudeState.Roll) * mag[1] - sinf(attitudeState.Roll) * mag[2];
 
         // rotate accels z vector according to roll
         float azn = cosf(attitudeState.Roll) * accel[2] + sinf(attitudeState.Roll) * accel[1];
         attitudeState.Pitch = atan2f(accel[0], -azn);
 
-        float xn  = cosf(attitudeState.Pitch) * mag[0] + sinf(attitudeState.Pitch) * zn;
+        float xn = cosf(attitudeState.Pitch) * mag[0] + sinf(attitudeState.Pitch) * zn;
 
         attitudeState.Yaw = atan2f(-yn, xn);
         // TODO: This is still a hack
@@ -261,9 +261,9 @@ static int32_t complementaryFilter(struct data *this, float gyro[3], float accel
         // should calculate the rotation in 3d space using proper cross product math
         // SUBTODO: formulate the math required
 
-        attitudeState.Roll  = RAD2DEG(attitudeState.Roll);
+        attitudeState.Roll = RAD2DEG(attitudeState.Roll);
         attitudeState.Pitch = RAD2DEG(attitudeState.Pitch);
-        attitudeState.Yaw   = RAD2DEG(attitudeState.Yaw);
+        attitudeState.Yaw = RAD2DEG(attitudeState.Yaw);
 
         RPY2Quaternion(&attitudeState.Roll, attitude);
 
@@ -274,7 +274,7 @@ static int32_t complementaryFilter(struct data *this, float gyro[3], float accel
         this->grot_filtered[0] = 0.0f;
         this->grot_filtered[1] = 0.0f;
         this->grot_filtered[2] = 0.0f;
-        this->timeval   = PIOS_DELAY_GetRaw();
+        this->timeval = PIOS_DELAY_GetRaw();
         this->starttime = this->timeval;
 
         return 0; // must return zero on initial initialization, so attitude will init with a valid quaternion
@@ -286,18 +286,18 @@ static int32_t complementaryFilter(struct data *this, float gyro[3], float accel
         return 1;
     } else if (this->init == 0 && PIOS_DELAY_DiffuS(this->starttime) < 10000000) {
         // For first 7 seconds use accels to get gyro bias
-        this->attitudeSettings.AccelKp     = 1.0f;
-        this->attitudeSettings.AccelKi     = 0.0f;
+        this->attitudeSettings.AccelKp = 1.0f;
+        this->attitudeSettings.AccelKi = 0.0f;
         this->attitudeSettings.YawBiasRate = 0.23f;
-        this->accel_filter_enabled   = false;
-        this->rollPitchBiasRate      = 0.01f;
+        this->accel_filter_enabled = false;
+        this->rollPitchBiasRate = 0.01f;
         this->attitudeSettings.MagKp = this->magCalibrated ? 1.0f : 0.0f;
     } else if ((this->attitudeSettings.ZeroDuringArming == ATTITUDESETTINGS_ZERODURINGARMING_TRUE) && (flightStatus.Armed == FLIGHTSTATUS_ARMED_ARMING)) {
-        this->attitudeSettings.AccelKp     = 1.0f;
-        this->attitudeSettings.AccelKi     = 0.0f;
+        this->attitudeSettings.AccelKp = 1.0f;
+        this->attitudeSettings.AccelKi = 0.0f;
         this->attitudeSettings.YawBiasRate = 0.23f;
-        this->accel_filter_enabled   = false;
-        this->rollPitchBiasRate      = 0.01f;
+        this->accel_filter_enabled = false;
+        this->rollPitchBiasRate = 0.01f;
         this->attitudeSettings.MagKp = this->magCalibrated ? 1.0f : 0.0f;
         this->init = 0;
     } else if (this->init == 0) {
@@ -369,9 +369,9 @@ static int32_t complementaryFilter(struct data *this, float gyro[3], float accel
         rot_mult(Rbe, this->homeLocation.Be, brot);
 
         float mag_len = sqrtf(mag[0] * mag[0] + mag[1] * mag[1] + mag[2] * mag[2]);
-        mag[0]  /= mag_len;
-        mag[1]  /= mag_len;
-        mag[2]  /= mag_len;
+        mag[0] /= mag_len;
+        mag[1] /= mag_len;
+        mag[2] /= mag_len;
 
         float bmag = sqrtf(brot[0] * brot[0] + brot[1] * brot[1] + brot[2] * brot[2]);
         brot[0] /= bmag;
@@ -415,10 +415,10 @@ static int32_t complementaryFilter(struct data *this, float gyro[3], float accel
     // Work out time derivative from INSAlgo writeup
     // Also accounts for the fact that gyros are in deg/s
     float qdot[4];
-    qdot[0]     = DEG2RAD(-attitude[1] * gyrotmp[0] - attitude[2] * gyrotmp[1] - attitude[3] * gyrotmp[2]) * dT / 2;
-    qdot[1]     = DEG2RAD(attitude[0] * gyrotmp[0] - attitude[3] * gyrotmp[1] + attitude[2] * gyrotmp[2]) * dT / 2;
-    qdot[2]     = DEG2RAD(attitude[3] * gyrotmp[0] + attitude[0] * gyrotmp[1] - attitude[1] * gyrotmp[2]) * dT / 2;
-    qdot[3]     = DEG2RAD(-attitude[2] * gyrotmp[0] + attitude[1] * gyrotmp[1] + attitude[0] * gyrotmp[2]) * dT / 2;
+    qdot[0] = DEG2RAD(-attitude[1] * gyrotmp[0] - attitude[2] * gyrotmp[1] - attitude[3] * gyrotmp[2]) * dT / 2;
+    qdot[1] = DEG2RAD(attitude[0] * gyrotmp[0] - attitude[3] * gyrotmp[1] + attitude[2] * gyrotmp[2]) * dT / 2;
+    qdot[2] = DEG2RAD(attitude[3] * gyrotmp[0] + attitude[0] * gyrotmp[1] - attitude[1] * gyrotmp[2]) * dT / 2;
+    qdot[3] = DEG2RAD(-attitude[2] * gyrotmp[0] + attitude[1] * gyrotmp[1] + attitude[0] * gyrotmp[2]) * dT / 2;
 
     // Take a time step
     attitude[0] = attitude[0] + qdot[0];

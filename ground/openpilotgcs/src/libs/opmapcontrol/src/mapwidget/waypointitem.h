@@ -39,7 +39,7 @@ namespace mapcontrol {
 struct distBearingAltitude {
     double distance;
     double bearing;
-    float  altitudeRelative;
+    float altitudeRelative;
     double bearingToDegrees()
     {
         return bearing * 180 / M_PI;

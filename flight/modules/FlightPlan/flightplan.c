@@ -105,12 +105,12 @@ static void flightPlanTask(__attribute__((unused)) void *parameters)
     FlightPlanControlData control;
 
     // Setup status object
-    status.Status       = FLIGHTPLANSTATUS_STATUS_STOPPED;
-    status.ErrorFileID  = 0;
+    status.Status = FLIGHTPLANSTATUS_STATUS_STOPPED;
+    status.ErrorFileID = 0;
     status.ErrorLineNum = 0;
-    status.ErrorType    = FLIGHTPLANSTATUS_ERRORTYPE_NONE;
-    status.Debug[0]     = 0.0;
-    status.Debug[1]     = 0.0;
+    status.ErrorType = FLIGHTPLANSTATUS_ERRORTYPE_NONE;
+    status.Debug[0] = 0.0;
+    status.Debug[1] = 0.0;
     FlightPlanStatusSet(&status);
 
     // Main thread loop
@@ -134,65 +134,65 @@ static void flightPlanTask(__attribute__((unused)) void *parameters)
                 retval = pm_run((uint8_t *)"test");
                 // Check if an error or exception was thrown
                 if (retval == PM_RET_OK || retval == PM_RET_EX_EXIT) {
-                    status.Status    = FLIGHTPLANSTATUS_STATUS_STOPPED;
+                    status.Status = FLIGHTPLANSTATUS_STATUS_STOPPED;
                     status.ErrorType = FLIGHTPLANSTATUS_ERRORTYPE_NONE;
                 } else if (retval == PM_RET_EX) {
-                    status.Status    = FLIGHTPLANSTATUS_STATUS_ERROR;
+                    status.Status = FLIGHTPLANSTATUS_STATUS_ERROR;
                     status.ErrorType = FLIGHTPLANSTATUS_ERRORTYPE_EXCEPTION;
                 } else if (retval == PM_RET_EX_IO) {
-                    status.Status    = FLIGHTPLANSTATUS_STATUS_ERROR;
+                    status.Status = FLIGHTPLANSTATUS_STATUS_ERROR;
                     status.ErrorType = FLIGHTPLANSTATUS_ERRORTYPE_IOERROR;
                 } else if (retval == PM_RET_EX_ZDIV) {
-                    status.Status    = FLIGHTPLANSTATUS_STATUS_ERROR;
+                    status.Status = FLIGHTPLANSTATUS_STATUS_ERROR;
                     status.ErrorType = FLIGHTPLANSTATUS_ERRORTYPE_DIVBYZERO;
                 } else if (retval == PM_RET_EX_ASSRT) {
-                    status.Status    = FLIGHTPLANSTATUS_STATUS_ERROR;
+                    status.Status = FLIGHTPLANSTATUS_STATUS_ERROR;
                     status.ErrorType = FLIGHTPLANSTATUS_ERRORTYPE_ASSERTERROR;
                 } else if (retval == PM_RET_EX_ATTR) {
-                    status.Status    = FLIGHTPLANSTATUS_STATUS_ERROR;
+                    status.Status = FLIGHTPLANSTATUS_STATUS_ERROR;
                     status.ErrorType = FLIGHTPLANSTATUS_ERRORTYPE_ATTRIBUTEERROR;
                 } else if (retval == PM_RET_EX_IMPRT) {
-                    status.Status    = FLIGHTPLANSTATUS_STATUS_ERROR;
+                    status.Status = FLIGHTPLANSTATUS_STATUS_ERROR;
                     status.ErrorType = FLIGHTPLANSTATUS_ERRORTYPE_IMPORTERROR;
                 } else if (retval == PM_RET_EX_INDX) {
-                    status.Status    = FLIGHTPLANSTATUS_STATUS_ERROR;
+                    status.Status = FLIGHTPLANSTATUS_STATUS_ERROR;
                     status.ErrorType = FLIGHTPLANSTATUS_ERRORTYPE_INDEXERROR;
                 } else if (retval == PM_RET_EX_KEY) {
-                    status.Status    = FLIGHTPLANSTATUS_STATUS_ERROR;
+                    status.Status = FLIGHTPLANSTATUS_STATUS_ERROR;
                     status.ErrorType = FLIGHTPLANSTATUS_ERRORTYPE_KEYERROR;
                 } else if (retval == PM_RET_EX_MEM) {
-                    status.Status    = FLIGHTPLANSTATUS_STATUS_ERROR;
+                    status.Status = FLIGHTPLANSTATUS_STATUS_ERROR;
                     status.ErrorType = FLIGHTPLANSTATUS_ERRORTYPE_MEMORYERROR;
                 } else if (retval == PM_RET_EX_NAME) {
-                    status.Status    = FLIGHTPLANSTATUS_STATUS_ERROR;
+                    status.Status = FLIGHTPLANSTATUS_STATUS_ERROR;
                     status.ErrorType = FLIGHTPLANSTATUS_ERRORTYPE_NAMEERROR;
                 } else if (retval == PM_RET_EX_SYNTAX) {
-                    status.Status    = FLIGHTPLANSTATUS_STATUS_ERROR;
+                    status.Status = FLIGHTPLANSTATUS_STATUS_ERROR;
                     status.ErrorType = FLIGHTPLANSTATUS_ERRORTYPE_SYNTAXERROR;
                 } else if (retval == PM_RET_EX_SYS) {
-                    status.Status    = FLIGHTPLANSTATUS_STATUS_ERROR;
+                    status.Status = FLIGHTPLANSTATUS_STATUS_ERROR;
                     status.ErrorType = FLIGHTPLANSTATUS_ERRORTYPE_SYSTEMERROR;
                 } else if (retval == PM_RET_EX_TYPE) {
-                    status.Status    = FLIGHTPLANSTATUS_STATUS_ERROR;
+                    status.Status = FLIGHTPLANSTATUS_STATUS_ERROR;
                     status.ErrorType = FLIGHTPLANSTATUS_ERRORTYPE_TYPEERROR;
                 } else if (retval == PM_RET_EX_VAL) {
-                    status.Status    = FLIGHTPLANSTATUS_STATUS_ERROR;
+                    status.Status = FLIGHTPLANSTATUS_STATUS_ERROR;
                     status.ErrorType = FLIGHTPLANSTATUS_ERRORTYPE_VALUEERROR;
                 } else if (retval == PM_RET_EX_STOP) {
-                    status.Status    = FLIGHTPLANSTATUS_STATUS_ERROR;
+                    status.Status = FLIGHTPLANSTATUS_STATUS_ERROR;
                     status.ErrorType = FLIGHTPLANSTATUS_ERRORTYPE_STOPITERATION;
                 } else if (retval == PM_RET_EX_WARN) {
-                    status.Status    = FLIGHTPLANSTATUS_STATUS_ERROR;
+                    status.Status = FLIGHTPLANSTATUS_STATUS_ERROR;
                     status.ErrorType = FLIGHTPLANSTATUS_ERRORTYPE_WARNING;
                 } else {
-                    status.Status    = FLIGHTPLANSTATUS_STATUS_ERROR;
+                    status.Status = FLIGHTPLANSTATUS_STATUS_ERROR;
                     status.ErrorType = FLIGHTPLANSTATUS_ERRORTYPE_UNKNOWNERROR;
                 }
                 // Get file ID and line number of error (if one)
-                status.ErrorFileID  = gVmGlobal.errFileId;
+                status.ErrorFileID = gVmGlobal.errFileId;
                 status.ErrorLineNum = gVmGlobal.errLineNum;
             } else {
-                status.Status    = FLIGHTPLANSTATUS_STATUS_ERROR;
+                status.Status = FLIGHTPLANSTATUS_STATUS_ERROR;
                 status.ErrorType = FLIGHTPLANSTATUS_ERRORTYPE_VMINITERROR;
             }
 
@@ -231,12 +231,12 @@ static void objectUpdatedCb(UAVObjEvent *ev)
                 vTaskDelete(taskHandle);
                 taskHandle = NULL;
                 // Update status object
-                statusData.Status       = FLIGHTPLANSTATUS_STATUS_STOPPED;
-                statusData.ErrorFileID  = 0;
+                statusData.Status = FLIGHTPLANSTATUS_STATUS_STOPPED;
+                statusData.ErrorFileID = 0;
                 statusData.ErrorLineNum = 0;
-                statusData.ErrorType    = FLIGHTPLANSTATUS_ERRORTYPE_NONE;
-                statusData.Debug[0]     = 0.0;
-                statusData.Debug[1]     = 0.0;
+                statusData.ErrorType = FLIGHTPLANSTATUS_ERRORTYPE_NONE;
+                statusData.Debug[0] = 0.0;
+                statusData.Debug[1] = 0.0;
                 FlightPlanStatusSet(&statusData);
             }
         }

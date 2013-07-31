@@ -53,10 +53,10 @@
 void bufferInit(cBuffer *buffer, unsigned char *start, unsigned short size)
 {
     // set start pointer of the buffer
-    buffer->dataptr    = start;
-    buffer->size       = size;
+    buffer->dataptr = start;
+    buffer->size = size;
     // initialize index and length
-    buffer->dataindex  = 0;
+    buffer->dataindex = 0;
     buffer->datalength = 0;
 }
 

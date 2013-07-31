@@ -37,7 +37,7 @@ ConfigTaskWidget::ConfigTaskWidget(QWidget *parent) : QWidget(parent), isConnect
     pm = ExtensionSystem::PluginManager::instance();
     objManager = pm->getObject<UAVObjectManager>();
     TelemetryManager *telMngr = pm->getObject<TelemetryManager>();
-    utilMngr   = pm->getObject<UAVObjectUtilManager>();
+    utilMngr = pm->getObject<UAVObjectUtilManager>();
     connect(telMngr, SIGNAL(connected()), this, SLOT(onAutopilotConnect()), Qt::UniqueConnection);
     connect(telMngr, SIGNAL(disconnected()), this, SLOT(onAutopilotDisconnect()), Qt::UniqueConnection);
     connect(telMngr, SIGNAL(connected()), this, SIGNAL(autoPilotConnected()), Qt::UniqueConnection);
@@ -84,7 +84,7 @@ void ConfigTaskWidget::addUAVObjectToWidgetRelation(QString object, QString fiel
     UAVObject *obj = NULL;
     UAVObjectField *_field = NULL;
 
-    obj    = objManager->getObject(QString(object));
+    obj = objManager->getObject(QString(object));
     Q_ASSERT(obj);
     _field = obj->getField(QString(field));
     Q_ASSERT(_field);
@@ -188,11 +188,11 @@ void ConfigTaskWidget::addUAVObjectToWidgetRelation(QString object, QString fiel
         _field = obj->getField(QString(field));
     }
     objectToWidget *ow = new objectToWidget();
-    ow->field     = _field;
-    ow->object    = obj;
-    ow->widget    = widget;
-    ow->index     = index;
-    ow->scale     = scale;
+    ow->field = _field;
+    ow->object = obj;
+    ow->widget = widget;
+    ow->index = index;
+    ow->scale = scale;
     ow->isLimited = isLimited;
     objOfInterest.append(ow);
     if (obj) {
@@ -249,7 +249,7 @@ void ConfigTaskWidget::saveObjectToSD(UAVObject *obj)
     // saveObjectToSD is now handled by the UAVUtils plugin in one
     // central place (and one central queue)
     ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
-    UAVObjectUtilManager *utilMngr     = pm->getObject<UAVObjectUtilManager>();
+    UAVObjectUtilManager *utilMngr = pm->getObject<UAVObjectUtilManager>();
 
     utilMngr->saveObjectToSD(obj);
 }
@@ -289,7 +289,7 @@ double ConfigTaskWidget::listMean(QList<double> list)
 double ConfigTaskWidget::listVar(QList<double> list)
 {
     double mean_accum = 0;
-    double var_accum  = 0;
+    double var_accum = 0;
     double mean;
 
     for (int i = 0; i < list.size(); i++) {
@@ -654,27 +654,27 @@ bool ConfigTaskWidget::addShadowWidget(QString object, QString field, QWidget *w
             // prefer anything else to QLabel
             if (qobject_cast<QLabel *>(oTw->widget) && !qobject_cast<QLabel *>(widget)) {
                 sh = new shadow;
-                sh->isLimited  = oTw->isLimited;
-                sh->scale      = oTw->scale;
-                sh->widget     = oTw->widget;
+                sh->isLimited = oTw->isLimited;
+                sh->scale = oTw->scale;
+                sh->widget = oTw->widget;
                 oTw->isLimited = isLimited;
-                oTw->scale     = scale;
-                oTw->widget    = widget;
+                oTw->scale = scale;
+                oTw->widget = widget;
             }
             // prefer QDoubleSpinBox to anything else
             else if (!qobject_cast<QDoubleSpinBox *>(oTw->widget) && qobject_cast<QDoubleSpinBox *>(widget)) {
                 sh = new shadow;
-                sh->isLimited  = oTw->isLimited;
-                sh->scale      = oTw->scale;
-                sh->widget     = oTw->widget;
+                sh->isLimited = oTw->isLimited;
+                sh->scale = oTw->scale;
+                sh->widget = oTw->widget;
                 oTw->isLimited = isLimited;
-                oTw->scale     = scale;
-                oTw->widget    = widget;
+                oTw->scale = scale;
+                oTw->widget = widget;
             } else {
                 sh = new shadow;
                 sh->isLimited = isLimited;
-                sh->scale     = scale;
-                sh->widget    = widget;
+                sh->scale = scale;
+                sh->widget = widget;
             }
             shadowsList.insert(widget, oTw);
             oTw->shadowsList.append(sh);
@@ -694,7 +694,7 @@ bool ConfigTaskWidget::addShadowWidget(QString object, QString field, QWidget *w
  */
 void ConfigTaskWidget::autoLoadWidgets()
 {
-    QPushButton *saveButtonWidget  = NULL;
+    QPushButton *saveButtonWidget = NULL;
     QPushButton *applyButtonWidget = NULL;
 
     foreach(QWidget * widget, this->findChildren<QWidget *>()) {
@@ -704,10 +704,10 @@ void ConfigTaskWidget::autoLoadWidgets()
             uiRelationAutomation uiRelation;
             uiRelation.buttonType = none;
             uiRelation.scale = 1;
-            uiRelation.element    = QString();
-            uiRelation.haslimits  = false;
+            uiRelation.element = QString();
+            uiRelation.haslimits = false;
             foreach(QString str, info.toStringList()) {
-                QString prop  = str.split(":").at(0);
+                QString prop = str.split(":").at(0);
                 QString value = str.split(":").at(1);
 
                 if (prop == "objname") {
@@ -891,7 +891,7 @@ void ConfigTaskWidget::reloadButtonClicked()
     }
     ObjectPersistence *objper = dynamic_cast<ObjectPersistence *>(getObjectManager()->getObject(ObjectPersistence::NAME));
     timeOut = new QTimer(this);
-    QEventLoop *eventLoop     = new QEventLoop(this);
+    QEventLoop *eventLoop = new QEventLoop(this);
     connect(timeOut, SIGNAL(timeout()), eventLoop, SLOT(quit()));
     connect(objper, SIGNAL(objectUpdated(UAVObject *)), eventLoop, SLOT(quit()));
 
@@ -899,7 +899,7 @@ void ConfigTaskWidget::reloadButtonClicked()
     foreach(objectToWidget * oTw, *list) {
         if (oTw->object != NULL) {
             temphelper value;
-            value.objid     = oTw->object->getObjID();
+            value.objid = oTw->object->getObjID();
             value.objinstid = oTw->object->getInstID();
             if (temp.contains(value)) {
                 continue;
@@ -907,9 +907,9 @@ void ConfigTaskWidget::reloadButtonClicked()
                 temp.append(value);
             }
             ObjectPersistence::DataFields data;
-            data.Operation  = ObjectPersistence::OPERATION_LOAD;
-            data.Selection  = ObjectPersistence::SELECTION_SINGLEOBJECT;
-            data.ObjectID   = oTw->object->getObjID();
+            data.Operation = ObjectPersistence::OPERATION_LOAD;
+            data.Selection = ObjectPersistence::SELECTION_SINGLEOBJECT;
+            data.ObjectID = oTw->object->getObjID();
             data.InstanceID = oTw->object->getInstID();
             objper->setData(data);
             objper->updated();
@@ -1125,7 +1125,7 @@ bool ConfigTaskWidget::setWidgetFromField(QWidget *widget, UAVObjectField *field
     }
     QVariant var = field->getValue(index);
     checkWidgetsLimits(widget, field, index, hasLimits, var, scale);
-    bool ret     = setWidgetFromVariant(widget, var, scale, field->getUnits());
+    bool ret = setWidgetFromVariant(widget, var, scale, field->getUnits());
     if (ret) {
         return true;
     } else {

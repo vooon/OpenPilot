@@ -76,7 +76,7 @@ void PathActionEditorTreeModel::setupModelData()
 
     m_pathactionsTree = new TopTreeItem(tr("PathActions"), m_rootItem);
     m_rootItem->appendChild(m_pathactionsTree);
-    m_waypointsTree   = new TopTreeItem(tr("Waypoints"), m_rootItem);
+    m_waypointsTree = new TopTreeItem(tr("Waypoints"), m_rootItem);
     m_rootItem->appendChild(m_waypointsTree);
     connect(m_rootItem, SIGNAL(updateHighlight(TreeItem *)), this, SLOT(updateHighlight(TreeItem *)));
     connect(m_pathactionsTree, SIGNAL(updateHighlight(TreeItem *)), this, SLOT(updateHighlight(TreeItem *)));
@@ -242,7 +242,7 @@ QModelIndex PathActionEditorTreeModel::parent(const QModelIndex &index) const
         return QModelIndex();
     }
 
-    TreeItem *childItem  = static_cast<TreeItem *>(index.internalPointer());
+    TreeItem *childItem = static_cast<TreeItem *>(index.internalPointer());
     TreeItem *parentItem = childItem->parent();
 
     if (parentItem == m_rootItem) {
@@ -379,7 +379,7 @@ void PathActionEditorTreeModel::updateHighlight(TreeItem *item)
 
     // update uavobject if any - go up the tree until there is
     ObjectTreeItem *objItem = 0;
-    TreeItem *searchItem    = item;
+    TreeItem *searchItem = item;
     while (searchItem) {
         objItem = dynamic_cast<ObjectTreeItem *>(searchItem);
         if (objItem) {

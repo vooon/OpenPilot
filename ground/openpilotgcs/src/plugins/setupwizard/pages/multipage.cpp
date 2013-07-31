@@ -137,7 +137,7 @@ void MultiPage::updateAvailableTypes()
 void MultiPage::updateImageAndDescription()
 {
     SetupWizard::VEHICLE_SUB_TYPE type = (SetupWizard::VEHICLE_SUB_TYPE)ui->typeCombo->itemData(ui->typeCombo->currentIndex()).toInt();
-    QString elementId   = "";
+    QString elementId = "";
     QString description = m_descriptions.at(ui->typeCombo->currentIndex());
 
     switch (type) {

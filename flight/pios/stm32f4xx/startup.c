@@ -52,7 +52,7 @@ typedef void (vector)(void);
 
 /** CortexM3 CPU vectors */
 struct cm3_vectors {
-    void   *initial_stack;
+    void *initial_stack;
     vector *entry;
     vector *vectors[14];
 };
@@ -67,16 +67,16 @@ void _main(void)
     asm volatile ("mov r10, %0" : : "r" (&irq_stack[0]) :);
 
     /* enable usage, bus and memory faults */
-    SCB->SHCSR  |= SCB_SHCSR_USGFAULTENA_Msk | SCB_SHCSR_BUSFAULTENA_Msk | SCB_SHCSR_MEMFAULTENA_Msk;
+    SCB->SHCSR |= SCB_SHCSR_USGFAULTENA_Msk | SCB_SHCSR_BUSFAULTENA_Msk | SCB_SHCSR_MEMFAULTENA_Msk;
 
     /* configure FP state save behaviour - automatic, lazy save */
-    FPU->FPCCR  |= FPU_FPCCR_ASPEN_Msk | FPU_FPCCR_LSPEN_Msk;
+    FPU->FPCCR |= FPU_FPCCR_ASPEN_Msk | FPU_FPCCR_LSPEN_Msk;
 
     /* configure default FPU state */
     FPU->FPDSCR |= FPU_FPDSCR_DN_Msk; /* enable Default NaN */
 
     /* enable the FPU */
-    SCB->CPACR  |= (0xf << 20);      // turn on CP10/11 for FP support on cores that implement it
+    SCB->CPACR |= (0xf << 20); // turn on CP10/11 for FP support on cores that implement it
 
     /* copy initialised data from flash to RAM */
     memcpy(&_sdata, &_sidata, &_edata - &_sdata);
@@ -125,7 +125,7 @@ HANDLER(xPortSysTickHandler);
 struct cm3_vectors cpu_vectors __attribute((section(".cpu_vectors"))) =
 {
     .initial_stack = &irq_stack[sizeof(irq_stack)],
-    .entry   = (vector *)_main,
+    .entry = (vector *)_main,
     .vectors = {
         NMI_Handler,
         HardFault_Handler,

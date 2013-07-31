@@ -58,12 +58,12 @@ enum osd_hk_control_mode {
 };
 
 struct osd_hk_blob_misc {
-    uint8_t  type; /* Always OSD_HK_PKT_TYPE_MISC */
-    int16_t  roll;
-    int16_t  pitch;
+    uint8_t type; /* Always OSD_HK_PKT_TYPE_MISC */
+    int16_t roll;
+    int16_t pitch;
     // uint16_t home;		/* Big Endian */
     enum osd_hk_control_mode control_mode;
-    uint8_t  low_battery;
+    uint8_t low_battery;
     uint16_t current; /* Big Endian */
 } __attribute__((packed));
 
@@ -76,51 +76,51 @@ struct osd_hk_blob_att {
 } __attribute__((packed));
 
 struct osd_hk_blob_nav {
-    uint8_t  type; /* Always OSD_HK_PKT_TYPE_NAV */
+    uint8_t type; /* Always OSD_HK_PKT_TYPE_NAV */
     uint32_t gps_lat; /* Big Endian */
     uint32_t gps_lon; /* Big Endian */
 } __attribute__((packed));
 
 struct osd_hk_blob_maint {
-    uint8_t  type; /* Always OSD_HK_PKT_TYPE_MAINT */
-    uint8_t  gps_speed;
+    uint8_t type; /* Always OSD_HK_PKT_TYPE_MAINT */
+    uint8_t gps_speed;
     uint16_t gps_alt; /* Big Endian */
     uint16_t gps_dis; /* Big Endian */
-    uint8_t  status;
-    uint8_t  config;
-    uint8_t  emerg;
+    uint8_t status;
+    uint8_t config;
+    uint8_t emerg;
 } __attribute__((packed));
 
 struct osd_hk_blob_mode {
-    uint8_t  type; /* Always OSD_HK_PKT_TYPE_MODE */
-    uint8_t  fltmode;
+    uint8_t type; /* Always OSD_HK_PKT_TYPE_MODE */
+    uint8_t fltmode;
     uint16_t gps_alt; /* Big Endian */
     uint16_t gps_dis; /* Big Endian */
-    uint8_t  armed;
-    uint8_t  config;
-    uint8_t  emerg;
+    uint8_t armed;
+    uint8_t config;
+    uint8_t emerg;
 } __attribute__((packed));
 
 union osd_hk_pkt_blobs {
-    struct osd_hk_blob_misc  misc;
-    struct osd_hk_blob_nav   nav;
+    struct osd_hk_blob_misc misc;
+    struct osd_hk_blob_nav nav;
     struct osd_hk_blob_maint maint;
-    struct osd_hk_blob_att   att;
-    struct osd_hk_blob_mode  mode;
+    struct osd_hk_blob_att att;
+    struct osd_hk_blob_mode mode;
 } __attribute__((packed));
 
 struct osd_hk_msg {
-    enum osd_hk_sync       sync;
-    enum osd_hk_pkt_type   t;
+    enum osd_hk_sync sync;
+    enum osd_hk_pkt_type t;
     union osd_hk_pkt_blobs v;
 } __attribute__((packed));
 
 static struct osd_hk_msg osd_hk_msg_buf;
 
 static volatile bool newPositionStateData = false;
-static volatile bool newBattData     = false;
+static volatile bool newBattData = false;
 static volatile bool newAttitudeData = false;
-static volatile bool newAlarmData    = false;
+static volatile bool newAlarmData = false;
 
 static uint32_t osd_hk_com_id;
 static uint8_t osd_hk_msg_dropped;
@@ -170,7 +170,7 @@ static void send_update(__attribute__((unused)) UAVObjEvent *ev)
         msg->t = OSD_HK_PKT_TYPE_MODE;
         FlightStatusGet(&flightStatus);
         blob->mode.fltmode = flightStatus.FlightMode;
-        blob->mode.armed   = flightStatus.Armed;
+        blob->mode.armed = flightStatus.Armed;
         break;
     default:
         break;
@@ -271,7 +271,7 @@ static int32_t osdoutputStart(void)
 
 static int32_t osdoutputInitialize(void)
 {
-    osd_hk_com_id    = PIOS_COM_OSDHK;
+    osd_hk_com_id = PIOS_COM_OSDHK;
 #ifdef MODULE_OSDOUTPUT_BUILTIN
     osdoutputEnabled = 1;
 #else

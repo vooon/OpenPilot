@@ -181,8 +181,8 @@ QIODevice *IPconnectionConnection::openDevice(const QString &)
 
     // get the configuration info
     HostName = m_config->HostName();
-    Port     = m_config->Port();
-    UseTCP   = m_config->UseTCP();
+    Port = m_config->Port();
+    UseTCP = m_config->UseTCP();
 
     if (ipSocket) {
         // Andrew: close any existing socket... this should never occur

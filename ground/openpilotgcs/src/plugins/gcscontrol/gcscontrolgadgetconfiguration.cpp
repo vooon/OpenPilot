@@ -41,17 +41,17 @@ GCSControlGadgetConfiguration::GCSControlGadgetConfiguration(QString classId, QS
     int i;
 
     for (i = 0; i < 8; i++) {
-        buttonSettings[i].ActionID   = 0;
+        buttonSettings[i].ActionID = 0;
         buttonSettings[i].FunctionID = 0;
-        buttonSettings[i].Amount     = 0;
+        buttonSettings[i].Amount = 0;
         channelReverse[i] = 0;
     }
     // if a saved configuration exists load it
     if (qSettings != 0) {
-        controlsMode    = qSettings->value("controlsMode").toInt();
-        rollChannel     = qSettings->value("rollChannel").toInt();
-        pitchChannel    = qSettings->value("pitchChannel").toInt();
-        yawChannel      = qSettings->value("yawChannel").toInt();
+        controlsMode = qSettings->value("controlsMode").toInt();
+        rollChannel = qSettings->value("rollChannel").toInt();
+        pitchChannel = qSettings->value("pitchChannel").toInt();
+        yawChannel = qSettings->value("yawChannel").toInt();
         throttleChannel = qSettings->value("throttleChannel").toInt();
 
         udp_port = qSettings->value("controlPortUDP").toUInt();
@@ -59,9 +59,9 @@ GCSControlGadgetConfiguration::GCSControlGadgetConfiguration(QString classId, QS
 
         int i;
         for (i = 0; i < 8; i++) {
-            buttonSettings[i].ActionID   = qSettings->value(QString().sprintf("button%dAction", i)).toInt();
+            buttonSettings[i].ActionID = qSettings->value(QString().sprintf("button%dAction", i)).toInt();
             buttonSettings[i].FunctionID = qSettings->value(QString().sprintf("button%dFunction", i)).toInt();
-            buttonSettings[i].Amount     = qSettings->value(QString().sprintf("button%dAmount", i)).toDouble();
+            buttonSettings[i].Amount = qSettings->value(QString().sprintf("button%dAmount", i)).toDouble();
             channelReverse[i] = qSettings->value(QString().sprintf("channel%dReverse", i)).toBool();
         }
     }
@@ -84,9 +84,9 @@ QHostAddress GCSControlGadgetConfiguration::getUDPControlHost()
 
 void GCSControlGadgetConfiguration::setRPYTchannels(int roll, int pitch, int yaw, int throttle)
 {
-    rollChannel     = roll;
-    pitchChannel    = pitch;
-    yawChannel      = yaw;
+    rollChannel = roll;
+    pitchChannel = pitch;
+    yawChannel = yaw;
     throttleChannel = throttle;
 }
 
@@ -115,10 +115,10 @@ IUAVGadgetConfiguration *GCSControlGadgetConfiguration::clone()
 {
     GCSControlGadgetConfiguration *m = new GCSControlGadgetConfiguration(this->classId());
 
-    m->controlsMode    = controlsMode;
-    m->rollChannel     = rollChannel;
-    m->pitchChannel    = pitchChannel;
-    m->yawChannel      = yawChannel;
+    m->controlsMode = controlsMode;
+    m->rollChannel = rollChannel;
+    m->pitchChannel = pitchChannel;
+    m->yawChannel = yawChannel;
     m->throttleChannel = throttleChannel;
 
     m->udp_host = udp_host;
@@ -126,9 +126,9 @@ IUAVGadgetConfiguration *GCSControlGadgetConfiguration::clone()
 
     int i;
     for (i = 0; i < 8; i++) {
-        m->buttonSettings[i].ActionID   = buttonSettings[i].ActionID;
+        m->buttonSettings[i].ActionID = buttonSettings[i].ActionID;
         m->buttonSettings[i].FunctionID = buttonSettings[i].FunctionID;
-        m->buttonSettings[i].Amount     = buttonSettings[i].Amount;
+        m->buttonSettings[i].Amount = buttonSettings[i].Amount;
         m->channelReverse[i] = channelReverse[i];
     }
 

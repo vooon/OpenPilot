@@ -338,7 +338,7 @@ void DeviceWidget::uploadFirmware()
         return;
     }
 
-    bool verify     = false;
+    bool verify = false;
     /* TODO: does not work properly on current Bootloader!
        if (m_dfu->devices[deviceID].Readable)
         verify = true;
@@ -362,7 +362,7 @@ void DeviceWidget::uploadFirmware()
         }
         // Check the firmware embedded in the file:
         QByteArray firmwareHash = desc.mid(40, 20);
-        QByteArray fileHash     = QCryptographicHash::hash(loadedFW.left(loadedFW.length() - 100), QCryptographicHash::Sha1);
+        QByteArray fileHash = QCryptographicHash::hash(loadedFW.left(loadedFW.length() - 100), QCryptographicHash::Sha1);
         if (firmwareHash != fileHash) {
             status("Error: firmware file corrupt", STATUSICON_FAIL);
             updateButtons(true);
@@ -528,19 +528,19 @@ QString DeviceWidget::setOpenFileName()
     // Format filename for file chooser
 #ifdef Q_OS_WIN
     fwDirectoryStr = QCoreApplication::applicationDirPath();
-    fwDirectory    = QDir(fwDirectoryStr);
+    fwDirectory = QDir(fwDirectoryStr);
     fwDirectory.cdUp();
     fwDirectory.cd("firmware");
     fwDirectoryStr = fwDirectory.absolutePath();
 #elif defined Q_OS_LINUX
     fwDirectoryStr = QCoreApplication::applicationDirPath();
-    fwDirectory    = QDir(fwDirectoryStr);
+    fwDirectory = QDir(fwDirectoryStr);
     fwDirectory.cd("../../..");
     fwDirectoryStr = fwDirectory.absolutePath();
     fwDirectoryStr = fwDirectoryStr + "/fw_" + myDevice->lblBrdName->text().toLower() + "/fw_" + myDevice->lblBrdName->text().toLower() + ".opfw";
 #elif defined Q_OS_MAC
     fwDirectoryStr = QCoreApplication::applicationDirPath();
-    fwDirectory    = QDir(fwDirectoryStr);
+    fwDirectory = QDir(fwDirectoryStr);
     fwDirectory.cd("../../../../../..");
     fwDirectoryStr = fwDirectory.absolutePath();
     fwDirectoryStr = fwDirectoryStr + "/fw_" + myDevice->lblBrdName->text().toLower() + "/fw_" + myDevice->lblBrdName->text().toLower() + ".opfw";

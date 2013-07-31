@@ -36,7 +36,7 @@ namespace Utils {
 QTCREATOR_UTILS_EXPORT QString fileNameToCppIdentifier(const QString &s)
 {
     QString rc;
-    const int len   = s.size();
+    const int len = s.size();
     const QChar underscore = QLatin1Char('_');
     const QChar dot = QLatin1Char('.');
 

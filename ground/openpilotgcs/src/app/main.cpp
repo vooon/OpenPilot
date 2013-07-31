@@ -276,7 +276,7 @@ inline QStringList getPluginPaths()
     pluginPath += QLatin1String("plugins");
     rc.push_back(pluginPath);
     // 2) "PlugIns" (OS X)
-    pluginPath  = rootDirPath;
+    pluginPath = rootDirPath;
     pluginPath += QLatin1Char('/');
     pluginPath += QLatin1String("Plugins");
     rc.push_back(pluginPath);
@@ -375,7 +375,7 @@ void overrideSettings(QSettings &settings, int argc, char * *argv)
     for (int i = 0; i < argc; ++i) {
         if (CONFIG_OPTION == QString(argv[i])) {
             if (rx.indexIn(argv[++i]) > -1) {
-                QString key   = rx.cap(1);
+                QString key = rx.cap(1);
                 QString value = rx.cap(2);
                 qDebug() << "User setting" << key << "set to value" << value;
                 settings.setValue(key, value);
@@ -513,7 +513,7 @@ int main(int argc, char * *argv)
         }
     }
     if (!coreplugin) {
-        QString nativePaths  = QDir::toNativeSeparators(getPluginPaths().join(QLatin1String(",")));
+        QString nativePaths = QDir::toNativeSeparators(getPluginPaths().join(QLatin1String(",")));
         const QString reason = QCoreApplication::translate("Application", "Could not find 'Core.pluginspec' in %1").arg(
             nativePaths);
         displayError(msgCoreLoadFailure(reason));

@@ -39,10 +39,10 @@
 struct pios_dac_cfg {
     TIM_TypeDef *timer;
     TIM_TimeBaseInitTypeDef time_base_init;
-    struct stm32_irq  irq;
-    struct stm32_dma  dma;
+    struct stm32_irq irq;
+    struct stm32_dma dma;
     uint32_t channel;
-    DAC_InitTypeDef   dac_init;
+    DAC_InitTypeDef dac_init;
     struct stm32_gpio dac_io;
 };
 

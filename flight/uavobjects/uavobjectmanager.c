@@ -80,7 +80,7 @@ typedef void *InstanceHandle;
 struct ObjectEventEntry {
     struct ObjectEventEntry *next;
     xQueueHandle queue;
-    UAVObjEventCallback     cb;
+    UAVObjEventCallback cb;
     uint8_t eventMask;
 };
 
@@ -114,7 +114,7 @@ struct UAVOBase {
 /* Augmented type for Meta UAVO */
 struct UAVOMeta {
     struct UAVOBase base;
-    UAVObjMetadata  instance0;
+    UAVObjMetadata instance0;
 } __attribute__((packed));
 
 /* Shared data structure for all data-carrying UAVObjects (UAVOSingle and UAVOMulti) */
@@ -196,15 +196,15 @@ static void customSPrintf(uint8_t *buffer, uint8_t *format, ...);
 // Private variables
 static xSemaphoreHandle mutex;
 static const UAVObjMetadata defMetadata = {
-    .flags                    = (ACCESS_READWRITE << UAVOBJ_ACCESS_SHIFT |
+    .flags = (ACCESS_READWRITE << UAVOBJ_ACCESS_SHIFT |
               ACCESS_READWRITE << UAVOBJ_GCS_ACCESS_SHIFT |
               1 << UAVOBJ_TELEMETRY_ACKED_SHIFT |
               1 << UAVOBJ_GCS_TELEMETRY_ACKED_SHIFT |
               UPDATEMODE_ONCHANGE << UAVOBJ_TELEMETRY_UPDATE_MODE_SHIFT |
               UPDATEMODE_ONCHANGE << UAVOBJ_GCS_TELEMETRY_UPDATE_MODE_SHIFT),
-    .telemetryUpdatePeriod    = 0,
+    .telemetryUpdatePeriod = 0,
     .gcsTelemetryUpdatePeriod = 0,
-    .loggingUpdatePeriod      = 0,
+    .loggingUpdatePeriod = 0,
 };
 
 static UAVObjStats stats;
@@ -223,7 +223,7 @@ int32_t UAVObjInitialize()
         #if (defined(__MACH__) && defined(__APPLE__))
     uint64_t aslr_offset = (uint64_t)&_aslr_offset - getsectbyname("__DATA", "_aslr")->addr;
     __start__uavo_handles = (struct UAVOData * *)(getsectbyname("__DATA", "_uavo_handles")->addr + aslr_offset);
-    __stop__uavo_handles  = (struct UAVOData * *)((uint64_t)__start__uavo_handles + getsectbyname("__DATA", "_uavo_handles")->size);
+    __stop__uavo_handles = (struct UAVOData * *)((uint64_t)__start__uavo_handles + getsectbyname("__DATA", "_uavo_handles")->size);
         #endif
 
     // Initialize the uavo handle table
@@ -275,9 +275,9 @@ static void UAVObjInitMetaData(struct UAVOMeta *obj_meta)
     struct UAVOBase *uavo_base = &(obj_meta->base);
 
     memset(uavo_base, 0, sizeof(*uavo_base));
-    uavo_base->flags.isMeta   = true;
+    uavo_base->flags.isMeta = true;
     uavo_base->flags.isSingle = true;
-    uavo_base->next_event     = NULL;
+    uavo_base->next_event = NULL;
 
     /* Clear the instance data carried in the UAVO */
     memset(&(obj_meta->instance0), 0, sizeof(obj_meta->instance0));
@@ -299,7 +299,7 @@ static struct UAVOData *UAVObjAllocSingle(uint32_t num_bytes)
     struct UAVOBase *uavo_base = &(uavo_single->uavo.base);
     memset(uavo_base, 0, sizeof(*uavo_base));
     uavo_base->flags.isSingle = true;
-    uavo_base->next_event     = NULL;
+    uavo_base->next_event = NULL;
 
     /* Clear the instance data carried in the UAVO */
     memset(&(uavo_single->instance0), 0, num_bytes);
@@ -324,7 +324,7 @@ static struct UAVOData *UAVObjAllocMulti(uint32_t num_bytes)
     struct UAVOBase *uavo_base = &(uavo_multi->uavo.base);
     memset(uavo_base, 0, sizeof(*uavo_base));
     uavo_base->flags.isSingle = false;
-    uavo_base->next_event     = NULL;
+    uavo_base->next_event = NULL;
 
     /* Set up the type-specific part of the UAVO */
     uavo_multi->num_instances = 1;
@@ -555,7 +555,7 @@ uint16_t UAVObjCreateInstance(UAVObjHandle obj_handle,
     uint16_t instId = 0;
 
     // Create new instance
-    instId    = UAVObjGetNumInstances(obj_handle);
+    instId = UAVObjGetNumInstances(obj_handle);
     instEntry = createInstance((struct UAVOData *)obj_handle, instId);
     if (instEntry == NULL) {
         goto unlock_exit;
@@ -1849,8 +1849,8 @@ static int32_t sendEvent(struct UAVOBase *obj, uint16_t instId,
 {
     /* Set up the message that will be sent to all registered listeners */
     UAVObjEvent msg = {
-        .obj    = (UAVObjHandle)obj,
-        .event  = triggered_event,
+        .obj = (UAVObjHandle)obj,
+        .event = triggered_event,
         .instId = instId,
     };
 
@@ -2007,8 +2007,8 @@ static int32_t connectObj(UAVObjHandle obj_handle, xQueueHandle queue,
     if (event == NULL) {
         return -1;
     }
-    event->queue     = queue;
-    event->cb        = cb;
+    event->queue = queue;
+    event->cb = cb;
     event->eventMask = eventMask;
     LL_APPEND(obj->next_event, event);
 

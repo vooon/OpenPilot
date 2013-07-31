@@ -66,8 +66,8 @@ void CachedSvgItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
     }
 
     QRectF br = boundingRect();
-    QTransform transform    = painter->worldTransform();
-    qreal sceneScale        = transform.map(QLineF(0, 0, 1, 0)).length();
+    QTransform transform = painter->worldTransform();
+    qreal sceneScale = transform.map(QLineF(0, 0, 1, 0)).length();
 
     bool stencilTestEnabled = glIsEnabled(GL_STENCIL_TEST);
     bool scissorTestEnabled = glIsEnabled(GL_SCISSOR_TEST);
@@ -86,15 +86,15 @@ void CachedSvgItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
         glGenTextures(1, &m_texture);
         m_context = const_cast<QGLContext *>(QGLContext::currentContext());
 
-        dirty     = true;
+        dirty = true;
     }
 
     if (!qFuzzyCompare(sceneScale, m_scale)) {
         m_scale = sceneScale;
-        dirty   = true;
+        dirty = true;
     }
 
-    int textureWidth  = (int(br.width() * m_scale) + 3) & ~3;
+    int textureWidth = (int(br.width() * m_scale) + 3) & ~3;
     int textureHeight = (int(br.height() * m_scale) + 3) & ~3;
 
     if (dirty) {

@@ -68,11 +68,11 @@ uint32_t pios_rcvr_group_map[MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE];
 #define PIOS_COM_AUX_RX_BUF_LEN       512
 #define PIOS_COM_AUX_TX_BUF_LEN       512
 
-uint32_t pios_com_aux_id       = 0;
-uint32_t pios_com_gps_id       = 0;
+uint32_t pios_com_aux_id = 0;
+uint32_t pios_com_gps_id = 0;
 uint32_t pios_com_telem_usb_id = 0;
-uint32_t pios_com_telem_rf_id  = 0;
-uint32_t pios_com_bridge_id    = 0;
+uint32_t pios_com_telem_rf_id = 0;
+uint32_t pios_com_bridge_id = 0;
 
 uintptr_t pios_uavo_settings_fs_id;
 

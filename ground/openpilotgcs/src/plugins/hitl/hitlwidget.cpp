@@ -51,13 +51,13 @@ HITLWidget::HITLWidget(QWidget *parent)
     widget->startButton->setEnabled(true);
     widget->stopButton->setEnabled(false);
 
-    greenColor      = "rgb(35, 221, 35)"; // Change the green color in order to make it a bit more vibrant
-    strStyleEnable  = QString("QFrame{background-color: %1; color: white}").arg(greenColor);
+    greenColor = "rgb(35, 221, 35)"; // Change the green color in order to make it a bit more vibrant
+    strStyleEnable = QString("QFrame{background-color: %1; color: white}").arg(greenColor);
     strStyleDisable = "QFrame{background-color: red; color: white}";
 
     strAutopilotDisconnected = " Autopilot OFF ";
     strSimulatorDisconnected = " Simulator OFF ";
-    strAutopilotConnected    = " Autopilot ON ";
+    strAutopilotConnected = " Autopilot ON ";
 
     widget->apLabel->setText(strAutopilotDisconnected);
     widget->simLabel->setText(strSimulatorDisconnected);

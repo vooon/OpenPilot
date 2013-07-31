@@ -75,27 +75,27 @@ private:
     } Transaction;
 
     // Constants
-    static const int TYPE_MASK    = 0xF8;
-    static const int TYPE_VER     = 0x20;
-    static const int TYPE_OBJ     = (TYPE_VER | 0x00);
+    static const int TYPE_MASK = 0xF8;
+    static const int TYPE_VER = 0x20;
+    static const int TYPE_OBJ = (TYPE_VER | 0x00);
     static const int TYPE_OBJ_REQ = (TYPE_VER | 0x01);
     static const int TYPE_OBJ_ACK = (TYPE_VER | 0x02);
-    static const int TYPE_ACK     = (TYPE_VER | 0x03);
-    static const int TYPE_NACK    = (TYPE_VER | 0x04);
+    static const int TYPE_ACK = (TYPE_VER | 0x03);
+    static const int TYPE_NACK = (TYPE_VER | 0x04);
 
-    static const int MIN_HEADER_LENGTH  = 8; // sync(1), type (1), size(2), object ID(4)
-    static const int MAX_HEADER_LENGTH  = 10; // sync(1), type (1), size(2), object ID (4), instance ID(2, not used in single objects)
+    static const int MIN_HEADER_LENGTH = 8; // sync(1), type (1), size(2), object ID(4)
+    static const int MAX_HEADER_LENGTH = 10; // sync(1), type (1), size(2), object ID (4), instance ID(2, not used in single objects)
 
-    static const int CHECKSUM_LENGTH    = 1;
+    static const int CHECKSUM_LENGTH = 1;
 
     static const int MAX_PAYLOAD_LENGTH = 256;
 
-    static const int MAX_PACKET_LENGTH  = (MAX_HEADER_LENGTH + MAX_PAYLOAD_LENGTH + CHECKSUM_LENGTH);
+    static const int MAX_PACKET_LENGTH = (MAX_HEADER_LENGTH + MAX_PAYLOAD_LENGTH + CHECKSUM_LENGTH);
 
-    static const quint16 ALL_INSTANCES  = 0xFFFF;
+    static const quint16 ALL_INSTANCES = 0xFFFF;
     static const quint16 OBJID_NOTFOUND = 0x0000;
 
-    static const int TX_BUFFER_SIZE     = 2 * 1024;
+    static const int TX_BUFFER_SIZE = 2 * 1024;
     static const quint8 crc_table[256];
 
     // Types

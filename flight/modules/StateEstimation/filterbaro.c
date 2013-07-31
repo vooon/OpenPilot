@@ -40,9 +40,9 @@
 
 // Private types
 struct data {
-    float   baroOffset;
-    float   baroGPSOffsetCorrectionAlpha;
-    float   baroAlt;
+    float baroOffset;
+    float baroGPSOffsetCorrectionAlpha;
+    float baroAlt;
     int16_t first_run;
 };
 
@@ -56,8 +56,8 @@ static int32_t filter(stateFilter *self, stateEstimation *state);
 
 int32_t filterBaroInitialize(stateFilter *handle)
 {
-    handle->init      = &init;
-    handle->filter    = &filter;
+    handle->init = &init;
+    handle->filter = &filter;
     handle->localdata = pvPortMalloc(sizeof(struct data));
     return STACK_REQUIRED;
 }
@@ -67,7 +67,7 @@ static int32_t init(stateFilter *self)
     struct data *this = (struct data *)self->localdata;
 
     this->baroOffset = 0.0f;
-    this->first_run  = 100;
+    this->first_run = 100;
 
     RevoSettingsInitialize();
     RevoSettingsBaroGPSOffsetCorrectionAlphaGet(&this->baroGPSOffsetCorrectionAlpha);
@@ -83,7 +83,7 @@ static int32_t filter(stateFilter *self, stateEstimation *state)
         // Initialize to current altitude reading at initial location
         if (IS_SET(state->updated, SENSORUPDATES_baro)) {
             this->baroOffset = (100.f - this->first_run) / 100.f * this->baroOffset + (this->first_run / 100.f) * state->baro[0];
-            this->baroAlt    = this->baroOffset;
+            this->baroAlt = this->baroOffset;
             this->first_run--;
             UNSET_MASK(state->updated, SENSORUPDATES_baro);
         }
@@ -96,7 +96,7 @@ static int32_t filter(stateFilter *self, stateEstimation *state)
         }
         // calculate bias corrected altitude
         if (IS_SET(state->updated, SENSORUPDATES_baro)) {
-            this->baroAlt   = state->baro[0];
+            this->baroAlt = state->baro[0];
             state->baro[0] -= this->baroOffset;
         }
     }

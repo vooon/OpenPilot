@@ -31,15 +31,15 @@
 #include <stdbool.h>
 
 struct pios_i2c_adapter_cfg {
-    I2C_TypeDef       *regs;
-    uint32_t          remap;
-    I2C_InitTypeDef   init;
+    I2C_TypeDef *regs;
+    uint32_t remap;
+    I2C_InitTypeDef init;
 
-    uint32_t          transfer_timeout_ms;
+    uint32_t transfer_timeout_ms;
     struct stm32_gpio scl;
     struct stm32_gpio sda;
-    struct stm32_irq  event;
-    struct stm32_irq  error;
+    struct stm32_irq event;
+    struct stm32_irq error;
 };
 
 enum i2c_adapter_state {
@@ -92,15 +92,15 @@ struct pios_i2c_adapter {
     uint8_t busy;
 #endif
 
-    bool    bus_error;
-    bool    nack;
+    bool bus_error;
+    bool nack;
 
     volatile enum i2c_adapter_state curr_state;
     const struct pios_i2c_txn *first_txn;
     const struct pios_i2c_txn *active_txn;
     const struct pios_i2c_txn *last_txn;
 
-    void    (*callback)();
+    void (*callback)();
 
     uint8_t *active_byte;
     uint8_t *last_byte;

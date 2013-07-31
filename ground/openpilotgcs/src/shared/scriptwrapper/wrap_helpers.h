@@ -180,7 +180,7 @@ static inline QScriptValue scriptCallConstMember_1(QScriptContext *context, QScr
     Wrapped *wrapped = wrappedThisFromContext(context, wrappedAccessor);
     // call member. If the argument is a const ref, strip it.
     typedef typename RemoveConstRef<Argument>::Result ArgumentBase;
-    ArgumentBase a   = qscriptvalue_cast<ArgumentBase>(context->argument(0));
+    ArgumentBase a = qscriptvalue_cast<ArgumentBase>(context->argument(0));
     return engine->toScriptValue((wrapped->*member)(a));
 }
 
@@ -202,7 +202,7 @@ static inline QScriptValue scriptCallMember_1(QScriptContext *context, QScriptEn
     Wrapped *wrapped = wrappedThisFromContext(context, wrappedAccessor);
     // call member. If the argument is a const ref, strip it.
     typedef typename RemoveConstRef<Argument>::Result ArgumentBase;
-    ArgumentBase a   = qscriptvalue_cast<ArgumentBase>(context->argument(0));
+    ArgumentBase a = qscriptvalue_cast<ArgumentBase>(context->argument(0));
     return engine->toScriptValue((wrapped->*member)(a));
 }
 

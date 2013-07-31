@@ -81,7 +81,7 @@ SIM_DLL_EXPORT void AeroSIMRC_Plugin_ReportStructSizes(quint32 *sizeSimToPlugin,
     qDebug() << "AeroSIMRC_Plugin_ReportStructSizes";
     *sizeSimToPlugin = sizeof(simToPlugin);
     *sizePluginToSim = sizeof(pluginToSim);
-    *sizePluginInit  = sizeof(pluginInit);
+    *sizePluginInit = sizeof(pluginInit);
     qDebug() << "sizeSimToPlugin = " << *sizeSimToPlugin;
     qDebug() << "sizePluginToSim = " << *sizePluginToSim;
     qDebug() << "sizePluginInit  = " << *sizePluginInit;
@@ -179,7 +179,7 @@ void Run_Command_MoveToNextWaypoint(const simToPlugin *stp,
     default:
         qFatal("Run_Command_MoveToNextWaypoint switch error");
     }
-    pts->modelOverrideFlags  = 0;
+    pts->modelOverrideFlags = 0;
     pts->modelOverrideFlags |= OVR_POS;
 
     snSequence++;
@@ -359,10 +359,10 @@ SIM_DLL_EXPORT void AeroSIMRC_Plugin_Run(const simToPlugin *stp,
     // By default do not change the Menu Items of type CheckBox
     pts->newMenuStatus = stp->simMenuStatus;
     // Extract Menu Commands from Flags
-    bool isReset  = (stp->simMenuStatus & MenuCmdReset) != 0;
+    bool isReset = (stp->simMenuStatus & MenuCmdReset) != 0;
     bool isEnable = (stp->simMenuStatus & MenuEnable) != 0;
-    bool isTxON   = (stp->simMenuStatus & MenuTx) != 0;
-    bool isRxON   = (stp->simMenuStatus & MenuRx) != 0;
+    bool isTxON = (stp->simMenuStatus & MenuTx) != 0;
+    bool isRxON = (stp->simMenuStatus & MenuRx) != 0;
     bool isScreen = (stp->simMenuStatus & MenuScreen) != 0;
     bool isNextWp = (stp->simMenuStatus & MenuNextWpt) != 0;
     // Run commands

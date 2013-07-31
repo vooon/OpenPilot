@@ -91,13 +91,13 @@ public:
         Status_Rep, // 12
     };
     struct device {
-        int     ID;
+        int ID;
         quint32 FW_CRC;
-        int     BL_Version;
-        int     SizeOfDesc;
+        int BL_Version;
+        int SizeOfDesc;
         quint32 SizeOfCode;
-        bool    Readable;
-        bool    Writable;
+        bool Readable;
+        bool Writable;
     };
     void JumpToApp();
     void ResetDevice(void);

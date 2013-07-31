@@ -74,7 +74,7 @@ void smartSaveButton::processOperation(QPushButton *button, bool save)
     timer.setSingleShot(true);
     bool error = false;
     ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
-    UAVObjectUtilManager *utilMngr     = pm->getObject<UAVObjectUtilManager>();
+    UAVObjectUtilManager *utilMngr = pm->getObject<UAVObjectUtilManager>();
     foreach(UAVDataObject * obj, objects) {
         UAVObject::Metadata mdata = obj->getMetadata();
 

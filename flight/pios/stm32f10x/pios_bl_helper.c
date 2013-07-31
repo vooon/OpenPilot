@@ -55,7 +55,7 @@ uint8_t PIOS_BL_HELPER_FLASH_Start()
 {
     const struct pios_board_info *bdinfo = &pios_board_info_blob;
     uint32_t startAddress = bdinfo->fw_base;
-    uint32_t endAddress   = bdinfo->fw_base + bdinfo->fw_size + bdinfo->desc_size;
+    uint32_t endAddress = bdinfo->fw_base + bdinfo->fw_size + bdinfo->desc_size;
 
     bool success = erase_flash(startAddress, endAddress);
 
@@ -66,7 +66,7 @@ uint8_t PIOS_BL_HELPER_FLASH_Erase_Bootloader()
 {
 /// Bootloader memory space erase
     uint32_t startAddress = BL_BANK_BASE;
-    uint32_t endAddress   = BL_BANK_BASE + BL_BANK_SIZE;
+    uint32_t endAddress = BL_BANK_BASE + BL_BANK_SIZE;
 
     bool success = erase_flash(startAddress, endAddress);
 

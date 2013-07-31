@@ -95,10 +95,10 @@ int main(int argc, char *argv[])
         } else if (args.contains(COMPARECRC) || args.contains(COMPAREALL)) {
             int index;
             if (args.contains(COMPARECRC)) {
-                index  = args.indexOf(COMPARECRC);
+                index = args.indexOf(COMPARECRC);
                 action = OP_DFU::actionCompareCrc;
             } else {
-                index  = args.indexOf(COMPAREALL);
+                index = args.indexOf(COMPAREALL);
                 action = OP_DFU::actionCompareAll;
             }
             if (args.contains(DEVICE)) {
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
             }
         } else if (args.contains(DOWNLOAD)) {
             int index;
-            index  = args.indexOf(DOWNLOAD);
+            index = args.indexOf(DOWNLOAD);
             action = OP_DFU::actionDownload;
 
             if (args.contains(DEVICE)) {
@@ -230,7 +230,7 @@ int main(int argc, char *argv[])
                     return false;
                 }
                 qint32 size = ((OP_DFU::device)dfu.devices[device]).SizeOfCode;
-                bool ret    = dfu.SaveByteArrayToFile(file.toAscii(), dfu.StartDownload(size, OP_DFU::FW));
+                bool ret = dfu.SaveByteArrayToFile(file.toAscii(), dfu.StartDownload(size, OP_DFU::FW));
                 return ret;
             } else if (action == OP_DFU::actionCompareCrc) {
                 dfu.CompareFirmware(file.toAscii(), OP_DFU::crccompare, device);

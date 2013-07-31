@@ -199,7 +199,7 @@ void SoundNotifyPlugin::connectNotifications()
 
     // first, reject empty args and unknown fields.
     foreach(NotificationItem * notify, _notificationList) {
-        notify->_isPlayed    = false;
+        notify->_isPlayed = false;
         notify->isNowPlaying = false;
 
         if (notify->mute()) {
@@ -423,8 +423,8 @@ void SoundNotifyPlugin::checkNotificationRule(NotificationItem *notification, UA
         return;
     }
 
-    int direction         = notification->getCondition();
-    QString fieldName     = notification->getObjectField();
+    int direction = notification->getCondition();
+    QString fieldName = notification->getObjectField();
     UAVObjectField *field = object->getField(fieldName);
 
     if (field->getName().isEmpty()) {

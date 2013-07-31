@@ -31,22 +31,22 @@
 
 struct pathPlanData {
     QString wpDescritption;
-    double  latPosition;
-    double  lngPosition;
-    double  disRelative;
-    double  beaRelative;
-    double  altitudeRelative;
-    bool    isRelative;
-    double  altitude;
-    float   velocity;
-    int     mode;
-    float   mode_params[4];
-    int     condition;
-    float   condition_params[4];
-    int     command;
-    int     jumpdestination;
-    int     errordestination;
-    bool    locked;
+    double latPosition;
+    double lngPosition;
+    double disRelative;
+    double beaRelative;
+    double altitudeRelative;
+    bool isRelative;
+    double altitude;
+    float velocity;
+    int mode;
+    float mode_params[4];
+    int condition;
+    float condition_params[4];
+    int command;
+    int jumpdestination;
+    int errordestination;
+    bool locked;
 };
 
 class flightDataModel : public QAbstractTableModel {

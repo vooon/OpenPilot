@@ -59,10 +59,10 @@ uint8_t tempcount = 0;
 
 /* Extern variables ----------------------------------------------------------*/
 DFUStates DeviceState;
-int16_t status           = 0;
-uint8_t JumpToApp        = FALSE;
-uint8_t GO_dfu           = FALSE;
-uint8_t USB_connected    = FALSE;
+int16_t status = 0;
+uint8_t JumpToApp = FALSE;
+uint8_t GO_dfu = FALSE;
+uint8_t USB_connected = FALSE;
 uint8_t User_DFU_request = FALSE;
 static uint8_t mReceive_Buffer[63];
 /* Private function prototypes -----------------------------------------------*/
@@ -97,13 +97,13 @@ int main()
         JumpToApp = TRUE;
     }
 
-    uint32_t stopwatch  = 0;
+    uint32_t stopwatch = 0;
     uint32_t prev_ticks = PIOS_DELAY_GetuS();
     while (TRUE) {
         /* Update the stopwatch */
         uint32_t elapsed_ticks = PIOS_DELAY_GetuSSince(prev_ticks);
         prev_ticks += elapsed_ticks;
-        stopwatch  += elapsed_ticks;
+        stopwatch += elapsed_ticks;
 
         if (JumpToApp == TRUE) {
             jump_to_app();
@@ -198,8 +198,8 @@ void jump_to_app()
 }
 uint32_t LedPWM(uint32_t pwm_period, uint32_t pwm_sweep_steps, uint32_t count)
 {
-    uint32_t curr_step  = (count / pwm_period) % pwm_sweep_steps; /* 0 - pwm_sweep_steps */
-    uint32_t pwm_duty   = pwm_period * curr_step / pwm_sweep_steps; /* fraction of pwm_period */
+    uint32_t curr_step = (count / pwm_period) % pwm_sweep_steps; /* 0 - pwm_sweep_steps */
+    uint32_t pwm_duty = pwm_period * curr_step / pwm_sweep_steps; /* fraction of pwm_period */
 
     uint32_t curr_sweep = (count / (pwm_period * pwm_sweep_steps)); /* ticks once per full sweep */
 

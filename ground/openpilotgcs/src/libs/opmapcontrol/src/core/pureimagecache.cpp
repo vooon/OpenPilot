@@ -68,8 +68,8 @@ bool PureImageCache::CreateEmptyDB(const QString &file)
     qDebug() << "Create database at!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!:" << file;
 #endif // DEBUG_PUREIMAGECACHE
     QFileInfo File(file);
-    QDir dir         = File.absoluteDir();
-    QString path     = dir.absolutePath();
+    QDir dir = File.absoluteDir();
+    QString path = dir.absolutePath();
     QString filename = File.fileName();
     if (File.exists()) {
         QFile(filename).remove();
@@ -208,7 +208,7 @@ QByteArray PureImageCache::GetImageFromCache(MapType::Types type, Point pos, int
     if (gtilecache.isEmpty() | gtilecache.isNull()) {
         return ar;
     }
-    QString dir  = gtilecache;
+    QString dir = gtilecache;
     Mcounter.lock();
     qlonglong id = ++ConnCounter;
     Mcounter.unlock();
@@ -248,7 +248,7 @@ void PureImageCache::deleteOlderTiles(int const & days)
         return;
     }
     QList<long> add;
-    bool ret    = true;
+    bool ret = true;
     QString dir = gtilecache;
     {
         QString db = dir + "Data.qmdb";

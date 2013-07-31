@@ -147,11 +147,11 @@ QString UAVObjectParser::parseXML(QString & xml, QString & filename)
         }
 
         // Process child elements (fields and metadata)
-        QDomNode childNode    = node.firstChild();
-        bool fieldFound       = false;
-        bool accessFound      = false;
-        bool telGCSFound      = false;
-        bool telFlightFound   = false;
+        QDomNode childNode = node.firstChild();
+        bool fieldFound = false;
+        bool accessFound = false;
+        bool telGCSFound = false;
+        bool telFlightFound = false;
         bool logFound = false;
         bool descriptionFound = false;
         while (!childNode.isNull()) {
@@ -304,7 +304,7 @@ quint32 UAVObjectParser::updateHash(quint32 value, quint32 hash)
 quint32 UAVObjectParser::updateHash(QString & value, quint32 hash)
 {
     QByteArray bytes = value.toAscii();
-    quint32 hashout  = hash;
+    quint32 hashout = hash;
 
     for (int n = 0; n < bytes.length(); ++n) {
         hashout = updateHash(bytes[n], hashout);
@@ -332,7 +332,7 @@ QString UAVObjectParser::processObjectMetadata(QDomNode & childNode, UpdateMode 
         return QString("Object:telemetrygcs:updatemode attribute value is invalid");
     }
 
-    *mode    = (UpdateMode)index;
+    *mode = (UpdateMode)index;
 
     // Get period attribute
     elemAttr = elemAttributes.namedItem("period");
@@ -405,7 +405,7 @@ QString UAVObjectParser::processObjectAccess(QDomNode & childNode, ObjectInfo *i
 QString UAVObjectParser::processObjectFields(QDomNode & childNode, ObjectInfo *info)
 {
     // Create field
-    FieldInfo *field  = new FieldInfo;
+    FieldInfo *field = new FieldInfo;
     // Get name attribute
     QDomNamedNodeMap elemAttributes = childNode.attributes();
     QDomNode elemAttr = elemAttributes.namedItem("name");
@@ -458,7 +458,7 @@ QString UAVObjectParser::processObjectFields(QDomNode & childNode, ObjectInfo *i
 
     int index = fieldTypeStrXML.indexOf(elemAttr.nodeValue());
     if (index >= 0) {
-        field->type     = (FieldType)index;
+        field->type = (FieldType)index;
         field->numBytes = fieldTypeNumBytes[index];
     } else {
         return QString("Object:field:type attribute value is invalid");
@@ -476,7 +476,7 @@ QString UAVObjectParser::processObjectFields(QDomNode & childNode, ObjectInfo *i
         }
 
         field->elementNames = names;
-        field->numElements  = names.length();
+        field->numElements = names.length();
         field->defaultElementNames = false;
     } else {
         // Look for a list of child elementname nodes
@@ -589,7 +589,7 @@ QString UAVObjectParser::processObjectAttributes(QDomNode & node, ObjectInfo *in
         return QString("Object:name attribute is missing");
     }
 
-    info->name   = attr.nodeValue();
+    info->name = attr.nodeValue();
     info->namelc = attr.nodeValue().toLower();
 
     // Get category attribute if present

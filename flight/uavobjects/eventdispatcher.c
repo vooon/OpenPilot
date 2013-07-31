@@ -51,7 +51,7 @@
  * Event callback information
  */
 typedef struct {
-    UAVObjEvent  ev; /** The actual event */
+    UAVObjEvent ev; /** The actual event */
     UAVObjEventCallback cb; /** The callback function, or zero if none */
     xQueueHandle queue; /** The queue or zero if none */
 } EventCallbackInfo;
@@ -62,7 +62,7 @@ typedef struct {
 struct PeriodicObjectListStruct {
     EventCallbackInfo evInfo; /** Event callback information */
     uint16_t updatePeriodMs; /** Update period in ms or 0 if no periodic updates are needed */
-    int32_t  timeToNextUpdateMs; /** Time delay to the next update */
+    int32_t timeToNextUpdateMs; /** Time delay to the next update */
     struct PeriodicObjectListStruct *next; /** Needed by linked list library (utlist.h) */
 };
 typedef struct PeriodicObjectListStruct PeriodicObjectList;
@@ -142,7 +142,7 @@ int32_t EventCallbackDispatch(UAVObjEvent *ev, UAVObjEventCallback cb)
 
     // Initialize event callback information
     memcpy(&evInfo.ev, ev, sizeof(UAVObjEvent));
-    evInfo.cb    = cb;
+    evInfo.cb = cb;
     evInfo.queue = 0;
     // Push to queue
     return xQueueSend(mQueue, &evInfo, 0); // will not block if queue is full
@@ -227,12 +227,12 @@ static int32_t eventPeriodicCreate(UAVObjEvent *ev, UAVObjEventCallback cb, xQue
     if (objEntry == NULL) {
         return -1;
     }
-    objEntry->evInfo.ev.obj      = ev->obj;
-    objEntry->evInfo.ev.instId   = ev->instId;
-    objEntry->evInfo.ev.event    = ev->event;
+    objEntry->evInfo.ev.obj = ev->obj;
+    objEntry->evInfo.ev.instId = ev->instId;
+    objEntry->evInfo.ev.event = ev->event;
     objEntry->evInfo.cb = cb;
-    objEntry->evInfo.queue       = queue;
-    objEntry->updatePeriodMs     = periodMs;
+    objEntry->evInfo.queue = queue;
+    objEntry->updatePeriodMs = periodMs;
     objEntry->timeToNextUpdateMs = randomizePeriod(periodMs); // avoid bunching of updates
     // Add to list
     LL_APPEND(mObjList, objEntry);
@@ -263,7 +263,7 @@ static int32_t eventPeriodicUpdate(UAVObjEvent *ev, UAVObjEventCallback cb, xQue
             objEntry->evInfo.ev.instId == ev->instId &&
             objEntry->evInfo.ev.event == ev->event) {
             // Object found, update period
-            objEntry->updatePeriodMs     = periodMs;
+            objEntry->updatePeriodMs = periodMs;
             objEntry->timeToNextUpdateMs = randomizePeriod(periodMs); // avoid bunching of updates
             // Release lock
             xSemaphoreGiveRecursive(mMutex);
@@ -372,8 +372,8 @@ static uint16_t randomizePeriod(uint16_t periodMs)
     static uint32_t seed = 1;
     uint32_t hi, lo;
 
-    lo  = 16807 * (seed & 0xFFFF);
-    hi  = 16807 * (seed >> 16);
+    lo = 16807 * (seed & 0xFFFF);
+    hi = 16807 * (seed >> 16);
     lo += (hi & 0x7FFF) << 16;
     lo += hi >> 15;
     if (lo > 0x7FFFFFFF) {

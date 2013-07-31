@@ -43,14 +43,14 @@ MixerNode::MixerNode(MixerCurveWidget *graphWidget)
     setFlag(ItemSendsGeometryChanges);
     setCacheMode(DeviceCoordinateCache);
     setZValue(-1);
-    vertical          = false;
-    drawNode          = true;
-    drawText          = true;
+    vertical = false;
+    drawNode = true;
+    drawText = true;
 
-    positiveColor     = "#609FF2";  // blueish?
-    neutralColor      = "#14CE24";  // greenish?
-    negativeColor     = "#EF5F5F";  // redish?
-    disabledColor     = "#dddddd";
+    positiveColor = "#609FF2"; // blueish?
+    neutralColor = "#14CE24"; // greenish?
+    negativeColor = "#EF5F5F"; // redish?
+    disabledColor = "#dddddd";
     disabledTextColor = "#aaaaaa";
 }
 
@@ -134,7 +134,7 @@ void MixerNode::verticalMove(bool flag)
 
 double MixerNode::value()
 {
-    double h     = graph->sceneRect().height();
+    double h = graph->sceneRect().height();
     double ratio = (h - pos().y()) / h;
 
     return ((graph->getMax() - graph->getMin()) * ratio) + graph->getMin();

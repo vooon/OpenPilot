@@ -39,8 +39,8 @@ OPMaps *OPMaps::Instance()
 }
 OPMaps::OPMaps() : RetryLoadTile(2), useMemoryCache(true)
 {
-    accessmode  = AccessMode::ServerAndCache;
-    Language    = LanguageType::PortuguesePortugal;
+    accessmode = AccessMode::ServerAndCache;
+    Language = LanguageType::PortuguesePortugal;
     LanguageStr = LanguageType().toShortString(Language);
     Cache::Instance();
 }

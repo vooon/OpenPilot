@@ -173,7 +173,7 @@ void ConfigOutputWidget::runChannelTests(bool state)
         mdata.gcsTelemetryUpdatePeriod = 100;
     } else {
         wasItMe = false;
-        mdata   = accInitialData; // Restore metadata
+        mdata = accInitialData; // Restore metadata
     }
     obj->setMetadata(mdata);
     obj->updated();
@@ -199,7 +199,7 @@ void ConfigOutputWidget::assignOutputChannel(UAVDataObject *obj, QString str)
 {
     // FIXME: use signal/ slot approach
     UAVObjectField *field = obj->getField(str);
-    QStringList options   = field->getOptions();
+    QStringList options = field->getOptions();
     int index = options.indexOf(field->getValue().toString());
 
     OutputChannelForm *outputChannelForm = getOutputChannelForm(index);
@@ -262,7 +262,7 @@ void ConfigOutputWidget::refreshWidgetsValues(UAVObject *obj)
         int maxValue = actuatorSettingsData.ChannelMax[outputChannelForm->index()];
         outputChannelForm->minmax(minValue, maxValue);
 
-        int neutral  = actuatorSettingsData.ChannelNeutral[outputChannelForm->index()];
+        int neutral = actuatorSettingsData.ChannelNeutral[outputChannelForm->index()];
         outputChannelForm->neutral(neutral);
     }
 
@@ -312,7 +312,7 @@ void ConfigOutputWidget::refreshWidgetsValues(UAVObject *obj)
     // Get connected board model
     ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
     Q_ASSERT(pm);
-    UAVObjectUtilManager *utilMngr     = pm->getObject<UAVObjectUtilManager>();
+    UAVObjectUtilManager *utilMngr = pm->getObject<UAVObjectUtilManager>();
     Q_ASSERT(utilMngr);
 
     if (utilMngr) {
@@ -373,10 +373,10 @@ void ConfigOutputWidget::updateObjectsFromWidgets()
         ActuatorSettings::DataFields actuatorSettingsData = actuatorSettings->getData();
 
         // Set channel ranges
-        QList<OutputChannelForm *> outputChannelForms     = findChildren<OutputChannelForm *>();
+        QList<OutputChannelForm *> outputChannelForms = findChildren<OutputChannelForm *>();
         foreach(OutputChannelForm * outputChannelForm, outputChannelForms) {
-            actuatorSettingsData.ChannelMax[outputChannelForm->index()]     = outputChannelForm->max();
-            actuatorSettingsData.ChannelMin[outputChannelForm->index()]     = outputChannelForm->min();
+            actuatorSettingsData.ChannelMax[outputChannelForm->index()] = outputChannelForm->max();
+            actuatorSettingsData.ChannelMin[outputChannelForm->index()] = outputChannelForm->min();
             actuatorSettingsData.ChannelNeutral[outputChannelForm->index()] = outputChannelForm->neutral();
         }
 

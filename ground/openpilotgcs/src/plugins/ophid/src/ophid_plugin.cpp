@@ -44,10 +44,10 @@
  */
 RawHIDConnection::RawHIDConnection()
 {
-    RawHidHandle  = NULL;
+    RawHidHandle = NULL;
     enablePolling = true;
 
-    m_usbMonitor  = USBMonitor::instance();
+    m_usbMonitor = USBMonitor::instance();
 
 #ifndef __APPLE__
     connect(m_usbMonitor, SIGNAL(deviceDiscovered(USBPortInfo)), this, SLOT(onDeviceConnected()));

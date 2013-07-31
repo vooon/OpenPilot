@@ -49,13 +49,13 @@ UAVObjectField::UAVObjectField(const QString & name, const QString & units, Fiel
 void UAVObjectField::constructorInitialize(const QString & name, const QString & units, FieldType type, const QStringList & elementNames, const QStringList & options, const QString &limits)
 {
     // Copy params
-    this->name         = name;
-    this->units        = units;
-    this->type         = type;
-    this->options      = options;
-    this->numElements  = elementNames.length();
-    this->offset       = 0;
-    this->data         = NULL;
+    this->name = name;
+    this->units = units;
+    this->type = type;
+    this->options = options;
+    this->numElements = elementNames.length();
+    this->offset = 0;
+    this->data = NULL;
     this->obj = NULL;
     this->elementNames = elementNames;
     // Set field size
@@ -131,7 +131,7 @@ void UAVObjectField::limitsInitialize(const QString &limits)
             }
             QStringList valuesPerElement = _str.split(":");
             LimitStruct lstruc;
-            bool startFlag    = valuesPerElement.at(0).startsWith("%");
+            bool startFlag = valuesPerElement.at(0).startsWith("%");
             bool maxIndexFlag = (int)(index) < (int)numElements;
             bool elemNumberSizeFlag = valuesPerElement.at(0).size() == 3;
             bool aux;
@@ -530,9 +530,9 @@ QVariant UAVObjectField::getMinLimit(quint32 index, int board)
 }
 void UAVObjectField::initialize(quint8 *data, quint32 dataOffset, UAVObject *obj)
 {
-    this->data   = data;
+    this->data = data;
     this->offset = dataOffset;
-    this->obj    = obj;
+    this->obj = obj;
     clear();
 }
 

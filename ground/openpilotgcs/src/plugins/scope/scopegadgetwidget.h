@@ -50,9 +50,9 @@ public:
     TimeScaleDraw() {}
     virtual QwtText label(double v) const
     {
-        uint seconds     = (uint)(v);
+        uint seconds = (uint)(v);
         QDateTime upTime = QDateTime::fromTime_t(seconds);
-        QTime timePart   = upTime.time().addMSecs((v - seconds) * 1000);
+        QTime timePart = upTime.time().addMSecs((v - seconds) * 1000);
 
         upTime.setTime(timePart);
         return upTime.toLocalTime().toString("hh:mm:ss");

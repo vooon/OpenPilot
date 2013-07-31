@@ -110,9 +110,9 @@ enum FlowType {
 struct PortSettings {
     BaudRateType BaudRate;
     DataBitsType DataBits;
-    ParityType   Parity;
+    ParityType Parity;
     StopBitsType StopBits;
-    FlowType     FlowControl;
+    FlowType FlowControl;
     long Timeout_Millisec;
 };
 

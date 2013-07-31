@@ -25,10 +25,10 @@
 SDLGamepad::SDLGamepad()
 {
     buttons = -1;
-    axes    = -1;
-    index   = -1;
-    loop    = false;
-    tick    = MIN_RATE;
+    axes = -1;
+    index = -1;
+    loop = false;
+    tick = MIN_RATE;
     gamepad = 0;
 }
 
@@ -91,20 +91,20 @@ bool SDLGamepad::setGamepad(qint16 index)
 
         if (gamepad) {
             buttons = SDL_JoystickNumButtons(gamepad);
-            axes    = SDL_JoystickNumAxes(gamepad);
+            axes = SDL_JoystickNumAxes(gamepad);
 
             if (axes >= 4) {
                 this->index = index;
                 return true;
             } else {
-                buttons     = -1;
-                axes        = -1;
+                buttons = -1;
+                axes = -1;
                 this->index = -1;
                 qCritical("Gamepad has less than 4 axes");
             }
         } else {
-            buttons     = -1;
-            axes        = -1;
+            buttons = -1;
+            axes = -1;
             this->index = -1;
             qCritical("Unable to open Gamepad!");
         }

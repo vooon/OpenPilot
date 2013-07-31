@@ -66,7 +66,7 @@ UAVTalk::UAVTalk(QIODevice *iodev, UAVObjectManager *objMngr)
 {
     io = iodev;
 
-    this->objMngr  = objMngr;
+    this->objMngr = objMngr;
 
     rxState = STATE_SYNC;
     rxPacketLength = 0;
@@ -274,13 +274,13 @@ bool UAVTalk::processInputByte(quint8 rxbyte)
             break;
         }
 
-        rxType     = rxbyte;
+        rxType = rxbyte;
 
         packetSize = 0;
 
-        rxState    = STATE_SIZE;
+        rxState = STATE_SIZE;
         UAVTALK_QXTLOG_DEBUG("UAVTalk: Type->Size");
-        rxCount    = 0;
+        rxCount = 0;
         break;
 
     case STATE_SIZE:
@@ -359,10 +359,10 @@ bool UAVTalk::processInputByte(quint8 rxbyte)
             if (rxObj == NULL) {
                 // This is a non-existing object, just skip to checksum
                 // and we'll send a NACK next.
-                rxState  = STATE_CS;
+                rxState = STATE_CS;
                 UAVTALK_QXTLOG_DEBUG("UAVTalk: ObjID->CSum (no obj)");
                 rxInstId = 0;
-                rxCount  = 0;
+                rxCount = 0;
             } else if (rxObj->isSingleInstance()) {
                 // If there is a payload get it, otherwise receive checksum
                 if (rxLength > 0) {
@@ -373,7 +373,7 @@ bool UAVTalk::processInputByte(quint8 rxbyte)
                     UAVTALK_QXTLOG_DEBUG("UAVTalk: ObjID->Checksum");
                 }
                 rxInstId = 0;
-                rxCount  = 0;
+                rxCount = 0;
             } else {
                 rxState = STATE_INSTID;
                 UAVTALK_QXTLOG_DEBUG("UAVTalk: ObjID->InstID");
@@ -396,7 +396,7 @@ bool UAVTalk::processInputByte(quint8 rxbyte)
 
         rxInstId = (qint16)qFromLittleEndian<quint16>(rxTmpBuffer);
 
-        rxCount  = 0;
+        rxCount = 0;
 
         // If there is a payload get it, otherwise receive checksum
         if (rxLength > 0) {
@@ -478,8 +478,8 @@ bool UAVTalk::processInputByte(quint8 rxbyte)
 bool UAVTalk::receiveObject(quint8 type, quint32 objId, quint16 instId, quint8 *data, qint32 length)
 {
     Q_UNUSED(length);
-    UAVObject *obj    = NULL;
-    bool error        = false;
+    UAVObject *obj = NULL;
+    bool error = false;
     bool allInstances = (instId == ALL_INSTANCES);
 
     // Process message type

@@ -189,7 +189,7 @@ void ConfigPipXtremeWidget::updateStatus(UAVObject *object)
         QString descstr(buf);
         quint32 gitDate = descField->getValue(11).toChar().toAscii() & 0xFF;
         for (int i = 1; i < 4; i++) {
-            gitDate  = gitDate << 8;
+            gitDate = gitDate << 8;
             gitDate += descField->getValue(11 - i).toChar().toAscii() & 0xFF;
         }
         QString date = QDateTime::fromTime_t(gitDate).toUTC().toString("yyyy-MM-dd HH:mm");
@@ -204,7 +204,7 @@ void ConfigPipXtremeWidget::updateStatus(UAVObject *object)
         char buf[OPLinkStatus::CPUSERIAL_NUMELEM * 2 + 1];
         for (unsigned int i = 0; i < OPLinkStatus::CPUSERIAL_NUMELEM; ++i) {
             unsigned char val = serialField->getValue(i).toUInt() >> 4;
-            buf[i * 2]     = ((val < 10) ? '0' : '7') + val;
+            buf[i * 2] = ((val < 10) ? '0' : '7') + val;
             val = serialField->getValue(i).toUInt() & 0xf;
             buf[i * 2 + 1] = ((val < 10) ? '0' : '7') + val;
         }

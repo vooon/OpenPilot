@@ -57,19 +57,19 @@
 
 
 typedef struct {
-    uint8_t  *pbuff;
+    uint8_t *pbuff;
     uint16_t length;
     uint16_t crc;
-    uint8_t  seqNo;
+    uint8_t seqNo;
 } Packet_t;
 
 typedef struct {
-    uint8_t  *rxBuf;                                 // Buffer used to store rcv data
+    uint8_t *rxBuf; // Buffer used to store rcv data
     uint16_t rxBufSize; // rcv buffer size.
-    uint8_t  *txBuf;                                 // Length of data in buffer
+    uint8_t *txBuf; // Length of data in buffer
     uint16_t txBufSize; // CRC for data in Packet buff
     uint16_t max_retry; // Maximum number of retrys for a single transmit.
-    int32_t  timeoutLen;                             // how long to wait for each retry to succeed
+    int32_t timeoutLen; // how long to wait for each retry to succeed
     // function returns time in number of seconds that has elapsed from a given reference point
 } PortConfig_t;
 

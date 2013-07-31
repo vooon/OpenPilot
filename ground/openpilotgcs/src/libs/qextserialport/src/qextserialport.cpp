@@ -113,10 +113,10 @@ QextSerialPort::QextSerialPort(const QString & name, const PortSettings & settin
 void QextSerialPort::construct()
 {
     lastErr = E_NO_ERROR;
-    Settings.BaudRate    = BAUD115200;
-    Settings.DataBits    = DATA_8;
-    Settings.Parity      = PAR_NONE;
-    Settings.StopBits    = STOP_1;
+    Settings.BaudRate = BAUD115200;
+    Settings.DataBits = DATA_8;
+    Settings.Parity = PAR_NONE;
+    Settings.StopBits = STOP_1;
     Settings.FlowControl = FLOW_HARDWARE;
     Settings.Timeout_Millisec = 500;
     mutex = new QMutex(QMutex::Recursive);

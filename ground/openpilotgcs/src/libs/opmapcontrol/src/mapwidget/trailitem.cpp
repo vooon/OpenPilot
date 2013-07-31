@@ -29,7 +29,7 @@
 namespace mapcontrol {
 TrailItem::TrailItem(internals::PointLatLng const & coord, int const & altitude, QBrush color, MapGraphicItem *map) : QGraphicsItem(map), coord(coord), m_brush(color), m_map(map)
 {
-    QDateTime time    = QDateTime::currentDateTime();
+    QDateTime time = QDateTime::currentDateTime();
     QString coord_str = " " + QString::number(coord.Lat(), 'f', 6) + "   " + QString::number(coord.Lng(), 'f', 6);
 
     setToolTip(QString(tr("Position:") + "%1\n" + tr("Altitude:") + "%2\n" + tr("Time:") + "%3").arg(coord_str).arg(QString::number(altitude)).arg(time.toString()));

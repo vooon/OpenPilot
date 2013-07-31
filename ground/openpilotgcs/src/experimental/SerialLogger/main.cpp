@@ -22,10 +22,10 @@ public:
 
         PortSettings Settings;
 
-        Settings.BaudRate    = BAUD115200;
-        Settings.DataBits    = DATA_8;
-        Settings.Parity      = PAR_NONE;
-        Settings.StopBits    = STOP_1;
+        Settings.BaudRate = BAUD115200;
+        Settings.DataBits = DATA_8;
+        Settings.Parity = PAR_NONE;
+        Settings.StopBits = STOP_1;
         Settings.FlowControl = FLOW_OFF;
         Settings.Timeout_Millisec = 500;
 

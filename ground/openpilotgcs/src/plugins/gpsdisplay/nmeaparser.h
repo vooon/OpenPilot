@@ -43,8 +43,8 @@ typedef struct struct_GpsData {
     double Altitude;
     double Groundspeed;
     double Heading;
-    int    SV;
-    int    Status;
+    int SV;
+    int Status;
     double PDOP;
     double HDOP;
     double VDOP;

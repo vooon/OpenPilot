@@ -82,7 +82,7 @@ void DetailsWidget::paintEvent(QPaintEvent *paintEvent)
     }
 
     const QRect detailsGeometry = m_detailsButton->geometry();
-    const QRect widgetGeometry  = m_widget ? m_widget->geometry() : QRect(x(), y() + height(), width(), 0);
+    const QRect widgetGeometry = m_widget ? m_widget->geometry() : QRect(x(), y() + height(), width(), 0);
 
     QPoint tl(detailsGeometry.topLeft());
     tl += QPoint(-3, -3);

@@ -39,7 +39,7 @@
  */
 Telemetry::Telemetry(UAVTalk *utalk, UAVObjectManager *objMngr)
 {
-    this->utalk   = utalk;
+    this->utalk = utalk;
     this->objMngr = objMngr;
     mutex = new QMutex(QMutex::Recursive);
     // Process all objects in the list
@@ -60,7 +60,7 @@ Telemetry::Telemetry(UAVTalk *utalk, UAVObjectManager *objMngr)
     connect(updateTimer, SIGNAL(timeout()), this, SLOT(processPeriodicUpdates()));
     updateTimer->start(1000);
     // Setup and start the stats timer
-    txErrors  = 0;
+    txErrors = 0;
     txRetries = 0;
 }
 
@@ -100,7 +100,7 @@ void Telemetry::addObject(UAVObject *obj)
     ObjectTimeInfo timeInfo;
     timeInfo.obj = obj;
     timeInfo.timeToNextUpdateMs = 0;
-    timeInfo.updatePeriodMs     = 0;
+    timeInfo.updatePeriodMs = 0;
     objList.append(timeInfo);
 }
 
@@ -112,7 +112,7 @@ void Telemetry::setUpdatePeriod(UAVObject *obj, qint32 periodMs)
     // Find object type (not instance!) and update its period
     for (int n = 0; n < objList.length(); ++n) {
         if (objList[n].obj->getObjID() == obj->getObjID()) {
-            objList[n].updatePeriodMs     = periodMs;
+            objList[n].updatePeriodMs = periodMs;
             objList[n].timeToNextUpdateMs = quint32((float)periodMs * (float)qrand() / (float)RAND_MAX); // avoid bunching of updates
         }
     }
@@ -152,7 +152,7 @@ void Telemetry::connectToObjectInstances(UAVObject *obj, quint32 eventMask)
 void Telemetry::updateObject(UAVObject *obj, quint32 eventType)
 {
     // Get metadata
-    UAVObject::Metadata metadata     = obj->getMetadata();
+    UAVObject::Metadata metadata = obj->getMetadata();
     UAVObject::UpdateMode updateMode = UAVObject::GetGcsTelemetryUpdateMode(metadata);
 
     // Setup object depending on update mode
@@ -286,7 +286,7 @@ void Telemetry::processObjectUpdates(UAVObject *obj, EventMask event, bool allIn
     // Push event into queue
     ObjectQueueInfo objInfo;
 
-    objInfo.obj   = obj;
+    objInfo.obj = obj;
     objInfo.event = event;
     objInfo.allInstances = allInstances;
     if (priority) {
@@ -338,16 +338,16 @@ void Telemetry::processObjectQueue()
     }
 
     // Setup transaction (skip if unpack event)
-    UAVObject::Metadata metadata     = objInfo.obj->getMetadata();
+    UAVObject::Metadata metadata = objInfo.obj->getMetadata();
     UAVObject::UpdateMode updateMode = UAVObject::GetGcsTelemetryUpdateMode(metadata);
     if ((objInfo.event != EV_UNPACKED) && ((objInfo.event != EV_UPDATED_PERIODIC) || (updateMode != UAVObject::UPDATEMODE_THROTTLED))) {
         QMap<quint32, ObjectTransactionInfo *>::iterator itr = transMap.find(objInfo.obj->getObjID());
         if (itr != transMap.end()) {
             qDebug() << "!!!!!! Making request for an object: " << objInfo.obj->getName() << " for which a request is already in progress!!!!!!";
         }
-        UAVObject::Metadata metadata     = objInfo.obj->getMetadata();
+        UAVObject::Metadata metadata = objInfo.obj->getMetadata();
         ObjectTransactionInfo *transInfo = new ObjectTransactionInfo(this);
-        transInfo->obj   = objInfo.obj;
+        transInfo->obj = objInfo.obj;
         transInfo->allInstances = objInfo.allInstances;
         transInfo->retriesRemaining = MAX_RETRIES;
         transInfo->acked = UAVObject::GetGcsTelemetryAcked(metadata);
@@ -392,7 +392,7 @@ void Telemetry::processPeriodicUpdates()
 
     // Iterate through each object and update its timer, if zero then transmit object.
     // Also calculate smallest delay to next update (will be used for setting timeToNextUpdateMs)
-    qint32 minDelay  = MAX_UPDATE_PERIOD_MS;
+    qint32 minDelay = MAX_UPDATE_PERIOD_MS;
     ObjectTimeInfo *objinfo;
     qint32 elapsedMs = 0;
     QTime time;
@@ -443,15 +443,15 @@ Telemetry::TelemetryStats Telemetry::getStats()
     // Update stats
     TelemetryStats stats;
 
-    stats.txBytes       = utalkStats.txBytes;
-    stats.rxBytes       = utalkStats.rxBytes;
+    stats.txBytes = utalkStats.txBytes;
+    stats.rxBytes = utalkStats.rxBytes;
     stats.txObjectBytes = utalkStats.txObjectBytes;
     stats.rxObjectBytes = utalkStats.rxObjectBytes;
-    stats.rxObjects     = utalkStats.rxObjects;
-    stats.txObjects     = utalkStats.txObjects;
-    stats.txErrors      = utalkStats.txErrors + txErrors;
-    stats.rxErrors      = utalkStats.rxErrors;
-    stats.txRetries     = txRetries;
+    stats.rxObjects = utalkStats.rxObjects;
+    stats.txObjects = utalkStats.txObjects;
+    stats.txErrors = utalkStats.txErrors + txErrors;
+    stats.rxErrors = utalkStats.rxErrors;
+    stats.txRetries = txRetries;
 
     // Done
     return stats;
@@ -462,7 +462,7 @@ void Telemetry::resetStats()
     QMutexLocker locker(mutex);
 
     utalk->resetStats();
-    txErrors  = 0;
+    txErrors = 0;
     txRetries = 0;
 }
 
@@ -518,8 +518,8 @@ void Telemetry::newInstance(UAVObject *obj)
 ObjectTransactionInfo::ObjectTransactionInfo(QObject *parent) : QObject(parent)
 {
     obj = 0;
-    allInstances     = false;
-    objRequest       = false;
+    allInstances = false;
+    objRequest = false;
     retriesRemaining = 0;
     acked = false;
     telem = 0;

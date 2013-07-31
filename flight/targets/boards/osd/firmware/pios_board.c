@@ -52,21 +52,21 @@ void PIOS_ADC_DMC_irq_handler(void);
 void DMA2_Stream4_IRQHandler(void) __attribute__((alias("PIOS_ADC_DMC_irq_handler")));
 struct pios_adc_cfg pios_adc_cfg = {
     .adc_dev = ADC1,
-    .dma     = {
-        .irq                                       = {
+    .dma = {
+        .irq = {
             .flags = (DMA_FLAG_TCIF4 | DMA_FLAG_TEIF4 | DMA_FLAG_HTIF4),
-            .init  = {
-                .NVIC_IRQChannel    = DMA2_Stream4_IRQn,
+            .init = {
+                .NVIC_IRQChannel = DMA2_Stream4_IRQn,
                 .NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_LOW,
-                .NVIC_IRQChannelSubPriority        = 0,
+                .NVIC_IRQChannelSubPriority = 0,
                 .NVIC_IRQChannelCmd = ENABLE,
             },
         },
-        .rx                                        = {
+        .rx = {
             .channel = DMA2_Stream4,
-            .init    = {
-                .DMA_Channel                       = DMA_Channel_0,
-                .DMA_PeripheralBaseAddr            = (uint32_t)&ADC1->DR
+            .init = {
+                .DMA_Channel = DMA_Channel_0,
+                .DMA_PeripheralBaseAddr = (uint32_t)&ADC1->DR
             },
         }
     },
@@ -124,21 +124,21 @@ uintptr_t pios_user_fs_id = 0;
 #define LINE_PERIOD   PX_PERIOD * GRAPHICS_WIDTH
 
 static const TIM_TimeBaseInitTypeDef tim_4_time_base = {
-    .TIM_Prescaler         = 0, // PIOS_PERIPHERAL_APB1_CLOCK,
-    .TIM_ClockDivision     = TIM_CKD_DIV1,
-    .TIM_CounterMode       = TIM_CounterMode_Up,
-    .TIM_Period            = LINE_PERIOD - 1,
+    .TIM_Prescaler = 0, // PIOS_PERIPHERAL_APB1_CLOCK,
+    .TIM_ClockDivision = TIM_CKD_DIV1,
+    .TIM_CounterMode = TIM_CounterMode_Up,
+    .TIM_Period = LINE_PERIOD - 1,
     .TIM_RepetitionCounter = 0x0000,
 };
 
 static const struct pios_tim_clock_cfg pios_tim4_cfg = {
     .timer = TIM4,
-    .time_base_init                            = &tim_4_time_base,
-    .irq   = {
-        .init                                  = {
-            .NVIC_IRQChannel    = TIM4_IRQn,
+    .time_base_init = &tim_4_time_base,
+    .irq = {
+        .init = {
+            .NVIC_IRQChannel = TIM4_IRQn,
             .NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_LOW,
-            .NVIC_IRQChannelSubPriority        = 0,
+            .NVIC_IRQChannelSubPriority = 0,
             .NVIC_IRQChannelCmd = ENABLE,
         },
     }

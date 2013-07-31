@@ -65,9 +65,9 @@ void GCSControlGadget::loadConfiguration(IUAVGadgetConfiguration *config)
     GCSControlGadgetConfiguration *GCSControlConfig = qobject_cast< GCSControlGadgetConfiguration *>(config);
 
     QList<int> ql = GCSControlConfig->getChannelsMapping();
-    rollChannel     = ql.at(0);
-    pitchChannel    = ql.at(1);
-    yawChannel      = ql.at(2);
+    rollChannel = ql.at(0);
+    pitchChannel = ql.at(1);
+    yawChannel = ql.at(2);
     throttleChannel = ql.at(3);
 
     // if(control_sock->isOpen())
@@ -78,10 +78,10 @@ void GCSControlGadget::loadConfiguration(IUAVGadgetConfiguration *config)
 
     int i;
     for (i = 0; i < 8; i++) {
-        buttonSettings[i].ActionID   = GCSControlConfig->getbuttonSettings(i).ActionID;
+        buttonSettings[i].ActionID = GCSControlConfig->getbuttonSettings(i).ActionID;
         buttonSettings[i].FunctionID = GCSControlConfig->getbuttonSettings(i).FunctionID;
-        buttonSettings[i].Amount     = GCSControlConfig->getbuttonSettings(i).Amount;
-        buttonSettings[i].Amount     = GCSControlConfig->getbuttonSettings(i).Amount;
+        buttonSettings[i].Amount = GCSControlConfig->getbuttonSettings(i).Amount;
+        buttonSettings[i].Amount = GCSControlConfig->getbuttonSettings(i).Amount;
         channelReverse[i] = GCSControlConfig->getChannelsReverse().at(i);
     }
 }
@@ -96,9 +96,9 @@ ManualControlCommand *GCSControlGadget::getManualControlCommand()
 
 void GCSControlGadget::manualControlCommandUpdated(UAVObject *obj)
 {
-    double roll     = obj->getField("Roll")->getDouble();
-    double pitch    = obj->getField("Pitch")->getDouble();
-    double yaw      = obj->getField("Yaw")->getDouble();
+    double roll = obj->getField("Roll")->getDouble();
+    double pitch = obj->getField("Pitch")->getDouble();
+    double yaw = obj->getField("Yaw")->getDouble();
     double throttle = obj->getField("Throttle")->getDouble();
 
     // necessary against having the wrong joystick profile chosen, which shows weird values
@@ -141,9 +141,9 @@ void GCSControlGadget::manualControlCommandUpdated(UAVObject *obj)
 void GCSControlGadget::sticksChangedLocally(double leftX, double leftY, double rightX, double rightY)
 {
     ManualControlCommand *obj = getManualControlCommand();
-    double oldRoll     = obj->getField("Roll")->getDouble();
-    double oldPitch    = obj->getField("Pitch")->getDouble();
-    double oldYaw      = obj->getField("Yaw")->getDouble();
+    double oldRoll = obj->getField("Roll")->getDouble();
+    double oldPitch = obj->getField("Pitch")->getDouble();
+    double oldYaw = obj->getField("Yaw")->getDouble();
     double oldThrottle = obj->getField("Throttle")->getDouble();
 
     double newRoll;
@@ -155,38 +155,38 @@ void GCSControlGadget::sticksChangedLocally(double leftX, double leftY, double r
     switch (controlsMode) {
     case 1:
         // Mode 1: LeftX = Yaw, LeftY = Pitch, RightX = Roll, RightY = Throttle
-        newRoll     = rightX;
-        newPitch    = -leftY;
-        newYaw      = leftX;
+        newRoll = rightX;
+        newPitch = -leftY;
+        newYaw = leftX;
         newThrottle = rightY;
         break;
     case 2:
         // Mode 2: LeftX = Yaw, LeftY = Throttle, RightX = Roll, RightY = Pitch
-        newRoll     = rightX;
-        newPitch    = -rightY;
-        newYaw      = leftX;
+        newRoll = rightX;
+        newPitch = -rightY;
+        newYaw = leftX;
         newThrottle = leftY;
         break;
     case 3:
         // Mode 3: LeftX = Roll, LeftY = Pitch, RightX = Yaw, RightY = Throttle
-        newRoll     = leftX;
-        newPitch    = -leftY;
-        newYaw      = rightX;
+        newRoll = leftX;
+        newPitch = -leftY;
+        newYaw = rightX;
         newThrottle = rightY;
         break;
     case 4:
         // Mode 4: LeftX = Roll, LeftY = Throttle, RightX = Yaw, RightY = Pitch;
-        newRoll     = leftX;
-        newPitch    = -rightY;
-        newYaw      = rightX;
+        newRoll = leftX;
+        newPitch = -rightY;
+        newYaw = rightX;
         newThrottle = leftY;
         break;
     }
 
     // check if buttons have control over this axis... if so don't update it
-    int buttonRollControl     = 0;
-    int buttonPitchControl    = 0;
-    int buttonYawControl      = 0;
+    int buttonRollControl = 0;
+    int buttonPitchControl = 0;
+    int buttonYawControl = 0;
     int buttonThrottleControl = 0;
     for (int i = 0; i < 8; i++) {
         if ((buttonSettings[i].FunctionID == 1) && ((buttonSettings[i].ActionID == 1) || (buttonSettings[i].ActionID == 2))) {
@@ -254,7 +254,7 @@ void GCSControlGadget::readUDPCommand()
         control_sock->readDatagram(datagram.data(), datagram.size());
         QDataStream readData(datagram);
         bool badPack = false;
-        int state    = 0;
+        int state = 0;
         while (!readData.atEnd() && !badPack) {
             double buffer;
             readData >> buffer;
@@ -263,25 +263,25 @@ void GCSControlGadget::readUDPCommand()
                 if (buffer == 42) {
                     state = 1;
                 } else {
-                    state   = 0;
+                    state = 0;
                     badPack = true;
                 }
                 break;
             case 1:
-                pitch    = buffer;
-                state    = 2;
+                pitch = buffer;
+                state = 2;
                 break;
             case 2:
-                yaw      = buffer;
-                state    = 3;
+                yaw = buffer;
+                state = 3;
                 break;
             case 3:
-                roll     = buffer;
-                state    = 4;
+                roll = buffer;
+                state = 4;
                 break;
             case 4:
                 throttle = buffer;
-                state    = 5;
+                state = 5;
                 break;
             case 5:
                 if (buffer != 36 || !readData.atEnd()) {
@@ -335,7 +335,7 @@ void GCSControlGadget::buttonState(ButtonNumber number, bool pressed)
     if ((buttonSettings[number].ActionID > 0) && (buttonSettings[number].FunctionID > 0) && (pressed)) { // this button is configured
         ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
         UAVObjectManager *objManager = pm->getObject<UAVObjectManager>();
-        UAVDataObject *obj     = dynamic_cast<UAVDataObject *>(objManager->getObject(QString("ManualControlCommand")));
+        UAVDataObject *obj = dynamic_cast<UAVDataObject *>(objManager->getObject(QString("ManualControlCommand")));
         bool currentCGSControl = ((GCSControlGadgetWidget *)m_widget)->getGCSControl();
         bool currentUDPControl = ((GCSControlGadgetWidget *)m_widget)->getUDPControl();
 
@@ -428,7 +428,7 @@ void GCSControlGadget::axesValues(QListInt16 values)
     double pValue = (pitchChannel > -1) ? values[pitchChannel] : 0;
     double yValue = (yawChannel > -1) ? values[yawChannel] : 0;
     double tValue = (throttleChannel > -1) ? values[throttleChannel] : 0;
-    double max    = 32767;
+    double max = 32767;
 
     if (rollChannel > -1) {
         if (channelReverse[rollChannel] == true) {

@@ -50,7 +50,7 @@ ICore *ICore::instance()
 
 CoreImpl::CoreImpl(MainWindow *mainwindow)
 {
-    m_instance   = this;
+    m_instance = this;
     m_mainwindow = mainwindow;
 }
 

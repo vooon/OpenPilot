@@ -50,8 +50,8 @@ void MainWindow::time()
     // if(w)
     // qDebug()<<itemm->Type;
     if (itemm->Type == mapcontrol::WayPointItem::Type) {
-        int x     = itemm->Type;
-        int xx    = x;
+        int x = itemm->Type;
+        int xx = x;
         QLabel *l = new QLabel(this);
         l->show();
     }

@@ -52,9 +52,9 @@
 #define TICKS2MS(t) ((t) / portTICK_RATE_MS)
 #define MS2TICKS(m) ((m) * portTICK_RATE_MS)
 
-const uint32_t iap_time_2_low_end  = 500;
+const uint32_t iap_time_2_low_end = 500;
 const uint32_t iap_time_2_high_end = 5000;
-const uint32_t iap_time_3_low_end  = 500;
+const uint32_t iap_time_3_low_end = 500;
 const uint32_t iap_time_3_high_end = 5000;
 
 // Private types
@@ -96,7 +96,7 @@ int32_t FirmwareIAPInitialize()
     FirmwareIAPObjData data;
     FirmwareIAPObjGet(&data);
 
-    data.BoardType     = bdinfo->board_type;
+    data.BoardType = bdinfo->board_type;
     PIOS_BL_HELPER_FLASH_Read_Description(data.Description, FIRMWAREIAPOBJ_DESCRIPTION_NUMELEM);
     PIOS_SYS_SerialNumberGetBinary(data.CPUSerial);
     data.BoardRevision = bdinfo->board_rev;
@@ -141,7 +141,7 @@ static void FirmwareIAPCallback(UAVObjEvent *ev)
         // Get the input object data
         FirmwareIAPObjGet(&data);
         this_time = get_time();
-        delta     = this_time - last_time;
+        delta = this_time - last_time;
         last_time = this_time;
         if ((data.BoardType == bdinfo->board_type) && (data.crc != PIOS_BL_HELPER_CRC_Memory_Calc())) {
             PIOS_BL_HELPER_FLASH_Read_Description(data.Description, FIRMWAREIAPOBJ_DESCRIPTION_NUMELEM);
@@ -252,8 +252,8 @@ static void resetTask(__attribute__((unused)) UAVObjEvent *ev)
 
     if ((portTickType)(xTaskGetTickCount() - lastResetSysTime) > RESET_DELAY / portTICK_RATE_MS) {
         lastResetSysTime = xTaskGetTickCount();
-        data.BoardType   = 0xFF;
-        data.ArmReset    = 1;
+        data.BoardType = 0xFF;
+        data.ArmReset = 1;
         data.crc = reset_count; /* Must change a value for this to get to INS */
         FirmwareIAPObjSet(&data);
         ++reset_count;

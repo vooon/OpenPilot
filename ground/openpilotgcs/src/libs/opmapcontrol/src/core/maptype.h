@@ -35,36 +35,36 @@ class MapType : public QObject {
     Q_OBJECT Q_ENUMS(Types)
 public:
     enum Types {
-        GoogleMap            = 1,
-        GoogleSatellite      = 4,
-        GoogleLabels         = 8,
-        GoogleTerrain        = 16,
-        GoogleHybrid         = 20,
+        GoogleMap = 1,
+        GoogleSatellite = 4,
+        GoogleLabels = 8,
+        GoogleTerrain = 16,
+        GoogleHybrid = 20,
 
-        GoogleMapChina       = 22,
+        GoogleMapChina = 22,
         GoogleSatelliteChina = 24,
-        GoogleLabelsChina    = 26,
-        GoogleTerrainChina   = 28,
-        GoogleHybridChina    = 29,
+        GoogleLabelsChina = 26,
+        GoogleTerrainChina = 28,
+        GoogleHybridChina = 29,
 
-        OpenStreetMap        = 32,
-        OpenStreetOsm        = 33,
-        OpenStreetMapSurfer  = 34,
+        OpenStreetMap = 32,
+        OpenStreetOsm = 33,
+        OpenStreetMapSurfer = 34,
         OpenStreetMapSurferTerrain = 35,
 
-        YahooMap            = 64,
-        YahooSatellite      = 128,
-        YahooLabels         = 256,
-        YahooHybrid         = 333,
+        YahooMap = 64,
+        YahooSatellite = 128,
+        YahooLabels = 256,
+        YahooHybrid = 333,
 
         BingMap = 444,
-        BingSatellite       = 555,
-        BingHybrid          = 666,
+        BingSatellite = 555,
+        BingHybrid = 666,
 
-        ArcGIS_Map          = 777,
-        ArcGIS_Satellite    = 788,
+        ArcGIS_Map = 777,
+        ArcGIS_Satellite = 788,
         ArcGIS_ShadedRelief = 799,
-        ArcGIS_Terrain      = 811,
+        ArcGIS_Terrain = 811,
 
         // use these numbers to clean up old stuff
         // ArcGIS_MapsLT_Map_Old= 877,
@@ -81,24 +81,24 @@ public:
         // ArcGIS_MapsLT_Map_Hybrid=998,
 
         ArcGIS_MapsLT_Map = 1000,
-        ArcGIS_MapsLT_OrtoFoto   = 1001,
+        ArcGIS_MapsLT_OrtoFoto = 1001,
         ArcGIS_MapsLT_Map_Labels = 1002,
         ArcGIS_MapsLT_Map_Hybrid = 1003,
 
-        PergoTurkeyMap       = 2001,
-        SigPacSpainMap       = 3001,
+        PergoTurkeyMap = 2001,
+        SigPacSpainMap = 3001,
 
-        GoogleMapKorea       = 4001,
+        GoogleMapKorea = 4001,
         GoogleSatelliteKorea = 4002,
-        GoogleLabelsKorea    = 4003,
-        GoogleHybridKorea    = 4005,
+        GoogleLabelsKorea = 4003,
+        GoogleHybridKorea = 4005,
 
         YandexMapRu = 5000
     };
     static QString StrByType(Types const & value)
     {
         QMetaObject metaObject = MapType().staticMetaObject;
-        QMetaEnum metaEnum     = metaObject.enumerator(metaObject.indexOfEnumerator("Types"));
+        QMetaEnum metaEnum = metaObject.enumerator(metaObject.indexOfEnumerator("Types"));
         QString s = metaEnum.valueToKey(value);
 
         return s;
@@ -106,7 +106,7 @@ public:
     static Types TypeByStr(QString const & value)
     {
         QMetaObject metaObject = MapType().staticMetaObject;
-        QMetaEnum metaEnum     = metaObject.enumerator(metaObject.indexOfEnumerator("Types"));
+        QMetaEnum metaEnum = metaObject.enumerator(metaObject.indexOfEnumerator("Types"));
         Types s = (Types)metaEnum.keyToValue(value.toLatin1());
 
         return s;
@@ -115,7 +115,7 @@ public:
     {
         QStringList ret;
         QMetaObject metaObject = MapType().staticMetaObject;
-        QMetaEnum metaEnum     = metaObject.enumerator(metaObject.indexOfEnumerator("Types"));
+        QMetaEnum metaEnum = metaObject.enumerator(metaObject.indexOfEnumerator("Types"));
 
         for (int x = 0; x < metaEnum.keyCount(); ++x) {
             ret.append(metaEnum.key(x));

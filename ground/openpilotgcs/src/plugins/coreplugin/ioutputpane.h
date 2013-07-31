@@ -58,18 +58,18 @@ public:
     virtual void visibilityChanged(bool visible) = 0;
 
     // This function is called to give the outputwindow focus
-    virtual void setFocus()    = 0;
+    virtual void setFocus() = 0;
     // Wheter the outputpane has focus
-    virtual bool hasFocus()    = 0;
+    virtual bool hasFocus() = 0;
     // Wheter the outputpane can be focused at the moment.
     // (E.g. the search result window doesn't want to be focussed if the are no results.)
-    virtual bool canFocus()    = 0;
+    virtual bool canFocus() = 0;
 
     virtual bool canNavigate() = 0;
-    virtual bool canNext()     = 0;
+    virtual bool canNext() = 0;
     virtual bool canPrevious() = 0;
-    virtual void goToNext()    = 0;
-    virtual void goToPrev()    = 0;
+    virtual void goToNext() = 0;
+    virtual void goToPrev() = 0;
 public slots:
     void popup()
     {

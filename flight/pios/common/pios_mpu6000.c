@@ -43,14 +43,14 @@ enum pios_mpu6000_dev_magic {
 
 #define PIOS_MPU6000_MAX_DOWNSAMPLE 2
 struct mpu6000_dev {
-    uint32_t     spi_id;
-    uint32_t     slave_num;
+    uint32_t spi_id;
+    uint32_t slave_num;
     xQueueHandle queue;
     const struct pios_mpu6000_cfg *cfg;
     enum pios_mpu6000_range gyro_range;
     enum pios_mpu6000_accel_range accel_range;
     enum pios_mpu6000_filter filter;
-    enum pios_mpu6000_dev_magic   magic;
+    enum pios_mpu6000_dev_magic magic;
 };
 
 // ! Global structure for this device device
@@ -118,7 +118,7 @@ int32_t PIOS_MPU6000_Init(uint32_t spi_id, uint32_t slave_num, const struct pios
         return -1;
     }
 
-    dev->spi_id    = spi_id;
+    dev->spi_id = spi_id;
     dev->slave_num = slave_num;
     dev->cfg = cfg;
 
@@ -521,7 +521,7 @@ static int32_t PIOS_MPU6000_FifoDepthISR(bool *woken)
  */
 uint32_t mpu6000_irq = 0;
 int32_t mpu6000_count;
-uint32_t mpu6000_fifo_backup    = 0;
+uint32_t mpu6000_fifo_backup = 0;
 
 uint8_t mpu6000_last_read_count = 0;
 uint32_t mpu6000_fails = 0;
@@ -589,35 +589,35 @@ bool PIOS_MPU6000_IRQHandler(void)
     case PIOS_MPU6000_TOP_0DEG:
         data.accel_y = mpu6000_rec_buf[1] << 8 | mpu6000_rec_buf[2]; // chip X
         data.accel_x = mpu6000_rec_buf[3] << 8 | mpu6000_rec_buf[4]; // chip Y
-        data.gyro_y  = mpu6000_rec_buf[9] << 8 | mpu6000_rec_buf[10]; // chip X
-        data.gyro_x  = mpu6000_rec_buf[11] << 8 | mpu6000_rec_buf[12]; // chip Y
+        data.gyro_y = mpu6000_rec_buf[9] << 8 | mpu6000_rec_buf[10]; // chip X
+        data.gyro_x = mpu6000_rec_buf[11] << 8 | mpu6000_rec_buf[12]; // chip Y
         break;
     case PIOS_MPU6000_TOP_90DEG:
         // -1 to bring it back to -32768 +32767 range
         data.accel_y = -1 - (mpu6000_rec_buf[3] << 8 | mpu6000_rec_buf[4]); // chip Y
         data.accel_x = mpu6000_rec_buf[1] << 8 | mpu6000_rec_buf[2]; // chip X
-        data.gyro_y  = -1 - (mpu6000_rec_buf[11] << 8 | mpu6000_rec_buf[12]); // chip Y
-        data.gyro_x  = mpu6000_rec_buf[9] << 8 | mpu6000_rec_buf[10]; // chip X
+        data.gyro_y = -1 - (mpu6000_rec_buf[11] << 8 | mpu6000_rec_buf[12]); // chip Y
+        data.gyro_x = mpu6000_rec_buf[9] << 8 | mpu6000_rec_buf[10]; // chip X
         break;
     case PIOS_MPU6000_TOP_180DEG:
         data.accel_y = -1 - (mpu6000_rec_buf[1] << 8 | mpu6000_rec_buf[2]); // chip X
         data.accel_x = -1 - (mpu6000_rec_buf[3] << 8 | mpu6000_rec_buf[4]); // chip Y
-        data.gyro_y  = -1 - (mpu6000_rec_buf[9] << 8 | mpu6000_rec_buf[10]); // chip X
-        data.gyro_x  = -1 - (mpu6000_rec_buf[11] << 8 | mpu6000_rec_buf[12]); // chip Y
+        data.gyro_y = -1 - (mpu6000_rec_buf[9] << 8 | mpu6000_rec_buf[10]); // chip X
+        data.gyro_x = -1 - (mpu6000_rec_buf[11] << 8 | mpu6000_rec_buf[12]); // chip Y
         break;
     case PIOS_MPU6000_TOP_270DEG:
         data.accel_y = mpu6000_rec_buf[3] << 8 | mpu6000_rec_buf[4]; // chip Y
         data.accel_x = -1 - (mpu6000_rec_buf[1] << 8 | mpu6000_rec_buf[2]); // chip X
-        data.gyro_y  = mpu6000_rec_buf[11] << 8 | mpu6000_rec_buf[12]; // chip Y
-        data.gyro_x  = -1 - (mpu6000_rec_buf[9] << 8 | mpu6000_rec_buf[10]); // chip X
+        data.gyro_y = mpu6000_rec_buf[11] << 8 | mpu6000_rec_buf[12]; // chip Y
+        data.gyro_x = -1 - (mpu6000_rec_buf[9] << 8 | mpu6000_rec_buf[10]); // chip X
         break;
     }
-    data.gyro_z      = -1 - (mpu6000_rec_buf[13] << 8 | mpu6000_rec_buf[14]);
-    data.accel_z     = -1 - (mpu6000_rec_buf[5] << 8 | mpu6000_rec_buf[6]);
+    data.gyro_z = -1 - (mpu6000_rec_buf[13] << 8 | mpu6000_rec_buf[14]);
+    data.accel_z = -1 - (mpu6000_rec_buf[5] << 8 | mpu6000_rec_buf[6]);
     data.temperature = mpu6000_rec_buf[7] << 8 | mpu6000_rec_buf[8];
 #else /* if defined(PIOS_MPU6000_ACCEL) */
-    data.gyro_x      = mpu6000_rec_buf[3] << 8 | mpu6000_rec_buf[4];
-    data.gyro_y      = mpu6000_rec_buf[5] << 8 | mpu6000_rec_buf[6];
+    data.gyro_x = mpu6000_rec_buf[3] << 8 | mpu6000_rec_buf[4];
+    data.gyro_y = mpu6000_rec_buf[5] << 8 | mpu6000_rec_buf[6];
     switch (dev->cfg->orientation) {
     case PIOS_MPU6000_TOP_0DEG:
         data.gyro_y = mpu6000_rec_buf[3] << 8 | mpu6000_rec_buf[4];

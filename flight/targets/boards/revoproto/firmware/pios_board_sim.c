@@ -44,21 +44,21 @@ void Stack_Change_Weak() {}
 
 
 const struct pios_tcp_cfg pios_tcp_telem_cfg = {
-    .ip   = "0.0.0.0",
+    .ip = "0.0.0.0",
     .port = 9000,
 };
 
 const struct pios_udp_cfg pios_udp_telem_cfg = {
-    .ip   = "0.0.0.0",
+    .ip = "0.0.0.0",
     .port = 9000,
 };
 
 const struct pios_tcp_cfg pios_tcp_gps_cfg = {
-    .ip   = "0.0.0.0",
+    .ip = "0.0.0.0",
     .port = 9001,
 };
 const struct pios_tcp_cfg pios_tcp_debug_cfg = {
-    .ip   = "0.0.0.0",
+    .ip = "0.0.0.0",
     .port = 9002,
 };
 
@@ -67,7 +67,7 @@ const struct pios_tcp_cfg pios_tcp_debug_cfg = {
  * AUX USART
  */
 const struct pios_tcp_cfg pios_tcp_aux_cfg = {
-    .ip   = "0.0.0.0",
+    .ip = "0.0.0.0",
     .port = 9003,
 };
 #endif

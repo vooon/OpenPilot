@@ -53,7 +53,7 @@ PluginDialog::PluginDialog(QWidget *parent)
 
     m_detailsButton = new QPushButton(tr("Details"), this);
     m_errorDetailsButton = new QPushButton(tr("Error Details"), this);
-    m_closeButton   = new QPushButton(tr("Close"), this);
+    m_closeButton = new QPushButton(tr("Close"), this);
     m_detailsButton->setEnabled(false);
     m_errorDetailsButton->setEnabled(false);
     m_closeButton->setEnabled(true);

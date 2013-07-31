@@ -43,11 +43,11 @@ enum pios_bma180_dev_magic {
 struct bma180_dev {
     uint32_t spi_id;
     uint32_t slave_num;
-    int16_t  buffer[PIOS_BMA180_MAX_DOWNSAMPLE * sizeof(struct pios_bma180_data)];
-    t_fifo_buffer         fifo;
+    int16_t buffer[PIOS_BMA180_MAX_DOWNSAMPLE * sizeof(struct pios_bma180_data)];
+    t_fifo_buffer fifo;
     const struct pios_bma180_cfg *cfg;
     enum bma180_bandwidth bandwidth;
-    enum bma180_range     range;
+    enum bma180_range range;
     enum pios_bma180_dev_magic magic;
 };
 
@@ -113,7 +113,7 @@ int32_t PIOS_BMA180_Init(uint32_t spi_id, uint32_t slave_num, const struct pios_
         return -1;
     }
 
-    dev->spi_id    = spi_id;
+    dev->spi_id = spi_id;
     dev->slave_num = slave_num;
     dev->cfg = cfg;
 
@@ -404,9 +404,9 @@ int32_t PIOS_BMA180_ReadAccels(struct pios_bma180_data *data)
     PIOS_BMA180_ReleaseBus();
 
     // |    MSB        |   LSB       | 0 | new_data |
-    data->x  = ((rec[2] << 8) | rec[1]);
-    data->y  = ((rec[4] << 8) | rec[3]);
-    data->z  = ((rec[6] << 8) | rec[5]);
+    data->x = ((rec[2] << 8) | rec[1]);
+    data->y = ((rec[4] << 8) | rec[3]);
+    data->z = ((rec[6] << 8) | rec[5]);
     data->x /= 4;
     data->y /= 4;
     data->z /= 4;
@@ -543,9 +543,9 @@ bool PIOS_BMA180_IRQHandler(void)
 
     // Bottom two bits indicate new data and are constant zeros.  Don't right
     // shift because it drops sign bit
-    data.x  = ((pios_bma180_dmabuf[2] << 8) | pios_bma180_dmabuf[1]);
-    data.y  = ((pios_bma180_dmabuf[4] << 8) | pios_bma180_dmabuf[3]);
-    data.z  = ((pios_bma180_dmabuf[6] << 8) | pios_bma180_dmabuf[5]);
+    data.x = ((pios_bma180_dmabuf[2] << 8) | pios_bma180_dmabuf[1]);
+    data.y = ((pios_bma180_dmabuf[4] << 8) | pios_bma180_dmabuf[3]);
+    data.z = ((pios_bma180_dmabuf[6] << 8) | pios_bma180_dmabuf[5]);
     data.x /= 4;
     data.y /= 4;
     data.z /= 4;

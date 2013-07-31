@@ -39,7 +39,7 @@
 #endif
 
 struct rtc_callback_entry {
-    void     (*fn)(uint32_t);
+    void (*fn)(uint32_t);
     uint32_t data;
 };
 
@@ -66,8 +66,8 @@ void PIOS_RTC_Init(const struct pios_rtc_cfg *cfg)
 
     /* Configure and enable the RTC Second interrupt */
     EXTI_InitTypeDef ExtiInit = {
-        .EXTI_Line    = EXTI_Line22, // matches above GPIO pin
-        .EXTI_Mode    = EXTI_Mode_Interrupt,
+        .EXTI_Line = EXTI_Line22, // matches above GPIO pin
+        .EXTI_Mode = EXTI_Mode_Interrupt,
         .EXTI_Trigger = EXTI_Trigger_Rising,
         .EXTI_LineCmd = ENABLE,
     };
@@ -105,9 +105,9 @@ bool PIOS_RTC_RegisterTickCallback(void (*fn)(uint32_t id), uint32_t data)
         return false;
     }
 
-    cb       = &rtc_callback_list[rtc_callback_next++];
+    cb = &rtc_callback_list[rtc_callback_next++];
 
-    cb->fn   = fn;
+    cb->fn = fn;
     cb->data = data;
     return true;
 }

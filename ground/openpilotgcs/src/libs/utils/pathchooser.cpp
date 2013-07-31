@@ -82,9 +82,9 @@ struct PathChooserPrivate {
     QHBoxLayout *m_hLayout;
     PathValidatingLineEdit *m_lineEdit;
     PathChooser::Kind m_acceptingKind;
-    QString     m_dialogTitleOverride;
-    QString     m_dialogFilter;
-    QString     m_initialBrowsePathOverride;
+    QString m_dialogTitleOverride;
+    QString m_dialogFilter;
+    QString m_initialBrowsePathOverride;
 };
 
 PathChooserPrivate::PathChooserPrivate(PathChooser *chooser) :

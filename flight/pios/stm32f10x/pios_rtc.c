@@ -39,7 +39,7 @@
 #endif
 
 struct rtc_callback_entry {
-    void     (*fn)(uint32_t);
+    void (*fn)(uint32_t);
     uint32_t data;
 };
 
@@ -97,9 +97,9 @@ bool PIOS_RTC_RegisterTickCallback(void (*fn)(uint32_t id), uint32_t data)
         return false;
     }
 
-    cb       = &rtc_callback_list[rtc_callback_next++];
+    cb = &rtc_callback_list[rtc_callback_next++];
 
-    cb->fn   = fn;
+    cb->fn = fn;
     cb->data = data;
     return true;
 }

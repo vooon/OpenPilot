@@ -95,8 +95,8 @@ static int32_t comUsbBridgeStart(void)
 static int32_t comUsbBridgeInitialize(void)
 {
     // TODO: Get from settings object
-    usart_port     = PIOS_COM_BRIDGE;
-    vcp_port       = PIOS_COM_VCP;
+    usart_port = PIOS_COM_BRIDGE;
+    vcp_port = PIOS_COM_VCP;
 
 #ifdef MODULE_COMUSBBRIDGE_BUILTIN
     bridge_enabled = true;

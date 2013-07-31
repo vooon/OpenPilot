@@ -47,8 +47,8 @@ static int32_t filter(stateFilter *self, stateEstimation *state);
 
 int32_t filterStationaryInitialize(stateFilter *handle)
 {
-    handle->init      = &init;
-    handle->filter    = &filter;
+    handle->init = &init;
+    handle->filter = &filter;
     handle->localdata = NULL;
     return STACK_REQUIRED;
 }
@@ -60,14 +60,14 @@ static int32_t init(__attribute__((unused)) stateFilter *self)
 
 static int32_t filter(__attribute__((unused)) stateFilter *self, stateEstimation *state)
 {
-    state->pos[0]   = 0.0f;
-    state->pos[1]   = 0.0f;
-    state->pos[2]   = 0.0f;
+    state->pos[0] = 0.0f;
+    state->pos[1] = 0.0f;
+    state->pos[2] = 0.0f;
     state->updated |= SENSORUPDATES_pos;
 
-    state->vel[0]   = 0.0f;
-    state->vel[1]   = 0.0f;
-    state->vel[2]   = 0.0f;
+    state->vel[0] = 0.0f;
+    state->vel[1] = 0.0f;
+    state->vel[2] = 0.0f;
     state->updated |= SENSORUPDATES_vel;
 
     return 0;

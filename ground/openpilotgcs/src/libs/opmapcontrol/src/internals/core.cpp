@@ -41,9 +41,9 @@ Core::Core() : MouseWheelZooming(false), currentPosition(0, 0), currentPositionP
     this->setAutoDelete(false);
     ProcessLoadTaskCallback.setMaxThreadCount(10);
     renderOffset = Point(0, 0);
-    dragPoint    = Point(0, 0);
-    CanDragMap   = true;
-    tilesToload  = 0;
+    dragPoint = Point(0, 0);
+    CanDragMap = true;
+    tilesToload = 0;
     OPMaps::Instance();
 }
 Core::~Core()
@@ -340,14 +340,14 @@ void Core::StartSystem()
 void Core::UpdateCenterTileXYLocation()
 {
     PointLatLng center = FromLocalToLatLng(Width / 2, Height / 2);
-    Point centerPixel  = Projection()->FromLatLngToPixel(center, Zoom());
+    Point centerPixel = Projection()->FromLatLngToPixel(center, Zoom());
 
     centerTileXYLocation = Projection()->FromPixelToTileXY(centerPixel);
 }
 
 void Core::OnMapSizeChanged(int const & width, int const & height)
 {
-    Width  = width;
+    Width = width;
     Height = height;
 
     sizeOfMapArea.SetWidth(1 + (Width / Projection()->TileSize().Width()) / 2);
@@ -391,8 +391,8 @@ GeoCoderStatusCode::Types Core::SetCurrentPositionByKeywords(QString const & key
 RectLatLng Core::CurrentViewArea()
 {
     PointLatLng p = Projection()->FromPixelToLatLng(-renderOffset.X(), -renderOffset.Y(), Zoom());
-    double rlng   = Projection()->FromPixelToLatLng(-renderOffset.X() + Width, -renderOffset.Y(), Zoom()).Lng();
-    double blat   = Projection()->FromPixelToLatLng(-renderOffset.X(), -renderOffset.Y() + Height, Zoom()).Lat();
+    double rlng = Projection()->FromPixelToLatLng(-renderOffset.X() + Width, -renderOffset.Y(), Zoom()).Lng();
+    double blat = Projection()->FromPixelToLatLng(-renderOffset.X(), -renderOffset.Y() + Height, Zoom()).Lat();
 
     return RectLatLng::FromLTRB(p.Lng(), p.Lat(), rlng, blat);
 }
@@ -462,7 +462,7 @@ void Core::GoToCurrentPosition()
     // reset stuff
     renderOffset = Point::Empty;
     centerTileXYLocationLast = Point::Empty;
-    dragPoint    = Point::Empty;
+    dragPoint = Point::Empty;
 
     // goto location
     Drag(Point(-(GetcurrentPositionGPixel().X() - Width / 2), -(GetcurrentPositionGPixel().Y() - Height / 2)));
@@ -472,7 +472,7 @@ void Core::GoToCurrentPositionOnZoom()
     // reset stuff
     renderOffset = Point::Empty;
     centerTileXYLocationLast = Point::Empty;
-    dragPoint    = Point::Empty;
+    dragPoint = Point::Empty;
 
     // goto location and centering
     if (MouseWheelZooming) {
@@ -619,10 +619,10 @@ void Core::UpdateGroundResolution()
 {
     double rez = Projection()->GetGroundResolution(Zoom(), CurrentPosition().Lat());
 
-    pxRes100m   = (int)(100.0 / rez); // 100 meters
-    pxRes1000m  = (int)(1000.0 / rez); // 1km
-    pxRes10km   = (int)(10000.0 / rez); // 10km
-    pxRes100km  = (int)(100000.0 / rez); // 100km
+    pxRes100m = (int)(100.0 / rez); // 100 meters
+    pxRes1000m = (int)(1000.0 / rez); // 1km
+    pxRes10km = (int)(10000.0 / rez); // 10km
+    pxRes100km = (int)(100000.0 / rez); // 100km
     pxRes1000km = (int)(1000000.0 / rez); // 1000km
     pxRes5000km = (int)(5000000.0 / rez); // 5000km
 }

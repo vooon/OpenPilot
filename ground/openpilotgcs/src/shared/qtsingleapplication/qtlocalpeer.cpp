@@ -53,7 +53,7 @@ QtLocalPeer::QtLocalPeer(QObject *parent, const QString &appId)
         id = QCoreApplication::applicationFilePath(); // ### On win, check if this returns .../argv[0] without casefolding; .\MYAPP == .\myapp on Win
     }
     QByteArray idc = id.toUtf8();
-    quint16 idNum  = qChecksum(idc.constData(), idc.size());
+    quint16 idNum = qChecksum(idc.constData(), idc.size());
     // ### could do: two 16bit checksums over separate halves of id, for a 32bit result - improved uniqeness probability. Every-other-char split would be best.
 
     socketName = QLatin1String("qtsingleapplication-")
@@ -72,7 +72,7 @@ QtLocalPeer::QtLocalPeer(QObject *parent, const QString &appId)
     socketName += QLatin1Char('-') + QString::number(::getuid(), 16);
 #endif
 
-    server      = new QLocalServer(this);
+    server = new QLocalServer(this);
     QString lockName = QDir(QDir::tempPath()).absolutePath()
                        + QLatin1Char('/') + socketName
                        + QLatin1String("-lockfile");
@@ -158,9 +158,9 @@ void QtLocalPeer::receiveConnection()
     char *uMsgBuf = uMsg.data();
     // qDebug() << "RCV: remaining" << remaining;
     do {
-        got        = ds.readRawData(uMsgBuf, remaining);
+        got = ds.readRawData(uMsgBuf, remaining);
         remaining -= got;
-        uMsgBuf   += got;
+        uMsgBuf += got;
         // qDebug() << "RCV: got" << got << "remaining" << remaining;
     } while (remaining && got >= 0 && socket->waitForReadyRead(2000));
     // ### error check: got<0

@@ -188,9 +188,9 @@ void ConsoleProcess::readStubOutput()
         } else if (out.startsWith("pid ")) {
             // Wil not need it any more
             delete m_tempFile;
-            m_tempFile  = 0;
+            m_tempFile = 0;
 
-            m_appPid    = out.mid(4).toInt();
+            m_appPid = out.mid(4).toInt();
             m_hInferior = OpenProcess(
                 SYNCHRONIZE | PROCESS_QUERY_INFORMATION | PROCESS_TERMINATE,
                 FALSE, m_appPid);
@@ -217,7 +217,7 @@ void ConsoleProcess::cleanupInferior()
     inferiorFinishedNotifier = 0;
     CloseHandle(m_hInferior);
     m_hInferior = NULL;
-    m_appPid    = 0;
+    m_appPid = 0;
 }
 
 void ConsoleProcess::inferiorExited()
@@ -230,7 +230,7 @@ void ConsoleProcess::inferiorExited()
     }
     cleanupInferior();
     m_appStatus = QProcess::NormalExit;
-    m_appCode   = chldStatus;
+    m_appCode = chldStatus;
     emit processStopped();
 }
 
@@ -258,7 +258,7 @@ void ConsoleProcess::stubExited()
         TerminateProcess(m_hInferior, (unsigned)-1);
         cleanupInferior();
         m_appStatus = QProcess::CrashExit;
-        m_appCode   = -1;
+        m_appCode = -1;
         emit processStopped();
     }
     emit wrapperStopped();

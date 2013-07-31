@@ -81,7 +81,7 @@ void ConfigCCAttitudeWidget::sensorsUpdated(UAVObject *obj)
     }
 
     AccelState *accelState = AccelState::GetInstance(getObjectManager());
-    GyroState *gyroState   = GyroState::GetInstance(getObjectManager());
+    GyroState *gyroState = GyroState::GetInstance(getObjectManager());
 
     // Accumulate samples until we have _at least_ NUM_SENSOR_UPDATES samples
     // for both gyros and accels.
@@ -123,12 +123,12 @@ void ConfigCCAttitudeWidget::sensorsUpdated(UAVObject *obj)
 
         AttitudeSettings::DataFields attitudeSettingsData = AttitudeSettings::GetInstance(getObjectManager())->getData();
         // We offset the gyro bias by current bias to help precision
-        attitudeSettingsData.AccelBias[0]   += x_bias;
-        attitudeSettingsData.AccelBias[1]   += y_bias;
-        attitudeSettingsData.AccelBias[2]   += z_bias;
-        attitudeSettingsData.GyroBias[0]     = -x_gyro_bias;
-        attitudeSettingsData.GyroBias[1]     = -y_gyro_bias;
-        attitudeSettingsData.GyroBias[2]     = -z_gyro_bias;
+        attitudeSettingsData.AccelBias[0] += x_bias;
+        attitudeSettingsData.AccelBias[1] += y_bias;
+        attitudeSettingsData.AccelBias[2] += z_bias;
+        attitudeSettingsData.GyroBias[0] = -x_gyro_bias;
+        attitudeSettingsData.GyroBias[1] = -y_gyro_bias;
+        attitudeSettingsData.GyroBias[2] = -z_gyro_bias;
         attitudeSettingsData.BiasCorrectGyro = AttitudeSettings::BIASCORRECTGYRO_TRUE;
         AttitudeSettings::GetInstance(getObjectManager())->setData(attitudeSettingsData);
         this->setDirty(true);
@@ -146,7 +146,7 @@ void ConfigCCAttitudeWidget::timeout()
     disconnect(&timer, SIGNAL(timeout()), this, SLOT(timeout()));
 
     AccelState *accelState = AccelState::GetInstance(getObjectManager());
-    GyroState *gyroState   = GyroState::GetInstance(getObjectManager());
+    GyroState *gyroState = GyroState::GetInstance(getObjectManager());
     accelState->setMetadata(initialAccelStateMdata);
     gyroState->setMetadata(initialGyroStateMdata);
 
@@ -168,7 +168,7 @@ void ConfigCCAttitudeWidget::startAccelCalibration()
     enableControls(false);
 
     accelUpdates = 0;
-    gyroUpdates  = 0;
+    gyroUpdates = 0;
     x_accum.clear();
     y_accum.clear();
     z_accum.clear();
@@ -183,7 +183,7 @@ void ConfigCCAttitudeWidget::startAccelCalibration()
 
     // Set up to receive updates
     UAVDataObject *accelState = AccelState::GetInstance(getObjectManager());
-    UAVDataObject *gyroState  = GyroState::GetInstance(getObjectManager());
+    UAVDataObject *gyroState = GyroState::GetInstance(getObjectManager());
     connect(accelState, SIGNAL(objectUpdated(UAVObject *)), this, SLOT(sensorsUpdated(UAVObject *)));
     connect(gyroState, SIGNAL(objectUpdated(UAVObject *)), this, SLOT(sensorsUpdated(UAVObject *)));
 

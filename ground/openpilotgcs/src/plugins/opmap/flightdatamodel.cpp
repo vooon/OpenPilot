@@ -47,7 +47,7 @@ int flightDataModel::columnCount(const QModelIndex &parent) const
 QVariant flightDataModel::data(const QModelIndex &index, int role) const
 {
     if (role == Qt::DisplayRole || role == Qt::EditRole) {
-        int rowNumber    = index.row();
+        int rowNumber = index.row();
         int columnNumber = index.column();
         if (rowNumber > dataStorage.length() - 1 || rowNumber < 0) {
             return QVariant::Invalid;
@@ -399,7 +399,7 @@ bool flightDataModel::setData(const QModelIndex &index, const QVariant &value, i
 {
     if (role == Qt::EditRole) {
         int columnIndex = index.column();
-        int rowIndex    = index.row();
+        int rowIndex = index.row();
         if (rowIndex > dataStorage.length() - 1) {
             return false;
         }
@@ -422,45 +422,45 @@ bool flightDataModel::insertRows(int row, int count, const QModelIndex & /*paren
     beginInsertRows(QModelIndex(), row, row + count - 1);
     for (int x = 0; x < count; ++x) {
         data = new pathPlanData;
-        data->latPosition         = 0;
-        data->lngPosition         = 0;
-        data->disRelative         = 0;
-        data->beaRelative         = 0;
-        data->altitudeRelative    = 0;
-        data->isRelative          = true;
-        data->altitude            = 0;
-        data->velocity            = 0;
+        data->latPosition = 0;
+        data->lngPosition = 0;
+        data->disRelative = 0;
+        data->beaRelative = 0;
+        data->altitudeRelative = 0;
+        data->isRelative = true;
+        data->altitude = 0;
+        data->velocity = 0;
         data->mode = 1;
-        data->mode_params[0]      = 0;
-        data->mode_params[1]      = 0;
-        data->mode_params[2]      = 0;
-        data->mode_params[3]      = 0;
-        data->condition           = 3;
+        data->mode_params[0] = 0;
+        data->mode_params[1] = 0;
+        data->mode_params[2] = 0;
+        data->mode_params[3] = 0;
+        data->condition = 3;
         data->condition_params[0] = 0;
         data->condition_params[1] = 0;
         data->condition_params[2] = 0;
         data->condition_params[3] = 0;
         data->command = 0;
-        data->jumpdestination     = 0;
-        data->errordestination    = 0;
+        data->jumpdestination = 0;
+        data->errordestination = 0;
         data->locked = false;
         if (rowCount() > 0) {
-            data->altitude            = this->data(this->index(rowCount() - 1, ALTITUDE)).toDouble();
-            data->altitudeRelative    = this->data(this->index(rowCount() - 1, ALTITUDERELATIVE)).toDouble();
-            data->isRelative          = this->data(this->index(rowCount() - 1, ISRELATIVE)).toBool();
-            data->velocity            = this->data(this->index(rowCount() - 1, VELOCITY)).toFloat();
+            data->altitude = this->data(this->index(rowCount() - 1, ALTITUDE)).toDouble();
+            data->altitudeRelative = this->data(this->index(rowCount() - 1, ALTITUDERELATIVE)).toDouble();
+            data->isRelative = this->data(this->index(rowCount() - 1, ISRELATIVE)).toBool();
+            data->velocity = this->data(this->index(rowCount() - 1, VELOCITY)).toFloat();
             data->mode = this->data(this->index(rowCount() - 1, MODE)).toInt();
-            data->mode_params[0]      = this->data(this->index(rowCount() - 1, MODE_PARAMS0)).toFloat();
-            data->mode_params[1]      = this->data(this->index(rowCount() - 1, MODE_PARAMS1)).toFloat();
-            data->mode_params[2]      = this->data(this->index(rowCount() - 1, MODE_PARAMS2)).toFloat();
-            data->mode_params[3]      = this->data(this->index(rowCount() - 1, MODE_PARAMS3)).toFloat();
-            data->condition           = this->data(this->index(rowCount() - 1, CONDITION)).toInt();
+            data->mode_params[0] = this->data(this->index(rowCount() - 1, MODE_PARAMS0)).toFloat();
+            data->mode_params[1] = this->data(this->index(rowCount() - 1, MODE_PARAMS1)).toFloat();
+            data->mode_params[2] = this->data(this->index(rowCount() - 1, MODE_PARAMS2)).toFloat();
+            data->mode_params[3] = this->data(this->index(rowCount() - 1, MODE_PARAMS3)).toFloat();
+            data->condition = this->data(this->index(rowCount() - 1, CONDITION)).toInt();
             data->condition_params[0] = this->data(this->index(rowCount() - 1, CONDITION_PARAMS0)).toFloat();
             data->condition_params[1] = this->data(this->index(rowCount() - 1, CONDITION_PARAMS1)).toFloat();
             data->condition_params[2] = this->data(this->index(rowCount() - 1, CONDITION_PARAMS2)).toFloat();
             data->condition_params[3] = this->data(this->index(rowCount() - 1, CONDITION_PARAMS3)).toFloat();
             data->command = this->data(this->index(rowCount() - 1, COMMAND)).toInt();
-            data->errordestination    = this->data(this->index(rowCount() - 1, ERRORDESTINATION)).toInt();
+            data->errordestination = this->data(this->index(rowCount() - 1, ERRORDESTINATION)).toInt();
         }
         dataStorage.insert(row, data);
     }

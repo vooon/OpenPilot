@@ -36,14 +36,14 @@
 #include <pios_spi_priv.h>
 
 struct pios_video_cfg {
-    const struct pios_spi_cfg  mask;
-    const struct pios_spi_cfg  level;
+    const struct pios_spi_cfg mask;
+    const struct pios_spi_cfg level;
 
     const struct pios_exti_cfg *hsync;
     const struct pios_exti_cfg *vsync;
 
-    struct pios_tim_channel    pixel_timer;
-    struct pios_tim_channel    hsync_capture;
+    struct pios_tim_channel pixel_timer;
+    struct pios_tim_channel hsync_capture;
 
     TIM_OCInitTypeDef tim_oc_init;
 };

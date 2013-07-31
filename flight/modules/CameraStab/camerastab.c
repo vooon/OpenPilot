@@ -124,9 +124,9 @@ int32_t CameraStabInitialize(void)
         CameraDesiredInitialize();
 
         UAVObjEvent ev = {
-            .obj    = AttitudeStateHandle(),
+            .obj = AttitudeStateHandle(),
             .instId = 0,
-            .event  = 0,
+            .event = 0,
         };
         EventPeriodicCallbackCreate(&ev, attitudeUpdated, SAMPLE_PERIOD_MS / portTICK_RATE_MS);
 
@@ -179,7 +179,7 @@ static void attitudeUpdated(UAVObjEvent *ev)
                     csd->inputs[i] = accessory.AccessoryVal * cameraStab.InputRange[i];
                     break;
                 case CAMERASTABSETTINGS_STABILIZATIONMODE_AXISLOCK:
-                    input_rate     = accessory.AccessoryVal * cameraStab.InputRate[i];
+                    input_rate = accessory.AccessoryVal * cameraStab.InputRate[i];
                     if (fabsf(input_rate) > cameraStab.MaxAxisLockRate) {
                         csd->inputs[i] = bound(csd->inputs[i] + input_rate * 0.001f * dT_millis, cameraStab.InputRange[i]);
                     }
@@ -318,7 +318,7 @@ void applyFeedForward(uint8_t index, float dT_millis, float *attitude, CameraSta
     float accumulator = csd->ffFilterAccumulator[index];
     accumulator += (*attitude - csd->ffLastAttitude[index]) * (float)cameraStab->FeedForward[index] * gimbalTypeCorrection;
     csd->ffLastAttitude[index] = *attitude;
-    *attitude   += accumulator;
+    *attitude += accumulator;
 
     float filter = (float)((accumulator > 0.0f) ? cameraStab->AccelTime[index] : cameraStab->DecelTime[index]) / dT_millis;
     if (filter < 1.0f) {
@@ -326,10 +326,10 @@ void applyFeedForward(uint8_t index, float dT_millis, float *attitude, CameraSta
     }
     accumulator -= accumulator / filter;
     csd->ffFilterAccumulator[index] = accumulator;
-    *attitude   += accumulator;
+    *attitude += accumulator;
 
     // apply acceleration limit
-    float delta    = *attitude - csd->ffLastAttitudeFiltered[index];
+    float delta = *attitude - csd->ffLastAttitudeFiltered[index];
     float maxDelta = (float)cameraStab->MaxAccel * 0.001f * dT_millis;
 
     if (fabsf(delta) > maxDelta) {

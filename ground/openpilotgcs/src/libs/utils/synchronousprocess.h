@@ -62,8 +62,8 @@ struct QTCREATOR_UTILS_EXPORT SynchronousProcessResponse {
     SynchronousProcessResponse();
     void clear();
 
-    Result  result;
-    int     exitCode;
+    Result result;
+    int exitCode;
     QString stdOut;
     QString stdErr;
 };

@@ -90,16 +90,16 @@ typedef struct {
 } MkMsg_t;
 
 typedef struct {
-    float   longitute;
-    float   latitude;
-    float   altitude;
+    float longitute;
+    float latitude;
+    float altitude;
     uint8_t status;
 } GpsPosition_t;
 
 enum {
     MK_ADDR_ALL = 0,
-    MK_ADDR_FC  = 1,
-    MK_ADDR_NC  = 2,
+    MK_ADDR_FC = 1,
+    MK_ADDR_NC = 2,
     MK_ADDR_MAG = 3,
 };
 
@@ -173,7 +173,7 @@ static int32_t Par2Int32(const MkMsg_t *msg, uint8_t index)
 {
     uint32_t val = 0;
 
-    val  = (((int)msg->pars[index]) << 0) + (((int)msg->pars[index + 1]) << 8);
+    val = (((int)msg->pars[index]) << 0) + (((int)msg->pars[index + 1]) << 8);
     val += (((int)msg->pars[index + 2]) << 16) + ((int)msg->pars[index + 3] << 24);
     if (val > 0xFFFFFFFF / 2) {
         val -= 0xFFFFFFFF;
@@ -193,9 +193,9 @@ static int8_t Par2Int8(const MkMsg_t *msg, uint8_t index)
 static void GetGpsPos(const MkMsg_t *msg, uint8_t index, GpsPosition_t *pos)
 {
     pos->longitute = (float)Par2Int32(msg, index) * (float)1e-7;
-    pos->latitude  = (float)Par2Int32(msg, index + 4) * (float)1e-7;
-    pos->altitude  = (float)Par2Int32(msg, index + 8) * (float)1e-3;
-    pos->status    = msg->pars[index + 12];
+    pos->latitude = (float)Par2Int32(msg, index + 4) * (float)1e-7;
+    pos->altitude = (float)Par2Int32(msg, index + 8) * (float)1e-3;
+    pos->status = msg->pars[index + 12];
 }
 
 static uint8_t WaitForBytes(uint8_t *buf, uint8_t nbBytes, portTickType xTicksToWait)
@@ -238,7 +238,7 @@ static bool WaitForMsg(uint8_t cmd, MkMsg_t *msg, portTickType xTicksToWait)
 {
     uint8_t buf[10];
     uint8_t n;
-    bool done  = FALSE;
+    bool done = FALSE;
     bool error = FALSE;
     unsigned int checkVal;
     xTimeOutType xTimeOut;
@@ -267,12 +267,12 @@ static bool WaitForMsg(uint8_t cmd, MkMsg_t *msg, portTickType xTicksToWait)
         if (cmd == 0 || cmd == buf[1]) {
             // OK follow this message to the end
             msg->address = buf[0] - 'a';
-            msg->cmd     = buf[1];
+            msg->cmd = buf[1];
 
-            checkVal     = '#' + buf[0] + buf[1];
+            checkVal = '#' + buf[0] + buf[1];
 
             // Parse parameters
-            msg->nbPars  = 0;
+            msg->nbPars = 0;
             while (!done && !error) {
                 n = WaitForBytes(buf, 4, 10 / portTICK_RATE_MS);
                 if (n > 0 && buf[n - 1] == '\r') {
@@ -300,7 +300,7 @@ static bool WaitForMsg(uint8_t cmd, MkMsg_t *msg, portTickType xTicksToWait)
                     int i;
                     for (i = 0; i < 4; i++) {
                         checkVal += buf[i];
-                        buf[i]   -= '=';
+                        buf[i] -= '=';
                     }
                     if (msg->nbPars < MAX_NB_PARS) {
                         msg->pars[msg->nbPars] = (((buf[0] << 2) & 0xFF) | ((buf[1] >> 4)));
@@ -333,9 +333,9 @@ static void SendMsg(const MkMsg_t *msg)
     const uint8_t *pPar;
 
     // Header
-    buf[0]   = '#';
-    buf[1]   = msg->address + 'a';
-    buf[2]   = msg->cmd;
+    buf[0] = '#';
+    buf[1] = msg->address + 'a';
+    buf[2] = msg->cmd;
     PIOS_COM_SendBuffer(PORT, buf, 3);
     checkVal = (unsigned int)'#' + buf[1] + buf[2];
 
@@ -362,10 +362,10 @@ static void SendMsg(const MkMsg_t *msg)
             }
         }
 
-        buf[0]    = (a >> 2) + '=';
-        buf[1]    = (((a & 0x03) << 4) | ((b & 0xf0) >> 4)) + '=';
-        buf[2]    = (((b & 0x0f) << 2) | ((c & 0xc0) >> 6)) + '=';
-        buf[3]    = (c & 0x3f) + '=';
+        buf[0] = (a >> 2) + '=';
+        buf[1] = (((a & 0x03) << 4) | ((b & 0xf0) >> 4)) + '=';
+        buf[2] = (((b & 0x0f) << 2) | ((c & 0xc0) >> 6)) + '=';
+        buf[3] = (c & 0x3f) + '=';
         checkVal += buf[0];
         checkVal += buf[1];
         checkVal += buf[2];
@@ -375,9 +375,9 @@ static void SendMsg(const MkMsg_t *msg)
     }
 
     checkVal &= 0xFFF;
-    buf[0]    = (checkVal / 64) + '=';
-    buf[1]    = (checkVal % 64) + '=';
-    buf[2]    = '\r';
+    buf[0] = (checkVal / 64) + '=';
+    buf[1] = (checkVal % 64) + '=';
+    buf[2] = '\r';
     PIOS_COM_SendBuffer(PORT, buf, 3);
 }
 
@@ -386,8 +386,8 @@ static void SendMsgParNone(uint8_t address, uint8_t cmd)
     MkMsg_t msg;
 
     msg.address = address;
-    msg.cmd     = cmd;
-    msg.nbPars  = 0;
+    msg.cmd = cmd;
+    msg.nbPars = 0;
 
     SendMsg(&msg);
 }
@@ -397,8 +397,8 @@ static void SendMsgPar8(uint8_t address, uint8_t cmd, uint8_t par0)
     MkMsg_t msg;
 
     msg.address = address;
-    msg.cmd     = cmd;
-    msg.nbPars  = 1;
+    msg.cmd = cmd;
+    msg.nbPars = 1;
     msg.pars[0] = par0;
 
     SendMsg(&msg);
@@ -433,7 +433,7 @@ static void DoConnectedToFC(void)
             DEBUG_MSG("Att: Nick=%5d Roll=%5d\n\r", nick, roll);
 
             attitudeData.Pitch = -(float)nick / 10;
-            attitudeData.Roll  = -(float)roll / 10;
+            attitudeData.Roll = -(float)roll / 10;
             AttitudeStateSet(&attitudeData);
         } else {
             DEBUG_MSG("TO\n\r");
@@ -476,15 +476,15 @@ static void DoConnectedToNC(void)
 #else
             DEBUG_MSG(".");
 #endif
-            attitudeData.Pitch       = -Par2Int8(&msg, OSD_MSG_NICK_IDX);
-            attitudeData.Roll        = -Par2Int8(&msg, OSD_MSG_ROLL_IDX);
+            attitudeData.Pitch = -Par2Int8(&msg, OSD_MSG_NICK_IDX);
+            attitudeData.Roll = -Par2Int8(&msg, OSD_MSG_ROLL_IDX);
             AttitudeStateSet(&attitudeData);
 
-            positionData.Longitude   = pos.longitute;
-            positionData.Latitude    = pos.latitude;
-            positionData.Altitude    = pos.altitude;
-            positionData.Satellites  = msg.pars[OSD_MSG_NB_SATS_IDX];
-            positionData.Heading     = Par2Int16(&msg, OSD_MSG_COMPHEADING_IDX);
+            positionData.Longitude = pos.longitute;
+            positionData.Latitude = pos.latitude;
+            positionData.Altitude = pos.altitude;
+            positionData.Satellites = msg.pars[OSD_MSG_NB_SATS_IDX];
+            positionData.Heading = Par2Int16(&msg, OSD_MSG_COMPHEADING_IDX);
             positionData.Groundspeed = ((float)Par2Int16(&msg, OSD_MSG_GNDSPEED_IDX)) / 100 /* cm/s => m/s */;
             if (positionData.Satellites < 5) {
                 positionData.Status = POSITIONACTUAL_STATUS_NOFIX;

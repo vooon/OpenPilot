@@ -36,7 +36,7 @@ OPMapWidget::OPMapWidget(QWidget *parent, Configuration *config) : QGraphicsView
 {
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     core = new internals::Core;
-    map  = new MapGraphicItem(core, config);
+    map = new MapGraphicItem(core, config);
     mscene.addItem(map);
     this->setScene(&mscene);
     Home = new HomeItem(map, this);
@@ -326,7 +326,7 @@ WayPointItem *OPMapWidget::WPInsert(internals::PointLatLng const & coord, int co
 
     if (mcoord == internals::PointLatLng(0, 0)) {
         mcoord = CurrentPosition();
-        reloc  = true;
+        reloc = true;
     } else {
         mcoord = coord;
     }

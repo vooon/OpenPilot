@@ -44,8 +44,8 @@ UrlFactory::UrlFactory()
     /// </summary>
     UserAgent = "Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.1.7) Gecko/20091221 Firefox/3.5.7";
 
-    Timeout   = 5 * 1000;
-    CorrectGoogleVersions     = true;
+    Timeout = 5 * 1000;
+    CorrectGoogleVersions = true;
     isCorrectedGoogleVersions = false;
     UseGeocoderCache = true;
     UsePlacemarkCache = true;
@@ -58,7 +58,7 @@ QString UrlFactory::TileXYToQuadKey(const int &tileX, const int &tileY, const in
 
     for (int i = levelOfDetail; i > 0; i--) {
         char digit = '0';
-        int mask   = 1 << (i - 1);
+        int mask = 1 << (i - 1);
         if ((tileX & mask) != 0) {
             digit++;
         }
@@ -180,10 +180,10 @@ QString UrlFactory::MakeImageUrl(const MapType::Types &type, const Point &pos, c
     switch (type) {
     case MapType::GoogleMap:
     {
-        QString server  = "mts";
+        QString server = "mts";
         QString request = "vt";
-        QString sec1    = ""; // after &x=...
-        QString sec2    = ""; // after &zoom=...
+        QString sec1 = ""; // after &x=...
+        QString sec2 = ""; // after &zoom=...
         GetSecGoogleWords(pos, sec1, sec2);
         TryCorrectGoogleVersions();
         return QString("https://%1%2.google.com/%3/lyrs=%4&hl=%5&x=%6%7&y=%8&z=%9&s=%10").arg(server).arg(GetServerNum(pos, 4)).arg(request).arg(VersionGoogleMap).arg(language).arg(pos.X()).arg(sec1).arg(pos.Y()).arg(zoom).arg(sec2);
@@ -191,10 +191,10 @@ QString UrlFactory::MakeImageUrl(const MapType::Types &type, const Point &pos, c
     break;
     case MapType::GoogleSatellite:
     {
-        QString server  = "khms";
+        QString server = "khms";
         QString request = "kh";
-        QString sec1    = ""; // after &x=...
-        QString sec2    = ""; // after &zoom=...
+        QString sec1 = ""; // after &x=...
+        QString sec2 = ""; // after &zoom=...
         GetSecGoogleWords(pos, sec1, sec2);
         TryCorrectGoogleVersions();
         QString VersionGoogleSatellite = "132";
@@ -203,10 +203,10 @@ QString UrlFactory::MakeImageUrl(const MapType::Types &type, const Point &pos, c
     break;
     case MapType::GoogleLabels:
     {
-        QString server  = "mts";
+        QString server = "mts";
         QString request = "vt";
-        QString sec1    = ""; // after &x=...
-        QString sec2    = ""; // after &zoom=...
+        QString sec1 = ""; // after &x=...
+        QString sec2 = ""; // after &zoom=...
         GetSecGoogleWords(pos, sec1, sec2);
         TryCorrectGoogleVersions();
 
@@ -215,10 +215,10 @@ QString UrlFactory::MakeImageUrl(const MapType::Types &type, const Point &pos, c
     break;
     case MapType::GoogleTerrain:
     {
-        QString server  = "mts";
+        QString server = "mts";
         QString request = "vt";
-        QString sec1    = ""; // after &x=...
-        QString sec2    = ""; // after &zoom=...
+        QString sec1 = ""; // after &x=...
+        QString sec2 = ""; // after &zoom=...
         GetSecGoogleWords(pos, sec1, sec2);
         TryCorrectGoogleVersions();
         return QString("https://%1%2.google.com/%3/v=%4&hl=%5&x=%6%7&y=%8&z=%9&s=%10").arg(server).arg(GetServerNum(pos, 4)).arg(request).arg(VersionGoogleTerrain).arg(language).arg(pos.X()).arg(sec1).arg(pos.Y()).arg(zoom).arg(sec2);
@@ -226,10 +226,10 @@ QString UrlFactory::MakeImageUrl(const MapType::Types &type, const Point &pos, c
     break;
     case MapType::GoogleMapChina:
     {
-        QString server  = "mt";
+        QString server = "mt";
         QString request = "vt";
-        QString sec1    = ""; // after &x=...
-        QString sec2    = ""; // after &zoom=...
+        QString sec1 = ""; // after &x=...
+        QString sec2 = ""; // after &zoom=...
         GetSecGoogleWords(pos, sec1, sec2);
         TryCorrectGoogleVersions();
         // http://mt0.google.cn/vt/v=w2.101&hl=zh-CN&gl=cn&x=12&y=6&z=4&s=Ga
@@ -239,10 +239,10 @@ QString UrlFactory::MakeImageUrl(const MapType::Types &type, const Point &pos, c
     break;
     case MapType::GoogleSatelliteChina:
     {
-        QString server  = "mt";
+        QString server = "mt";
         QString request = "vt";
-        QString sec1    = ""; // after &x=...
-        QString sec2    = ""; // after &zoom=...
+        QString sec1 = ""; // after &x=...
+        QString sec2 = ""; // after &zoom=...
         GetSecGoogleWords(pos, sec1, sec2);
         TryCorrectGoogleVersions();
         // http://khm0.google.cn/kh/v=46&x=12&y=6&z=4&s=Ga
@@ -252,10 +252,10 @@ QString UrlFactory::MakeImageUrl(const MapType::Types &type, const Point &pos, c
     break;
     case MapType::GoogleLabelsChina:
     {
-        QString server  = "mt";
+        QString server = "mt";
         QString request = "vt";
-        QString sec1    = ""; // after &x=...
-        QString sec2    = ""; // after &zoom=...
+        QString sec1 = ""; // after &x=...
+        QString sec2 = ""; // after &zoom=...
         GetSecGoogleWords(pos, sec1, sec2);
         TryCorrectGoogleVersions();
         // http://mt0.google.cn/vt/v=w2t.110&hl=zh-CN&gl=cn&x=12&y=6&z=4&s=Ga
@@ -265,10 +265,10 @@ QString UrlFactory::MakeImageUrl(const MapType::Types &type, const Point &pos, c
     break;
     case MapType::GoogleTerrainChina:
     {
-        QString server  = "mt";
+        QString server = "mt";
         QString request = "vt";
-        QString sec1    = ""; // after &x=...
-        QString sec2    = ""; // after &zoom=...
+        QString sec1 = ""; // after &x=...
+        QString sec2 = ""; // after &zoom=...
         GetSecGoogleWords(pos, sec1, sec2);
         TryCorrectGoogleVersions();
         // http://mt0.google.cn/vt/v=w2p.110&hl=zh-CN&gl=cn&x=12&y=6&z=4&s=Ga
@@ -278,10 +278,10 @@ QString UrlFactory::MakeImageUrl(const MapType::Types &type, const Point &pos, c
     break;
     case MapType::GoogleMapKorea:
     {
-        QString server  = "mts";
+        QString server = "mts";
         QString request = "vt";
-        QString sec1    = ""; // after &x=...
-        QString sec2    = ""; // after &zoom=...
+        QString sec1 = ""; // after &x=...
+        QString sec2 = ""; // after &zoom=...
         GetSecGoogleWords(pos, sec1, sec2);
         TryCorrectGoogleVersions();
         // https://mts0.google.com/vt/lyrs=m@224000000&hl=ko&gl=KR&src=app&x=107&y=50&z=7&s=Gal
@@ -295,10 +295,10 @@ QString UrlFactory::MakeImageUrl(const MapType::Types &type, const Point &pos, c
     break;
     case MapType::GoogleSatelliteKorea:
     {
-        QString server  = "khms";
+        QString server = "khms";
         QString request = "kh";
-        QString sec1    = ""; // after &x=...
-        QString sec2    = ""; // after &zoom=...
+        QString sec1 = ""; // after &x=...
+        QString sec2 = ""; // after &zoom=...
         GetSecGoogleWords(pos, sec1, sec2);
         TryCorrectGoogleVersions();
         // http://khm1.google.co.kr/kh/v=54&x=109&y=49&z=7&s=
@@ -308,10 +308,10 @@ QString UrlFactory::MakeImageUrl(const MapType::Types &type, const Point &pos, c
     break;
     case MapType::GoogleLabelsKorea:
     {
-        QString server  = "mts";
+        QString server = "mts";
         QString request = "mt";
-        QString sec1    = ""; // after &x=...
-        QString sec2    = ""; // after &zoom=...
+        QString sec1 = ""; // after &x=...
+        QString sec2 = ""; // after &zoom=...
         GetSecGoogleWords(pos, sec1, sec2);
         TryCorrectGoogleVersions();
         // https://mts1.gmaptiles.co.kr/mt/v=kr1t.11&hl=lt&x=109&y=50&z=7&s=G
@@ -674,15 +674,15 @@ Placemark UrlFactory::GetPlacemarkFromReverseGeocoderUrl(const QString &url, con
 }
 double UrlFactory::GetDistance(internals::PointLatLng p1, internals::PointLatLng p2)
 {
-    double dLat1InRad  = p1.Lat() * (M_PI / 180);
+    double dLat1InRad = p1.Lat() * (M_PI / 180);
     double dLong1InRad = p1.Lng() * (M_PI / 180);
-    double dLat2InRad  = p2.Lat() * (M_PI / 180);
+    double dLat2InRad = p2.Lat() * (M_PI / 180);
     double dLong2InRad = p2.Lng() * (M_PI / 180);
-    double dLongitude  = dLong2InRad - dLong1InRad;
-    double dLatitude   = dLat2InRad - dLat1InRad;
+    double dLongitude = dLong2InRad - dLong1InRad;
+    double dLatitude = dLat2InRad - dLat1InRad;
     double a = pow(sin(dLatitude / 2), 2) + cos(dLat1InRad) * cos(dLat2InRad) * pow(sin(dLongitude / 2), 2);
     double c = 2 * atan2(sqrt(a), sqrt(1 - a));
-    double dDistance   = EarthRadiusKm * c;
+    double dDistance = EarthRadiusKm * c;
 
     return dDistance;
 }

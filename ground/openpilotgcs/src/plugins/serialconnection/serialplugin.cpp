@@ -71,8 +71,8 @@ void SerialEnumerationThread::run()
 SerialConnection::SerialConnection()
     : enablePolling(true), m_enumerateThread(this)
 {
-    serialHandle  = NULL;
-    m_config      = new SerialPluginConfiguration("Serial Telemetry", NULL, this);
+    serialHandle = NULL;
+    m_config = new SerialPluginConfiguration("Serial Telemetry", NULL, this);
     m_config->restoresettings();
 
     m_optionspage = new SerialPluginOptionsPage(m_config, this);
@@ -143,19 +143,19 @@ QIODevice *SerialConnection::openDevice(const QString &deviceName)
         if (port.physName == deviceName) {
             // we need to handle port settings here...
             PortSettings set;
-            set.BaudRate    = stringToBaud(m_config->speed());
+            set.BaudRate = stringToBaud(m_config->speed());
             qDebug() << "Serial telemetry running at " << m_config->speed();
-            set.DataBits    = DATA_8;
-            set.Parity      = PAR_NONE;
-            set.StopBits    = STOP_1;
+            set.DataBits = DATA_8;
+            set.Parity = PAR_NONE;
+            set.StopBits = STOP_1;
             set.FlowControl = FLOW_OFF;
             set.Timeout_Millisec = 500;
 #ifdef Q_OS_WIN
-            serialHandle    = new QextSerialPort(port.portName, set);
+            serialHandle = new QextSerialPort(port.portName, set);
 #else
-            serialHandle    = new QextSerialPort(port.physName, set);
+            serialHandle = new QextSerialPort(port.physName, set);
 #endif
-            m_deviceOpened  = true;
+            m_deviceOpened = true;
             return serialHandle;
         }
     }
@@ -168,7 +168,7 @@ void SerialConnection::closeDevice(const QString &deviceName)
     // we have to delete the serial connection we created
     if (serialHandle) {
         serialHandle->deleteLater();
-        serialHandle   = NULL;
+        serialHandle = NULL;
         m_deviceOpened = false;
     }
 }

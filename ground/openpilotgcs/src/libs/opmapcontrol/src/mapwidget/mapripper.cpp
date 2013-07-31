@@ -29,15 +29,15 @@ namespace mapcontrol {
 MapRipper::MapRipper(internals::Core *core, const internals::RectLatLng & rect) : sleep(100), cancel(false), progressForm(0), core(core), yesToAll(false)
 {
     if (!rect.IsEmpty()) {
-        type    = core->GetMapType();
+        type = core->GetMapType();
         progressForm = new MapRipForm;
         connect(progressForm, SIGNAL(cancelRequest()), this, SLOT(stopFetching()));
-        area    = rect;
-        zoom    = core->Zoom();
+        area = rect;
+        zoom = core->Zoom();
         maxzoom = core->MaxZoom();
-        points  = core->Projection()->GetAreaTileList(area, zoom, 0);
+        points = core->Projection()->GetAreaTileList(area, zoom, 0);
         this->start();
-        cancel  = false;
+        cancel = false;
         progressForm->show();
         connect(this, SIGNAL(percentageChanged(int)), progressForm, SLOT(SetPercentage(int)));
         connect(this, SIGNAL(numberOfTilesChanged(int, int)), progressForm, SLOT(SetNumberOfTiles(int, int)));
@@ -73,7 +73,7 @@ void MapRipper::finish()
         } else if (ret == QMessageBox::YesAll) {
             yesToAll = true;
             points.clear();
-            points   = core->Projection()->GetAreaTileList(area, zoom, 0);
+            points = core->Projection()->GetAreaTileList(area, zoom, 0);
             this->start();
         } else {
             progressForm->close();
@@ -91,7 +91,7 @@ void MapRipper::finish()
 
 void MapRipper::run()
 {
-    int countOk   = 0;
+    int countOk = 0;
     bool goodtile = false;
 
     // Stuff.Shuffle<Point>(ref list);

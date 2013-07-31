@@ -37,12 +37,12 @@ struct BaseValidatingLineEditPrivate {
     explicit BaseValidatingLineEditPrivate(const QWidget *w);
 
     const QColor m_okTextColor;
-    QColor  m_errorTextColor;
+    QColor m_errorTextColor;
 
     BaseValidatingLineEdit::State m_state;
     QString m_errorMessage;
     QString m_initialText;
-    bool    m_firstChange;
+    bool m_firstChange;
 };
 
 BaseValidatingLineEditPrivate::BaseValidatingLineEditPrivate(const QWidget *w) :

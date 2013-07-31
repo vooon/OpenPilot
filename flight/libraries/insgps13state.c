@@ -140,26 +140,26 @@ void INSGPSInit() // pretty much just a place holder for now
     }
 
 
-    ekf.P[0][0]   = ekf.P[1][1] = ekf.P[2][2] = 25.0f;            // initial position variance (m^2)
-    ekf.P[3][3]   = ekf.P[4][4] = ekf.P[5][5] = 5.0f;             // initial velocity variance (m/s)^2
-    ekf.P[6][6]   = ekf.P[7][7] = ekf.P[8][8] = ekf.P[9][9] = 1e-5f;  // initial quaternion variance
+    ekf.P[0][0] = ekf.P[1][1] = ekf.P[2][2] = 25.0f; // initial position variance (m^2)
+    ekf.P[3][3] = ekf.P[4][4] = ekf.P[5][5] = 5.0f; // initial velocity variance (m/s)^2
+    ekf.P[6][6] = ekf.P[7][7] = ekf.P[8][8] = ekf.P[9][9] = 1e-5f; // initial quaternion variance
     ekf.P[10][10] = ekf.P[11][11] = ekf.P[12][12] = 1e-9f; // initial gyro bias variance (rad/s)^2
 
-    ekf.X[0]  = ekf.X[1] = ekf.X[2] = ekf.X[3] = ekf.X[4] = ekf.X[5] = 0.0f; // initial pos and vel (m)
-    ekf.X[6]  = 1.0f;
-    ekf.X[7]  = ekf.X[8] = ekf.X[9] = 0.0f;      // initial quaternion (level and North) (m/s)
+    ekf.X[0] = ekf.X[1] = ekf.X[2] = ekf.X[3] = ekf.X[4] = ekf.X[5] = 0.0f; // initial pos and vel (m)
+    ekf.X[6] = 1.0f;
+    ekf.X[7] = ekf.X[8] = ekf.X[9] = 0.0f; // initial quaternion (level and North) (m/s)
     ekf.X[10] = ekf.X[11] = ekf.X[12] = 0.0f; // initial gyro bias (rad/s)
 
-    ekf.Q[0]  = ekf.Q[1] = ekf.Q[2] = 50e-4f;        // gyro noise variance (rad/s)^2
-    ekf.Q[3]  = ekf.Q[4] = ekf.Q[5] = 0.00001f;      // accelerometer noise variance (m/s^2)^2
-    ekf.Q[6]  = ekf.Q[7] = ekf.Q[8] = 2e-8f;     // gyro bias random walk variance (rad/s^2)^2
+    ekf.Q[0] = ekf.Q[1] = ekf.Q[2] = 50e-4f; // gyro noise variance (rad/s)^2
+    ekf.Q[3] = ekf.Q[4] = ekf.Q[5] = 0.00001f; // accelerometer noise variance (m/s^2)^2
+    ekf.Q[6] = ekf.Q[7] = ekf.Q[8] = 2e-8f; // gyro bias random walk variance (rad/s^2)^2
 
-    ekf.R[0]  = ekf.R[1] = 0.004f;   // High freq GPS horizontal position noise variance (m^2)
-    ekf.R[2]  = 0.036f;          // High freq GPS vertical position noise variance (m^2)
-    ekf.R[3]  = ekf.R[4] = 0.004f;   // High freq GPS horizontal velocity noise variance (m/s)^2
-    ekf.R[5]  = 100.0f;          // High freq GPS vertical velocity noise variance (m/s)^2
-    ekf.R[6]  = ekf.R[7] = ekf.R[8] = 0.005f;    // magnetometer unit vector noise variance
-    ekf.R[9]  = .25f;                    // High freq altimeter noise variance (m^2)
+    ekf.R[0] = ekf.R[1] = 0.004f; // High freq GPS horizontal position noise variance (m^2)
+    ekf.R[2] = 0.036f; // High freq GPS vertical position noise variance (m^2)
+    ekf.R[3] = ekf.R[4] = 0.004f; // High freq GPS horizontal velocity noise variance (m/s)^2
+    ekf.R[5] = 100.0f; // High freq GPS vertical velocity noise variance (m/s)^2
+    ekf.R[6] = ekf.R[7] = ekf.R[8] = 0.005f; // magnetometer unit vector noise variance
+    ekf.R[9] = .25f; // High freq altimeter noise variance (m^2)
 }
 
 void INSResetP(float PDiag[NUMX])
@@ -192,16 +192,16 @@ void INSGetP(float PDiag[NUMX])
 void INSSetState(float pos[3], float vel[3], float q[4], float gyro_bias[3], __attribute__((unused)) float accel_bias[3])
 {
     /* Note: accel_bias not used in 13 state INS */
-    ekf.X[0]  = pos[0];
-    ekf.X[1]  = pos[1];
-    ekf.X[2]  = pos[2];
-    ekf.X[3]  = vel[0];
-    ekf.X[4]  = vel[1];
-    ekf.X[5]  = vel[2];
-    ekf.X[6]  = q[0];
-    ekf.X[7]  = q[1];
-    ekf.X[8]  = q[2];
-    ekf.X[9]  = q[3];
+    ekf.X[0] = pos[0];
+    ekf.X[1] = pos[1];
+    ekf.X[2] = pos[2];
+    ekf.X[3] = vel[0];
+    ekf.X[4] = vel[1];
+    ekf.X[5] = vel[2];
+    ekf.X[6] = q[0];
+    ekf.X[7] = q[1];
+    ekf.X[8] = q[2];
+    ekf.X[9] = q[3];
     ekf.X[10] = gyro_bias[0];
     ekf.X[11] = gyro_bias[1];
     ekf.X[12] = gyro_bias[2];
@@ -219,12 +219,12 @@ void INSPosVelReset(float pos[3], float vel[3])
     ekf.P[0][0] = ekf.P[1][1] = ekf.P[2][2] = 25; // initial position variance (m^2)
     ekf.P[3][3] = ekf.P[4][4] = ekf.P[5][5] = 5; // initial velocity variance (m/s)^2
 
-    ekf.X[0]    = pos[0];
-    ekf.X[1]    = pos[1];
-    ekf.X[2]    = pos[2];
-    ekf.X[3]    = vel[0];
-    ekf.X[4]    = vel[1];
-    ekf.X[5]    = vel[2];
+    ekf.X[0] = pos[0];
+    ekf.X[1] = pos[1];
+    ekf.X[2] = pos[2];
+    ekf.X[3] = vel[0];
+    ekf.X[4] = vel[1];
+    ekf.X[5] = vel[2];
 }
 
 void INSSetPosVelVar(float PosVar[3], float VelVar[3])
@@ -304,7 +304,7 @@ void INSStatePrediction(float gyro_data[3], float accel_data[3], float dT)
     // EKF prediction step
     LinearizeFG(ekf.X, U, ekf.F, ekf.G);
     RungeKutta(ekf.X, U, dT);
-    qmag      = sqrtf(ekf.X[6] * ekf.X[6] + ekf.X[7] * ekf.X[7] + ekf.X[8] * ekf.X[8] + ekf.X[9] * ekf.X[9]);
+    qmag = sqrtf(ekf.X[6] * ekf.X[6] + ekf.X[7] * ekf.X[7] + ekf.X[8] * ekf.X[8] + ekf.X[9] * ekf.X[9]);
     ekf.X[6] /= qmag;
     ekf.X[7] /= qmag;
     ekf.X[8] /= qmag;
@@ -318,10 +318,10 @@ void INSStatePrediction(float gyro_data[3], float accel_data[3], float dT)
     Nav.Vel[0] = ekf.X[3];
     Nav.Vel[1] = ekf.X[4];
     Nav.Vel[2] = ekf.X[5];
-    Nav.q[0]   = ekf.X[6];
-    Nav.q[1]   = ekf.X[7];
-    Nav.q[2]   = ekf.X[8];
-    Nav.q[3]   = ekf.X[9];
+    Nav.q[0] = ekf.X[6];
+    Nav.q[1] = ekf.X[7];
+    Nav.q[2] = ekf.X[8];
+    Nav.q[3] = ekf.X[9];
     Nav.gyro_bias[0] = ekf.X[10];
     Nav.gyro_bias[1] = ekf.X[11];
     Nav.gyro_bias[2] = ekf.X[12];
@@ -401,11 +401,11 @@ void INSCorrection(float mag_data[3], float Pos[3], float Vel[3],
     LinearizeH(ekf.X, ekf.Be, ekf.H);
     MeasurementEq(ekf.X, ekf.Be, Y);
     SerialUpdate(ekf.H, ekf.R, Z, Y, ekf.P, ekf.X, SensorsUsed);
-    qmag       = sqrtf(ekf.X[6] * ekf.X[6] + ekf.X[7] * ekf.X[7] + ekf.X[8] * ekf.X[8] + ekf.X[9] * ekf.X[9]);
-    ekf.X[6]  /= qmag;
-    ekf.X[7]  /= qmag;
-    ekf.X[8]  /= qmag;
-    ekf.X[9]  /= qmag;
+    qmag = sqrtf(ekf.X[6] * ekf.X[6] + ekf.X[7] * ekf.X[7] + ekf.X[8] * ekf.X[8] + ekf.X[9] * ekf.X[9]);
+    ekf.X[6] /= qmag;
+    ekf.X[7] /= qmag;
+    ekf.X[8] /= qmag;
+    ekf.X[9] /= qmag;
 
     // Update Nav solution structure
     Nav.Pos[0] = ekf.X[0];
@@ -414,10 +414,10 @@ void INSCorrection(float mag_data[3], float Pos[3], float Vel[3],
     Nav.Vel[0] = ekf.X[3];
     Nav.Vel[1] = ekf.X[4];
     Nav.Vel[2] = ekf.X[5];
-    Nav.q[0]   = ekf.X[6];
-    Nav.q[1]   = ekf.X[7];
-    Nav.q[2]   = ekf.X[8];
-    Nav.q[3]   = ekf.X[9];
+    Nav.q[0] = ekf.X[6];
+    Nav.q[1] = ekf.X[7];
+    Nav.q[2] = ekf.X[8];
+    Nav.q[3] = ekf.X[9];
     Nav.gyro_bias[0] = ekf.X[10];
     Nav.gyro_bias[1] = ekf.X[11];
     Nav.gyro_bias[2] = ekf.X[12];
@@ -440,18 +440,18 @@ void CovariancePrediction(float F[NUMX][NUMX], float G[NUMX][NUMW],
 {
     // Pnew = (I+F*T)*P*(I+F*T)' + (T^2)*G*Q*G' = (T^2)[(P/T + F*P)*(I/T + F') + G*Q*G')]
 
-    float dT1  = 1.0f / dT; // multiplication is faster than division on fpu.
+    float dT1 = 1.0f / dT; // multiplication is faster than division on fpu.
     float dTsq = dT * dT;
 
     float Dummy[NUMX][NUMX];
     int8_t i;
 
     for (i = 0; i < NUMX; i++) { // Calculate Dummy = (P/T +F*P)
-        float *Firow   = F[i];
-        float *Pirow   = P[i];
-        float *Dirow   = Dummy[i];
+        float *Firow = F[i];
+        float *Pirow = P[i];
+        float *Dirow = Dummy[i];
         int8_t Fistart = FrowMin[i];
-        int8_t Fiend   = FrowMax[i];
+        int8_t Fiend = FrowMax[i];
         int8_t j;
         for (j = 0; j < NUMX; j++) {
             Dirow[j] = Pirow[j] * dT1; // Dummy = P / T ...
@@ -462,19 +462,19 @@ void CovariancePrediction(float F[NUMX][NUMX], float G[NUMX][NUMW],
         }
     }
     for (i = 0; i < NUMX; i++) { // Calculate Pnew = (T^2) [Dummy/T + Dummy*F' + G*Qw*G']
-        float *Dirow   = Dummy[i];
-        float *Girow   = G[i];
-        float *Pirow   = P[i];
+        float *Dirow = Dummy[i];
+        float *Girow = G[i];
+        float *Pirow = P[i];
         int8_t Gistart = GrowMin[i];
-        int8_t Giend   = GrowMax[i];
+        int8_t Giend = GrowMax[i];
         int8_t j;
         for (j = i; j < NUMX; j++) { // Use symmetry, ie only find upper triangular
             float Ptmp = Dirow[j] * dT1; // Pnew = Dummy / T ...
 
             {
-                float *Fjrow   = F[j];
+                float *Fjrow = F[j];
                 int8_t Fjstart = FrowMin[j];
-                int8_t Fjend   = FrowMax[j];
+                int8_t Fjend = FrowMax[j];
                 int8_t k;
                 for (k = Fjstart; k <= Fjend; k++) {
                     Ptmp += Dirow[k] * Fjrow[k]; // [] + Dummy*F' ...
@@ -482,9 +482,9 @@ void CovariancePrediction(float F[NUMX][NUMX], float G[NUMX][NUMW],
             }
 
             {
-                float *Gjrow   = G[j];
+                float *Gjrow = G[j];
                 int8_t Gjstart = MAX(Gistart, GrowMin[j]);
-                int8_t Gjend   = MIN(Giend, GrowMax[j]);
+                int8_t Gjend = MIN(Giend, GrowMax[j]);
                 int8_t k;
                 for (k = Gjstart; k <= Gjend; k++) {
                     Ptmp += Q[k] * Girow[k] * Gjrow[k]; // [] + G*Q*G' ...
@@ -644,10 +644,10 @@ void StateEq(float X[NUMX], float U[NUMU], float Xdot[NUMX])
         (q0 * q0 - q1 * q1 - q2 * q2 + q3 * q3) * az + 9.81f;
 
     // qdot = Q*w
-    Xdot[6]  = (-q1 * wx - q2 * wy - q3 * wz) / 2.0f;
-    Xdot[7]  = (q0 * wx - q3 * wy + q2 * wz) / 2.0f;
-    Xdot[8]  = (q3 * wx + q0 * wy - q1 * wz) / 2.0f;
-    Xdot[9]  = (-q2 * wx + q1 * wy + q0 * wz) / 2.0f;
+    Xdot[6] = (-q1 * wx - q2 * wy - q3 * wz) / 2.0f;
+    Xdot[7] = (q0 * wx - q3 * wy + q2 * wz) / 2.0f;
+    Xdot[8] = (q3 * wx + q0 * wy - q1 * wz) / 2.0f;
+    Xdot[9] = (-q2 * wx + q1 * wy + q0 * wz) / 2.0f;
 
     // best guess is that bias stays constant
     Xdot[10] = Xdot[11] = Xdot[12] = 0;
@@ -693,22 +693,22 @@ void LinearizeFG(float X[NUMX], float U[NUMU], float F[NUMX][NUMX],
     // F[5][13]=G[5][3]=2*(-q1*q3+q0*q2);         F[5][14]=G[5][4]=-2*(q2*q3+q0*q1);         F[5][15]=G[5][5]=-q0*q0+q1*q1+q2*q2-q3*q3;
 
     // dqdot/dq
-    F[6][6]  = 0;
-    F[6][7]  = -wx / 2.0f;
-    F[6][8]  = -wy / 2.0f;
-    F[6][9]  = -wz / 2.0f;
-    F[7][6]  = wx / 2.0f;
-    F[7][7]  = 0;
-    F[7][8]  = wz / 2.0f;
-    F[7][9]  = -wy / 2.0f;
-    F[8][6]  = wy / 2.0f;
-    F[8][7]  = -wz / 2.0f;
-    F[8][8]  = 0;
-    F[8][9]  = wx / 2.0f;
-    F[9][6]  = wz / 2.0f;
-    F[9][7]  = wy / 2.0f;
-    F[9][8]  = -wx / 2.0f;
-    F[9][9]  = 0;
+    F[6][6] = 0;
+    F[6][7] = -wx / 2.0f;
+    F[6][8] = -wy / 2.0f;
+    F[6][9] = -wz / 2.0f;
+    F[7][6] = wx / 2.0f;
+    F[7][7] = 0;
+    F[7][8] = wz / 2.0f;
+    F[7][9] = -wy / 2.0f;
+    F[8][6] = wy / 2.0f;
+    F[8][7] = -wz / 2.0f;
+    F[8][8] = 0;
+    F[8][9] = wx / 2.0f;
+    F[9][6] = wz / 2.0f;
+    F[9][7] = wy / 2.0f;
+    F[9][8] = -wx / 2.0f;
+    F[9][9] = 0;
 
     // dqdot/dwbias
     F[6][10] = q1 / 2.0f;
@@ -725,29 +725,29 @@ void LinearizeFG(float X[NUMX], float U[NUMU], float F[NUMX][NUMX],
     F[9][12] = -q0 / 2.0f;
 
     // dVdot/dna  - NO BIAS STATES ON ACCELS - S0 REPEAT FOR G HERE
-    G[3][3]  = -q0 * q0 - q1 * q1 + q2 * q2 + q3 * q3;
-    G[3][4]  = 2.0f * (-q1 * q2 + q0 * q3);
-    G[3][5]  = -2.0f * (q1 * q3 + q0 * q2);
-    G[4][3]  = -2.0f * (q1 * q2 + q0 * q3);
-    G[4][4]  = -q0 * q0 + q1 * q1 - q2 * q2 + q3 * q3;
-    G[4][5]  = 2.0f * (-q2 * q3 + q0 * q1);
-    G[5][3]  = 2.0f * (-q1 * q3 + q0 * q2);
-    G[5][4]  = -2.0f * (q2 * q3 + q0 * q1);
-    G[5][5]  = -q0 * q0 + q1 * q1 + q2 * q2 - q3 * q3;
+    G[3][3] = -q0 * q0 - q1 * q1 + q2 * q2 + q3 * q3;
+    G[3][4] = 2.0f * (-q1 * q2 + q0 * q3);
+    G[3][5] = -2.0f * (q1 * q3 + q0 * q2);
+    G[4][3] = -2.0f * (q1 * q2 + q0 * q3);
+    G[4][4] = -q0 * q0 + q1 * q1 - q2 * q2 + q3 * q3;
+    G[4][5] = 2.0f * (-q2 * q3 + q0 * q1);
+    G[5][3] = 2.0f * (-q1 * q3 + q0 * q2);
+    G[5][4] = -2.0f * (q2 * q3 + q0 * q1);
+    G[5][5] = -q0 * q0 + q1 * q1 + q2 * q2 - q3 * q3;
 
     // dqdot/dnw
-    G[6][0]  = q1 / 2.0f;
-    G[6][1]  = q2 / 2.0f;
-    G[6][2]  = q3 / 2.0f;
-    G[7][0]  = -q0 / 2.0f;
-    G[7][1]  = q3 / 2.0f;
-    G[7][2]  = -q2 / 2.0f;
-    G[8][0]  = -q3 / 2.0f;
-    G[8][1]  = -q0 / 2.0f;
-    G[8][2]  = q1 / 2.0f;
-    G[9][0]  = q2 / 2.0f;
-    G[9][1]  = -q1 / 2.0f;
-    G[9][2]  = -q0 / 2.0f;
+    G[6][0] = q1 / 2.0f;
+    G[6][1] = q2 / 2.0f;
+    G[6][2] = q3 / 2.0f;
+    G[7][0] = -q0 / 2.0f;
+    G[7][1] = q3 / 2.0f;
+    G[7][2] = -q2 / 2.0f;
+    G[8][0] = -q3 / 2.0f;
+    G[8][1] = -q0 / 2.0f;
+    G[8][2] = q1 / 2.0f;
+    G[9][0] = q2 / 2.0f;
+    G[9][1] = -q1 / 2.0f;
+    G[9][2] = -q0 / 2.0f;
 
     // dwbias = random walk noise
     G[10][6] = G[11][7] = G[12][8] = 1.0f;
@@ -759,10 +759,10 @@ void MeasurementEq(float X[NUMX], float Be[3], float Y[NUMV])
 {
     float q0, q1, q2, q3;
 
-    q0   = X[6];
-    q1   = X[7];
-    q2   = X[8];
-    q3   = X[9];
+    q0 = X[6];
+    q1 = X[7];
+    q2 = X[8];
+    q3 = X[9];
 
     // first six outputs are P and V
     Y[0] = X[0];

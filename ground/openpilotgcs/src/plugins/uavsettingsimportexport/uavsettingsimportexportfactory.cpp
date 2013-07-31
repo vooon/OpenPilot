@@ -59,7 +59,7 @@ UAVSettingsImportExportFactory::~UAVSettingsImportExportFactory()
 UAVSettingsImportExportFactory::UAVSettingsImportExportFactory(QObject *parent) : QObject(parent)
 {
     // Add Menu entry
-    Core::ActionManager *am   = Core::ICore::instance()->actionManager();
+    Core::ActionManager *am = Core::ICore::instance()->actionManager();
     Core::ActionContainer *ac = am->actionContainer(Core::Constants::M_FILE);
     Core::Command *cmd = am->registerAction(new QAction(this),
                                             "UAVSettingsImportExportPlugin.UAVSettingsExport",
@@ -80,7 +80,7 @@ UAVSettingsImportExportFactory::UAVSettingsImportExportFactory(QObject *parent) 
     ac->addAction(cmd, Core::Constants::G_FILE_SAVE);
     connect(cmd->action(), SIGNAL(triggered(bool)), this, SLOT(importUAVSettings()));
 
-    ac  = am->actionContainer(Core::Constants::M_HELP);
+    ac = am->actionContainer(Core::Constants::M_HELP);
     cmd = am->registerAction(new QAction(this),
                              "UAVSettingsImportExportPlugin.UAVDataExport",
                              QList<int>() <<
@@ -150,7 +150,7 @@ void UAVSettingsImportExportFactory::importUAVSettings()
             uint uavObjectID = e.attribute("id").toUInt(NULL, 16);
 
             // Sanity Check:
-            UAVObject *obj   = objManager->getObject(uavObjectName);
+            UAVObject *obj = objManager->getObject(uavObjectName);
             if (obj == NULL) {
                 // This object is unknown!
                 qDebug() << "Object unknown:" << uavObjectName << uavObjectID;
@@ -158,8 +158,8 @@ void UAVSettingsImportExportFactory::importUAVSettings()
             } else {
                 // - Update each field
                 // - Issue and "updated" command
-                bool error     = false;
-                bool setError  = false;
+                bool error = false;
+                bool setError = false;
                 QDomNode field = node.firstChild();
                 while (!field.isNull()) {
                     QDomElement f = field.toElement();
@@ -232,7 +232,7 @@ QString UAVSettingsImportExportFactory::createXMLDocument(const enum storedData 
     root.appendChild(versionInfo);
 
     UAVObjectUtilManager *utilMngr = pm->getObject<UAVObjectUtilManager>();
-    deviceDescriptorStruct board   = utilMngr->getBoardDescriptionStruct();
+    deviceDescriptorStruct board = utilMngr->getBoardDescriptionStruct();
 
     QDomElement hw = doc.createElement("hardware");
     hw.setAttribute("type", QString().setNum(board.boardType, 16));
@@ -241,7 +241,7 @@ QString UAVSettingsImportExportFactory::createXMLDocument(const enum storedData 
     versionInfo.appendChild(hw);
 
     QDomElement fw = doc.createElement("firmware");
-    QString uavo   = board.uavoHash.toHex();
+    QString uavo = board.uavoHash.toHex();
     fw.setAttribute("tag", board.gitTag);
     fw.setAttribute("date", board.gitDate);
     fw.setAttribute("hash", board.gitHash);
@@ -257,7 +257,7 @@ QString UAVSettingsImportExportFactory::createXMLDocument(const enum storedData 
 
     // create settings and/or data elements
     QDomElement settings = doc.createElement("settings");
-    QDomElement data     = doc.createElement("data");
+    QDomElement data = doc.createElement("data");
 
     switch (what) {
     case Settings:
@@ -285,7 +285,7 @@ QString UAVSettingsImportExportFactory::createXMLDocument(const enum storedData 
                 o.setAttribute("id", QString("0x") + QString().setNum(obj->getObjID(), 16).toUpper());
                 if (fullExport) {
                     QDomElement d = doc.createElement("description");
-                    QDomText t    = doc.createTextNode(obj->getDescription().remove("@Ref ", Qt::CaseInsensitive));
+                    QDomText t = doc.createTextNode(obj->getDescription().remove("@Ref ", Qt::CaseInsensitive));
                     d.appendChild(t);
                     o.appendChild(d);
                 }

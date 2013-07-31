@@ -42,9 +42,9 @@ static void PIOS_USART_TxStart(uint32_t usart_id, uint16_t tx_bytes_avail);
 static void PIOS_USART_RxStart(uint32_t usart_id, uint16_t rx_bytes_avail);
 
 const struct pios_com_driver pios_usart_com_driver = {
-    .set_baud   = PIOS_USART_ChangeBaud,
-    .tx_start   = PIOS_USART_TxStart,
-    .rx_start   = PIOS_USART_RxStart,
+    .set_baud = PIOS_USART_ChangeBaud,
+    .tx_start = PIOS_USART_TxStart,
+    .rx_start = PIOS_USART_RxStart,
     .bind_tx_cb = PIOS_USART_RegisterTxCallback,
     .bind_rx_cb = PIOS_USART_RegisterRxCallback,
 };
@@ -54,7 +54,7 @@ enum pios_usart_dev_magic {
 };
 
 struct pios_usart_dev {
-    enum pios_usart_dev_magic   magic;
+    enum pios_usart_dev_magic magic;
     const struct pios_usart_cfg *cfg;
 
     pios_com_callback rx_in_cb;
@@ -291,10 +291,10 @@ static void PIOS_USART_generic_irq_handler(uint32_t usart_id)
 
     /* Force read of dr after sr to make sure to clear error flags */
     volatile uint16_t sr = usart_dev->cfg->regs->SR;
-    volatile uint8_t dr  = usart_dev->cfg->regs->DR;
+    volatile uint8_t dr = usart_dev->cfg->regs->DR;
 
     /* Check if RXNE flag is set */
-    bool rx_need_yield   = false;
+    bool rx_need_yield = false;
     if (sr & USART_SR_RXNE) {
         uint8_t byte = dr;
         if (usart_dev->rx_in_cb) {

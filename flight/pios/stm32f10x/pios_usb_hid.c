@@ -45,11 +45,11 @@ static void PIOS_USB_HID_TxStart(uint32_t usbhid_id, uint16_t tx_bytes_avail);
 static void PIOS_USB_HID_RxStart(uint32_t usbhid_id, uint16_t rx_bytes_avail);
 
 const struct pios_com_driver pios_usb_hid_com_driver = {
-    .tx_start   = PIOS_USB_HID_TxStart,
-    .rx_start   = PIOS_USB_HID_RxStart,
+    .tx_start = PIOS_USB_HID_TxStart,
+    .rx_start = PIOS_USB_HID_RxStart,
     .bind_tx_cb = PIOS_USB_HID_RegisterTxCallback,
     .bind_rx_cb = PIOS_USB_HID_RegisterRxCallback,
-    .available  = PIOS_USB_CheckAvailable,
+    .available = PIOS_USB_CheckAvailable,
 };
 
 enum pios_usb_hid_dev_magic {
@@ -57,7 +57,7 @@ enum pios_usb_hid_dev_magic {
 };
 
 struct pios_usb_hid_dev {
-    enum pios_usb_hid_dev_magic   magic;
+    enum pios_usb_hid_dev_magic magic;
     const struct pios_usb_hid_cfg *cfg;
 
     uint32_t lower_id;
@@ -67,8 +67,8 @@ struct pios_usb_hid_dev {
     pios_com_callback tx_out_cb;
     uint32_t tx_out_context;
 
-    uint8_t  rx_packet_buffer[PIOS_USB_BOARD_HID_DATA_LENGTH];
-    uint8_t  tx_packet_buffer[PIOS_USB_BOARD_HID_DATA_LENGTH];
+    uint8_t rx_packet_buffer[PIOS_USB_BOARD_HID_DATA_LENGTH];
+    uint8_t tx_packet_buffer[PIOS_USB_BOARD_HID_DATA_LENGTH];
 
     uint32_t rx_dropped;
     uint32_t rx_oversize;
@@ -138,10 +138,10 @@ int32_t PIOS_USB_HID_Init(uint32_t *usbhid_id, const struct pios_usb_hid_cfg *cf
     usb_hid_dev->cfg = cfg;
     usb_hid_dev->lower_id = lower_id;
 
-    pios_usb_hid_id  = (uint32_t)usb_hid_dev;
+    pios_usb_hid_id = (uint32_t)usb_hid_dev;
 
     /* Bind lower level callbacks into the USB infrastructure */
-    pEpInt_IN[cfg->data_tx_ep - 1]  = PIOS_USB_HID_EP_IN_Callback;
+    pEpInt_IN[cfg->data_tx_ep - 1] = PIOS_USB_HID_EP_IN_Callback;
     pEpInt_OUT[cfg->data_rx_ep - 1] = PIOS_USB_HID_EP_OUT_Callback;
 
     *usbhid_id = (uint32_t)usb_hid_dev;

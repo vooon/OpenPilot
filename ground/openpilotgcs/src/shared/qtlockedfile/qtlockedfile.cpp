@@ -73,9 +73,9 @@ QtLockedFile::QtLockedFile()
 {
 #ifdef Q_OS_WIN
     m_semaphore_hnd = 0;
-    m_mutex_hnd     = 0;
+    m_mutex_hnd = 0;
 #endif
-    m_lock_mode     = NoLock;
+    m_lock_mode = NoLock;
 }
 
 /*!
@@ -89,9 +89,9 @@ QtLockedFile::QtLockedFile(const QString &name)
 {
 #ifdef Q_OS_WIN
     m_semaphore_hnd = 0;
-    m_mutex_hnd     = 0;
+    m_mutex_hnd = 0;
 #endif
-    m_lock_mode     = NoLock;
+    m_lock_mode = NoLock;
 }
 
 /*!

@@ -32,7 +32,7 @@ RawTile::RawTile(const MapType::Types &Type, const Point &Pos, const int &Zoom)
 {
     zoom = Zoom;
     type = Type;
-    pos  = Pos;
+    pos = Pos;
 }
 QString RawTile::ToString()
 {

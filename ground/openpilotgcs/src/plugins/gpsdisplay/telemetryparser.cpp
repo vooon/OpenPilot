@@ -77,8 +77,8 @@ void TelemetryParser::updateGPS(UAVObject *object1)
     lon *= 1E-7;
     emit position(lat, lon, alt);
 
-    double hdg  = object1->getField(QString("Heading"))->getDouble();
-    double spd  = object1->getField(QString("Groundspeed"))->getDouble();
+    double hdg = object1->getField(QString("Heading"))->getDouble();
+    double spd = object1->getField(QString("Groundspeed"))->getDouble();
     emit speedheading(spd, hdg);
 
     QString fix = object1->getField(QString("Status"))->getValue().toString();
@@ -92,14 +92,14 @@ void TelemetryParser::updateGPS(UAVObject *object1)
 
 void TelemetryParser::updateTime(UAVObject *object1)
 {
-    double hour   = object1->getField(QString("Hour"))->getDouble();
+    double hour = object1->getField(QString("Hour"))->getDouble();
     double minute = object1->getField(QString("Minute"))->getDouble();
     double second = object1->getField(QString("Second"))->getDouble();
-    double time   = second + minute * 100 + hour * 10000;
-    double year   = object1->getField(QString("Year"))->getDouble();
-    double month  = object1->getField(QString("Month"))->getDouble();
-    double day    = object1->getField(QString("Day"))->getDouble();
-    double date   = day + month * 100 + year * 10000;
+    double time = second + minute * 100 + hour * 10000;
+    double year = object1->getField(QString("Year"))->getDouble();
+    double month = object1->getField(QString("Month"))->getDouble();
+    double day = object1->getField(QString("Day"))->getDouble();
+    double date = day + month * 100 + year * 10000;
     emit datetime(date, time);
 }
 
@@ -112,10 +112,10 @@ void TelemetryParser::updateTime(UAVObject *object1)
  */
 void TelemetryParser::updateSats(UAVObject *object1)
 {
-    UAVObjectField *prn       = object1->getField(QString("PRN"));
+    UAVObjectField *prn = object1->getField(QString("PRN"));
     UAVObjectField *elevation = object1->getField(QString("Elevation"));
-    UAVObjectField *azimuth   = object1->getField(QString("Azimuth"));
-    UAVObjectField *snr       = object1->getField(QString("SNR"));
+    UAVObjectField *azimuth = object1->getField(QString("Azimuth"));
+    UAVObjectField *snr = object1->getField(QString("SNR"));
 
     for (unsigned int i = 0; i < prn->getNumElements(); i++) {
         emit satellite(i, prn->getValue(i).toInt(), elevation->getValue(i).toInt(),

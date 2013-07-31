@@ -39,22 +39,22 @@ void Utils::unCommentSelection(QPlainTextEdit *edit)
 
     cursor.beginEditBlock();
 
-    int pos    = cursor.position();
+    int pos = cursor.position();
     int anchor = cursor.anchor();
-    int start  = qMin(anchor, pos);
-    int end    = qMax(anchor, pos);
-    bool anchorIsStart    = (anchor == start);
+    int start = qMin(anchor, pos);
+    int end = qMax(anchor, pos);
+    bool anchorIsStart = (anchor == start);
 
     QTextBlock startBlock = doc->findBlock(start);
-    QTextBlock endBlock   = doc->findBlock(end);
+    QTextBlock endBlock = doc->findBlock(end);
 
     if (end > start && endBlock.position() == end) {
         --end;
         endBlock = endBlock.previous();
     }
 
-    bool doCStyleUncomment   = false;
-    bool doCStyleComment     = false;
+    bool doCStyleUncomment = false;
+    bool doCStyleComment = false;
     bool doCppStyleUncomment = false;
 
     bool hasSelection = cursor.hasSelection();
@@ -67,7 +67,7 @@ void Utils::unCommentSelection(QPlainTextEdit *edit)
              && startText.at(startPos - 2) == QLatin1Char('/')
              && startText.at(startPos - 1) == QLatin1Char('*'))) {
             startPos -= 2;
-            start    -= 2;
+            start -= 2;
         }
 
         bool hasSelStart = (startPos < startText.length() - 2
@@ -83,7 +83,7 @@ void Utils::unCommentSelection(QPlainTextEdit *edit)
              && endText.at(endPos) == QLatin1Char('*')
              && endText.at(endPos + 1) == QLatin1Char('/'))) {
             endPos += 2;
-            end    += 2;
+            end += 2;
         }
 
         bool hasSelEnd = (endPos >= 2
@@ -91,7 +91,7 @@ void Utils::unCommentSelection(QPlainTextEdit *edit)
                           && endText.at(endPos - 1) == QLatin1Char('/'));
 
         doCStyleUncomment = hasSelStart && hasSelEnd;
-        doCStyleComment   = !doCStyleUncomment && (hasLeadingCharacters || hasTrailingCharacters);
+        doCStyleComment = !doCStyleUncomment && (hasLeadingCharacters || hasTrailingCharacters);
     }
 
     if (doCStyleUncomment) {

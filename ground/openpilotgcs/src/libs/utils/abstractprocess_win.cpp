@@ -56,9 +56,9 @@ QString AbstractProcess::createWinCommandline(const QString &program, const QStr
 {
     const QChar doubleQuote = QLatin1Char('"');
     const QChar blank = QLatin1Char(' ');
-    const QChar backSlash   = QLatin1Char('\\');
+    const QChar backSlash = QLatin1Char('\\');
 
-    QString programName     = program;
+    QString programName = program;
 
     if (!programName.startsWith(doubleQuote) && !programName.endsWith(doubleQuote) && programName.contains(blank)) {
         programName.insert(0, doubleQuote);

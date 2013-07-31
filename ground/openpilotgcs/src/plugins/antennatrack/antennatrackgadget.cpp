@@ -62,11 +62,11 @@ void AntennaTrackGadget::loadConfiguration(IUAVGadgetConfiguration *config)
     AntennaTrackGadgetConfiguration *AntennaTrackConfig = qobject_cast< AntennaTrackGadgetConfiguration *>(config);
 
     PortSettings portsettings;
-    portsettings.BaudRate    = AntennaTrackConfig->speed();
-    portsettings.DataBits    = AntennaTrackConfig->dataBits();
+    portsettings.BaudRate = AntennaTrackConfig->speed();
+    portsettings.DataBits = AntennaTrackConfig->dataBits();
     portsettings.FlowControl = AntennaTrackConfig->flow();
     portsettings.Parity = AntennaTrackConfig->parity();
-    portsettings.StopBits    = AntennaTrackConfig->stopBits();
+    portsettings.StopBits = AntennaTrackConfig->stopBits();
     portsettings.Timeout_Millisec = AntennaTrackConfig->timeOut();
 
     // In case we find no port, buttons disabled
@@ -148,7 +148,7 @@ void AntennaTrackGadget::onDataAvailable()
 
 void AntennaTrackGadget::processNewSerialData(QByteArray serialData)
 {
-    int dataLength   = serialData.size();
+    int dataLength = serialData.size();
     const char *data = serialData.constData();
 
     m_widget->textBrowser->append(QString(serialData));

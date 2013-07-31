@@ -51,7 +51,7 @@ UAVGadgetOptionsPageDecorator::UAVGadgetOptionsPageDecorator(IOptionsPage *page,
 QWidget *UAVGadgetOptionsPageDecorator::createPage(QWidget *parent)
 {
     m_page = new Ui_TopOptionsPage();
-    QWidget *w  = new QWidget(parent);
+    QWidget *w = new QWidget(parent);
     m_page->setupUi(w);
 
     QWidget *wi = m_optionsPage->createPage(w);

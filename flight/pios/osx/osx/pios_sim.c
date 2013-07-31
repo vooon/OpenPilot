@@ -3,14 +3,14 @@
 #include "sim_model.h"
 
 struct pios_sim_state pios_sim_state = {
-    .accels   = { 0, 0, 0 },
-    .gyros    = { 0, 0, 0 },
-    .mag      = { 0, 0, 0 },
-    .baro     = { 0 },
-    .q        = { 1, 0, 0, 0},
+    .accels = { 0, 0, 0 },
+    .gyros = { 0, 0, 0 },
+    .mag = { 0, 0, 0 },
+    .baro = { 0 },
+    .q = { 1, 0, 0, 0 },
     .velocity = { 0, 0, 0 },
     .position = { 0, 0, 0 },
-    .actuator = { 0, 0, 0, 0, 0, 0, 0, 0}
+    .actuator = { 0, 0, 0, 0, 0, 0, 0, 0 }
 };
 
 /**

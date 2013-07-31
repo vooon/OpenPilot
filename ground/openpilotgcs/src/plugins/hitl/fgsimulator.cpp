@@ -49,7 +49,7 @@
 FGSimulator::FGSimulator(const SimulatorSettings & params) :
     Simulator(params)
 {
-    udpCounterFGrecv  = 0;
+    udpCounterFGrecv = 0;
     udpCounterGCSsend = 0;
 }
 
@@ -151,11 +151,11 @@ void FGSimulator::processReadyRead()
 void FGSimulator::transmitUpdate()
 {
     ActuatorDesired::DataFields actData;
-    FlightStatus::DataFields flightStatusData    = flightStatus->getData();
+    FlightStatus::DataFields flightStatusData = flightStatus->getData();
     ManualControlCommand::DataFields manCtrlData = manCtrlCommand->getData();
     float ailerons = -1;
     float elevator = -1;
-    float rudder   = -1;
+    float rudder = -1;
     float throttle = -1;
 
     if (flightStatusData.FlightMode == FlightStatus::FLIGHTMODE_MANUAL) {
@@ -164,16 +164,16 @@ void FGSimulator::transmitUpdate()
             // Note: Pitch sign is reversed in FG ?
             ailerons = manCtrlData.Roll;
             elevator = -manCtrlData.Pitch;
-            rudder   = manCtrlData.Yaw;
+            rudder = manCtrlData.Yaw;
             throttle = manCtrlData.Throttle;
         }
     } else {
         // Read ActuatorDesired from autopilot
-        actData  = actDesired->getData();
+        actData = actDesired->getData();
 
         ailerons = actData.Roll;
         elevator = -actData.Pitch;
-        rudder   = actData.Yaw;
+        rudder = actData.Yaw;
         throttle = actData.Throttle;
     }
 
@@ -209,9 +209,9 @@ void FGSimulator::transmitUpdate()
     }
 
     if (settings.manualControlEnabled) {
-        actData.Roll     = ailerons;
-        actData.Pitch    = -elevator;
-        actData.Yaw      = rudder;
+        actData.Roll = ailerons;
+        actData.Pitch = -elevator;
+        actData.Yaw = rudder;
         actData.Throttle = throttle;
         // actData.NumLongUpdates = (float)udpCounterFGrecv;
         // actData.UpdateTime = (float)udpCounterGCSsend;
@@ -233,45 +233,45 @@ void FGSimulator::processUpdate(const QByteArray & inp)
     // Get zRate (deg/s)
     // float zRate = fields[2].toFloat() * 180.0/M_PI;
     // Get xAccel (m/s^2)
-    float xAccel    = fields[3].toFloat() * FT2M;
+    float xAccel = fields[3].toFloat() * FT2M;
     // Get yAccel (m/s^2)
-    float yAccel    = fields[4].toFloat() * FT2M;
+    float yAccel = fields[4].toFloat() * FT2M;
     // Get xAccel (m/s^2)
-    float zAccel    = fields[5].toFloat() * FT2M;
+    float zAccel = fields[5].toFloat() * FT2M;
     // Get pitch (deg)
-    float pitch     = fields[6].toFloat();
+    float pitch = fields[6].toFloat();
     // Get pitchRate (deg/s)
     float pitchRate = fields[7].toFloat();
     // Get roll (deg)
-    float roll     = fields[8].toFloat();
+    float roll = fields[8].toFloat();
     // Get rollRate (deg/s)
     float rollRate = fields[9].toFloat();
     // Get yaw (deg)
-    float yaw          = fields[10].toFloat();
+    float yaw = fields[10].toFloat();
     // Get yawRate (deg/s)
-    float yawRate      = fields[11].toFloat();
+    float yawRate = fields[11].toFloat();
     // Get latitude (deg)
-    float latitude     = fields[12].toFloat();
+    float latitude = fields[12].toFloat();
     // Get longitude (deg)
-    float longitude    = fields[13].toFloat();
+    float longitude = fields[13].toFloat();
     // Get heading (deg)
-    float heading      = fields[14].toFloat();
+    float heading = fields[14].toFloat();
     // Get altitude (m)
     float altitude_msl = fields[15].toFloat() * FT2M;
     // Get altitudeAGL (m)
     float altitude_agl = fields[16].toFloat() * FT2M;
     // Get groundspeed (m/s)
-    float groundspeed  = fields[17].toFloat() * KT2MPS;
+    float groundspeed = fields[17].toFloat() * KT2MPS;
     // Get airspeed (m/s)
-    float airspeed     = fields[18].toFloat() * KT2MPS;
+    float airspeed = fields[18].toFloat() * KT2MPS;
     // Get temperature (degC)
-    float temperature  = fields[19].toFloat();
+    float temperature = fields[19].toFloat();
     // Get pressure (kpa)
-    float pressure     = fields[20].toFloat() * INHG2KPA;
+    float pressure = fields[20].toFloat() * INHG2KPA;
     // Get VelocityState Down (cm/s)
-    float velocityStateDown  = -fields[21].toFloat() * FPS2CMPS;
+    float velocityStateDown = -fields[21].toFloat() * FPS2CMPS;
     // Get VelocityState East (cm/s)
-    float velocityStateEast  = fields[22].toFloat() * FPS2CMPS;
+    float velocityStateEast = fields[22].toFloat() * FPS2CMPS;
     // Get VelocityState Down (cm/s)
     float velocityStateNorth = fields[23].toFloat() * FPS2CMPS;
 
@@ -298,9 +298,9 @@ void FGSimulator::processUpdate(const QByteArray & inp)
 
 
     // Update GPS Position objects
-    out.latitude    = latitude * 1e7;
-    out.longitude   = longitude * 1e7;
-    out.altitude    = altitude_msl;
+    out.latitude = latitude * 1e7;
+    out.longitude = longitude * 1e7;
+    out.altitude = altitude_msl;
     out.agl = altitude_agl;
     out.groundspeed = groundspeed;
 
@@ -309,31 +309,31 @@ void FGSimulator::processUpdate(const QByteArray & inp)
 
     // Update BaroSensor object
     out.temperature = temperature;
-    out.pressure    = pressure;
+    out.pressure = pressure;
 
     // Update attState object
-    out.roll      = roll;       // roll;
-    out.pitch     = pitch;     // pitch
-    out.heading   = yaw; // yaw
+    out.roll = roll; // roll;
+    out.pitch = pitch; // pitch
+    out.heading = yaw; // yaw
 
-    out.dstN      = NED[0];
-    out.dstE      = NED[1];
-    out.dstD      = NED[2];
+    out.dstN = NED[0];
+    out.dstE = NED[1];
+    out.dstD = NED[2];
 
     // Update VelocityState.{North,East,Down}
-    out.velNorth  = velocityStateNorth;
-    out.velEast   = velocityStateEast;
-    out.velDown   = velocityStateDown;
+    out.velNorth = velocityStateNorth;
+    out.velEast = velocityStateEast;
+    out.velDown = velocityStateDown;
 
     // Update gyroscope sensor data
-    out.rollRate  = rollRate;
+    out.rollRate = rollRate;
     out.pitchRate = pitchRate;
-    out.yawRate   = yawRate;
+    out.yawRate = yawRate;
 
     // Update accelerometer sensor data
-    out.accX      = xAccel;
-    out.accY      = yAccel;
-    out.accZ      = -zAccel;
+    out.accX = xAccel;
+    out.accY = yAccel;
+    out.accZ = -zAccel;
 
     updateUAVOs(out);
 }

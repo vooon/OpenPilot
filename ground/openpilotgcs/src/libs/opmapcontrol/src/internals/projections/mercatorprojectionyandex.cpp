@@ -39,14 +39,14 @@ Point MercatorProjectionYandex::FromLatLngToPixel(double lat, double lng, const 
     double rLon = lng * DEG_RAD; // Math.PI / 180;
     double rLat = lat * DEG_RAD; // Math.PI / 180;
 
-    double a    = 6378137;
-    double k    = 0.0818191908426;
+    double a = 6378137;
+    double k = 0.0818191908426;
 
-    double z    = tan(MathPiDiv4 + rLat / 2) / pow((tan(MathPiDiv4 + asin(k * sin(rLat)) / 2)), k);
-    double z1   = pow(2, 23 - zoom);
+    double z = tan(MathPiDiv4 + rLat / 2) / pow((tan(MathPiDiv4 + asin(k * sin(rLat)) / 2)), k);
+    double z1 = pow(2, 23 - zoom);
 
-    double DX   = ((20037508.342789 + a * rLon) * 53.5865938 / z1);
-    double DY   = ((20037508.342789 - a * log(z)) * 53.5865938 / z1);
+    double DX = ((20037508.342789 + a * rLon) * 53.5865938 / z1);
+    double DY = ((20037508.342789 - a * log(z)) * 53.5865938 / z1);
 
     Point ret; // = Point.Empty;
     ret.SetX((int)DX);
@@ -61,17 +61,17 @@ internals::PointLatLng MercatorProjectionYandex::FromPixelToLatLng(const int &x,
     // double mapSizeX = s.Width();
     // double mapSizeY = s.Height();
 
-    double a     = 6378137;
-    double c1    = 0.00335655146887969;
-    double c2    = 0.00000657187271079536;
-    double c3    = 0.00000001764564338702;
-    double c4    = 0.00000000005328478445;
-    double z1    = (23 - zoom);
+    double a = 6378137;
+    double c1 = 0.00335655146887969;
+    double c2 = 0.00000657187271079536;
+    double c3 = 0.00000001764564338702;
+    double c4 = 0.00000000005328478445;
+    double z1 = (23 - zoom);
     double mercX = (x * pow(2, z1)) / 53.5865938 - 20037508.342789;
     double mercY = 20037508.342789 - (y * pow(2, z1)) / 53.5865938;
 
-    double g     = M_PI / 2 - 2 * atan(1 / exp(mercY / a));
-    double z     = g + c1 * sin(2 * g) + c2 * sin(4 * g) + c3 * sin(6 * g) + c4 * sin(8 * g);
+    double g = M_PI / 2 - 2 * atan(1 / exp(mercY / a));
+    double z = g + c1 * sin(2 * g) + c2 * sin(4 * g) + c3 * sin(6 * g) + c4 * sin(8 * g);
 
     internals::PointLatLng ret; // = internals::PointLatLng.Empty;
 

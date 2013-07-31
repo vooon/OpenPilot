@@ -57,7 +57,7 @@
 
 // Private variables
 static xTaskHandle taskHandle;
-static bool airspeedEnabled  = false;
+static bool airspeedEnabled = false;
 static AirspeedSettingsData airspeedSettings;
 
 static int8_t airspeedADCPin = -1;

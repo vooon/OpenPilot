@@ -46,9 +46,9 @@ static bool HID_GetStrProperty(IOHIDDeviceRef dev, CFStringRef property, QString
  */
 USBMonitor::USBMonitor(QObject *parent) : QThread(parent), m_terminate(1)
 {
-    m_instance  = this;
+    m_instance = this;
     hid_manager = NULL;
-    listMutex   = new QMutex();
+    listMutex = new QMutex();
     knowndevices.clear();
     qRegisterMetaType<USBPortInfo>("USBPortInfo");
     start();

@@ -233,7 +233,7 @@ int32_t PIOS_ADXL345_Init(uint32_t spi_id, uint32_t slave_num)
         return -1;
     }
 
-    dev->spi_id    = spi_id;
+    dev->spi_id = spi_id;
     dev->slave_num = slave_num;
 
     PIOS_ADXL345_ReleaseBus();

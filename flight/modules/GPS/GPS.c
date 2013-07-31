@@ -198,14 +198,14 @@ MODULE_INITCALL(GPSInitialize, GPSStart);
 static void gpsTask(__attribute__((unused)) void *parameters)
 {
     portTickType xDelay = 100 / portTICK_RATE_MS;
-    uint32_t timeNowMs  = xTaskGetTickCount() * portTICK_RATE_MS;
+    uint32_t timeNowMs = xTaskGetTickCount() * portTICK_RATE_MS;
 
     GPSPositionSensorData gpspositionsensor;
     GPSSettingsData gpsSettings;
 
     GPSSettingsGet(&gpsSettings);
 
-    timeOfLastUpdateMs  = timeNowMs;
+    timeOfLastUpdateMs = timeNowMs;
     timeOfLastCommandMs = timeNowMs;
 
     GPSPositionSensorGet(&gpspositionsensor);
@@ -302,9 +302,9 @@ static void setHomeLocation(GPSPositionSensorData *gpsData)
 
     if (gps.Year >= 2000) {
         /* Store LLA */
-        home.Latitude  = gpsData->Latitude;
+        home.Latitude = gpsData->Latitude;
         home.Longitude = gpsData->Longitude;
-        home.Altitude  = gpsData->Altitude + gpsData->GeoidSeparation;
+        home.Altitude = gpsData->Altitude + gpsData->GeoidSeparation;
 
         /* Compute home ECEF coordinates and the rotation matrix into NED
          * Note that floats are used here - they should give enough precision

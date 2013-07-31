@@ -173,9 +173,9 @@ void ActionContainerPrivate::appendGroup(const QString &group)
 
 QAction *ActionContainerPrivate::insertLocation(const QString &group) const
 {
-    int grpid   = UniqueIDManager::instance()->uniqueIdentifier(group);
+    int grpid = UniqueIDManager::instance()->uniqueIdentifier(group);
     int prevKey = 0;
-    int pos     = ((grpid << 16) | 0xFFFF);
+    int pos = ((grpid << 16) | 0xFFFF);
 
     return beforeAction(pos, &prevKey);
 }
@@ -186,7 +186,7 @@ void ActionContainerPrivate::addAction(Command *action, const QString &group)
         return;
     }
 
-    ActionManagerPrivate *am   = ActionManagerPrivate::instance();
+    ActionManagerPrivate *am = ActionManagerPrivate::instance();
     UniqueIDManager *idmanager = UniqueIDManager::instance();
     int grpid = idmanager->uniqueIdentifier(Constants::G_DEFAULT_TWO);
     if (!group.isEmpty()) {
@@ -207,7 +207,7 @@ void ActionContainerPrivate::addMenu(ActionContainer *menu, const QString &group
         return;
     }
 
-    ActionManagerPrivate *am   = ActionManagerPrivate::instance();
+    ActionManagerPrivate *am = ActionManagerPrivate::instance();
     UniqueIDManager *idmanager = UniqueIDManager::instance();
     int grpid = idmanager->uniqueIdentifier(Constants::G_DEFAULT_TWO);
     if (!group.isEmpty()) {
@@ -242,7 +242,7 @@ bool ActionContainerPrivate::canAddAction(Command *action) const
 
 void ActionContainerPrivate::addAction(Command *action, int pos, bool setpos)
 {
-    Action *a   = static_cast<Action *>(action);
+    Action *a = static_cast<Action *>(action);
 
     int prevKey = 0;
     QAction *ba = beforeAction(pos, &prevKey);
@@ -251,7 +251,7 @@ void ActionContainerPrivate::addAction(Command *action, int pos, bool setpos)
         pos = calcPosition(pos, prevKey);
         CommandLocation loc;
         loc.m_container = m_id;
-        loc.m_position  = pos;
+        loc.m_position = pos;
         QList<CommandLocation> locs = a->locations();
         locs.append(loc);
         a->setLocations(locs);
@@ -273,7 +273,7 @@ void ActionContainerPrivate::addMenu(ActionContainer *menu, int pos, bool setpos
         pos = calcPosition(pos, prevKey);
         CommandLocation loc;
         loc.m_container = m_id;
-        loc.m_position  = pos;
+        loc.m_position = pos;
         mc->setLocation(loc);
     }
 

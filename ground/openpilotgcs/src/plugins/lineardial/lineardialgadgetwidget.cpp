@@ -37,16 +37,16 @@ LineardialGadgetWidget::LineardialGadgetWidget(QWidget *parent) : QGraphicsView(
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
     setScene(new QGraphicsScene(this));
     setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-    m_renderer   = new QSvgRenderer();
+    m_renderer = new QSvgRenderer();
     verticalDial = false;
 
     paint();
 
     obj1 = NULL;
-    fieldName   = NULL;
-    fieldValue  = NULL;
+    fieldName = NULL;
+    fieldValue = NULL;
     indexTarget = 0;
-    indexValue  = 0;
+    indexValue = 0;
     places = 0;
     factor = 1;
 
@@ -92,8 +92,8 @@ void LineardialGadgetWidget::connectInput(QString object1, QString nfield1)
             connect(obj1, SIGNAL(objectUpdated(UAVObject *)), this, SLOT(updateIndex(UAVObject *)));
             if (nfield1.contains("-")) {
                 QStringList fieldSubfield = nfield1.split("-", QString::SkipEmptyParts);
-                field1        = fieldSubfield.at(0);
-                subfield1     = fieldSubfield.at(1);
+                field1 = fieldSubfield.at(0);
+                subfield1 = fieldSubfield.at(1);
                 haveSubField1 = true;
             } else {
                 field1 = nfield1;
@@ -255,9 +255,9 @@ void LineardialGadgetWidget::setDialFile(QString dfn)
             }
             red->setTransform(matrix, false);
         } else {
-            red    = NULL;
+            red = NULL;
             yellow = NULL;
-            green  = NULL;
+            green = NULL;
         }
 
         // Check whether the dial wants to display a moving index:
@@ -268,7 +268,7 @@ void LineardialGadgetWidget::setDialFile(QString dfn)
             startY = nRect.y();
             QTransform matrix;
             matrix.translate(startX, startY);
-            index  = new QGraphicsSvgItem();
+            index = new QGraphicsSvgItem();
             index->setSharedRenderer(m_renderer);
             index->setElementId("needle");
             index->setTransform(matrix, false);
@@ -280,9 +280,9 @@ void LineardialGadgetWidget::setDialFile(QString dfn)
         // Check whether the dial wants display its field name:
         if (m_renderer->elementExists("field")) {
             QMatrix textMatrix = m_renderer->matrixForElement("field");
-            QRectF rect    = textMatrix.mapRect(m_renderer->boundsOnElement("field"));
-            qreal startX   = rect.x();
-            qreal startY   = rect.y();
+            QRectF rect = textMatrix.mapRect(m_renderer->boundsOnElement("field"));
+            qreal startX = rect.x();
+            qreal startY = rect.y();
             qreal elHeight = rect.height();
             QTransform matrix;
             matrix.translate(startX, startY - elHeight / 2);
@@ -298,9 +298,9 @@ void LineardialGadgetWidget::setDialFile(QString dfn)
         // Check whether the dial wants display the numeric value:
         if (m_renderer->elementExists("value")) {
             QMatrix textMatrix = m_renderer->matrixForElement("value");
-            QRectF nRect   = textMatrix.mapRect(m_renderer->boundsOnElement("value"));
-            qreal startX   = nRect.x();
-            qreal startY   = nRect.y();
+            QRectF nRect = textMatrix.mapRect(m_renderer->boundsOnElement("value"));
+            qreal startX = nRect.x();
+            qreal startY = nRect.y();
             qreal elHeight = nRect.height();
             QTransform matrix;
             matrix.translate(startX, startY - elHeight / 2);
@@ -351,11 +351,11 @@ void LineardialGadgetWidget::setDialFile(QString dfn)
         qDebug() << "no file ";
         m_renderer->load(QString(":/lineardial/images/empty.svg"));
         l_scene->clear(); // This also deletes all items contained in the scene.
-        background  = new QGraphicsSvgItem();
+        background = new QGraphicsSvgItem();
         background->setSharedRenderer(m_renderer);
         l_scene->addItem(background);
-        fieldName   = NULL;
-        fieldValue  = NULL;
+        fieldName = NULL;
+        fieldValue = NULL;
         fieldSymbol = NULL;
         index = NULL;
     }

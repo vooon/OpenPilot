@@ -136,9 +136,9 @@ Vector3f twostep_bias_only(const Vector3f samples[],
 
     for (size_t i = 0; i < n_samples; ++i) {
         // eq 9 applied to samples
-        centeredSamples[i]    = samples[i] - avg;
+        centeredSamples[i] = samples[i] - avg;
         // eqn 2a
-        sampleDeltaMag[i]     = samples[i].squaredNorm() - refSquaredNorm;
+        sampleDeltaMag[i] = samples[i].squaredNorm() - refSquaredNorm;
         sampleDeltaMagCenter += sampleDeltaMag[i];
     }
     sampleDeltaMagCenter /= n_samples;
@@ -284,7 +284,7 @@ void twostep_bias_scale(Vector3f & bias,
             -(samples[i][2] * samples[i][2]);
         centerSample += fullSamples.row(i);
 
-        sampleDeltaMag[i]     = samples[i].squaredNorm() - refSquaredNorm;
+        sampleDeltaMag[i] = samples[i].squaredNorm() - refSquaredNorm;
         sampleDeltaMagCenter += sampleDeltaMag[i];
     }
     sampleDeltaMagCenter /= n_samples;
@@ -371,7 +371,7 @@ void twostep_bias_scale(Vector3f & bias,
     // Transform the estimated parameters from [c | e] back into [b | d].
     for (size_t i = 0; i < 3; ++i) {
         scale.coeffRef(i) = -1 + sqrt(1 + estimate.coeff(3 + i));
-        bias.coeffRef(i)  = estimate.coeff(i) / sqrt(1 + estimate.coeff(3 + i));
+        bias.coeffRef(i) = estimate.coeff(i) / sqrt(1 + estimate.coeff(3 + i));
     }
 }
 
@@ -507,7 +507,7 @@ void twostep_bias_scale(Vector3f & bias,
 
         centerSample += fullSamples.row(i);
 
-        sampleDeltaMag[i]     = samples[i].squaredNorm() - refSquaredNorm;
+        sampleDeltaMag[i] = samples[i].squaredNorm() - refSquaredNorm;
         sampleDeltaMagCenter += sampleDeltaMag[i];
     }
     sampleDeltaMagCenter /= n_samples;
@@ -546,7 +546,7 @@ void twostep_bias_scale(Vector3f & bias,
     // estimate i+1 = estimate_i - Fisher^{-1}(at estimate_i)*gradient(theta)
     // Fisher^{-1} = \tilde{Fisher}^-1 + \hbar{Fisher}^{-1}
     size_t count = 0;
-    double eta   = 10000;
+    double eta = 10000;
     while (count++ < 200 && eta > 1e-8) {
         static bool warned = false;
         if (hasNaN(estimate)) {
@@ -610,6 +610,6 @@ void twostep_bias_scale(Vector3f & bias,
         // an infinite loop otherwise.
         // TODO: Add error code return
         scale = Matrix3f::Ones() * std::numeric_limits<float>::quiet_NaN();
-        bias  = Vector3f::Zero();
+        bias = Vector3f::Zero();
     }
 }

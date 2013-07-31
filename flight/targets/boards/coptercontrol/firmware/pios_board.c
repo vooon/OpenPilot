@@ -86,27 +86,27 @@ uintptr_t pios_user_fs_id = 0;
 #include "pios_mpu6000_config.h"
 static const struct pios_exti_cfg pios_exti_mpu6000_cfg __exti_config = {
     .vector = PIOS_MPU6000_IRQHandler,
-    .line   = EXTI_Line3,
-    .pin    = {
+    .line = EXTI_Line3,
+    .pin = {
         .gpio = GPIOA,
         .init = {
-            .GPIO_Pin   = GPIO_Pin_3,
+            .GPIO_Pin = GPIO_Pin_3,
             .GPIO_Speed = GPIO_Speed_10MHz,
-            .GPIO_Mode  = GPIO_Mode_IN_FLOATING,
+            .GPIO_Mode = GPIO_Mode_IN_FLOATING,
         },
     },
-    .irq                                       = {
-        .init                                  = {
-            .NVIC_IRQChannel    = EXTI3_IRQn,
+    .irq = {
+        .init = {
+            .NVIC_IRQChannel = EXTI3_IRQn,
             .NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGH,
-            .NVIC_IRQChannelSubPriority        = 0,
+            .NVIC_IRQChannelSubPriority = 0,
             .NVIC_IRQChannelCmd = ENABLE,
         },
     },
-    .exti                                      = {
-        .init                                  = {
-            .EXTI_Line    = EXTI_Line3, // matches above GPIO pin
-            .EXTI_Mode    = EXTI_Mode_Interrupt,
+    .exti = {
+        .init = {
+            .EXTI_Line = EXTI_Line3, // matches above GPIO pin
+            .EXTI_Mode = EXTI_Mode_Interrupt,
             .EXTI_Trigger = EXTI_Trigger_Rising,
             .EXTI_LineCmd = ENABLE,
         },
@@ -114,20 +114,20 @@ static const struct pios_exti_cfg pios_exti_mpu6000_cfg __exti_config = {
 };
 
 static const struct pios_mpu6000_cfg pios_mpu6000_cfg = {
-    .exti_cfg   = &pios_exti_mpu6000_cfg,
+    .exti_cfg = &pios_exti_mpu6000_cfg,
     .Fifo_store = PIOS_MPU6000_FIFO_TEMP_OUT | PIOS_MPU6000_FIFO_GYRO_X_OUT | PIOS_MPU6000_FIFO_GYRO_Y_OUT | PIOS_MPU6000_FIFO_GYRO_Z_OUT,
     // Clock at 8 khz, downsampled by 16 for 500 Hz
     .Smpl_rate_div_no_dlp = 15,
     // Clock at 1 khz, downsampled by 2 for 500 Hz
-    .Smpl_rate_div_dlp    = 1,
+    .Smpl_rate_div_dlp = 1,
     .interrupt_cfg = PIOS_MPU6000_INT_CLR_ANYRD,
-    .interrupt_en  = PIOS_MPU6000_INTEN_DATA_RDY,
-    .User_ctl             = PIOS_MPU6000_USERCTL_FIFO_EN | PIOS_MPU6000_USERCTL_DIS_I2C,
-    .Pwr_mgmt_clk  = PIOS_MPU6000_PWRMGMT_PLL_X_CLK,
-    .accel_range   = PIOS_MPU6000_ACCEL_8G,
-    .gyro_range    = PIOS_MPU6000_SCALE_2000_DEG,
-    .filter               = PIOS_MPU6000_LOWPASS_256_HZ,
-    .orientation   = PIOS_MPU6000_TOP_180DEG
+    .interrupt_en = PIOS_MPU6000_INTEN_DATA_RDY,
+    .User_ctl = PIOS_MPU6000_USERCTL_FIFO_EN | PIOS_MPU6000_USERCTL_DIS_I2C,
+    .Pwr_mgmt_clk = PIOS_MPU6000_PWRMGMT_PLL_X_CLK,
+    .accel_range = PIOS_MPU6000_ACCEL_8G,
+    .gyro_range = PIOS_MPU6000_SCALE_2000_DEG,
+    .filter = PIOS_MPU6000_LOWPASS_256_HZ,
+    .orientation = PIOS_MPU6000_TOP_180DEG
 };
 #endif /* PIOS_INCLUDE_MPU6000 */
 
@@ -145,7 +145,7 @@ void PIOS_Board_Init(void)
     const struct pios_board_info *bdinfo = &pios_board_info_blob;
 
 #if defined(PIOS_INCLUDE_LED)
-    const struct pios_led_cfg *led_cfg   = PIOS_BOARD_HW_DEFS_GetLedCfg(bdinfo->board_rev);
+    const struct pios_led_cfg *led_cfg = PIOS_BOARD_HW_DEFS_GetLedCfg(bdinfo->board_rev);
     PIOS_Assert(led_cfg);
     PIOS_LED_Init(led_cfg);
 #endif /* PIOS_INCLUDE_LED */

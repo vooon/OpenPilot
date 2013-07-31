@@ -39,7 +39,7 @@ GCSControlGadgetOptionsPage::GCSControlGadgetOptionsPage(GCSControlGadgetConfigu
 {
     options_page = NULL;
 
-    sdlGamepad   = dynamic_cast<GCSControlPlugin *>(parent)->sdlGamepad;
+    sdlGamepad = dynamic_cast<GCSControlPlugin *>(parent)->sdlGamepad;
 }
 
 GCSControlGadgetOptionsPage::~GCSControlGadgetOptionsPage()
@@ -251,13 +251,13 @@ void GCSControlGadgetOptionsPage::apply()
     for (int i = 0; i < chList.length(); i++) {
         switch (chList.at(i)->currentIndex()) {
         case 1:
-            roll     = i;
+            roll = i;
             break;
         case 2:
-            pitch    = i;
+            pitch = i;
             break;
         case 3:
-            yaw      = i;
+            yaw = i;
             break;
         case 4:
             throttle = i;

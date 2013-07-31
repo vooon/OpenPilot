@@ -110,7 +110,7 @@ int32_t ExtendedAlarmsSet(SystemAlarmsAlarmElem alarm,
     // Read alarm and update its severity only if it was changed
     SystemAlarmsGet(&alarms);
     if (alarms.Alarm[alarm] != severity) {
-        alarms.ExtendedAlarmStatus[alarm]    = status;
+        alarms.ExtendedAlarmStatus[alarm] = status;
         alarms.ExtendedAlarmSubStatus[alarm] = subStatus;
         alarms.Alarm[alarm] = severity;
         SystemAlarmsSet(&alarms);

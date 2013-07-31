@@ -47,7 +47,7 @@ enum pios_usb_dev_magic {
 };
 
 struct pios_usb_dev {
-    enum pios_usb_dev_magic   magic;
+    enum pios_usb_dev_magic magic;
     const struct pios_usb_cfg *cfg;
 #ifdef PIOS_INCLUDE_FREERTOS
     xSemaphoreHandle statusCheckSemaphore;
@@ -122,7 +122,7 @@ int32_t PIOS_USB_Init(uint32_t *usb_id, const struct pios_usb_cfg *cfg)
      * This is a horrible hack to make this available to
      * the interrupt callbacks.  This should go away ASAP.
      */
-    pios_usb_id  = (uint32_t)usb_dev;
+    pios_usb_id = (uint32_t)usb_dev;
 
     *usb_id = (uint32_t)usb_dev;
 
@@ -181,10 +181,10 @@ bool PIOS_USB_CheckAvailable(__attribute__((unused)) uint32_t id)
 // broken communications.
 #ifdef PIOS_INCLUDE_FREERTOS
     static bool lastStatus = false;
-    bool status    = usb_found != 0 && transfer_possible ? 1 : 0;
+    bool status = usb_found != 0 && transfer_possible ? 1 : 0;
     bool reconnect = false;
     if (xSemaphoreTakeFromISR(usb_dev->statusCheckSemaphore, NULL) == pdTRUE) {
-        reconnect  = (lastStatus && !status);
+        reconnect = (lastStatus && !status);
         lastStatus = status;
         xSemaphoreGiveFromISR(usb_dev->statusCheckSemaphore, NULL);
     }
@@ -252,11 +252,11 @@ void USB_OTG_BSP_Init(__attribute__((unused)) USB_OTG_CORE_HANDLE *pdev)
 
     /* Configure USB D-/D+ (DM/DP) pins */
     GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_11 | GPIO_Pin_12;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11 | GPIO_Pin_12;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
+    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
 
     GPIO_PinAFConfig(GPIOA, GPIO_PinSource11, GPIO_AF_OTG1_FS);

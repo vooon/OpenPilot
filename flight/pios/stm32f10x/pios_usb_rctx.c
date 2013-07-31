@@ -44,13 +44,13 @@ enum pios_usb_rctx_dev_magic {
 };
 
 struct pios_usb_rctx_dev {
-    enum pios_usb_rctx_dev_magic   magic;
+    enum pios_usb_rctx_dev_magic magic;
     const struct pios_usb_rctx_cfg *cfg;
 
     uint32_t lower_id;
 
     struct {
-        uint8_t  id;
+        uint8_t id;
         uint16_t vals[PIOS_USB_RCTX_NUM_CHANNELS];
     } __attribute__((packed)) report;
 };
@@ -178,8 +178,8 @@ void PIOS_USB_RCTX_Update(uint32_t usbrctx_id, const uint16_t channel[], const i
     for (uint8_t i = 0;
          i < PIOS_USB_RCTX_NUM_CHANNELS && i < num_channels;
          i++) {
-        int16_t min  = channel_min[i];
-        int16_t max  = channel_max[i];
+        int16_t min = channel_min[i];
+        int16_t max = channel_max[i];
         uint16_t val = channel[i];
 
         if (channel_min[i] > channel_max[i]) {

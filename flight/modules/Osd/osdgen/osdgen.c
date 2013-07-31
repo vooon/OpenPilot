@@ -96,7 +96,7 @@ xSemaphoreHandle osdSemaphore = NULL;
 static xTaskHandle osdgenTaskHandle;
 
 struct splashEntry {
-    unsigned int   width, height;
+    unsigned int width, height;
     const uint16_t *level;
     const uint16_t *mask;
 };
@@ -140,15 +140,15 @@ void copyimage(uint16_t offsetx, uint16_t offsety, int image)
     }
     struct splashEntry splash_info;
     splash_info = splash[image];
-    offsetx     = offsetx / 8;
+    offsetx = offsetx / 8;
     for (uint16_t y = offsety; y < ((splash_info.height) + offsety); y++) {
         uint16_t x1 = offsetx;
         for (uint16_t x = offsetx; x < (((splash_info.width) / 16) + offsetx); x++) {
             draw_buffer_level[y * GRAPHICS_WIDTH + x1 + 1] = (uint8_t)(
                 mirror(splash_info.level[(y - offsety) * ((splash_info.width) / 16) + (x - offsetx)]) >> 8);
-            draw_buffer_level[y * GRAPHICS_WIDTH + x1]     = (uint8_t)(
+            draw_buffer_level[y * GRAPHICS_WIDTH + x1] = (uint8_t)(
                 mirror(splash_info.level[(y - offsety) * ((splash_info.width) / 16) + (x - offsetx)]) & 0xFF);
-            draw_buffer_mask[y * GRAPHICS_WIDTH + x1 + 1]  = (uint8_t)(
+            draw_buffer_mask[y * GRAPHICS_WIDTH + x1 + 1] = (uint8_t)(
                 mirror(splash_info.mask[(y - offsety) * ((splash_info.width) / 16) + (x - offsetx)]) >> 8);
             draw_buffer_mask[y * GRAPHICS_WIDTH + x1] = (uint8_t)(mirror(splash_info.mask[(y - offsety) * ((splash_info.width) / 16) + (x - offsetx)]) & 0xFF);
             x1 += 2;
@@ -167,11 +167,11 @@ uint8_t validPos(uint16_t x, uint16_t y)
 // Credit for this one goes to wikipedia! :-)
 void drawCircle(uint16_t x0, uint16_t y0, uint16_t radius)
 {
-    int f     = 1 - radius;
+    int f = 1 - radius;
     int ddF_x = 1;
     int ddF_y = -2 * radius;
-    int x     = 0;
-    int y     = radius;
+    int x = 0;
+    int y = radius;
 
     write_pixel_lm(x0, y0 + radius, 1, 1);
     write_pixel_lm(x0, y0 - radius, 1, 1);
@@ -185,11 +185,11 @@ void drawCircle(uint16_t x0, uint16_t y0, uint16_t radius)
         if (f >= 0) {
             y--;
             ddF_y += 2;
-            f     += ddF_y;
+            f += ddF_y;
         }
         x++;
         ddF_x += 2;
-        f     += ddF_x;
+        f += ddF_x;
         write_pixel_lm(x0 + x, y0 + y, 1, 1);
         write_pixel_lm(x0 - x, y0 + y, 1, 1);
         write_pixel_lm(x0 + x, y0 - y, 1, 1);
@@ -210,8 +210,8 @@ void swap(uint16_t *a, uint16_t *b)
 }
 
 static const int8_t sinData[91] =
-{ 0,  2,  3,  5,  7,  9,  10,  12,  14,  16,  17,  19, 21, 22, 24, 26, 28, 29, 31, 33, 34, 36, 37, 39, 41, 42, 44, 45, 47, 48, 50, 52, 53, 54, 56, 57, 59, 60, 62, 63, 64,
-  66, 67, 68, 69, 71, 72, 73,  74,  75,  77,  78,  79, 80, 81, 82, 83, 84, 85, 86, 87, 87, 88, 89, 90, 91, 91, 92, 93, 93, 94, 95, 95, 96, 96, 97, 97, 97, 98,
+{ 0, 2, 3, 5, 7, 9, 10, 12, 14, 16, 17, 19, 21, 22, 24, 26, 28, 29, 31, 33, 34, 36, 37, 39, 41, 42, 44, 45, 47, 48, 50, 52, 53, 54, 56, 57, 59, 60, 62, 63, 64,
+  66, 67, 68, 69, 71, 72, 73, 74, 75, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 87, 88, 89, 90, 91, 91, 92, 93, 93, 94, 95, 95, 96, 96, 97, 97, 97, 98,
   98, 98, 99, 99, 99, 99, 100, 100, 100, 100, 100, 100 };
 
 static int8_t mySin(uint16_t angle)
@@ -219,10 +219,10 @@ static int8_t mySin(uint16_t angle)
     uint16_t pos = 0;
 
     pos = angle % 360;
-    int8_t mult  = 1;
+    int8_t mult = 1;
     // 180-359 is same as 0-179 but negative.
     if (pos >= 180) {
-        pos  = pos - 180;
+        pos = pos - 180;
         mult = -1;
     }
     // 0-89 is equal to 90-179 except backwards.
@@ -268,7 +268,7 @@ void plotFourQuadrants(int32_t centerX, int32_t centerY, int32_t deltaX, int32_t
 void ellipse(int centerX, int centerY, int horizontalRadius, int verticalRadius)
 {
     int64_t doubleHorizontalRadius = horizontalRadius * horizontalRadius;
-    int64_t doubleVerticalRadius   = verticalRadius * verticalRadius;
+    int64_t doubleVerticalRadius = verticalRadius * verticalRadius;
 
     int64_t error = doubleVerticalRadius - doubleHorizontalRadius * verticalRadius + (doubleVerticalRadius >> 2);
 
@@ -283,13 +283,13 @@ void ellipse(int centerX, int centerY, int horizontalRadius, int verticalRadius)
         x++;
         deltaX += (doubleVerticalRadius << 1);
 
-        error  += deltaX + doubleVerticalRadius;
+        error += deltaX + doubleVerticalRadius;
 
         if (error >= 0) {
             y--;
             deltaY -= (doubleHorizontalRadius << 1);
 
-            error  -= deltaY;
+            error -= deltaY;
         }
         plotFourQuadrants(centerX, centerY, x, y);
     }
@@ -297,15 +297,15 @@ void ellipse(int centerX, int centerY, int horizontalRadius, int verticalRadius)
     error = (int64_t)(doubleVerticalRadius * (x + 1 / 2.0f) * (x + 1 / 2.0f) + doubleHorizontalRadius * (y - 1) * (y - 1) - doubleHorizontalRadius * doubleVerticalRadius);
 
     while (y >= 0) {
-        error  += doubleHorizontalRadius;
+        error += doubleHorizontalRadius;
         y--;
         deltaY -= (doubleHorizontalRadius << 1);
-        error  -= deltaY;
+        error -= deltaY;
 
         if (error <= 0) {
             x++;
             deltaX += (doubleVerticalRadius << 1);
-            error  += deltaX;
+            error += deltaX;
         }
 
         plotFourQuadrants(centerX, centerY, x, y);
@@ -350,8 +350,8 @@ void write_pixel(uint8_t *buff, unsigned int x, unsigned int y, int mode)
     CHECK_COORDS(x, y);
     // Determine the bit in the word to be set and the word
     // index to set it in.
-    int bitnum    = CALC_BIT_IN_WORD(x);
-    int wordnum   = CALC_BUFF_ADDR(x, y);
+    int bitnum = CALC_BIT_IN_WORD(x);
+    int wordnum = CALC_BUFF_ADDR(x, y);
     // Apply a mask.
     uint16_t mask = 1 << (7 - bitnum);
     WRITE_WORD_MODE(buff, wordnum, mask, mode);
@@ -371,8 +371,8 @@ void write_pixel_lm(unsigned int x, unsigned int y, int mmode, int lmode)
     CHECK_COORDS(x, y);
     // Determine the bit in the word to be set and the word
     // index to set it in.
-    int bitnum    = CALC_BIT_IN_WORD(x);
-    int wordnum   = CALC_BUFF_ADDR(x, y);
+    int bitnum = CALC_BIT_IN_WORD(x);
+    int wordnum = CALC_BUFF_ADDR(x, y);
     // Apply the masks.
     uint16_t mask = 1 << (7 - bitnum);
     WRITE_WORD_MODE(draw_buffer_mask, wordnum, mask, mmode);
@@ -400,8 +400,8 @@ void write_hline(uint8_t *buff, unsigned int x0, unsigned int x1, unsigned int y
     }
     /* This is an optimised algorithm for writing horizontal lines.
     * We begin by finding the addresses of the x0 and x1 points. */
-    int addr0     = CALC_BUFF_ADDR(x0, y);
-    int addr1     = CALC_BUFF_ADDR(x1, y);
+    int addr0 = CALC_BUFF_ADDR(x0, y);
+    int addr1 = CALC_BUFF_ADDR(x1, y);
     int addr0_bit = CALC_BIT_IN_WORD(x0);
     int addr1_bit = CALC_BIT_IN_WORD(x1);
     int mask, mask_l, mask_r, i;
@@ -493,8 +493,8 @@ void write_vline(uint8_t *buff, unsigned int x, unsigned int y0, unsigned int y1
     }
     /* This is an optimised algorithm for writing vertical lines.
      * We begin by finding the addresses of the x,y0 and x,y1 points. */
-    unsigned int addr0  = CALC_BUFF_ADDR(x, y0);
-    unsigned int addr1  = CALC_BUFF_ADDR(x, y1);
+    unsigned int addr0 = CALC_BUFF_ADDR(x, y0);
+    unsigned int addr1 = CALC_BUFF_ADDR(x, y1);
     /* Then we calculate the pixel data to be written. */
     unsigned int bitnum = CALC_BIT_IN_WORD(x);
     uint16_t mask = 1 << (7 - bitnum);
@@ -577,8 +577,8 @@ void write_filled_rectangle(uint8_t *buff, unsigned int x, unsigned int y, unsig
     }
     // Calculate as if the rectangle was only a horizontal line. We then
     // step these addresses through each row until we iterate `height` times.
-    unsigned int addr0     = CALC_BUFF_ADDR(x, y);
-    unsigned int addr1     = CALC_BUFF_ADDR(x + width, y);
+    unsigned int addr0 = CALC_BUFF_ADDR(x, y);
+    unsigned int addr1 = CALC_BUFF_ADDR(x + width, y);
     unsigned int addr0_bit = CALC_BIT_IN_WORD(x);
     unsigned int addr1_bit = CALC_BIT_IN_WORD(x + width);
     unsigned int mask, mask_l, mask_r, i;
@@ -591,10 +591,10 @@ void write_filled_rectangle(uint8_t *buff, unsigned int x, unsigned int y, unsig
         }
     } else {
         // Otherwise we need to write the edges and then the middle repeatedly.
-        mask_l    = COMPUTE_HLINE_EDGE_L_MASK(addr0_bit);
-        mask_r    = COMPUTE_HLINE_EDGE_R_MASK(addr1_bit);
+        mask_l = COMPUTE_HLINE_EDGE_L_MASK(addr0_bit);
+        mask_r = COMPUTE_HLINE_EDGE_R_MASK(addr1_bit);
         // Write edges first.
-        yy        = 0;
+        yy = 0;
         addr0_old = addr0;
         addr1_old = addr1;
         while (yy < height) {
@@ -605,7 +605,7 @@ void write_filled_rectangle(uint8_t *buff, unsigned int x, unsigned int y, unsig
             yy++;
         }
         // Now write 0xffff words from start+1 to end-1 for each row.
-        yy    = 0;
+        yy = 0;
         addr0 = addr0_old;
         addr1 = addr1_old;
         while (yy < height) {
@@ -732,8 +732,8 @@ void write_circle_outlined(unsigned int cx, unsigned int cy, unsigned int r, uns
         }
     }
     error = -r;
-    x     = r;
-    y     = 0;
+    x = r;
+    y = 0;
     while (x >= y) {
         if (dashp == 0 || (y % dashp) < (dashp / 2)) {
             CIRCLE_PLOT_8(draw_buffer_mask, cx, cy, x, y, mmode);
@@ -782,7 +782,7 @@ void write_circle_filled(uint8_t *buff, unsigned int cx, unsigned int cy, unsign
         y++;
         if (error >= 0) {
             --x;
-            xch    = 1;
+            xch = 1;
             error -= x * 2;
         }
     }
@@ -815,9 +815,9 @@ void write_line(uint8_t *buff, unsigned int x0, unsigned int y0, unsigned int x1
         SWAP(x0, x1);
         SWAP(y0, y1);
     }
-    int deltax     = x1 - x0;
+    int deltax = x1 - x0;
     unsigned int deltay = abs(y1 - y0);
-    int error      = deltax / 2;
+    int error = deltax / 2;
     int ystep;
     unsigned int y = y0;
     unsigned int x; // , lasty = y, stox = 0;
@@ -834,7 +834,7 @@ void write_line(uint8_t *buff, unsigned int x0, unsigned int y0, unsigned int x1
         }
         error -= deltay;
         if (error < 0) {
-            y     += ystep;
+            y += ystep;
             error += deltax;
         }
     }
@@ -893,9 +893,9 @@ void write_line_outlined(unsigned int x0, unsigned int y0, unsigned int x1, unsi
         SWAP(x0, x1);
         SWAP(y0, y1);
     }
-    int deltax     = x1 - x0;
+    int deltax = x1 - x0;
     unsigned int deltay = abs(y1 - y0);
-    int error      = deltax / 2;
+    int error = deltax / 2;
     int ystep;
     unsigned int y = y0;
     unsigned int x;
@@ -919,13 +919,13 @@ void write_line_outlined(unsigned int x0, unsigned int y0, unsigned int x1, unsi
         }
         error -= deltay;
         if (error < 0) {
-            y     += ystep;
+            y += ystep;
             error += deltax;
         }
     }
     // Now draw the innards.
     error = deltax / 2;
-    y     = y0;
+    y = y0;
     for (x = x0; x < x1; x++) {
         if (steep) {
             write_pixel_lm(y, x, mmode, imode);
@@ -934,7 +934,7 @@ void write_line_outlined(unsigned int x0, unsigned int y0, unsigned int x1, unsi
         }
         error -= deltay;
         if (error < 0) {
-            y     += ystep;
+            y += ystep;
             error += deltax;
         }
     }
@@ -955,7 +955,7 @@ void write_line_outlined(unsigned int x0, unsigned int y0, unsigned int x1, unsi
 void write_word_misaligned(uint8_t *buff, uint16_t word, unsigned int addr, unsigned int xoff, int mode)
 {
     int16_t firstmask = word >> xoff;
-    int16_t lastmask  = word << (16 - xoff);
+    int16_t lastmask = word << (16 - xoff);
 
     WRITE_WORD_MODE(buff, addr + 1, firstmask && 0x00ff, mode);
     WRITE_WORD_MODE(buff, addr, (firstmask & 0xff00) >> 8, mode);
@@ -982,7 +982,7 @@ void write_word_misaligned(uint8_t *buff, uint16_t word, unsigned int addr, unsi
 void write_word_misaligned_NAND(uint8_t *buff, uint16_t word, unsigned int addr, unsigned int xoff)
 {
     uint16_t firstmask = word >> xoff;
-    uint16_t lastmask  = word << (16 - xoff);
+    uint16_t lastmask = word << (16 - xoff);
 
     WRITE_WORD_NAND(buff, addr + 1, firstmask & 0x00ff);
     WRITE_WORD_NAND(buff, addr, (firstmask & 0xff00) >> 8);
@@ -1009,7 +1009,7 @@ void write_word_misaligned_NAND(uint8_t *buff, uint16_t word, unsigned int addr,
 void write_word_misaligned_OR(uint8_t *buff, uint16_t word, unsigned int addr, unsigned int xoff)
 {
     uint16_t firstmask = word >> xoff;
-    uint16_t lastmask  = word << (16 - xoff);
+    uint16_t lastmask = word << (16 - xoff);
 
     WRITE_WORD_OR(buff, addr + 1, firstmask & 0x00ff);
     WRITE_WORD_OR(buff, addr, (firstmask & 0xff00) >> 8);
@@ -1093,10 +1093,10 @@ void write_char16(char ch, unsigned int x, unsigned int y, int font)
             return;
         }
         // Load data pointer.
-        row       = ch * font_info.height;
-        row_temp  = row;
+        row = ch * font_info.height;
+        row_temp = row;
         addr_temp = addr;
-        xshift    = 16 - font_info.width;
+        xshift = 16 - font_info.width;
         // We can write mask words easily.
         for (yy = y; yy < y + font_info.height; yy++) {
             if (font == 3) {
@@ -1111,20 +1111,20 @@ void write_char16(char ch, unsigned int x, unsigned int y, int font)
         // level bits, but only where the mask bit is set; otherwise,
         // we need to leave them alone. To do this, for each word, we
         // construct an AND mask and an OR mask, and apply each individually.
-        row  = row_temp;
+        row = row_temp;
         addr = addr_temp;
         for (yy = y; yy < y + font_info.height; yy++) {
             if (font == 3) {
-                levels   = font_frame12x18[row];
+                levels = font_frame12x18[row];
                 // if(!(flags & FONT_INVERT)) // data is normally inverted
-                levels   = ~levels;
-                or_mask  = font_mask12x18[row] << xshift;
+                levels = ~levels;
+                or_mask = font_mask12x18[row] << xshift;
                 and_mask = (font_mask12x18[row] & levels) << xshift;
             } else {
-                levels   = font_frame8x10[row];
+                levels = font_frame8x10[row];
                 // if(!(flags & FONT_INVERT)) // data is normally inverted
-                levels   = ~levels;
-                or_mask  = font_mask8x10[row] << xshift;
+                levels = ~levels;
+                or_mask = font_mask8x10[row] << xshift;
                 and_mask = (font_mask8x10[row] & levels) << xshift;
             }
             write_word_misaligned_OR(draw_buffer_level, or_mask, addr, wbit);
@@ -1174,10 +1174,10 @@ void write_char(char ch, unsigned int x, unsigned int y, int flags, int font)
             return;
         }
         // Load data pointer.
-        row       = lookup * font_info.height * 2;
-        row_temp  = row;
+        row = lookup * font_info.height * 2;
+        row_temp = row;
         addr_temp = addr;
-        xshift    = 16 - font_info.width;
+        xshift = 16 - font_info.width;
         // We can write mask words easily.
         for (yy = y; yy < y + font_info.height; yy++) {
             write_word_misaligned_OR(draw_buffer_mask, font_info.data[row] << xshift, addr, wbit);
@@ -1188,7 +1188,7 @@ void write_char(char ch, unsigned int x, unsigned int y, int flags, int font)
         // level bits, but only where the mask bit is set; otherwise,
         // we need to leave them alone. To do this, for each word, we
         // construct an AND mask and an OR mask, and apply each individually.
-        row  = row_temp;
+        row = row_temp;
         addr = addr_temp;
         for (yy = y; yy < y + font_info.height; yy++) {
             levels = font_info.data[row + font_info.height];
@@ -1196,7 +1196,7 @@ void write_char(char ch, unsigned int x, unsigned int y, int flags, int font)
                 // data is normally inverted
                 levels = ~levels;
             }
-            or_mask  = font_info.data[row] << xshift;
+            or_mask = font_info.data[row] << xshift;
             and_mask = (font_info.data[row] & levels) << xshift;
             write_word_misaligned_OR(draw_buffer_level, or_mask, addr, wbit);
             // If we're not bold write the AND mask.
@@ -1237,7 +1237,7 @@ void calc_text_dimensions(char *str, struct FontEntry font, int xs, int ys, stru
     if (line_length > max_length) {
         max_length = line_length;
     }
-    dim->width  = max_length * (font.width + xs);
+    dim->width = max_length * (font.width + xs);
     dim->height = lines * (font.height + ys);
 }
 
@@ -1291,7 +1291,7 @@ void write_string(char *str, unsigned int x, unsigned int y, unsigned int xs, un
     while (*str != 0) {
         if (*str == '\n' || *str == '\r') {
             yy += ys + font_info.height;
-            xx  = xx_original;
+            xx = xx_original;
         } else {
             if (xx >= 0 && xx < GRAPHICS_WIDTH_REAL) {
                 if (font_info.id < 2) {
@@ -1329,7 +1329,7 @@ void write_string_formatted(char *str, unsigned int x, unsigned int y, unsigned 
     fetch_font_info(0, 0, &font_info, NULL);
     int smallfontwidth = font_info.width, smallfontheight = font_info.height;
     fetch_font_info(0, 1, &font_info, NULL);
-    int bigfontwidth   = font_info.width, bigfontheight = font_info.height;
+    int bigfontwidth = font_info.width, bigfontheight = font_info.height;
     // 11 byte stack with last byte as NUL.
     char fstack[11];
     fstack[10] = '\0';
@@ -1345,17 +1345,17 @@ void write_string_formatted(char *str, unsigned int x, unsigned int y, unsigned 
         if (*str == '<' && fcode == 0) {
             // begin format code?
             fcode = 1;
-            fptr  = 0;
+            fptr = 0;
         }
         if (*str == '>' && fcode == 1) {
             fcode = 0;
             if (strcmp(fstack, "B")) {
                 // switch to "big" font (font #1)
-                fwidth  = bigfontwidth;
+                fwidth = bigfontwidth;
                 fheight = bigfontheight;
             } else if (strcmp(fstack, "S")) {
                 // switch to "small" font (font #0)
-                fwidth  = smallfontwidth;
+                fwidth = smallfontwidth;
                 fheight = smallfontheight;
             }
             if (fheight > max_height) {
@@ -1373,7 +1373,7 @@ void write_string_formatted(char *str, unsigned int x, unsigned int y, unsigned 
                 continue;
             }
             fstack[fptr++] = *str;
-            fstack[fptr]   = '\0'; // clear next byte (ready for next char or to terminate string.)
+            fstack[fptr] = '\0'; // clear next byte (ready for next char or to terminate string.)
         }
         if (fcode == 0) {
             // Not a format code, raw text.
@@ -1382,7 +1382,7 @@ void write_string_formatted(char *str, unsigned int x, unsigned int y, unsigned 
                 if (xx > max_xx) {
                     max_xx = xx;
                 }
-                xx  = x;
+                xx = x;
                 yy += fheight + ys;
             }
         }
@@ -1410,10 +1410,10 @@ void write_string_formatted(char *str, unsigned int x, unsigned int y, unsigned 
     // So ax,ay is our new text origin. Parse the text format again and paint
     // the text on the display.
     fcode = 0;
-    fptr  = 0;
-    font  = 0;
-    xx    = 0;
-    yy    = 0;
+    fptr = 0;
+    font = 0;
+    xx = 0;
+    yy = 0;
     while (*str) {
         if (*str == '<' && fcode == 1) {
             // escape code: skip
@@ -1422,20 +1422,20 @@ void write_string_formatted(char *str, unsigned int x, unsigned int y, unsigned 
         if (*str == '<' && fcode == 0) {
             // begin format code?
             fcode = 1;
-            fptr  = 0;
+            fptr = 0;
         }
         if (*str == '>' && fcode == 1) {
             fcode = 0;
             if (strcmp(fstack, "B")) {
                 // switch to "big" font (font #1)
-                fwidth  = bigfontwidth;
+                fwidth = bigfontwidth;
                 fheight = bigfontheight;
-                font    = 1;
+                font = 1;
             } else if (strcmp(fstack, "S")) {
                 // switch to "small" font (font #0)
-                fwidth  = smallfontwidth;
+                fwidth = smallfontwidth;
                 fheight = smallfontheight;
-                font    = 0;
+                font = 0;
             }
             // Skip over this byte. Go to next byte.
             str++;
@@ -1449,7 +1449,7 @@ void write_string_formatted(char *str, unsigned int x, unsigned int y, unsigned 
                 continue;
             }
             fstack[fptr++] = *str;
-            fstack[fptr]   = '\0'; // clear next byte (ready for next char or to terminate string.)
+            fstack[fptr] = '\0'; // clear next byte (ready for next char or to terminate string.)
         }
         if (fcode == 0) {
             // Not a format code, raw text. So we draw it.
@@ -1460,7 +1460,7 @@ void write_string_formatted(char *str, unsigned int x, unsigned int y, unsigned 
                 if (xx > max_xx) {
                     max_xx = xx;
                 }
-                xx  = x;
+                xx = x;
                 yy += fheight + ys;
             }
         }
@@ -1636,26 +1636,26 @@ void hud_draw_vertical_scale(int v, int range, int halign, int x, int y, int hei
     int majtick_start = 0, majtick_end = 0, mintick_start = 0, mintick_end = 0, boundtick_start = 0, boundtick_end = 0;
 
     if (halign == -1) {
-        majtick_start   = x;
-        majtick_end     = x + majtick_len;
-        mintick_start   = x;
-        mintick_end     = x + mintick_len;
+        majtick_start = x;
+        majtick_end = x + majtick_len;
+        mintick_start = x;
+        mintick_end = x + mintick_len;
         boundtick_start = x;
-        boundtick_end   = x + boundtick_len;
+        boundtick_end = x + boundtick_len;
     } else if (halign == +1) {
         x = x - GRAPHICS_HDEADBAND;
-        majtick_start   = GRAPHICS_WIDTH_REAL - x - 1;
-        majtick_end     = GRAPHICS_WIDTH_REAL - x - majtick_len - 1;
-        mintick_start   = GRAPHICS_WIDTH_REAL - x - 1;
-        mintick_end     = GRAPHICS_WIDTH_REAL - x - mintick_len - 1;
+        majtick_start = GRAPHICS_WIDTH_REAL - x - 1;
+        majtick_end = GRAPHICS_WIDTH_REAL - x - majtick_len - 1;
+        mintick_start = GRAPHICS_WIDTH_REAL - x - 1;
+        mintick_end = GRAPHICS_WIDTH_REAL - x - mintick_len - 1;
         boundtick_start = GRAPHICS_WIDTH_REAL - x - 1;
-        boundtick_end   = GRAPHICS_WIDTH_REAL - x - boundtick_len - 1;
+        boundtick_end = GRAPHICS_WIDTH_REAL - x - boundtick_len - 1;
     }
     // Retrieve width of large font (font #0); from this calculate the x spacing.
     fetch_font_info(0, 0, &font_info, NULL);
-    int arrow_len      = (font_info.height / 2) + 1;             // FIXME, font info being loaded correctly??
+    int arrow_len = (font_info.height / 2) + 1; // FIXME, font info being loaded correctly??
     int text_x_spacing = arrow_len;
-    int max_text_y     = 0, text_length = 0;
+    int max_text_y = 0, text_length = 0;
     int small_font_char_width = font_info.width + 1; // +1 for horizontal spacing = 1
     // For -(range / 2) to +(range / 2), draw the scale.
     int range_2 = range / 2; // , height_2 = height / 2;
@@ -1663,8 +1663,8 @@ void hud_draw_vertical_scale(int v, int range, int halign, int x, int y, int hei
     // Iterate through each step.
     for (r = -range_2; r <= +range_2; r++) {
         style = 0;
-        rr    = r + range_2 - v; // normalise range for modulo, subtract value to move ticker tape
-        rv    = -rr + range_2; // for number display
+        rr = r + range_2 - v; // normalise range for modulo, subtract value to move ticker tape
+        rv = -rr + range_2; // for number display
         if (flags & HUD_VSCALE_FLAG_NO_NEGATIVE) {
             rr += majtick_step / 2;
         }
@@ -1784,15 +1784,15 @@ void hud_draw_linear_compass(int v, int range, int width, int x, int y, int mint
     int majtick_start = 0, majtick_end = 0, mintick_start = 0, mintick_end = 0, textoffset = 0;
     char headingstr[4];
     majtick_start = y;
-    majtick_end   = y - majtick_len;
+    majtick_end = y - majtick_len;
     mintick_start = y;
-    mintick_end   = y - mintick_len;
-    textoffset    = 8;
+    mintick_end = y - mintick_len;
+    textoffset = 8;
     int r, style, rr, xs; // rv,
     int range_2 = range / 2;
     for (r = -range_2; r <= +range_2; r++) {
         style = 0;
-        rr    = (v + r + 360) % 360; // normalise range for modulo, add to move compass track
+        rr = (v + r + 360) % 360; // normalise range for modulo, add to move compass track
         // rv = -rr + range_2; // for number display
         if (rr % majtick_step == 0) {
             style = 1; // major tick
@@ -1865,13 +1865,13 @@ void draw_artificial_horizon(float angle, float pitch, int16_t l_x, int16_t l_y,
     int16_t refx, refy;
 
     alpha = DEG2RAD(angle);
-    refx  = l_x + size / 2;
-    refy  = l_y + size / 2;
+    refx = l_x + size / 2;
+    refy = l_y + size / 2;
 
     //
-    float k    = 0;
-    float dx   = sinf(alpha) * (pitch / 90.0f * (size / 2));
-    float dy   = cosf(alpha) * (pitch / 90.0f * (size / 2));
+    float k = 0;
+    float dx = sinf(alpha) * (pitch / 90.0f * (size / 2));
+    float dy = cosf(alpha) * (pitch / 90.0f * (size / 2));
     int16_t x0 = (size / 2) - dx;
     int16_t y0 = (size / 2) + dy;
     // calculate the line function
@@ -1903,8 +1903,8 @@ void draw_artificial_horizon(float angle, float pitch, int16_t l_x, int16_t l_y,
             x1 = ((y1 - y0) + k * x0) / k;
         }
         // left crossing point
-        x  = size;
-        y  = k * (x - x0) + y0;
+        x = size;
+        y = k * (x - x0) + y0;
         x2 = x;
         y2 = y;
         if (y < 0) {
@@ -2044,7 +2044,7 @@ void calcHomeArrow(int16_t m_yaw)
     float elevation;
     float gcsAlt = home.Altitude; // Home MSL altitude
     float uavAlt = gpsData.Altitude; // UAV MSL altitude
-    float dAlt   = uavAlt - gcsAlt; // Altitude difference
+    float dAlt = uavAlt - gcsAlt; // Altitude difference
 
     // Convert to radians
     lat1 = DEG2RAD(home.Latitude) / 10000000.0f; // Home lat
@@ -2059,8 +2059,8 @@ void calcHomeArrow(int16_t m_yaw)
        Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLon);
        var brng = Math.atan2(y, x).toDeg();
      **/
-    y    = sinf(lon2 - lon1) * cosf(lat2);
-    x    = cosf(lat1) * sinf(lat2) - sinf(lat1) * cosf(lat2) * cosf(lon2 - lon1);
+    y = sinf(lon2 - lon1) * cosf(lat2);
+    x = cosf(lat1) * sinf(lat2) - sinf(lat1) * cosf(lat2) * cosf(lon2 - lon1);
     brng = RAD2DEG(atan2f(y, x));
     if (brng < 0) {
         brng += 360.0f;
@@ -2315,7 +2315,7 @@ void updateGraphics()
     case 2:
     {
         int size = 64;
-        int x    = ((GRAPHICS_RIGHT / 2) - (size / 2)), y = (GRAPHICS_BOTTOM - size - 2);
+        int x = ((GRAPHICS_RIGHT / 2) - (size / 2)), y = (GRAPHICS_BOTTOM - size - 2);
         draw_artificial_horizon(-attitude.Roll, attitude.Pitch, APPLY_HDEADBAND(x), APPLY_VDEADBAND(y), size);
         hud_draw_vertical_scale((int)gpsData.Groundspeed, 20, +1, APPLY_HDEADBAND(GRAPHICS_RIGHT - (x - 1)), APPLY_VDEADBAND(y + (size / 2)), size, 5, 10, 4, 7,
                                 10, 100, HUD_VSCALE_FLAG_NO_NEGATIVE);

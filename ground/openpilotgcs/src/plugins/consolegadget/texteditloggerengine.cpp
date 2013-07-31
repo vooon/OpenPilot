@@ -112,7 +112,7 @@ void TextEditLoggerEngine::writeToTextEdit(const QString & level, const QList<QV
         return;
     }
     QScrollBar *sb = m_textEdit->verticalScrollBar();
-    bool scroll    = sb->value() == sb->maximum();
+    bool scroll = sb->value() == sb->maximum();
     QString header = '[' + QTime::currentTime().toString("hh:mm:ss.zzz") + "] [" + level + "] ";
     QString padding;
     QString appendText;

@@ -39,27 +39,27 @@ static guint global_op_uavtalk_port = 9000;
 
 static int proto_op_uavtalk = -1;
 
-static gint ett_op_uavtalk  = -1;
+static gint ett_op_uavtalk = -1;
 
 static dissector_handle_t data_handle;
 static dissector_table_t uavtalk_subdissector_table;
 
-static int hf_op_uavtalk_sync    = -1;
+static int hf_op_uavtalk_sync = -1;
 static int hf_op_uavtalk_version = -1;
-static int hf_op_uavtalk_type    = -1;
-static int hf_op_uavtalk_len     = -1;
-static int hf_op_uavtalk_objid   = -1;
-static int hf_op_uavtalk_crc8    = -1;
+static int hf_op_uavtalk_type = -1;
+static int hf_op_uavtalk_len = -1;
+static int hf_op_uavtalk_objid = -1;
+static int hf_op_uavtalk_crc8 = -1;
 
 #define UAVTALK_SYNC_VAL 0x3C
 
 static const value_string uavtalk_packet_types[] = {
-    { 0, "TxObj"      },
-    { 1, "GetObj"     },
+    { 0, "TxObj" },
+    { 1, "GetObj" },
     { 2, "SetObjAckd" },
-    { 3, "Ack"        },
-    { 4, "Nack"       },
-    { 0, NULL         }
+    { 3, "Ack" },
+    { 4, "Nack" },
+    { 0, NULL }
 };
 
 void proto_reg_handoff_op_uavtalk(void);
@@ -68,11 +68,11 @@ void proto_reg_handoff_op_uavtalk(void);
 #define UAVTALK_TRAILER_SIZE 1
 static int dissect_op_uavtalk(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree)
 {
-    gint offset   = 0;
+    gint offset = 0;
 
     guint8 packet_type = tvb_get_guint8(tvb, 1) & 0x7;
     guint32 objid = tvb_get_letohl(tvb, 4);
-    guint32 payload_length  = tvb_get_letohs(tvb, 2) - UAVTALK_HEADER_SIZE - UAVTALK_TRAILER_SIZE;
+    guint32 payload_length = tvb_get_letohs(tvb, 2) - UAVTALK_HEADER_SIZE - UAVTALK_TRAILER_SIZE;
     guint32 reported_length = tvb_reported_length(tvb);
 
     col_set_str(pinfo->cinfo, COL_PROTOCOL, "UAVTALK");
@@ -142,27 +142,27 @@ void proto_register_op_uavtalk(void)
 
     static hf_register_info hf[] = {
         { &hf_op_uavtalk_sync,
-            { "Sync Byte",           "uavtalk.sync",   FT_UINT8,
+          { "Sync Byte", "uavtalk.sync", FT_UINT8,
             BASE_HEX, NULL, 0x0, NULL, HFILL }
         },
         { &hf_op_uavtalk_version,
-            { "Version",             "uavtalk.ver",    FT_UINT8,
+          { "Version", "uavtalk.ver", FT_UINT8,
             BASE_DEC, NULL, 0xf8, NULL, HFILL }
         },
         { &hf_op_uavtalk_type,
-            { "Type",                "uavtalk.type",   FT_UINT8,
+          { "Type", "uavtalk.type", FT_UINT8,
             BASE_HEX, VALS(uavtalk_packet_types), 0x07, NULL, HFILL }
         },
         { &hf_op_uavtalk_len,
-            { "Length",              "uavtalk.len",    FT_UINT16,
+          { "Length", "uavtalk.len", FT_UINT16,
             BASE_DEC, NULL, 0x0, NULL, HFILL }
         },
         { &hf_op_uavtalk_objid,
-            { "ObjID",               "uavtalk.objid",  FT_UINT32,
+          { "ObjID", "uavtalk.objid", FT_UINT32,
             BASE_HEX, NULL, 0x0, NULL, HFILL }
         },
         { &hf_op_uavtalk_crc8,
-            { "Crc8",                "uavtalk.crc8",   FT_UINT8,
+          { "Crc8", "uavtalk.crc8", FT_UINT8,
             BASE_HEX, NULL, 0x0, NULL, HFILL }
         },
     };

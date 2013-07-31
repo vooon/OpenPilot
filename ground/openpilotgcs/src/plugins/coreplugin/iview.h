@@ -42,7 +42,7 @@ public:
     IView(QObject *parent = 0) : IContext(parent) {}
     virtual ~IView() {}
 
-    virtual const char *uniqueViewName() const   = 0;
+    virtual const char *uniqueViewName() const = 0;
     virtual ViewPosition defaultPosition() const = 0;
 };
 } // namespace Core

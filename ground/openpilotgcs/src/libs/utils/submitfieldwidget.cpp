@@ -58,10 +58,10 @@ struct FieldEntry {
     void createGui(const QIcon &removeIcon);
     void deleteGuiLater();
 
-    QComboBox   *combo;
+    QComboBox *combo;
     QHBoxLayout *layout;
-    QLineEdit   *lineEdit;
-    QToolBar    *toolBar;
+    QLineEdit *lineEdit;
+    QToolBar *toolBar;
     QToolButton *clearButton;
     QToolButton *browseButton;
     int comboIndex;
@@ -79,17 +79,17 @@ FieldEntry::FieldEntry() :
 
 void FieldEntry::createGui(const QIcon &removeIcon)
 {
-    layout       = new QHBoxLayout;
+    layout = new QHBoxLayout;
     layout->setMargin(0);
     layout->setSpacing(spacing);
-    combo        = new QComboBox;
+    combo = new QComboBox;
     layout->addWidget(combo);
-    lineEdit     = new QLineEdit;
+    lineEdit = new QLineEdit;
     layout->addWidget(lineEdit);
-    toolBar      = new QToolBar;
+    toolBar = new QToolBar;
     toolBar->setProperty("_q_custom_style_disabled", QVariant(true));
     layout->addWidget(toolBar);
-    clearButton  = new QToolButton;
+    clearButton = new QToolButton;
     clearButton->setIcon(removeIcon);
     toolBar->addWidget(clearButton);
     browseButton = new QToolButton;
@@ -117,9 +117,9 @@ struct SubmitFieldWidgetPrivate {
     inline QString fieldValue(int) const;
     inline void    focusField(int);
 
-    const QIcon    removeFieldIcon;
-    QStringList    fields;
-    QCompleter     *completer;
+    const QIcon removeFieldIcon;
+    QStringList fields;
+    QCompleter *completer;
     bool hasBrowseButton;
     bool allowDuplicateFields;
 
@@ -261,7 +261,7 @@ void SubmitFieldWidget::setFieldValue(int pos, const QString &value)
 
 QString SubmitFieldWidget::fieldValues() const
 {
-    const QChar blank   = QLatin1Char(' ');
+    const QChar blank = QLatin1Char(' ');
     const QChar newLine = QLatin1Char('\n');
     // Format as "RevBy: value\nSigned-Off: value\n"
     QString rc;
@@ -329,7 +329,7 @@ void SubmitFieldWidget::slotRemove()
 
 void SubmitFieldWidget::removeField(int index)
 {
-    FieldEntry fe     = m_d->fieldEntries.takeAt(index);
+    FieldEntry fe = m_d->fieldEntries.takeAt(index);
     QLayoutItem *item = m_d->layout->takeAt(index);
 
     fe.deleteGuiLater();

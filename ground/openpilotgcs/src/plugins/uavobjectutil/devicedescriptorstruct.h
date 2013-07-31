@@ -4,11 +4,11 @@
 #include <QString>
 struct deviceDescriptorStruct {
 public:
-    QString        gitHash;
-    QString        gitDate;
-    QString        gitTag;
-    QByteArray     fwHash;
-    QByteArray     uavoHash;
+    QString gitHash;
+    QString gitDate;
+    QString gitTag;
+    QByteArray fwHash;
+    QByteArray uavoHash;
     int boardType;
     int boardRevision;
     static QString idToBoardName(int id)

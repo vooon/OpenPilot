@@ -41,22 +41,22 @@ typedef unsigned long DWORD; // 4 Bytes
 
 class MyParser : public QObject {
     struct POWERLOG_HID_PACK {
-        BYTE   Len;
-        BYTE   Type;
-        DWORD  Interval;
-        BYTE   LogState;
-        SHORT  Current;
+        BYTE Len;
+        BYTE Type;
+        DWORD Interval;
+        BYTE LogState;
+        SHORT Current;
         USHORT Volt;
-        DWORD  Cap;
-        SHORT  Cell[6];
+        DWORD Cap;
+        SHORT Cell[6];
         USHORT RPM;
-        SHORT  Temp[4];
+        SHORT Temp[4];
         USHORT Period;
         USHORT Pulse;
     };
 
     enum {
-        TYPE_DATA_ONLINE  = 0x10,
+        TYPE_DATA_ONLINE = 0x10,
         TYPE_DATA_OFFLINE = 0x11,
         TYPE_ORDER = 0x20,
     };
@@ -96,32 +96,32 @@ public:
         int i;
         int Count;
 
-        Count        = 0;
-        Inf.Len      = pBuf[Count];
-        Count       += sizeof(Inf.Len);
+        Count = 0;
+        Inf.Len = pBuf[Count];
+        Count += sizeof(Inf.Len);
 
-        Inf.Type     = pBuf[Count];
-        Count       += sizeof(Inf.Type);
+        Inf.Type = pBuf[Count];
+        Count += sizeof(Inf.Type);
 
         Inf.Interval = *((DWORD *)&pBuf[Count]);
         printf("%ld,", Inf.Interval);
 
-        Count       += sizeof(Inf.Interval);
+        Count += sizeof(Inf.Interval);
 
         Inf.LogState = pBuf[Count];
-        Count       += sizeof(Inf.LogState);
+        Count += sizeof(Inf.LogState);
 
         if (((Inf.Type == TYPE_DATA_ONLINE) || (Inf.Type == TYPE_DATA_OFFLINE)) && (Inf.Len == 0x29)) { // 0x27
             Inf.Current = *((SHORT *)&pBuf[Count]);
-            Count   += sizeof(Inf.Current);
+            Count += sizeof(Inf.Current);
             GetShowValue(QString("Current:"), Inf.Current, 5, 2);
 
             Inf.Volt = *((USHORT *)&pBuf[Count]);
-            Count   += sizeof(Inf.Volt);
+            Count += sizeof(Inf.Volt);
             GetShowValue(QString("Voltage:"), Inf.Volt, 5, 2);
 
-            Inf.Cap  = *((DWORD *)&pBuf[Count]);
-            Count   += sizeof(Inf.Cap);
+            Inf.Cap = *((DWORD *)&pBuf[Count]);
+            Count += sizeof(Inf.Cap);
             GetShowValue(QString("Cap:"), Inf.Cap, 6, 0);
 
             for (i = 0; i < 6; i++) {
@@ -136,7 +136,7 @@ public:
             GetShowValue(QString("Cell 6:"), Inf.Cell[5], 5, 3);
 
             Inf.RPM = *((USHORT *)&pBuf[Count]);
-            Count  += sizeof(Inf.RPM);
+            Count += sizeof(Inf.RPM);
             GetShowValue(QString("RPM:"), Inf.RPM, 6, 0);
 
 
@@ -162,11 +162,11 @@ public:
             }
 
             Inf.Period = *((USHORT *)&pBuf[Count]);
-            Count    += sizeof(Inf.Period);
+            Count += sizeof(Inf.Period);
             GetShowValue(QString("Period:"), Inf.Period, 6, 0);
 
             Inf.Pulse = *((USHORT *)&pBuf[Count]);
-            Count    += sizeof(Inf.Pulse);
+            Count += sizeof(Inf.Pulse);
             GetShowValue(QString("Pulse:"), Inf.Pulse, 6, 0);
 
             printf("\n");

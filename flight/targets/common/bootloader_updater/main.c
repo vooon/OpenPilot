@@ -45,8 +45,8 @@ extern uint32_t _binary_start;
 extern uint32_t _binary_end;
 extern uint32_t _binary_size;
 const uint32_t *embedded_image_start = (uint32_t *)&(_binary_start);
-const uint32_t *embedded_image_end   = (uint32_t *)&(_binary_end);
-const uint32_t embedded_image_size   = (uint32_t)&(_binary_size);
+const uint32_t *embedded_image_end = (uint32_t *)&(_binary_end);
+const uint32_t embedded_image_size = (uint32_t)&(_binary_size);
 
 int main()
 {

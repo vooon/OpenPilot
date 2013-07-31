@@ -30,11 +30,11 @@
 namespace mapcontrol {
 WayPointItem::WayPointItem(const internals::PointLatLng &coord, int const & altitude, MapGraphicItem *map, wptype type) : coord(coord), reached(false), description(""), shownumber(true), isDragging(false), altitude(altitude), map(map), myType(type)
 {
-    text    = 0;
+    text = 0;
     numberI = 0;
     isMagic = false;
     picture.load(QString::fromUtf8(":/markers/images/marker.png"));
-    number  = WayPointItem::snumber;
+    number = WayPointItem::snumber;
     ++WayPointItem::snumber;
     this->setFlag(QGraphicsItem::ItemIsMovable, true);
     this->setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
@@ -65,20 +65,20 @@ WayPointItem::WayPointItem(const internals::PointLatLng &coord, int const & alti
 
 WayPointItem::WayPointItem(MapGraphicItem *map, bool magicwaypoint) : reached(false), description(""), shownumber(true), isDragging(false), altitude(0), map(map)
 {
-    relativeCoord.bearing  = 0;
+    relativeCoord.bearing = 0;
     relativeCoord.distance = 0;
     relativeCoord.altitudeRelative = 0;
     myType = relative;
     if (magicwaypoint) {
         isMagic = true;
         picture.load(QString::fromUtf8(":/opmap/images/waypoint_marker3.png"));
-        number  = -1;
+        number = -1;
     } else {
         isMagic = false;
-        number  = WayPointItem::snumber;
+        number = WayPointItem::snumber;
         ++WayPointItem::snumber;
     }
-    text    = 0;
+    text = 0;
     numberI = 0;
     this->setFlag(QGraphicsItem::ItemIsMovable, true);
     this->setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
@@ -108,11 +108,11 @@ WayPointItem::WayPointItem(MapGraphicItem *map, bool magicwaypoint) : reached(fa
 }
 WayPointItem::WayPointItem(const internals::PointLatLng &coord, int const & altitude, const QString &description, MapGraphicItem *map, wptype type) : coord(coord), reached(false), description(description), shownumber(true), isDragging(false), altitude(altitude), map(map), myType(type)
 {
-    text    = 0;
+    text = 0;
     numberI = 0;
     isMagic = false;
     picture.load(QString::fromUtf8(":/markers/images/marker.png"));
-    number  = WayPointItem::snumber;
+    number = WayPointItem::snumber;
     ++WayPointItem::snumber;
     this->setFlag(QGraphicsItem::ItemIsMovable, true);
     this->setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
@@ -156,12 +156,12 @@ WayPointItem::WayPointItem(const distBearingAltitude &relativeCoordenate, const 
         coord = map->Projection()->translate(myHome->Coord(), relativeCoord.distance, relativeCoord.bearing);
         SetAltitude(myHome->Altitude() + relativeCoord.altitudeRelative);
     }
-    myType  = relative;
-    text    = 0;
+    myType = relative;
+    text = 0;
     numberI = 0;
     isMagic = false;
     picture.load(QString::fromUtf8(":/markers/images/marker.png"));
-    number  = WayPointItem::snumber;
+    number = WayPointItem::snumber;
     ++WayPointItem::snumber;
     this->setFlag(QGraphicsItem::ItemIsMovable, true);
     this->setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
@@ -208,7 +208,7 @@ void WayPointItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 void WayPointItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton) {
-        text   = new QGraphicsSimpleTextItem(this);
+        text = new QGraphicsSimpleTextItem(this);
         textBG = new QGraphicsRectItem(this);
 
         textBG->setBrush(Qt::yellow);
@@ -356,7 +356,7 @@ void WayPointItem::SetShowNumber(const bool &value)
 {
     shownumber = value;
     if ((numberI == 0) && value) {
-        numberI   = new QGraphicsSimpleTextItem(this);
+        numberI = new QGraphicsSimpleTextItem(this);
         numberIBG = new QGraphicsRectItem(this);
         numberIBG->setBrush(Qt::white);
         numberIBG->setOpacity(0.5);
@@ -457,7 +457,7 @@ void WayPointItem::RefreshToolTip()
         type_str = "Absolute";
     }
     QString coord_str = " " + QString::number(coord.Lat(), 'f', 6) + "   " + QString::number(coord.Lng(), 'f', 6);
-    QString relativeCoord_str    = " Distance:" + QString::number(relativeCoord.distance) + " Bearing:" + QString::number(relativeCoord.bearing * 180 / M_PI);
+    QString relativeCoord_str = " Distance:" + QString::number(relativeCoord.distance) + " Bearing:" + QString::number(relativeCoord.bearing * 180 / M_PI);
     QString relativeAltitude_str = QString::number(relativeCoord.altitudeRelative);
     if (Number() != -1) {
         setToolTip(QString("WayPoint Number:%1\nDescription:%2\nCoordinate:%4\nFrom Home:%5\nRelative altitude:%6\nAltitude:%7\nType:%8\n%9").arg(QString::number(numberAdjusted())).arg(description).arg(coord_str).arg(relativeCoord_str).arg(relativeAltitude_str).arg(QString::number(altitude)).arg(type_str).arg(myCustomString));

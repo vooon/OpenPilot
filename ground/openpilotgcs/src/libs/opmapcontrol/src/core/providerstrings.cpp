@@ -28,11 +28,11 @@
 
 
 namespace core {
-const QString ProviderStrings::levelsForSigPacSpainMap[] = { "0",         "1",         "2",         "3",       "4",
+const QString ProviderStrings::levelsForSigPacSpainMap[] = { "0", "1", "2", "3", "4",
                                                              "MTNSIGPAC",
-                                                             "MTN2000",   "MTN2000",   "MTN2000",   "MTN2000", "MTN2000",
-                                                             "MTN200",    "MTN200",    "MTN200",
-                                                             "MTN25",     "MTN25",
+                                                             "MTN2000", "MTN2000", "MTN2000", "MTN2000", "MTN2000",
+                                                             "MTN200", "MTN200", "MTN200",
+                                                             "MTN25", "MTN25",
                                                              "ORTOFOTOS", "ORTOFOTOS", "ORTOFOTOS", "ORTOFOTOS" };
 
 ProviderStrings::ProviderStrings()
@@ -42,39 +42,39 @@ ProviderStrings::ProviderStrings()
 // VersionGoogleLabels = "h@132";
 // VersionGoogleTerrain = "t@125,r@132";
     // Google version strings
-    VersionGoogleMap       = "m@132";
+    VersionGoogleMap = "m@132";
     VersionGoogleSatellite = "71";
-    VersionGoogleLabels    = "h@132";
-    VersionGoogleTerrain   = "t@125,r@132";
+    VersionGoogleLabels = "h@132";
+    VersionGoogleTerrain = "t@125,r@132";
     SecGoogleWord = "Galileo";
 
     // Google (China) version strings
-    VersionGoogleMapChina       = "m@132";
+    VersionGoogleMapChina = "m@132";
     VersionGoogleSatelliteChina = "s@71";
-    VersionGoogleLabelsChina    = "h@132";
-    VersionGoogleTerrainChina   = "t@125,r@132";
+    VersionGoogleLabelsChina = "h@132";
+    VersionGoogleTerrainChina = "t@125,r@132";
 
     // Google (Korea) version strings
-    VersionGoogleMapKorea       = "kr1.12";
+    VersionGoogleMapKorea = "kr1.12";
     VersionGoogleSatelliteKorea = "66";
-    VersionGoogleLabelsKorea    = "kr1t.12";
+    VersionGoogleLabelsKorea = "kr1t.12";
 
     /// <summary>
     /// Google Maps API generated using http://greatmaps.codeplex.com/
     /// from http://code.google.com/intl/en-us/apis/maps/signup.html
     /// </summary>
-    GoogleMapsAPIKey      = "ABQIAAAAWaQgWiEBF3lW97ifKnAczhRAzBk5Igf8Z5n2W3hNnMT0j2TikxTLtVIGU7hCLLHMAuAMt-BO5UrEWA";
+    GoogleMapsAPIKey = "ABQIAAAAWaQgWiEBF3lW97ifKnAczhRAzBk5Igf8Z5n2W3hNnMT0j2TikxTLtVIGU7hCLLHMAuAMt-BO5UrEWA";
 
     // Yahoo version strings
-    VersionYahooMap       = "4.3";
+    VersionYahooMap = "4.3";
     VersionYahooSatellite = "1.9";
-    VersionYahooLabels    = "4.3";
+    VersionYahooLabels = "4.3";
 
     // BingMaps
-    VersionBingMaps       = "563";
+    VersionBingMaps = "563";
 
     // YandexMap
-    VersionYandexMap      = "2.16.0";
+    VersionYandexMap = "2.16.0";
     // VersionYandexSatellite = "1.19.0";
     ////////////////////
 

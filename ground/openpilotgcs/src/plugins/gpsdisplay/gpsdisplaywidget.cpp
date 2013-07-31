@@ -155,7 +155,7 @@ void GpsDisplayWidget::setPosition(double lat, double lon, double alt)
     // Now place the marker:
     double wscale = flatEarth->sceneRect().width() / 360;
     double hscale = flatEarth->sceneRect().height() / 180;
-    QPointF opd   = QPointF((lon + 180) * wscale - marker->boundingRect().width() * marker->scale() / 2,
-                            (90 - lat) * hscale - marker->boundingRect().height() * marker->scale() / 2);
+    QPointF opd = QPointF((lon + 180) * wscale - marker->boundingRect().width() * marker->scale() / 2,
+                          (90 - lat) * hscale - marker->boundingRect().height() * marker->scale() / 2);
     marker->setTransform(QTransform::fromTranslate(opd.x(), opd.y()), false);
 }

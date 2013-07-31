@@ -57,7 +57,7 @@ int32_t configuration_check()
     uint8_t alarmsubstatus = 0;
     // Get board type
     const struct pios_board_info *bdinfo = &pios_board_info_blob;
-    bool coptercontrol     = bdinfo->board_type == 0x04;
+    bool coptercontrol = bdinfo->board_type == 0x04;
 
     // Classify airframe type
     bool multirotor = true;
@@ -170,7 +170,7 @@ int32_t configuration_check()
         }
         // mark the first encountered erroneous setting in status and substatus
         if ((severity != SYSTEMALARMS_ALARM_OK) && (alarmstatus == SYSTEMALARMS_EXTENDEDALARMSTATUS_NONE)) {
-            alarmstatus    = SYSTEMALARMS_EXTENDEDALARMSTATUS_FLIGHTMODE;
+            alarmstatus = SYSTEMALARMS_EXTENDEDALARMSTATUS_FLIGHTMODE;
             alarmsubstatus = i;
         }
     }

@@ -66,17 +66,17 @@
         __typeof__(list)_ls_p, _ls_q, _ls_e, _ls_tail, _ls_oldhead;              \
         int _ls_insize, _ls_nmerges, _ls_psize, _ls_qsize, _ls_i, _ls_looping;         \
         if (list) {                                                                    \
-            _ls_insize  = 1;                                                              \
+            _ls_insize = 1;                                                              \
             _ls_looping = 1;                                                             \
             while (_ls_looping) {                                                        \
-                _ls_p       = list;                                                              \
+                _ls_p = list;                                                              \
                 _ls_oldhead = list;                                                        \
-                list        = NULL;                                                               \
-                _ls_tail    = NULL;                                                           \
+                list = NULL;                                                               \
+                _ls_tail = NULL;                                                           \
                 _ls_nmerges = 0;                                                           \
                 while (_ls_p) {                                                            \
                     _ls_nmerges++;                                                           \
-                    _ls_q     = _ls_p;                                                           \
+                    _ls_q = _ls_p;                                                           \
                     _ls_psize = 0;                                                           \
                     for (_ls_i = 0; _ls_i < _ls_insize; _ls_i++) {                           \
                         _ls_psize++;                                                           \
@@ -122,17 +122,17 @@
         __typeof__(list)_ls_p, _ls_q, _ls_e, _ls_tail, _ls_oldhead;              \
         int _ls_insize, _ls_nmerges, _ls_psize, _ls_qsize, _ls_i, _ls_looping;         \
         if (list) {                                                                    \
-            _ls_insize  = 1;                                                              \
+            _ls_insize = 1;                                                              \
             _ls_looping = 1;                                                             \
             while (_ls_looping) {                                                        \
-                _ls_p       = list;                                                              \
+                _ls_p = list;                                                              \
                 _ls_oldhead = list;                                                        \
-                list        = NULL;                                                               \
-                _ls_tail    = NULL;                                                           \
+                list = NULL;                                                               \
+                _ls_tail = NULL;                                                           \
                 _ls_nmerges = 0;                                                           \
                 while (_ls_p) {                                                            \
                     _ls_nmerges++;                                                           \
-                    _ls_q     = _ls_p;                                                           \
+                    _ls_q = _ls_p;                                                           \
                     _ls_psize = 0;                                                           \
                     for (_ls_i = 0; _ls_i < _ls_insize; _ls_i++) {                           \
                         _ls_psize++;                                                           \
@@ -160,11 +160,11 @@
                             list = _ls_e;                                           \
                         }                                                                      \
                         _ls_e->prev = _ls_tail;                                   \
-                        _ls_tail    = _ls_e;                                                      \
+                        _ls_tail = _ls_e;                                                      \
                     }                                                                        \
                     _ls_p = _ls_q;                                                           \
                 }                                                                          \
-                list->prev     = _ls_tail;                                      \
+                list->prev = _ls_tail;                                      \
                 _ls_tail->next = NULL;                                               \
                 if (_ls_nmerges <= 1) {                                                    \
                     _ls_looping = 0;                                                           \
@@ -180,17 +180,17 @@
         __typeof__(list)_ls_p, _ls_q, _ls_e, _ls_tail, _ls_oldhead;              \
         int _ls_insize, _ls_nmerges, _ls_psize, _ls_qsize, _ls_i, _ls_looping;         \
         if (list) {                                                                    \
-            _ls_insize  = 1;                                                              \
+            _ls_insize = 1;                                                              \
             _ls_looping = 1;                                                             \
             while (_ls_looping) {                                                        \
-                _ls_p       = list;                                                              \
+                _ls_p = list;                                                              \
                 _ls_oldhead = list;                                                        \
-                list        = NULL;                                                               \
-                _ls_tail    = NULL;                                                           \
+                list = NULL;                                                               \
+                _ls_tail = NULL;                                                           \
                 _ls_nmerges = 0;                                                           \
                 while (_ls_p) {                                                            \
                     _ls_nmerges++;                                                           \
-                    _ls_q     = _ls_p;                                                           \
+                    _ls_q = _ls_p;                                                           \
                     _ls_psize = 0;                                                           \
                     for (_ls_i = 0; _ls_i < _ls_insize; _ls_i++) {                           \
                         _ls_psize++;                                                           \
@@ -222,11 +222,11 @@
                             list = _ls_e;                                           \
                         }                                                                      \
                         _ls_e->prev = _ls_tail;                                   \
-                        _ls_tail    = _ls_e;                                                      \
+                        _ls_tail = _ls_e;                                                      \
                     }                                                                        \
                     _ls_p = _ls_q;                                                           \
                 }                                                                          \
-                list->prev     = _ls_tail;                                      \
+                list->prev = _ls_tail;                                      \
                 _ls_tail->next = list;                                        \
                 if (_ls_nmerges <= 1) {                                                    \
                     _ls_looping = 0;                                                           \
@@ -290,7 +290,7 @@
     do {                                                                             \
         (add)->next = head;                                                             \
         if (head) {                                                                     \
-            (add)->prev  = (head)->prev;                                                   \
+            (add)->prev = (head)->prev;                                                   \
             (head)->prev = (add);                                                         \
         } \
         else {                                                                        \
@@ -303,10 +303,10 @@
 #define DL_APPEND(head, add)                                                      \
     do {                                                                             \
         if (head) {                                                                    \
-            (add)->prev  = (head)->prev;                                                \
+            (add)->prev = (head)->prev;                                                \
             (head)->prev->next = (add);                                                \
             (head)->prev = (add);                                                      \
-            (add)->next  = NULL;                                                        \
+            (add)->next = NULL;                                                        \
         } \
         else {                                                                       \
             (head) = (add);                                                              \
@@ -347,8 +347,8 @@
 #define CDL_PREPEND(head, add)                                                    \
     do {                                                                             \
         if (head) {                                                                     \
-            (add)->prev  = (head)->prev;                                                   \
-            (add)->next  = (head);                                                         \
+            (add)->prev = (head)->prev;                                                   \
+            (add)->next = (head);                                                         \
             (head)->prev = (add);                                                         \
             (add)->prev->next = (add);                                                    \
         } \

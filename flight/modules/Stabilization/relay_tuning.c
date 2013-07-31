@@ -54,11 +54,11 @@ int stabilization_relay_rate(float error, float *output, int axis, bool reinit)
     static portTickType lastLowTime;
 
     static float accum_sin, accum_cos;
-    static uint32_t accumulated  = 0;
+    static uint32_t accumulated = 0;
 
     const uint16_t DEGLITCH_TIME = 20; // ms
-    const float AMPLITUDE_ALPHA  = 0.95f;
-    const float PERIOD_ALPHA     = 0.95f;
+    const float AMPLITUDE_ALPHA = 0.95f;
+    const float PERIOD_ALPHA = 0.95f;
 
     portTickType thisTime = xTaskGetTickCount();
 
@@ -71,17 +71,17 @@ int stabilization_relay_rate(float error, float *output, int axis, bool reinit)
     // On first run initialize estimates to something reasonable
     if (reinit) {
         rateRelayRunning[axis] = false;
-        relay.Period[axis]     = 200;
+        relay.Period[axis] = 200;
         relay.Gain[axis] = 0;
 
-        accum_sin   = 0;
-        accum_cos   = 0;
+        accum_sin = 0;
+        accum_cos = 0;
         accumulated = 0;
 
         // These should get reinitialized anyway
         high = true;
         lastHighTime = thisTime;
-        lastLowTime  = thisTime;
+        lastLowTime = thisTime;
         RelayTuningSet(&relay);
     }
 
@@ -101,7 +101,7 @@ int stabilization_relay_rate(float error, float *output, int axis, bool reinit)
 
     // Project the error onto a sine and cosine of the same frequency
     // to accumulate the average amplitude
-    int32_t dT  = thisTime - lastHighTime;
+    int32_t dT = thisTime - lastHighTime;
     float phase = ((float)360 * (float)dT) / relay.Period[axis];
     if (phase >= 360) {
         phase = 0;
@@ -120,16 +120,16 @@ int stabilization_relay_rate(float error, float *output, int axis, bool reinit)
         float this_gain = this_amplitude / relaySettings.Amplitude;
 
         accumulated = 0;
-        accum_sin   = 0;
-        accum_cos   = 0;
+        accum_sin = 0;
+        accum_cos = 0;
 
         if (rateRelayRunning[axis] == false) {
             rateRelayRunning[axis] = true;
-            relay.Period[axis]     = 200;
+            relay.Period[axis] = 200;
             relay.Gain[axis] = 0;
         } else {
             // Low pass filter each amplitude and period
-            relay.Gain[axis]   = relay.Gain[axis] * AMPLITUDE_ALPHA + this_gain * (1 - AMPLITUDE_ALPHA);
+            relay.Gain[axis] = relay.Gain[axis] * AMPLITUDE_ALPHA + this_gain * (1 - AMPLITUDE_ALPHA);
             relay.Period[axis] = relay.Period[axis] * PERIOD_ALPHA + dT * (1 - PERIOD_ALPHA);
         }
         lastHighTime = thisTime;

@@ -50,7 +50,7 @@ public:
     ActionManager(QObject *parent = 0) : QObject(parent) {}
     virtual ~ActionManager() {}
 
-    virtual ActionContainer *createMenu(const QString &id)    = 0;
+    virtual ActionContainer *createMenu(const QString &id) = 0;
     virtual ActionContainer *createMenuBar(const QString &id) = 0;
 
     virtual Command *registerAction(QAction *action, const QString &id, const QList<int> &context) = 0;

@@ -104,13 +104,13 @@ void ConfigAutotuneWidget::recomputeStabilization()
             continue;
         }
 
-        double wu  = 1000.0 * 2 * M_PI / relayTuningData.Period[i]; // ultimate freq = output osc freq (rad/s)
+        double wu = 1000.0 * 2 * M_PI / relayTuningData.Period[i]; // ultimate freq = output osc freq (rad/s)
 
-        double wc  = wu * gain_ratio_r;      // target openloop crossover frequency (rad/s)
-        double zc  = wc * zero_ratio_r;      // controller zero location (rad/s)
+        double wc = wu * gain_ratio_r; // target openloop crossover frequency (rad/s)
+        double zc = wc * zero_ratio_r; // controller zero location (rad/s)
         double kpu = 4.0f / M_PI / relayTuningData.Gain[i]; // ultimate gain, i.e. the proportional gain for instablity
-        double kp  = kpu * gain_ratio_r;     // proportional gain
-        double ki  = zc * kp;                // integral gain
+        double kp = kpu * gain_ratio_r; // proportional gain
+        double ki = zc * kp; // integral gain
 
         // Now calculate gains for the next loop out knowing it is the integral of
         // the inner loop -- the plant is position/velocity = scale*1/s

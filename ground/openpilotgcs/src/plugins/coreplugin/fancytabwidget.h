@@ -43,7 +43,7 @@ QT_END_NAMESPACE
 namespace Core {
 namespace Internal {
 struct FancyTab {
-    QIcon   icon;
+    QIcon icon;
     QString text;
     QString toolTip;
 };

@@ -168,8 +168,8 @@ static void overoSyncTask(__attribute__((unused)) void *parameters)
     UAVObjEvent ev;
 
     // Kick off SPI transfers (once one is completed another will automatically transmit)
-    overosync->sent_objects     = 0;
-    overosync->failed_objects   = 0;
+    overosync->sent_objects = 0;
+    overosync->failed_objects = 0;
     overosync->received_objects = 0;
 
     portTickType lastUpdateTime = xTaskGetTickCount();
@@ -186,14 +186,14 @@ static void overoSyncTask(__attribute__((unused)) void *parameters)
             if (((portTickType)(updateTime - lastUpdateTime)) > 1000) {
                 // Update stats.  This will trigger a local send event too
                 OveroSyncStatsData syncStats;
-                syncStats.Send            = overosync->sent_bytes;
-                syncStats.Connected       = syncStats.Send > 500 ? OVEROSYNCSTATS_CONNECTED_TRUE : OVEROSYNCSTATS_CONNECTED_FALSE;
-                syncStats.DroppedUpdates  = overosync->failed_objects;
-                syncStats.Packets         = PIOS_OVERO_GetPacketCount(pios_overo_id);
+                syncStats.Send = overosync->sent_bytes;
+                syncStats.Connected = syncStats.Send > 500 ? OVEROSYNCSTATS_CONNECTED_TRUE : OVEROSYNCSTATS_CONNECTED_FALSE;
+                syncStats.DroppedUpdates = overosync->failed_objects;
+                syncStats.Packets = PIOS_OVERO_GetPacketCount(pios_overo_id);
                 OveroSyncStatsSet(&syncStats);
                 overosync->failed_objects = 0;
-                overosync->sent_bytes     = 0;
-                lastUpdateTime            = updateTime;
+                overosync->sent_bytes = 0;
+                lastUpdateTime = updateTime;
             }
 
             // TODO: Check the receive buffer

@@ -109,14 +109,14 @@ class OPHID_EXPORT USBMonitor : public QThread {
 public:
     enum RunState {
         Bootloader = 0x01,
-        Running    = 0x02
+        Running = 0x02
     };
 
     enum USBConstants {
-        idVendor_OpenPilot      = 0x20a0,
-        idProduct_OpenPilot     = 0x415a,
+        idVendor_OpenPilot = 0x20a0,
+        idProduct_OpenPilot = 0x415a,
         idProduct_CopterControl = 0x415b,
-        idProduct_OPLinkMini    = 0x415c
+        idProduct_OPLinkMini = 0x415c
     };
 
     static USBMonitor *instance();

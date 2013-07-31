@@ -35,7 +35,7 @@ ThreadManager *ThreadManager::m_instance = 0;
 
 ThreadManager::ThreadManager(QObject *parent) : QObject(parent)
 {
-    m_instance     = this;
+    m_instance = this;
     realTimeThread = new QThread(this);
     realTimeThread->start(QThread::TimeCriticalPriority);
 }

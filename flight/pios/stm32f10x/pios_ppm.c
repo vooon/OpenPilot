@@ -41,7 +41,7 @@ static int32_t PIOS_PPM_Get(uint32_t rcvr_id, uint8_t channel);
 static xSemaphoreHandle PIOS_PPM_Get_Semaphore(uint32_t rcvr_id, uint8_t channel);
 
 const struct pios_rcvr_driver pios_ppm_rcvr_driver = {
-    .read          = PIOS_PPM_Get,
+    .read = PIOS_PPM_Get,
 #if defined(PIOS_INCLUDE_FREERTOS)
     .get_semaphore = PIOS_PPM_Get_Semaphore
 #endif
@@ -64,23 +64,23 @@ enum pios_ppm_dev_magic {
 };
 
 struct pios_ppm_dev {
-    enum pios_ppm_dev_magic   magic;
+    enum pios_ppm_dev_magic magic;
     const struct pios_ppm_cfg *cfg;
 
-    uint8_t  PulseIndex;
+    uint8_t PulseIndex;
     uint32_t PreviousTime;
     uint32_t CurrentTime;
     uint32_t DeltaTime;
     uint32_t CaptureValue[PIOS_PPM_IN_MAX_NUM_CHANNELS];
     uint32_t CaptureValueNewFrame[PIOS_PPM_IN_MAX_NUM_CHANNELS];
     uint32_t LargeCounter;
-    int8_t   NumChannels;
-    int8_t   NumChannelsPrevFrame;
-    uint8_t  NumChannelCounter;
+    int8_t NumChannels;
+    int8_t NumChannelsPrevFrame;
+    uint8_t NumChannelCounter;
 
-    uint8_t  supv_timer;
-    bool     Tracking;
-    bool     Fresh;
+    uint8_t supv_timer;
+    bool Tracking;
+    bool Fresh;
 
 #ifdef PIOS_INCLUDE_FREERTOS
     xSemaphoreHandle new_sample_semaphores[PIOS_PPM_IN_MIN_NUM_CHANNELS];
@@ -132,7 +132,7 @@ static void PIOS_PPM_tim_overflow_cb(uint32_t id, uint32_t context, uint8_t chan
 static void PIOS_PPM_tim_edge_cb(uint32_t id, uint32_t context, uint8_t channel, uint16_t count);
 static const struct pios_tim_callbacks tim_callbacks = {
     .overflow = PIOS_PPM_tim_overflow_cb,
-    .edge     = PIOS_PPM_tim_edge_cb,
+    .edge = PIOS_PPM_tim_edge_cb,
 };
 
 extern int32_t PIOS_PPM_Init(uint32_t *ppm_id, const struct pios_ppm_cfg *cfg)
@@ -151,15 +151,15 @@ extern int32_t PIOS_PPM_Init(uint32_t *ppm_id, const struct pios_ppm_cfg *cfg)
     ppm_dev->cfg = cfg;
 
     /* Set up the state variables */
-    ppm_dev->PulseIndex   = 0;
+    ppm_dev->PulseIndex = 0;
     ppm_dev->PreviousTime = 0;
-    ppm_dev->CurrentTime  = 0;
-    ppm_dev->DeltaTime    = 0;
+    ppm_dev->CurrentTime = 0;
+    ppm_dev->DeltaTime = 0;
     ppm_dev->LargeCounter = 0;
-    ppm_dev->NumChannels  = -1;
+    ppm_dev->NumChannels = -1;
     ppm_dev->NumChannelsPrevFrame = -1;
     ppm_dev->NumChannelCounter = 0;
-    ppm_dev->Tracking     = FALSE;
+    ppm_dev->Tracking = FALSE;
     ppm_dev->Fresh = FALSE;
 
     for (uint8_t i = 0; i < PIOS_PPM_IN_MAX_NUM_CHANNELS; i++) {
@@ -296,13 +296,13 @@ static void PIOS_PPM_tim_edge_cb(__attribute__((unused)) uint32_t tim_id,
     ppm_dev->PreviousTime = ppm_dev->CurrentTime;
 
     /* Grab the new count */
-    ppm_dev->CurrentTime  = count;
+    ppm_dev->CurrentTime = count;
 
     /* Convert to 32-bit timer result */
     ppm_dev->CurrentTime += ppm_dev->LargeCounter;
 
     /* Capture computation */
-    ppm_dev->DeltaTime    = ppm_dev->CurrentTime - ppm_dev->PreviousTime;
+    ppm_dev->DeltaTime = ppm_dev->CurrentTime - ppm_dev->PreviousTime;
 
     ppm_dev->PreviousTime = ppm_dev->CurrentTime;
 
@@ -343,8 +343,8 @@ static void PIOS_PPM_tim_edge_cb(__attribute__((unused)) uint32_t tim_id,
 #endif /* USE_FREERTOS */
         }
 
-        ppm_dev->Fresh      = TRUE;
-        ppm_dev->Tracking   = TRUE;
+        ppm_dev->Fresh = TRUE;
+        ppm_dev->Tracking = TRUE;
         ppm_dev->NumChannelsPrevFrame = ppm_dev->PulseIndex;
         ppm_dev->PulseIndex = 0;
 

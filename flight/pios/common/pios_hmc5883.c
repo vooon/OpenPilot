@@ -127,13 +127,13 @@ static uint8_t CTRLB = 0x00;
 static int32_t PIOS_HMC5883_Config(const struct pios_hmc5883_cfg *cfg)
 {
     uint8_t CTRLA = 0x00;
-    uint8_t MODE  = 0x00;
+    uint8_t MODE = 0x00;
 
-    CTRLB  = 0;
+    CTRLB = 0;
 
     CTRLA |= (uint8_t)(cfg->M_ODR | cfg->Meas_Conf);
     CTRLB |= (uint8_t)(cfg->Gain);
-    MODE  |= (uint8_t)(cfg->Mode);
+    MODE |= (uint8_t)(cfg->Mode);
 
     // CRTL_REGA
     if (PIOS_HMC5883_Write(PIOS_HMC5883_CONFIG_REG_A, CTRLA) != 0) {
@@ -199,12 +199,12 @@ int32_t PIOS_HMC5883_ReadMag(int16_t out[3])
     }
 
     for (int i = 0; i < 3; i++) {
-        temp   = ((int16_t)((uint16_t)buffer[2 * i] << 8)
-                  + buffer[2 * i + 1]) * 1000 / sensitivity;
+        temp = ((int16_t)((uint16_t)buffer[2 * i] << 8)
+                + buffer[2 * i + 1]) * 1000 / sensitivity;
         out[i] = temp;
     }
     // Data reads out as X,Z,Y
-    temp   = out[2];
+    temp = out[2];
     out[2] = out[1];
     out[1] = temp;
 
@@ -257,17 +257,17 @@ static int32_t PIOS_HMC5883_Read(uint8_t address, uint8_t *buffer, uint8_t len)
         {
             .info = __func__,
             .addr = PIOS_HMC5883_I2C_ADDR,
-            .rw   = PIOS_I2C_TXN_WRITE,
-            .len  = sizeof(addr_buffer),
-            .buf  = addr_buffer,
+            .rw = PIOS_I2C_TXN_WRITE,
+            .len = sizeof(addr_buffer),
+            .buf = addr_buffer,
         }
         ,
         {
             .info = __func__,
             .addr = PIOS_HMC5883_I2C_ADDR,
-            .rw   = PIOS_I2C_TXN_READ,
-            .len  = len,
-            .buf  = buffer,
+            .rw = PIOS_I2C_TXN_READ,
+            .len = len,
+            .buf = buffer,
         }
     };
 
@@ -293,9 +293,9 @@ static int32_t PIOS_HMC5883_Write(uint8_t address, uint8_t buffer)
         {
             .info = __func__,
             .addr = PIOS_HMC5883_I2C_ADDR,
-            .rw   = PIOS_I2C_TXN_WRITE,
-            .len  = sizeof(data),
-            .buf  = data,
+            .rw = PIOS_I2C_TXN_WRITE,
+            .len = sizeof(data),
+            .buf = data,
         }
         ,
     };

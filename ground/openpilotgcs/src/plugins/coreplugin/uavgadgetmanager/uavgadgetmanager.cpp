@@ -98,7 +98,7 @@ UAVGadgetManager::UAVGadgetManager(ICore *core, QString name, QIcon icon, int pr
         // this shouldn't happen
         m_uniqueName = uniqueName + QString::number(quint64(this));
     }
-    m_uniqueNameBA   = m_uniqueName.toLatin1();
+    m_uniqueNameBA = m_uniqueName.toLatin1();
     m_uniqueModeName = m_uniqueNameBA.data();
 
     connect(m_core, SIGNAL(contextAboutToChange(Core::IContext *)),
@@ -170,7 +170,7 @@ void UAVGadgetManager::setCurrentGadget(IUAVGadget *uavGadget)
 
     SplitterOrView *oldView = currentSplitterOrView();
     m_currentGadget = uavGadget;
-    SplitterOrView *view    = currentSplitterOrView();
+    SplitterOrView *view = currentSplitterOrView();
     if (oldView != view) {
         if (oldView) {
             oldView->update();
@@ -233,7 +233,7 @@ void UAVGadgetManager::closeView(Core::Internal::UAVGadgetView *view)
     UAVGadgetInstanceManager *im = ICore::instance()->uavGadgetInstanceManager();
     im->removeGadget(gadget);
 
-    SplitterOrView *splitter     = m_splitterOrView->findSplitter(splitterOrView);
+    SplitterOrView *splitter = m_splitterOrView->findSplitter(splitterOrView);
     Q_ASSERT(splitterOrView->hasGadget() == false);
     Q_ASSERT(splitter->isSplitter() == true);
     splitterOrView->hide();
@@ -383,11 +383,11 @@ void UAVGadgetManager::split(Qt::Orientation orientation)
 
     IUAVGadget *uavGadget = m_currentGadget;
     Q_ASSERT(uavGadget);
-    SplitterOrView *view  = currentSplitterOrView();
+    SplitterOrView *view = currentSplitterOrView();
     Q_ASSERT(view);
     view->split(orientation);
 
-    SplitterOrView *sor  = m_splitterOrView->findView(uavGadget);
+    SplitterOrView *sor = m_splitterOrView->findView(uavGadget);
     SplitterOrView *next = m_splitterOrView->findNextView(sor);
     setCurrentGadget(next->gadget());
     updateUavGadgetMenus();

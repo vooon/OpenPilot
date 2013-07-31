@@ -80,7 +80,7 @@ int32_t PIOS_DELAY_Init(void)
  */
 int32_t PIOS_DELAY_WaituS(uint32_t uS)
 {
-    uint32_t elapsed    = 0;
+    uint32_t elapsed = 0;
     uint32_t last_count = DWT_CYCCNT;
 
     for (;;) {
@@ -88,7 +88,7 @@ int32_t PIOS_DELAY_WaituS(uint32_t uS)
         uint32_t elapsed_uS;
 
         /* measure the time elapsed since the last time we checked */
-        elapsed   += current_count - last_count;
+        elapsed += current_count - last_count;
         last_count = current_count;
 
         /* convert to microseconds */

@@ -46,11 +46,11 @@ static void PIOS_USB_CDC_RxStart(uint32_t usbcdc_id, uint16_t rx_bytes_avail);
 static bool PIOS_USB_CDC_Available(uint32_t usbcdc_id);
 
 const struct pios_com_driver pios_usb_cdc_com_driver = {
-    .tx_start   = PIOS_USB_CDC_TxStart,
-    .rx_start   = PIOS_USB_CDC_RxStart,
+    .tx_start = PIOS_USB_CDC_TxStart,
+    .rx_start = PIOS_USB_CDC_RxStart,
     .bind_tx_cb = PIOS_USB_CDC_RegisterTxCallback,
     .bind_rx_cb = PIOS_USB_CDC_RegisterRxCallback,
-    .available  = PIOS_USB_CDC_Available,
+    .available = PIOS_USB_CDC_Available,
 };
 
 enum pios_usb_cdc_dev_magic {
@@ -58,7 +58,7 @@ enum pios_usb_cdc_dev_magic {
 };
 
 struct pios_usb_cdc_dev {
-    enum pios_usb_cdc_dev_magic   magic;
+    enum pios_usb_cdc_dev_magic magic;
     const struct pios_usb_cdc_cfg *cfg;
 
     uint32_t lower_id;
@@ -68,13 +68,13 @@ struct pios_usb_cdc_dev {
     pios_com_callback tx_out_cb;
     uint32_t tx_out_context;
 
-    uint8_t  rx_packet_buffer[PIOS_USB_BOARD_CDC_DATA_LENGTH];
+    uint8_t rx_packet_buffer[PIOS_USB_BOARD_CDC_DATA_LENGTH];
     /*
      * NOTE: This is -1 as somewhat of a hack.  It ensures that we always send packets
      * that are strictly < maxPacketSize for this interface which means we never have
      * to bother with zero length packets (ZLP).
      */
-    uint8_t  tx_packet_buffer[PIOS_USB_BOARD_CDC_DATA_LENGTH - 1];
+    uint8_t tx_packet_buffer[PIOS_USB_BOARD_CDC_DATA_LENGTH - 1];
 
     uint32_t rx_dropped;
     uint32_t rx_oversize;
@@ -145,11 +145,11 @@ int32_t PIOS_USB_CDC_Init(uint32_t *usbcdc_id, const struct pios_usb_cdc_cfg *cf
     usb_cdc_dev->cfg = cfg;
     usb_cdc_dev->lower_id = lower_id;
 
-    pios_usb_cdc_id  = (uint32_t)usb_cdc_dev;
+    pios_usb_cdc_id = (uint32_t)usb_cdc_dev;
 
     /* Bind lower level callbacks into the USB infrastructure */
     pEpInt_OUT[cfg->ctrl_tx_ep - 1] = PIOS_USB_CDC_CTRL_EP_IN_Callback;
-    pEpInt_IN[cfg->data_tx_ep - 1]  = PIOS_USB_CDC_DATA_EP_IN_Callback;
+    pEpInt_IN[cfg->data_tx_ep - 1] = PIOS_USB_CDC_DATA_EP_IN_Callback;
     pEpInt_OUT[cfg->data_rx_ep - 1] = PIOS_USB_CDC_DATA_EP_OUT_Callback;
 
     *usbcdc_id = (uint32_t)usb_cdc_dev;
@@ -366,10 +366,10 @@ static bool PIOS_USB_CDC_Available(uint32_t usbcdc_id)
 }
 
 static struct usb_cdc_line_coding line_coding = {
-    .dwDTERate   = htousbl(57600),
+    .dwDTERate = htousbl(57600),
     .bCharFormat = USB_CDC_LINE_CODING_STOP_1,
     .bParityType = USB_CDC_LINE_CODING_PARITY_NONE,
-    .bDataBits   = 8,
+    .bDataBits = 8,
 };
 
 uint8_t *PIOS_USB_CDC_SetLineCoding(uint16_t Length)
@@ -416,9 +416,9 @@ const uint8_t *PIOS_USB_CDC_GetLineCoding(uint16_t Length)
 struct usb_cdc_serial_state_report uart_state = {
     .bmRequestType = 0xA1,
     .bNotification = USB_CDC_NOTIFICATION_SERIAL_STATE,
-    .wValue      = 0,
-    .wIndex      = htousbs(1),
-    .wLength     = htousbs(2),
+    .wValue = 0,
+    .wIndex = htousbs(1),
+    .wLength = htousbs(2),
     .bmUartState = htousbs(0),
 };
 

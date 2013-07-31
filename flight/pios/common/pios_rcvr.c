@@ -69,7 +69,7 @@ int32_t PIOS_RCVR_Init(uint32_t *rcvr_id, const struct pios_rcvr_driver *driver,
         goto out_fail;
     }
 
-    rcvr_dev->driver   = driver;
+    rcvr_dev->driver = driver;
     rcvr_dev->lower_id = lower_id;
 
     *rcvr_id = (uint32_t)rcvr_dev;

@@ -31,8 +31,8 @@ namespace core {
 CacheItemQueue::CacheItemQueue(const MapType::Types &Type, const Point &Pos, const QByteArray &Img, const int &Zoom)
 {
     type = Type;
-    pos  = Pos;
-    img  = Img;
+    pos = Pos;
+    img = Img;
     zoom = Zoom;
 }
 
@@ -64,8 +64,8 @@ void CacheItemQueue::SetPosition(const Point &value)
 
 CacheItemQueue & CacheItemQueue::operator =(const CacheItemQueue &cSource)
 {
-    img  = cSource.img;
-    pos  = cSource.pos;
+    img = cSource.img;
+    pos = cSource.pos;
     type = cSource.type;
     zoom = cSource.zoom;
     return *this;

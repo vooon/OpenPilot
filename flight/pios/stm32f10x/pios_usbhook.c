@@ -106,17 +106,17 @@ static const uint8_t *PIOS_USBHOOK_GetConfigDescriptor(uint16_t Length);
 static const uint8_t *PIOS_USBHOOK_GetStringDescriptor(uint16_t Length);
 
 DEVICE_PROP Device_Property = {
-    .Init  = PIOS_USBHOOK_Init,
+    .Init = PIOS_USBHOOK_Init,
     .Reset = PIOS_USBHOOK_Reset,
-    .Process_Status_IN   = PIOS_USBHOOK_Status_In,
-    .Process_Status_OUT  = PIOS_USBHOOK_Status_Out,
-    .Class_Data_Setup    = PIOS_USBHOOK_Data_Setup,
-    .Class_NoData_Setup  = PIOS_USBHOOK_NoData_Setup,
+    .Process_Status_IN = PIOS_USBHOOK_Status_In,
+    .Process_Status_OUT = PIOS_USBHOOK_Status_Out,
+    .Class_Data_Setup = PIOS_USBHOOK_Data_Setup,
+    .Class_NoData_Setup = PIOS_USBHOOK_NoData_Setup,
     .Class_Get_Interface_Setting = PIOS_USBHOOK_Get_Interface_Setting,
     .GetDeviceDescriptor = PIOS_USBHOOK_GetDeviceDescriptor,
     .GetConfigDescriptor = PIOS_USBHOOK_GetConfigDescriptor,
     .GetStringDescriptor = PIOS_USBHOOK_GetStringDescriptor,
-    .RxEP_buffer   = 0,
+    .RxEP_buffer = 0,
     .MaxPacketSize = 0x40,
 };
 
@@ -124,15 +124,15 @@ static void PIOS_USBHOOK_SetConfiguration(void);
 static void PIOS_USBHOOK_SetDeviceAddress(void);
 
 USER_STANDARD_REQUESTS User_Standard_Requests = {
-    .User_GetConfiguration   = NOP_Process,
-    .User_SetConfiguration   = PIOS_USBHOOK_SetConfiguration,
-    .User_GetInterface       = NOP_Process,
-    .User_SetInterface       = NOP_Process,
-    .User_GetStatus          = NOP_Process,
-    .User_ClearFeature       = NOP_Process,
+    .User_GetConfiguration = NOP_Process,
+    .User_SetConfiguration = PIOS_USBHOOK_SetConfiguration,
+    .User_GetInterface = NOP_Process,
+    .User_SetInterface = NOP_Process,
+    .User_GetStatus = NOP_Process,
+    .User_ClearFeature = NOP_Process,
     .User_SetEndPointFeature = NOP_Process,
-    .User_SetDeviceFeature   = NOP_Process,
-    .User_SetDeviceAddress   = PIOS_USBHOOK_SetDeviceAddress
+    .User_SetDeviceFeature = NOP_Process,
+    .User_SetDeviceAddress = PIOS_USBHOOK_SetDeviceAddress
 };
 
 static RESULT PIOS_USBHOOK_SetProtocol(void);
@@ -171,7 +171,7 @@ static void PIOS_USBHOOK_Reset(void)
 {
     /* Set DEVICE as not configured */
     pInformation->Current_Configuration = 0;
-    pInformation->Current_Interface     = 0;    /*the default Interface */
+    pInformation->Current_Interface = 0; /*the default Interface */
 
     /* Current Feature initialization */
     pInformation->Current_Feature = 0;
@@ -302,7 +302,7 @@ static RESULT PIOS_USBHOOK_Data_Setup(uint8_t RequestNo)
     uint8_t *(*CopyOutRoutine)(uint16_t);
     const uint8_t *(*CopyInRoutine)(uint16_t);
 
-    CopyInRoutine  = NULL;
+    CopyInRoutine = NULL;
     CopyOutRoutine = NULL;
 
     switch (Type_Recipient) {
@@ -348,7 +348,7 @@ static RESULT PIOS_USBHOOK_Data_Setup(uint8_t RequestNo)
                 CopyOutRoutine = PIOS_USB_CDC_SetLineCoding;
                 break;
             case USB_CDC_REQ_GET_LINE_CODING:
-                CopyInRoutine  = PIOS_USB_CDC_GetLineCoding;
+                CopyInRoutine = PIOS_USB_CDC_GetLineCoding;
                 break;
             }
 
@@ -378,7 +378,7 @@ static RESULT PIOS_USBHOOK_Data_Setup(uint8_t RequestNo)
     }
 
     if (CopyInRoutine != NULL) {
-        pInformation->Ctrl_Info.CopyDataIn  = CopyInRoutine;
+        pInformation->Ctrl_Info.CopyDataIn = CopyInRoutine;
         pInformation->Ctrl_Info.Usb_wOffset = 0;
         (*CopyInRoutine)(0);
     } else if (CopyOutRoutine != NULL) {

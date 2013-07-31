@@ -48,7 +48,7 @@ enum pios_usb_dev_magic {
 };
 
 struct pios_usb_dev {
-    enum pios_usb_dev_magic   magic;
+    enum pios_usb_dev_magic magic;
     const struct pios_usb_cfg *cfg;
 };
 
@@ -188,8 +188,8 @@ int32_t PIOS_USB_Reenumerate()
     /* This overrules the external Pull-Up at PA12, and at least Windows & MacOS will enumerate again */
     GPIO_InitTypeDef GPIO_InitStructure;
     GPIO_StructInit(&GPIO_InitStructure);
-    GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_12;
-    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_Out_PP;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
 

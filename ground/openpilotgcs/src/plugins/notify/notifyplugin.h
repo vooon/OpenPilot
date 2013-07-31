@@ -44,7 +44,7 @@ class NotifyPluginOptionsPage;
 
 typedef struct {
     Phonon::MediaObject *mo;
-    NotificationItem    *notify;
+    NotificationItem *notify;
     bool firstPlay;
 } PhononObject, *pPhononObject;
 

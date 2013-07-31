@@ -133,16 +133,16 @@ int32_t PIOS_COM_Init(uint32_t *com_id, const struct pios_com_driver *driver, ui
     struct pios_com_dev *com_dev;
 
     com_dev_id = PIOS_COM_create();
-    com_dev    = PIOS_COM_find_dev(com_dev_id);
+    com_dev = PIOS_COM_find_dev(com_dev_id);
     if (!com_dev) {
         goto out_fail;
     }
 
-    com_dev->driver   = driver;
+    com_dev->driver = driver;
     com_dev->lower_id = lower_id;
 
-    com_dev->has_rx   = has_rx;
-    com_dev->has_tx   = has_tx;
+    com_dev->has_rx = has_rx;
+    com_dev->has_tx = has_tx;
 
     if (has_rx) {
         fifoBuf_init(&com_dev->rx, rx_buffer, rx_buffer_len);

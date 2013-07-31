@@ -74,29 +74,29 @@ void AeroSimRCSimulator::transmitUpdate()
     }
 
     ActuatorDesired::DataFields actData;
-    FlightStatus::DataFields flightStatusData    = flightStatus->getData();
+    FlightStatus::DataFields flightStatusData = flightStatus->getData();
     ManualControlCommand::DataFields manCtrlData = manCtrlCommand->getData();
-    float roll     = -1;
-    float pitch    = -1;
-    float yaw      = -1;
+    float roll = -1;
+    float pitch = -1;
+    float yaw = -1;
     float throttle = -1;
 
     if (flightStatusData.FlightMode == FlightStatus::FLIGHTMODE_MANUAL) {
         // Read joystick input
         if (flightStatusData.Armed == FlightStatus::ARMED_ARMED) {
             // Note: Pitch sign is reversed in FG ?
-            roll     = manCtrlData.Roll;
-            pitch    = -manCtrlData.Pitch;
-            yaw      = manCtrlData.Yaw;
+            roll = manCtrlData.Roll;
+            pitch = -manCtrlData.Pitch;
+            yaw = manCtrlData.Yaw;
             throttle = manCtrlData.Throttle;
         }
     } else {
         // Read ActuatorDesired from autopilot
-        actData  = actDesired->getData();
+        actData = actDesired->getData();
 
-        roll     = actData.Roll;
-        pitch    = -actData.Pitch;
-        yaw      = actData.Yaw;
+        roll = actData.Roll;
+        pitch = -actData.Pitch;
+        yaw = actData.Yaw;
         throttle = (actData.Throttle * 2.0) - 1.0;
     }
     channels[0] = roll;
@@ -111,7 +111,7 @@ void AeroSimRCSimulator::transmitUpdate()
     quint8 armed;
     quint8 mode;
     armed = flightStatusData.Armed;
-    mode  = flightStatusData.FlightMode;
+    mode = flightStatusData.FlightMode;
 
     QByteArray data;
     // 50 - current size of values, 4(quint32) + 10*4(float) + 2(quint8) + 4(quint32)
@@ -216,12 +216,12 @@ void AeroSimRCSimulator::processUpdate(const QByteArray &data)
     QVector3D acc = QVector3D(accY, accX, -accZ); // accel (X,Y,Z) -> (+Y,+X,-Z)
     QVector3D gee = QVector3D(0.0, 0.0, -GEE);
     QQuaternion qWorld = quat.conjugate();
-    gee  = qWorld.rotatedVector(gee);
+    gee = qWorld.rotatedVector(gee);
     acc += gee;
 
-    out.rollRate  = angY * RAD2DEG;       // gyros (X,Y,Z) -> (+Y,+X,-Z)
+    out.rollRate = angY * RAD2DEG; // gyros (X,Y,Z) -> (+Y,+X,-Z)
     out.pitchRate = angX * RAD2DEG;
-    out.yawRate   = angZ * -RAD2DEG;
+    out.yawRate = angZ * -RAD2DEG;
 
     out.accX = acc.x();
     out.accY = acc.y();
@@ -231,30 +231,30 @@ void AeroSimRCSimulator::processUpdate(const QByteArray &data)
     QVector3D rpy; // model roll, pitch, yaw
     asMatrix2RPY(mat, rpy);
 
-    out.roll    = rpy.x();
-    out.pitch   = rpy.y();
+    out.roll = rpy.x();
+    out.pitch = rpy.y();
     out.heading = rpy.z();
 
 
     /**********************************************************************************************/
-    out.altitude    = posZ;
+    out.altitude = posZ;
     out.agl = posZ;
-    out.heading     = yaw * RAD2DEG;
-    out.latitude    = lat * 10e6;
-    out.longitude   = lon * 10e6;
+    out.heading = yaw * RAD2DEG;
+    out.latitude = lat * 10e6;
+    out.longitude = lon * 10e6;
     out.groundspeed = qSqrt(velX * velX + velY * velY);
 
     /**********************************************************************************************/
-    out.dstN        = posY;
-    out.dstE        = posX;
-    out.dstD        = -posZ;
+    out.dstN = posY;
+    out.dstE = posX;
+    out.dstD = -posZ;
 
-    out.velNorth    = velY;
-    out.velEast     = velX;
-    out.velDown     = -velZ;
+    out.velNorth = velY;
+    out.velEast = velX;
+    out.velDown = -velZ;
 
-    out.voltage     = volt;
-    out.current     = curr;
+    out.voltage = volt;
+    out.current = curr;
     out.consumption = cons * 1000.0;
 
     updateUAVOs(out);
@@ -298,13 +298,13 @@ void AeroSimRCSimulator::asMatrix2RPY(const QMatrix4x4 &m, QVector3D &rpy)
 
     if (qFabs(m(0, 2)) > 0.998) {
         // ~86.3°, gimbal lock
-        roll  = 0.0;
+        roll = 0.0;
         pitch = copysign(M_PI_2, -m(0, 2));
-        yaw   = qAtan2(-m(1, 0), m(1, 1));
+        yaw = qAtan2(-m(1, 0), m(1, 1));
     } else {
-        roll  = qAtan2(m(1, 2), m(2, 2));
+        roll = qAtan2(m(1, 2), m(2, 2));
         pitch = qAsin(-m(0, 2));
-        yaw   = qAtan2(m(0, 1), m(0, 0));
+        yaw = qAtan2(m(0, 1), m(0, 0));
     }
 
     rpy.setX(roll * RAD2DEG);

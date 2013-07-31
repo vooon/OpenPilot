@@ -145,7 +145,7 @@ void copy_block(void *d, void *s)
         return;
     }
 
-    register uint8_t *src  = s;
+    register uint8_t *src = s;
     register uint8_t *dest = d;
     for (int i = N_BLOCK; i; --i) {
         *dest++ = *src++;
@@ -154,7 +154,7 @@ void copy_block(void *d, void *s)
 
 void xor_block(void *d, void *s)
 {
-    register uint8_t *src  = s;
+    register uint8_t *src = s;
     register uint8_t *dest = d;
 
     for (int i = N_BLOCK; i; --i) {
@@ -188,10 +188,10 @@ void xor_sub_rot_word(uint8_t *d, uint8_t *s, uint8_t rc)
 
 void mix_sub_column(uint8_t *a)
 {
-    uint8_t a0  = a[0];
-    uint8_t a1  = a[1];
-    uint8_t a2  = a[2];
-    uint8_t a3  = a[3];
+    uint8_t a0 = a[0];
+    uint8_t a1 = a[1];
+    uint8_t a2 = a[2];
+    uint8_t a3 = a[3];
     uint8_t tmp = a0 ^ a1 ^ a2 ^ a3;
 
     a[0] = a0 ^ xtime[a0 ^ a1] ^ tmp;
@@ -212,10 +212,10 @@ void inv_mix_sub_column(uint8_t *a)
 {
     uint8_t tmp;
 
-    tmp   = xtime[xtime[a[0] ^ a[2]]];
+    tmp = xtime[xtime[a[0] ^ a[2]]];
     a[0] ^= tmp;
     a[2] ^= tmp;
-    tmp   = xtime[xtime[a[1] ^ a[3]]];
+    tmp = xtime[xtime[a[1] ^ a[3]]];
     a[1] ^= tmp;
     a[3] ^= tmp;
 }
@@ -234,56 +234,56 @@ void shift_sub_rows(uint8_t *a)
 {
     uint8_t tmp;
 
-    a[0]  = sbox[a[0]];
-    a[4]  = sbox[a[4]];
-    a[8]  = sbox[a[8]];
+    a[0] = sbox[a[0]];
+    a[4] = sbox[a[4]];
+    a[8] = sbox[a[8]];
     a[12] = sbox[a[12]];
 
-    tmp   = a[1];
-    a[1]  = sbox[a[5]];
-    a[5]  = sbox[a[9]];
-    a[9]  = sbox[a[13]];
+    tmp = a[1];
+    a[1] = sbox[a[5]];
+    a[5] = sbox[a[9]];
+    a[9] = sbox[a[13]];
     a[13] = sbox[tmp];
 
-    tmp   = a[2];
-    a[2]  = sbox[a[10]];
+    tmp = a[2];
+    a[2] = sbox[a[10]];
     a[10] = sbox[tmp];
-    tmp   = a[6];
-    a[6]  = sbox[a[14]];
+    tmp = a[6];
+    a[6] = sbox[a[14]];
     a[14] = sbox[tmp];
 
-    tmp   = a[15];
+    tmp = a[15];
     a[15] = sbox[a[11]];
     a[11] = sbox[a[7]];
-    a[7]  = sbox[a[3]];
-    a[3]  = sbox[tmp];
+    a[7] = sbox[a[3]];
+    a[3] = sbox[tmp];
 }
 
 void inv_shift_sub_rows(uint8_t *a)
 {
     uint8_t tmp;
 
-    a[0]  = isbox[a[0]];
-    a[4]  = isbox[a[4]];
-    a[8]  = isbox[a[8]];
+    a[0] = isbox[a[0]];
+    a[4] = isbox[a[4]];
+    a[8] = isbox[a[8]];
     a[12] = isbox[a[12]];
 
-    tmp   = a[13];
+    tmp = a[13];
     a[13] = isbox[a[9]];
-    a[9]  = isbox[a[5]];
-    a[5]  = isbox[a[1]];
-    a[1]  = isbox[tmp];
+    a[9] = isbox[a[5]];
+    a[5] = isbox[a[1]];
+    a[1] = isbox[tmp];
 
-    tmp   = a[2];
-    a[2]  = isbox[a[10]];
+    tmp = a[2];
+    a[2] = isbox[a[10]];
     a[10] = isbox[tmp];
-    tmp   = a[6];
-    a[6]  = isbox[a[14]];
+    tmp = a[6];
+    a[6] = isbox[a[14]];
     a[14] = isbox[tmp];
 
-    tmp   = a[3];
-    a[3]  = isbox[a[7]];
-    a[7]  = isbox[a[11]];
+    tmp = a[3];
+    a[3] = isbox[a[7]];
+    a[7] = isbox[a[11]];
     a[11] = isbox[a[15]];
     a[15] = isbox[tmp];
 }

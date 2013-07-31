@@ -39,13 +39,13 @@ using namespace core;
 namespace internals {
 class PureProjection {
 public:
-    virtual Size TileSize() const     = 0;
+    virtual Size TileSize() const = 0;
 
-    virtual double Axis() const       = 0;
+    virtual double Axis() const = 0;
 
     virtual double Flattening() const = 0;
 
-    virtual core::Point FromLatLngToPixel(double lat, double lng, int const & zoom)    = 0;
+    virtual core::Point FromLatLngToPixel(double lat, double lng, int const & zoom) = 0;
 
     virtual PointLatLng FromPixelToLatLng(const int &x, const int &y, const int &zoom) = 0;
 

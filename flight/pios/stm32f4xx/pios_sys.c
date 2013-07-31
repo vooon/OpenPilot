@@ -154,18 +154,18 @@ void PIOS_SYS_Init(void)
     GPIO_StructInit(&GPIO_InitStructure);
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP; // default is un-pulled input
 
-    GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_All;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_All;
 #if (PIOS_USB_ENABLED)
     GPIO_InitStructure.GPIO_Pin &= ~(GPIO_Pin_11 | GPIO_Pin_12); // leave USB D+/D- alone
 #endif
     GPIO_InitStructure.GPIO_Pin &= ~(GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15); // leave JTAG pins alone
     GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-    GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_All;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_All;
     GPIO_InitStructure.GPIO_Pin &= ~(GPIO_Pin_3 | GPIO_Pin_4); // leave JTAG pins alone
     GPIO_Init(GPIOB, &GPIO_InitStructure);
 
-    GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_All;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_All;
     GPIO_Init(GPIOC, &GPIO_InitStructure);
     GPIO_Init(GPIOD, &GPIO_InitStructure);
     GPIO_Init(GPIOE, &GPIO_InitStructure);

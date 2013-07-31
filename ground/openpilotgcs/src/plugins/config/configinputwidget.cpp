@@ -59,9 +59,9 @@ ConfigInputWidget::ConfigInputWidget(QWidget *parent) :
     loop(NULL),
     skipflag(false)
 {
-    manualCommandObj    = ManualControlCommand::GetInstance(getObjectManager());
-    manualSettingsObj   = ManualControlSettings::GetInstance(getObjectManager());
-    flightStatusObj     = FlightStatus::GetInstance(getObjectManager());
+    manualCommandObj = ManualControlCommand::GetInstance(getObjectManager());
+    manualSettingsObj = ManualControlSettings::GetInstance(getObjectManager());
+    flightStatusObj = FlightStatus::GetInstance(getObjectManager());
     receiverActivityObj = ReceiverActivity::GetInstance(getObjectManager());
     ui = new Ui_InputWidget();
     ui->setupUi(this);
@@ -77,7 +77,7 @@ ConfigInputWidget::ConfigInputWidget(QWidget *parent) :
     addApplySaveButtons(ui->saveRCInputToRAM, ui->saveRCInputToSD);
 
     // Generate the rows of buttons in the input channel form GUI
-    unsigned int index   = 0;
+    unsigned int index = 0;
     unsigned int indexRT = 0;
     foreach(QString name, manualSettingsObj->getField("ChannelNumber")->getElementNames()) {
         Q_ASSERT(index < ManualControlSettings::CHANNELGROUPS_NUMELEM);
@@ -218,60 +218,60 @@ ConfigInputWidget::ConfigInputWidget(QWidget *parent) :
         m_txArrows->setElementId("arrows");
         m_txArrows->setVisible(false);
 
-        QRectF orig    = m_renderer->boundsOnElement("ljoy");
+        QRectF orig = m_renderer->boundsOnElement("ljoy");
         QMatrix Matrix = m_renderer->matrixForElement("ljoy");
         orig = Matrix.mapRect(orig);
         m_txLeftStickOrig.translate(orig.x(), orig.y());
         m_txLeftStick->setTransform(m_txLeftStickOrig, false);
 
-        orig   = m_renderer->boundsOnElement("arrows");
+        orig = m_renderer->boundsOnElement("arrows");
         Matrix = m_renderer->matrixForElement("arrows");
-        orig   = Matrix.mapRect(orig);
+        orig = Matrix.mapRect(orig);
         m_txArrowsOrig.translate(orig.x(), orig.y());
         m_txArrows->setTransform(m_txArrowsOrig, false);
 
-        orig   = m_renderer->boundsOnElement("body");
+        orig = m_renderer->boundsOnElement("body");
         Matrix = m_renderer->matrixForElement("body");
-        orig   = Matrix.mapRect(orig);
+        orig = Matrix.mapRect(orig);
         m_txMainBodyOrig.translate(orig.x(), orig.y());
         m_txMainBody->setTransform(m_txMainBodyOrig, false);
 
-        orig   = m_renderer->boundsOnElement("flightModeCenter");
+        orig = m_renderer->boundsOnElement("flightModeCenter");
         Matrix = m_renderer->matrixForElement("flightModeCenter");
-        orig   = Matrix.mapRect(orig);
+        orig = Matrix.mapRect(orig);
         m_txFlightModeCOrig.translate(orig.x(), orig.y());
         m_txFlightMode->setTransform(m_txFlightModeCOrig, false);
 
-        orig   = m_renderer->boundsOnElement("flightModeLeft");
+        orig = m_renderer->boundsOnElement("flightModeLeft");
         Matrix = m_renderer->matrixForElement("flightModeLeft");
-        orig   = Matrix.mapRect(orig);
+        orig = Matrix.mapRect(orig);
         m_txFlightModeLOrig.translate(orig.x(), orig.y());
-        orig   = m_renderer->boundsOnElement("flightModeRight");
+        orig = m_renderer->boundsOnElement("flightModeRight");
         Matrix = m_renderer->matrixForElement("flightModeRight");
-        orig   = Matrix.mapRect(orig);
+        orig = Matrix.mapRect(orig);
         m_txFlightModeROrig.translate(orig.x(), orig.y());
 
-        orig   = m_renderer->boundsOnElement("rjoy");
+        orig = m_renderer->boundsOnElement("rjoy");
         Matrix = m_renderer->matrixForElement("rjoy");
-        orig   = Matrix.mapRect(orig);
+        orig = Matrix.mapRect(orig);
         m_txRightStickOrig.translate(orig.x(), orig.y());
         m_txRightStick->setTransform(m_txRightStickOrig, false);
 
-        orig   = m_renderer->boundsOnElement("access0");
+        orig = m_renderer->boundsOnElement("access0");
         Matrix = m_renderer->matrixForElement("access0");
-        orig   = Matrix.mapRect(orig);
+        orig = Matrix.mapRect(orig);
         m_txAccess0Orig.translate(orig.x(), orig.y());
         m_txAccess0->setTransform(m_txAccess0Orig, false);
 
-        orig   = m_renderer->boundsOnElement("access1");
+        orig = m_renderer->boundsOnElement("access1");
         Matrix = m_renderer->matrixForElement("access1");
-        orig   = Matrix.mapRect(orig);
+        orig = Matrix.mapRect(orig);
         m_txAccess1Orig.translate(orig.x(), orig.y());
         m_txAccess1->setTransform(m_txAccess1Orig, false);
 
-        orig   = m_renderer->boundsOnElement("access2");
+        orig = m_renderer->boundsOnElement("access2");
         Matrix = m_renderer->matrixForElement("access2");
-        orig   = Matrix.mapRect(orig);
+        orig = Matrix.mapRect(orig);
         m_txAccess2Orig.translate(orig.x(), orig.y());
         m_txAccess2->setTransform(m_txAccess2Orig, true);
     }
@@ -361,7 +361,7 @@ void ConfigInputWidget::goToWizard()
     // unexpected TX channels being enabled)
     manualSettingsData = manualSettingsObj->getData();
     previousManualSettingsData = manualSettingsData;
-    manualSettingsData.Arming  = ManualControlSettings::ARMING_ALWAYSDISARMED;
+    manualSettingsData.Arming = ManualControlSettings::ARMING_ALWAYSDISARMED;
     manualSettingsObj->setData(manualSettingsData);
 
     // start the wizard
@@ -578,7 +578,7 @@ void ConfigInputWidget::wizardSetUpStep(enum wizardSteps step)
     break;
     case wizardIdentifySticks:
         usedChannels.clear();
-        currentChannelNum  = -1;
+        currentChannelNum = -1;
         nextChannel();
         manualSettingsData = manualSettingsObj->getData();
         connect(receiverActivityObj, SIGNAL(objectUpdated(UAVObject *)), this, SLOT(identifyControls()));
@@ -686,7 +686,7 @@ void ConfigInputWidget::wizardTearDownStep(enum wizardSteps step)
         setTxMovement(nothing);
         break;
     case wizardIdentifyCenter:
-        manualCommandData  = manualCommandObj->getData();
+        manualCommandData = manualCommandObj->getData();
         manualSettingsData = manualSettingsObj->getData();
         for (unsigned int i = 0; i < ManualControlCommand::CHANNEL_NUMELEM; ++i) {
             manualSettingsData.ChannelNeutral[i] = manualCommandData.Channel[i];
@@ -777,7 +777,7 @@ void ConfigInputWidget::setChannel(int newChan)
     setMoveFromCommand(newChan);
 
     currentChannelNum = newChan;
-    channelDetected   = false;
+    channelDetected = false;
 }
 
 /**
@@ -838,17 +838,17 @@ void ConfigInputWidget::identifyControls()
     if (channelDetected) {
         return;
     } else {
-        receiverActivityData  = receiverActivityObj->getData();
-        currentChannel.group  = receiverActivityData.ActiveGroup;
+        receiverActivityData = receiverActivityObj->getData();
+        currentChannel.group = receiverActivityData.ActiveGroup;
         currentChannel.number = receiverActivityData.ActiveChannel;
         if (currentChannel == lastChannel) {
             ++debounce;
         }
-        lastChannel.group  = currentChannel.group;
+        lastChannel.group = currentChannel.group;
         lastChannel.number = currentChannel.number;
         lastChannel.channelIndex = currentChannelNum;
         if (!usedChannels.contains(lastChannel) && debounce > 1) {
-            channelDetected    = true;
+            channelDetected = true;
             debounce = 0;
             usedChannels.append(lastChannel);
             manualSettingsData = manualSettingsObj->getData();
@@ -1028,66 +1028,66 @@ void ConfigInputWidget::moveTxControls()
 
     switch (currentMovement) {
     case moveLeftVerticalStick:
-        item     = m_txLeftStick;
-        trans    = m_txLeftStickOrig;
+        item = m_txLeftStick;
+        trans = m_txLeftStickOrig;
         limitMax = STICK_MAX_MOVE;
         limitMin = STICK_MIN_MOVE;
-        move     = vertical;
+        move = vertical;
         break;
     case moveRightVerticalStick:
-        item     = m_txRightStick;
-        trans    = m_txRightStickOrig;
+        item = m_txRightStick;
+        trans = m_txRightStickOrig;
         limitMax = STICK_MAX_MOVE;
         limitMin = STICK_MIN_MOVE;
-        move     = vertical;
+        move = vertical;
         break;
     case moveLeftHorizontalStick:
-        item     = m_txLeftStick;
-        trans    = m_txLeftStickOrig;
+        item = m_txLeftStick;
+        trans = m_txLeftStickOrig;
         limitMax = STICK_MAX_MOVE;
         limitMin = STICK_MIN_MOVE;
-        move     = horizontal;
+        move = horizontal;
         break;
     case moveRightHorizontalStick:
-        item     = m_txRightStick;
-        trans    = m_txRightStickOrig;
+        item = m_txRightStick;
+        trans = m_txRightStickOrig;
         limitMax = STICK_MAX_MOVE;
         limitMin = STICK_MIN_MOVE;
-        move     = horizontal;
+        move = horizontal;
         break;
     case moveAccess0:
-        item     = m_txAccess0;
-        trans    = m_txAccess0Orig;
+        item = m_txAccess0;
+        trans = m_txAccess0Orig;
         limitMax = ACCESS_MAX_MOVE;
         limitMin = ACCESS_MIN_MOVE;
-        move     = horizontal;
+        move = horizontal;
         break;
     case moveAccess1:
-        item     = m_txAccess1;
-        trans    = m_txAccess1Orig;
+        item = m_txAccess1;
+        trans = m_txAccess1Orig;
         limitMax = ACCESS_MAX_MOVE;
         limitMin = ACCESS_MIN_MOVE;
-        move     = horizontal;
+        move = horizontal;
         break;
     case moveAccess2:
-        item     = m_txAccess2;
-        trans    = m_txAccess2Orig;
+        item = m_txAccess2;
+        trans = m_txAccess2Orig;
         limitMax = ACCESS_MAX_MOVE;
         limitMin = ACCESS_MIN_MOVE;
-        move     = horizontal;
+        move = horizontal;
         break;
     case moveFlightMode:
-        item     = m_txFlightMode;
-        move     = jump;
+        item = m_txFlightMode;
+        move = jump;
         break;
     case centerAll:
-        item     = m_txArrows;
-        move     = jump;
+        item = m_txArrows;
+        move = jump;
         break;
     case moveAll:
         limitMax = STICK_MAX_MOVE;
         limitMin = STICK_MIN_MOVE;
-        move     = mix;
+        move = mix;
         break;
     default:
         break;
@@ -1177,8 +1177,8 @@ void ConfigInputWidget::moveSticks()
 {
     QTransform trans;
 
-    manualCommandData     = manualCommandObj->getData();
-    flightStatusData      = flightStatusObj->getData();
+    manualCommandData = manualCommandObj->getData();
+    flightStatusData = flightStatusObj->getData();
     accessoryDesiredData0 = accessoryDesiredObj0->getData();
     accessoryDesiredData1 = accessoryDesiredObj1->getData();
     accessoryDesiredData2 = accessoryDesiredObj2->getData();
@@ -1265,14 +1265,14 @@ void ConfigInputWidget::invertControls()
 void ConfigInputWidget::moveFMSlider()
 {
     ManualControlSettings::DataFields manualSettingsDataPriv = manualSettingsObj->getData();
-    ManualControlCommand::DataFields manualCommandDataPriv   = manualCommandObj->getData();
+    ManualControlCommand::DataFields manualCommandDataPriv = manualCommandObj->getData();
 
     float valueScaled;
-    int chMin     = manualSettingsDataPriv.ChannelMin[ManualControlSettings::CHANNELMIN_FLIGHTMODE];
-    int chMax     = manualSettingsDataPriv.ChannelMax[ManualControlSettings::CHANNELMAX_FLIGHTMODE];
+    int chMin = manualSettingsDataPriv.ChannelMin[ManualControlSettings::CHANNELMIN_FLIGHTMODE];
+    int chMax = manualSettingsDataPriv.ChannelMax[ManualControlSettings::CHANNELMAX_FLIGHTMODE];
     int chNeutral = manualSettingsDataPriv.ChannelNeutral[ManualControlSettings::CHANNELNEUTRAL_FLIGHTMODE];
 
-    int value     = manualCommandDataPriv.Channel[ManualControlSettings::CHANNELMIN_FLIGHTMODE];
+    int value = manualCommandDataPriv.Channel[ManualControlSettings::CHANNELMIN_FLIGHTMODE];
 
     if ((chMax > chMin && value >= chNeutral) || (chMin > chMax && value <= chNeutral)) {
         if (chMax != chNeutral) {
@@ -1388,7 +1388,7 @@ void ConfigInputWidget::simpleCalibration(bool enable)
         msgBox.setDefaultButton(QMessageBox::Ok);
         msgBox.exec();
 
-        manualCommandData  = manualCommandObj->getData();
+        manualCommandData = manualCommandObj->getData();
 
         manualSettingsData = manualSettingsObj->getData();
         manualSettingsData.Arming = ManualControlSettings::ARMING_ALWAYSDISARMED;
@@ -1396,9 +1396,9 @@ void ConfigInputWidget::simpleCalibration(bool enable)
 
         for (unsigned int i = 0; i < ManualControlCommand::CHANNEL_NUMELEM; i++) {
             reverse[i] = manualSettingsData.ChannelMax[i] < manualSettingsData.ChannelMin[i];
-            manualSettingsData.ChannelMin[i]     = manualCommandData.Channel[i];
+            manualSettingsData.ChannelMin[i] = manualCommandData.Channel[i];
             manualSettingsData.ChannelNeutral[i] = manualCommandData.Channel[i];
-            manualSettingsData.ChannelMax[i]     = manualCommandData.Channel[i];
+            manualSettingsData.ChannelMax[i] = manualCommandData.Channel[i];
         }
 
         fastMdata();
@@ -1407,7 +1407,7 @@ void ConfigInputWidget::simpleCalibration(bool enable)
     } else {
         ui->configurationWizard->setEnabled(true);
 
-        manualCommandData  = manualCommandObj->getData();
+        manualCommandData = manualCommandObj->getData();
         manualSettingsData = manualSettingsObj->getData();
 
         restoreMdata();

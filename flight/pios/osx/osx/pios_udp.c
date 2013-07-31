@@ -51,9 +51,9 @@ static void PIOS_UDP_TxStart(uint32_t udp_id, uint16_t tx_bytes_avail);
 static void PIOS_UDP_RxStart(uint32_t udp_id, uint16_t rx_bytes_avail);
 
 const struct pios_com_driver pios_udp_com_driver = {
-    .set_baud   = PIOS_UDP_ChangeBaud,
-    .tx_start   = PIOS_UDP_TxStart,
-    .rx_start   = PIOS_UDP_RxStart,
+    .set_baud = PIOS_UDP_ChangeBaud,
+    .tx_start = PIOS_UDP_TxStart,
+    .rx_start = PIOS_UDP_RxStart,
     .bind_tx_cb = PIOS_UDP_RegisterTxCallback,
     .bind_rx_cb = PIOS_UDP_RegisterRxCallback,
 };
@@ -129,9 +129,9 @@ int32_t PIOS_UDP_Init(uint32_t *udp_id, const struct pios_udp_cfg *cfg)
 
 
     /* initialize */
-    udp_dev->rx_in_cb  = NULL;
+    udp_dev->rx_in_cb = NULL;
     udp_dev->tx_out_cb = NULL;
-    udp_dev->cfg    = cfg;
+    udp_dev->cfg = cfg;
 
     /* assign socket */
     udp_dev->socket = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -139,7 +139,7 @@ int32_t PIOS_UDP_Init(uint32_t *udp_id, const struct pios_udp_cfg *cfg)
     memset(&udp_dev->client, 0, sizeof(udp_dev->client));
     udp_dev->server.sin_family = AF_INET;
     udp_dev->server.sin_addr.s_addr = inet_addr(udp_dev->cfg->ip);
-    udp_dev->server.sin_port   = htons(udp_dev->cfg->port);
+    udp_dev->server.sin_port = htons(udp_dev->cfg->port);
     int res = bind(udp_dev->socket, (struct sockaddr *)&udp_dev->server, sizeof(udp_dev->server));
 
     /* Create transmit thread for this connection */
@@ -184,7 +184,7 @@ static void PIOS_UDP_TxStart(uint32_t udp_id, uint16_t tx_bytes_avail)
         while (tx_bytes_avail > 0) {
             bool tx_need_yield = false;
             length = (udp_dev->tx_out_cb)(udp_dev->tx_out_context, udp_dev->tx_buffer, PIOS_UDP_RX_BUFFER_SIZE, NULL, &tx_need_yield);
-            rem    = length;
+            rem = length;
             while (rem > 0) {
                 len = sendto(udp_dev->socket, udp_dev->tx_buffer, length, 0,
                              (struct sockaddr *)&udp_dev->client,

@@ -44,29 +44,29 @@ Noise HitlNoiseGeneration::getNoise()
 
 Noise HitlNoiseGeneration::generateNoise()
 {
-    noise.accelStateData.x       = 0;
-    noise.accelStateData.y       = 0;
-    noise.accelStateData.z       = 0;
+    noise.accelStateData.x = 0;
+    noise.accelStateData.y = 0;
+    noise.accelStateData.z = 0;
 
-    noise.gpsPosData.Latitude    = 0;
-    noise.gpsPosData.Longitude   = 0;
+    noise.gpsPosData.Latitude = 0;
+    noise.gpsPosData.Longitude = 0;
     noise.gpsPosData.Groundspeed = 0;
-    noise.gpsPosData.Heading     = 0;
-    noise.gpsPosData.Altitude    = 0;
+    noise.gpsPosData.Heading = 0;
+    noise.gpsPosData.Altitude = 0;
 
-    noise.gpsVelData.North       = 0;
+    noise.gpsVelData.North = 0;
     noise.gpsVelData.East = 0;
     noise.gpsVelData.Down = 0;
 
     noise.baroAltData.Altitude = 0;
 
-    noise.attStateData.Roll    = 0;
-    noise.attStateData.Pitch   = 0;
-    noise.attStateData.Yaw     = 0;
+    noise.attStateData.Roll = 0;
+    noise.attStateData.Pitch = 0;
+    noise.attStateData.Yaw = 0;
 
-    noise.gyroStateData.x  = 0;
-    noise.gyroStateData.y  = 0;
-    noise.gyroStateData.z  = 0;
+    noise.gyroStateData.x = 0;
+    noise.gyroStateData.y = 0;
+    noise.gyroStateData.z = 0;
 
     noise.accelStateData.x = 0;
     noise.accelStateData.y = 0;

@@ -40,14 +40,14 @@ UAVItem::UAVItem(MapGraphicItem *map, OPMapWidget *parent, QString uavPic) : map
     localposition = map->FromLatLngToLocal(mapwidget->CurrentPosition());
     this->setPos(localposition.X(), localposition.Y());
     this->setZValue(4);
-    trail     = new QGraphicsItemGroup(this);
+    trail = new QGraphicsItemGroup(this);
     trail->setParentItem(map);
     trailLine = new QGraphicsItemGroup(this);
     trailLine->setParentItem(map);
     this->setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
     setCacheMode(QGraphicsItem::ItemCoordinateCache);
     mapfollowtype = UAVMapFollowType::None;
-    trailtype     = UAVTrailType::ByDistance;
+    trailtype = UAVTrailType::ByDistance;
     timer.start();
     generateArrowhead();
     double pixels2meters = map->Projection()->GetGroundResolution(map->ZoomTotal(), coord.Lat());
@@ -209,7 +209,7 @@ void UAVItem::SetYawRate(double yawRate_dps)
     trendSpanAngle = this->yawRate_dps * 5; // Forecast 5 seconds into the future
 
     // Calculate radius in [m], and then convert to pixels in local frame (not the same frame as is displayed on the map widget)
-    trendRadius    = fabs(groundspeed_mps / (this->yawRate_dps * M_PI / 180)) * meters2pixels;
+    trendRadius = fabs(groundspeed_mps / (this->yawRate_dps * M_PI / 180)) * meters2pixels;
 }
 
 void UAVItem::SetCAS(double CAS_mps)
@@ -219,23 +219,23 @@ void UAVItem::SetCAS(double CAS_mps)
 
 void UAVItem::SetGroundspeed(double vNED[3], int m_maxUpdateRate_ms)
 {
-    this->vNED[0]   = vNED[0];
-    this->vNED[1]   = vNED[1];
-    this->vNED[2]   = vNED[2];
+    this->vNED[0] = vNED[0];
+    this->vNED[1] = vNED[1];
+    this->vNED[2] = vNED[2];
     groundspeed_kph = sqrt(vNED[0] * vNED[0] + vNED[1] * vNED[1] + vNED[2] * vNED[2]) * 3.6;
     groundspeed_mps = groundspeed_kph / 3.6;
     // On the first pass, set the filtered speed to the reported speed.
     static bool firstGroundspeed = true;
     if (firstGroundspeed) {
         groundspeed_mps_filt = groundspeed_kph / 3.6;
-        firstGroundspeed     = false;
+        firstGroundspeed = false;
     } else {
         int riseTime_ms = 1000;
-        double alpha    = m_maxUpdateRate_ms / (double)(m_maxUpdateRate_ms + riseTime_ms);
+        double alpha = m_maxUpdateRate_ms / (double)(m_maxUpdateRate_ms + riseTime_ms);
         groundspeed_mps_filt = alpha * groundspeed_mps_filt + (1 - alpha) * (groundspeed_kph / 3.6);
     }
-    ringTime         = 10 * pow(2, 17 - map->ZoomTotal()); // Basic ring is 10 seconds wide at zoom level 17
-    precalcRings     = groundspeed_mps_filt * ringTime * meters2pixels;
+    ringTime = 10 * pow(2, 17 - map->ZoomTotal()); // Basic ring is 10 seconds wide at zoom level 17
+    precalcRings = groundspeed_mps_filt * ringTime * meters2pixels;
     boundingRectSize = groundspeed_mps_filt * ringTime * 4 * meters2pixels + 20;
     prepareGeometryChange();
 }
@@ -271,7 +271,7 @@ void UAVItem::SetUAVPos(const internals::PointLatLng &position, const int &altit
                     connect(this, SIGNAL(setChildLine()), obj, SLOT(setLineSlot()));
                 }
                 lasttrailline = position;
-                lastcoord     = position;
+                lastcoord = position;
             }
         }
         coord = position;
@@ -350,7 +350,7 @@ void UAVItem::zoomChangedSlot()
 {
     double pixels2meters = map->Projection()->GetGroundResolution(map->ZoomTotal(), coord.Lat());
 
-    meters2pixels    = 1.0 / pixels2meters;
+    meters2pixels = 1.0 / pixels2meters;
     boundingRectSize = groundspeed_mps_filt * ringTime * 4 * meters2pixels + 20;
     prepareGeometryChange();
     updateTextOverlay();
@@ -393,7 +393,7 @@ void UAVItem::SetUavPic(QString UAVPic)
 
 void UAVItem::SetShowUAVInfo(bool const & value)
 {
-    showUAVInfo     = value;
+    showUAVInfo = value;
     showJustChanged = true;
     update();
 }

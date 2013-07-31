@@ -200,7 +200,7 @@ void ConfigVehicleTypeWidget::refreshWidgetsValues(UAVObject *o)
     QString frameType = field->getValue().toString();
     qDebug() << "ConfigVehicleTypeWidget::refreshWidgetsValues - frame type:" << frameType;
 
-    QString category  = frameCategory(frameType);
+    QString category = frameCategory(frameType);
     setComboCurrentIndex(m_aircraft->aircraftType, m_aircraft->aircraftType->findText(category));
 
     VehicleConfig *vehicleConfig = getVehicleConfigWidget(category);
@@ -360,7 +360,7 @@ void ConfigVehicleTypeWidget::enableFFTest()
             // Toggle motor state
             UAVDataObject *obj = dynamic_cast<UAVDataObject *>(getObjectManager()->getObject(
                                                                    QString("ManualControlCommand")));
-            double value  = obj->getField("Throttle")->getDouble();
+            double value = obj->getField("Throttle")->getDouble();
             double target = (value < 0.5) ? 0.55 : 0.45;
             obj->getField("Throttle")->setValue(target);
             obj->updated();

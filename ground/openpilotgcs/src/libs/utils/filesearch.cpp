@@ -77,19 +77,19 @@ void runFileSearch(QFutureInterface<FileSearchResult> &future,
     int numMatches = 0;
 
     bool caseInsensitive = !(flags & QTextDocument::FindCaseSensitively);
-    bool wholeWord  = (flags & QTextDocument::FindWholeWords);
+    bool wholeWord = (flags & QTextDocument::FindWholeWords);
 
-    QByteArray sa   = searchTerm.toUtf8();
-    int scMaxIndex  = sa.length() - 1;
-    const char *sc  = sa.constData();
+    QByteArray sa = searchTerm.toUtf8();
+    int scMaxIndex = sa.length() - 1;
+    const char *sc = sa.constData();
 
-    QByteArray sal  = searchTerm.toLower().toUtf8();
+    QByteArray sal = searchTerm.toLower().toUtf8();
     const char *scl = sal.constData();
 
-    QByteArray sau  = searchTerm.toUpper().toUtf8();
+    QByteArray sau = searchTerm.toUpper().toUtf8();
     const char *scu = sau.constData();
 
-    int chunkSize   = qMax(100000, sa.length());
+    int chunkSize = qMax(100000, sa.length());
 
     QFile file;
     QBuffer buffer;
@@ -122,7 +122,7 @@ void runFileSearch(QFutureInterface<FileSearchResult> &future,
             }
 
             const QByteArray chunk = device->read(chunkSize);
-            const char *chunkPtr   = chunk.constData();
+            const char *chunkPtr = chunk.constData();
             startOfLastLine = chunkPtr;
             for (const char *regionPtr = chunkPtr; regionPtr < chunkPtr + chunk.length() - scMaxIndex; ++regionPtr) {
                 const char *regionEnd = regionPtr + scMaxIndex;
@@ -138,7 +138,7 @@ void runFileSearch(QFutureInterface<FileSearchResult> &future,
                     (caseInsensitive && (*regionPtr == scl[0] || *regionPtr == scu[0])
                      && (*regionEnd == scl[scMaxIndex] || *regionEnd == scu[scMaxIndex]))
                     ) {
-                    const char *afterRegion  = regionEnd + 1;
+                    const char *afterRegion = regionEnd + 1;
                     const char *beforeRegion = regionPtr - 1;
                     bool equal = true;
                     if (wholeWord &&

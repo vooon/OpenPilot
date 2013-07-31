@@ -57,7 +57,7 @@ int32_t PIOS_EEPROM_Save(uint8_t *data, uint32_t len)
     // We need to write 32 bit words, so extend the length to be an even multiple of 4 bytes,
     // and include 4 bytes for the 32 bit CRC.
     uint32_t nwords = (len / 4) + 1 + (len % 4 ? 1 : 0);
-    uint32_t size   = nwords * 4;
+    uint32_t size = nwords * 4;
 
     // Ensure that the length is not longer than the max size.
     if (size > config.max_size) {
@@ -86,7 +86,7 @@ int32_t PIOS_EEPROM_Save(uint8_t *data, uint32_t len)
     }
 
     // write 4 bytes at a time into program flash area (emulated EEPROM area)
-    uint8_t *p1  = data;
+    uint8_t *p1 = data;
     uint32_t *p3 = (uint32_t *)config.base_address;
     for (uint32_t i = 0; i < size; p3++) {
         uint32_t value = 0;
@@ -94,7 +94,7 @@ int32_t PIOS_EEPROM_Save(uint8_t *data, uint32_t len)
         if (i == (size - 4)) {
             // write the CRC.
             value = crc;
-            i    += 4;
+            i += 4;
         } else {
             if (i < len) {
                 value |= (uint32_t)*p1++ << 0;
@@ -139,7 +139,7 @@ int32_t PIOS_EEPROM_Load(uint8_t *data, uint32_t len)
     // We need to write 32 bit words, so the length should have been extended
     // to an even multiple of 4 bytes, and should include 4 bytes for the 32 bit CRC.
     uint32_t nwords = (len / 4) + 1 + (len % 4 ? 1 : 0);
-    uint32_t size   = nwords * 4;
+    uint32_t size = nwords * 4;
 
     // Ensure that the length is not longer than the max size.
     if (size > config.max_size) {

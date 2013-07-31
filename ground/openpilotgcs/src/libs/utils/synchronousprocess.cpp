@@ -52,7 +52,7 @@ SynchronousProcessResponse::SynchronousProcessResponse() :
 
 void SynchronousProcessResponse::clear()
 {
-    result   = StartFailed;
+    result = StartFailed;
     exitCode = -1;
     stdOut.clear();
     stdErr.clear();
@@ -77,7 +77,7 @@ struct ChannelBuffer {
     bool firstData;
     bool bufferedSignalsEnabled;
     bool firstBuffer;
-    int  bufferPos;
+    int bufferPos;
 };
 
 ChannelBuffer::ChannelBuffer() :
@@ -89,9 +89,9 @@ ChannelBuffer::ChannelBuffer() :
 
 void ChannelBuffer::clearForRun()
 {
-    firstData   = true;
+    firstData = true;
     firstBuffer = true;
-    bufferPos   = 0;
+    bufferPos = 0;
 }
 
 /* Check for complete lines read from the device and return them, moving the
@@ -106,7 +106,7 @@ QByteArray ChannelBuffer::linesRead()
         return QByteArray();
     }
     const int nextBufferPos = lastLineIndex + 1;
-    const QByteArray lines  = data.mid(bufferPos, nextBufferPos - bufferPos);
+    const QByteArray lines = data.mid(bufferPos, nextBufferPos - bufferPos);
     bufferPos = nextBufferPos;
     return lines;
 }
@@ -117,12 +117,12 @@ struct SynchronousProcessPrivate {
     void       clearForRun();
 
     QTextCodec *m_stdOutCodec;
-    QProcess   m_process;
-    QTimer     m_timer;
+    QProcess m_process;
+    QTimer m_timer;
     QEventLoop m_eventLoop;
     SynchronousProcessResponse m_result;
-    int  m_hangTimerCount;
-    int  m_maxHangTimerCount;
+    int m_hangTimerCount;
+    int m_maxHangTimerCount;
     bool m_startFailure;
 
     ChannelBuffer m_stdOut;
@@ -296,7 +296,7 @@ void SynchronousProcess::finished(int exitCode, QProcess::ExitStatus e)
     m_d->m_hangTimerCount = 0;
     switch (e) {
     case QProcess::NormalExit:
-        m_d->m_result.result   = exitCode ? SynchronousProcessResponse::FinishedError : SynchronousProcessResponse::Finished;
+        m_d->m_result.result = exitCode ? SynchronousProcessResponse::FinishedError : SynchronousProcessResponse::Finished;
         m_d->m_result.exitCode = exitCode;
         break;
     case QProcess::CrashExit:

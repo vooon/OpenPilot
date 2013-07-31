@@ -41,9 +41,9 @@ Cache *Cache::Instance()
 
 void Cache::setCacheLocation(const QString & value)
 {
-    cache          = value;
-    routeCache     = cache + "RouteCache" + QDir::separator();
-    geoCache       = cache + "GeocoderCache" + QDir::separator();
+    cache = value;
+    routeCache = cache + "RouteCache" + QDir::separator();
+    geoCache = cache + "GeocoderCache" + QDir::separator();
     placemarkCache = cache + "PlacemarkCache" + QDir::separator();
     ImageCache.setGtileCache(value);
 }
@@ -94,7 +94,7 @@ void Cache::CacheGeocoder(const QString &urlEnd, const QString &content)
     qDebug() << "CacheGeocoder: Filename:" << filename;
 #endif // DEBUG_CACHE
     QFileInfo File(filename);;
-    QDir dir     = File.absoluteDir();
+    QDir dir = File.absoluteDir();
     QString path = dir.absolutePath();
 #ifdef DEBUG_CACHE
     qDebug() << "CacheGeocoder: Path:" << path;
@@ -158,7 +158,7 @@ void Cache::CachePlacemark(const QString &urlEnd, const QString &content)
     qDebug() << "CachePlacemark: Filename:" << filename;
 #endif // DEBUG_CACHE
     QFileInfo File(filename);;
-    QDir dir     = File.absoluteDir();
+    QDir dir = File.absoluteDir();
     QString path = dir.absolutePath();
 #ifdef DEBUG_CACHE
     qDebug() << "CachePlacemark: Path:" << path;

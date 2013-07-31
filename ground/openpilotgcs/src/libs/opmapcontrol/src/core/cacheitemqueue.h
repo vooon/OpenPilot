@@ -39,8 +39,8 @@ public:
     CacheItemQueue() {};
     CacheItemQueue(const CacheItemQueue &cSource)
     {
-        img  = cSource.img;
-        pos  = cSource.pos;
+        img = cSource.img;
+        pos = cSource.pos;
         type = cSource.type;
         zoom = cSource.zoom;
     }

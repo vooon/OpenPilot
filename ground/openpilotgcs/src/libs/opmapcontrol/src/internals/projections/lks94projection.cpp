@@ -49,14 +49,14 @@ Point LKS94Projection::FromLatLngToPixel(double lat, double lng, int const &  zo
 {
     Point ret;
 
-    lat    = Clip(lat, MinLatitude, MaxLatitude);
-    lng    = Clip(lng, MinLongitude, MaxLongitude);
+    lat = Clip(lat, MinLatitude, MaxLatitude);
+    lng = Clip(lng, MinLongitude, MaxLongitude);
     QVector <double> lks(3);
     lks[0] = lng;
     lks[1] = lat;
-    lks    = DTM10(lks);
-    lks    = MTD10(lks);
-    lks    = DTM00(lks);
+    lks = DTM10(lks);
+    lks = MTD10(lks);
+    lks = DTM00(lks);
 
     double res = GetTileMatrixResolution(zoom);
 
@@ -75,9 +75,9 @@ internals::PointLatLng LKS94Projection::FromPixelToLatLng(int const & x, int con
     QVector <double> lks(2);
     lks[0] = (x * res) - orignX;
     lks[1] = -(y * res) + orignY;
-    lks    = MTD11(lks);
-    lks    = DTM10(lks);
-    lks    = MTD10(lks);
+    lks = MTD11(lks);
+    lks = DTM10(lks);
+    lks = MTD10(lks);
     ret.SetLat(Clip(lks[1], MinLatitude, MaxLatitude));
     ret.SetLng(Clip(lks[0], MinLongitude, MaxLongitude));
     return ret;
@@ -92,20 +92,20 @@ QVector <double> LKS94Projection::DTM10(const QVector <double> & lonlat)
     double ba; // Semi_minor / semi_major
     double ses; // Second eccentricity squared : (a^2 - b^2)/b^2
 
-    es  = 1.0 - (semiMinor * semiMinor) / (semiMajor * semiMajor); // e^2
+    es = 1.0 - (semiMinor * semiMinor) / (semiMajor * semiMajor); // e^2
     ses = (pow(semiMajor, 2) - pow(semiMinor, 2)) / pow(semiMinor, 2);
-    ba  = semiMinor / semiMajor;
-    ab  = semiMajor / semiMinor;
+    ba = semiMinor / semiMajor;
+    ab = semiMajor / semiMinor;
 
     // ...
 
     double lon = DegreesToRadians(lonlat[0]);
     double lat = DegreesToRadians(lonlat[1]);
-    double h   = lonlat.count() < 3 ? 0 : std::isnan(lonlat[2]) ? 0 : lonlat[2]; // TODO NAN
-    double v   = semiMajor / sqrt(1 - es * pow(sin(lat), 2));
-    double x   = (v + h) * cos(lat) * cos(lon);
-    double y   = (v + h) * cos(lat) * sin(lon);
-    double z   = ((1 - es) * v + h) * sin(lat);
+    double h = lonlat.count() < 3 ? 0 : std::isnan(lonlat[2]) ? 0 : lonlat[2]; // TODO NAN
+    double v = semiMajor / sqrt(1 - es * pow(sin(lat), 2));
+    double x = (v + h) * cos(lat) * cos(lon);
+    double y = (v + h) * cos(lat) * sin(lon);
+    double z = ((1 - es) * v + h) * sin(lat);
     QVector <double> ret(3);
     ret[0] = x;
     ret[1] = y;
@@ -116,7 +116,7 @@ QVector <double>  LKS94Projection::MTD10(QVector <double> &  pnt)
 {
     QVector <double> ret(3);
     const double COS_67P5 = 0.38268343236508977; // cosine of 67.5 degrees
-    const double AD_C     = 1.0026000;                  // Toms region 1 constant
+    const double AD_C = 1.0026000; // Toms region 1 constant
 
     double es; // Eccentricity squared : (a^2 - b^2)/a^2
     double semiMajor = 6378137.0; // major axis
@@ -125,18 +125,18 @@ QVector <double>  LKS94Projection::MTD10(QVector <double> &  pnt)
     double ba; // Semi_minor / semi_major
     double ses; // Second eccentricity squared : (a^2 - b^2)/b^2
 
-    es  = 1.0 - (semiMinor * semiMinor) / (semiMajor * semiMajor); // e^2
+    es = 1.0 - (semiMinor * semiMinor) / (semiMajor * semiMajor); // e^2
     ses = (pow(semiMajor, 2) - pow(semiMinor, 2)) / pow(semiMinor, 2);
-    ba  = semiMinor / semiMajor;
-    ab  = semiMajor / semiMinor;
+    ba = semiMinor / semiMajor;
+    ab = semiMajor / semiMinor;
 
     // ...
 
-    bool AtPole   = false; // is location in polar region
-    double Z      = pnt.count() < 3 ? 0 : std::isnan(pnt[2]) ? 0 : pnt[2]; // TODO NaN
+    bool AtPole = false; // is location in polar region
+    double Z = pnt.count() < 3 ? 0 : std::isnan(pnt[2]) ? 0 : pnt[2]; // TODO NaN
 
-    double lon    = 0;
-    double lat    = 0;
+    double lon = 0;
+    double lat = 0;
     double Height = 0;
     if (pnt[0] != 0.0) {
         lon = atan2(pnt[1], pnt[0]);
@@ -147,7 +147,7 @@ QVector <double>  LKS94Projection::MTD10(QVector <double> &  pnt)
             lon = -M_PI * 0.5;
         } else {
             AtPole = true;
-            lon    = 0.0;
+            lon = 0.0;
             if (Z > 0.0) { // north pole
                 lat = M_PI * 0.5;
             } else if (Z < 0.0) { // south pole
@@ -160,19 +160,19 @@ QVector <double>  LKS94Projection::MTD10(QVector <double> &  pnt)
             }
         }
     }
-    double W2      = pnt[0] * pnt[0] + pnt[1] * pnt[1]; // Square of distance from Z axis
-    double W       = sqrt(W2); // distance from Z axis
-    double T0      = Z * AD_C; // initial estimate of vertical component
-    double S0      = sqrt(T0 * T0 + W2); // initial estimate of horizontal component
-    double Sin_B0  = T0 / S0; // sin(B0), B0 is estimate of Bowring aux variable
-    double Cos_B0  = W / S0; // cos(B0)
+    double W2 = pnt[0] * pnt[0] + pnt[1] * pnt[1]; // Square of distance from Z axis
+    double W = sqrt(W2); // distance from Z axis
+    double T0 = Z * AD_C; // initial estimate of vertical component
+    double S0 = sqrt(T0 * T0 + W2); // initial estimate of horizontal component
+    double Sin_B0 = T0 / S0; // sin(B0), B0 is estimate of Bowring aux variable
+    double Cos_B0 = W / S0; // cos(B0)
     double Sin3_B0 = pow(Sin_B0, 3);
-    double T1      = Z + semiMinor * ses * Sin3_B0; // corrected estimate of vertical component
-    double Sum     = W - semiMajor * es * Cos_B0 * Cos_B0 * Cos_B0; // numerator of cos(phi1)
-    double S1      = sqrt(T1 * T1 + Sum * Sum); // corrected estimate of horizontal component
-    double Sin_p1  = T1 / S1; // sin(phi1), phi1 is estimated latitude
-    double Cos_p1  = Sum / S1; // cos(phi1)
-    double Rn      = semiMajor / sqrt(1.0 - es * Sin_p1 * Sin_p1); // Earth radius at location
+    double T1 = Z + semiMinor * ses * Sin3_B0; // corrected estimate of vertical component
+    double Sum = W - semiMajor * es * Cos_B0 * Cos_B0 * Cos_B0; // numerator of cos(phi1)
+    double S1 = sqrt(T1 * T1 + Sum * Sum); // corrected estimate of horizontal component
+    double Sin_p1 = T1 / S1; // sin(phi1), phi1 is estimated latitude
+    double Cos_p1 = Sum / S1; // cos(phi1)
+    double Rn = semiMajor / sqrt(1.0 - es * Sin_p1 * Sin_p1); // Earth radius at location
     if (Cos_p1 >= COS_67P5) {
         Height = W / Cos_p1 - Rn;
     } else if (Cos_p1 <= -COS_67P5) {
@@ -191,25 +191,25 @@ QVector <double>  LKS94Projection::MTD10(QVector <double> &  pnt)
 }
 QVector <double> LKS94Projection::DTM00(QVector <double> & lonlat)
 {
-    double scaleFactor     = 0.9998;                        // scale factor
+    double scaleFactor = 0.9998; // scale factor
     double centralMeridian = 0.41887902047863912; // Center qlonglongitude (projection center) */
     double latOrigin = 0.0; // center latitude
-    double falseNorthing   = 0.0;             // y offset in meters
-    double falseEasting    = 500000.0;             // x offset in meters
+    double falseNorthing = 0.0; // y offset in meters
+    double falseEasting = 500000.0; // x offset in meters
     double semiMajor = 6378137.0; // major axis
     double semiMinor = 6356752.3141403561; // minor axis
-    double metersPerUnit   = 1.0;
+    double metersPerUnit = 1.0;
 
     double e0, e1, e2, e3; // eccentricity constants
     double e, es, esp; // eccentricity constants
     double ml0; // small value m
 
-    es  = 1.0 - pow(semiMinor / semiMajor, 2);
-    e   = sqrt(es);
-    e0  = e0fn(es);
-    e1  = e1fn(es);
-    e2  = e2fn(es);
-    e3  = e3fn(es);
+    es = 1.0 - pow(semiMinor / semiMajor, 2);
+    e = sqrt(es);
+    e0 = e0fn(es);
+    e1 = e1fn(es);
+    e2 = e2fn(es);
+    e3 = e3fn(es);
     ml0 = semiMajor * mlfn(e0, e1, e2, e3, latOrigin);
     esp = es / (1.0 - es);
 
@@ -227,14 +227,14 @@ QVector <double> LKS94Projection::DTM00(QVector <double> & lonlat)
     delta_lon = LKS94Projection::AdjustLongitude(lon - centralMeridian);
     LKS94Projection::SinCos(lat, sin_phi, cos_phi);
 
-    al  = cos_phi * delta_lon;
+    al = cos_phi * delta_lon;
     als = pow(al, 2);
-    c   = pow(cos_phi, 2);
-    tq  = tan(lat);
-    t   = pow(tq, 2);
+    c = pow(cos_phi, 2);
+    tq = tan(lat);
+    t = pow(tq, 2);
     con = 1.0 - es * pow(sin_phi, 2);
-    n   = semiMajor / sqrt(con);
-    ml  = semiMajor * mlfn(e0, e1, e2, e3, lat);
+    n = semiMajor / sqrt(con);
+    ml = semiMajor * mlfn(e0, e1, e2, e3, lat);
 
     double x = scaleFactor * n * al * (1.0 + als / 6.0 * (1.0 - t + c + als / 20.0 *
                                                           (5.0 - 18.0 * t + pow(t, 2) + 72.0 * c - 58.0 * esp))) + falseEasting;
@@ -266,20 +266,20 @@ QVector <double> LKS94Projection::DTM01(QVector <double> & lonlat)
     double ba; // Semi_minor / semi_major
     double ses; // Second eccentricity squared : (a^2 - b^2)/b^2
 
-    es  = 1.0 - (semiMinor * semiMinor) / (semiMajor * semiMajor);
+    es = 1.0 - (semiMinor * semiMinor) / (semiMajor * semiMajor);
     ses = (pow(semiMajor, 2) - pow(semiMinor, 2)) / pow(semiMinor, 2);
-    ba  = semiMinor / semiMajor;
-    ab  = semiMajor / semiMinor;
+    ba = semiMinor / semiMajor;
+    ab = semiMajor / semiMinor;
 
     // ...
 
     double lon = DegreesToRadians(lonlat[0]);
     double lat = DegreesToRadians(lonlat[1]);
-    double h   = lonlat.count() < 3 ? 0 : std::isnan(lonlat[2]) ? 0 : lonlat[2]; // TODO NaN
-    double v   = semiMajor / sqrt(1 - es * pow(sin(lat), 2));
-    double x   = (v + h) * cos(lat) * cos(lon);
-    double y   = (v + h) * cos(lat) * sin(lon);
-    double z   = ((1 - es) * v + h) * sin(lat);
+    double h = lonlat.count() < 3 ? 0 : std::isnan(lonlat[2]) ? 0 : lonlat[2]; // TODO NaN
+    double v = semiMajor / sqrt(1 - es * pow(sin(lat), 2));
+    double x = (v + h) * cos(lat) * cos(lon);
+    double y = (v + h) * cos(lat) * sin(lon);
+    double z = ((1 - es) * v + h) * sin(lat);
     QVector <double> ret(3);
     ret[0] = x;
     ret[1] = y;
@@ -289,7 +289,7 @@ QVector <double> LKS94Projection::DTM01(QVector <double> & lonlat)
 QVector <double> LKS94Projection::MTD01(QVector <double> & pnt)
 {
     const double COS_67P5 = 0.38268343236508977; // cosine of 67.5 degrees
-    const double AD_C     = 1.0026000;               // Toms region 1 constant
+    const double AD_C = 1.0026000; // Toms region 1 constant
 
     double es; // Eccentricity squared : (a^2 - b^2)/a^2
     double semiMajor = 6378137.0; // major axis
@@ -298,18 +298,18 @@ QVector <double> LKS94Projection::MTD01(QVector <double> & pnt)
     double ba; // Semi_minor / semi_major
     double ses; // Second eccentricity squared : (a^2 - b^2)/b^2
 
-    es  = 1.0 - (semiMinor * semiMinor) / (semiMajor * semiMajor);
+    es = 1.0 - (semiMinor * semiMinor) / (semiMajor * semiMajor);
     ses = (pow(semiMajor, 2) - pow(semiMinor, 2)) / pow(semiMinor, 2);
-    ba  = semiMinor / semiMajor;
-    ab  = semiMajor / semiMinor;
+    ba = semiMinor / semiMajor;
+    ab = semiMajor / semiMinor;
 
     // ...
 
-    bool At_Pole  = false; // is location in polar region
-    double Z      = pnt.count() < 3 ? 0 : std::isnan(pnt[2]) ? 0 : pnt[2]; // TODO NaN
+    bool At_Pole = false; // is location in polar region
+    double Z = pnt.count() < 3 ? 0 : std::isnan(pnt[2]) ? 0 : pnt[2]; // TODO NaN
 
-    double lon    = 0;
-    double lat    = 0;
+    double lon = 0;
+    double lat = 0;
     double Height = 0;
     if (pnt[0] != 0.0) {
         lon = atan2(pnt[1], pnt[0]);
@@ -320,7 +320,7 @@ QVector <double> LKS94Projection::MTD01(QVector <double> & pnt)
             lon = -M_PI * 0.5;
         } else {
             At_Pole = true;
-            lon     = 0.0;
+            lon = 0.0;
             if (Z > 0.0) { // north pole
                 lat = M_PI * 0.5;
             } else if (Z < 0.0) { // south pole
@@ -335,19 +335,19 @@ QVector <double> LKS94Projection::MTD01(QVector <double> & pnt)
         }
     }
 
-    double W2      = pnt[0] * pnt[0] + pnt[1] * pnt[1]; // Square of distance from Z axis
-    double W       = sqrt(W2);                      // distance from Z axis
-    double T0      = Z * AD_C;                // initial estimate of vertical component
-    double S0      = sqrt(T0 * T0 + W2); // initial estimate of horizontal component
-    double Sin_B0  = T0 / S0;             // sin(B0), B0 is estimate of Bowring aux variable
-    double Cos_B0  = W / S0;              // cos(B0)
+    double W2 = pnt[0] * pnt[0] + pnt[1] * pnt[1]; // Square of distance from Z axis
+    double W = sqrt(W2); // distance from Z axis
+    double T0 = Z * AD_C; // initial estimate of vertical component
+    double S0 = sqrt(T0 * T0 + W2); // initial estimate of horizontal component
+    double Sin_B0 = T0 / S0; // sin(B0), B0 is estimate of Bowring aux variable
+    double Cos_B0 = W / S0; // cos(B0)
     double Sin3_B0 = pow(Sin_B0, 3);
-    double T1      = Z + semiMinor * ses * Sin3_B0; // corrected estimate of vertical component
-    double Sum     = W - semiMajor * es * Cos_B0 * Cos_B0 * Cos_B0; // numerator of cos(phi1)
-    double S1      = sqrt(T1 * T1 + Sum * Sum); // corrected estimate of horizontal component
-    double Sin_p1  = T1 / S1;  // sin(phi1), phi1 is estimated latitude
-    double Cos_p1  = Sum / S1; // cos(phi1)
-    double Rn      = semiMajor / sqrt(1.0 - es * Sin_p1 * Sin_p1); // Earth radius at location
+    double T1 = Z + semiMinor * ses * Sin3_B0; // corrected estimate of vertical component
+    double Sum = W - semiMajor * es * Cos_B0 * Cos_B0 * Cos_B0; // numerator of cos(phi1)
+    double S1 = sqrt(T1 * T1 + Sum * Sum); // corrected estimate of horizontal component
+    double Sin_p1 = T1 / S1; // sin(phi1), phi1 is estimated latitude
+    double Cos_p1 = Sum / S1; // cos(phi1)
+    double Rn = semiMajor / sqrt(1.0 - es * Sin_p1 * Sin_p1); // Earth radius at location
 
     if (Cos_p1 >= COS_67P5) {
         Height = W / Cos_p1 - Rn;
@@ -368,26 +368,26 @@ QVector <double> LKS94Projection::MTD01(QVector <double> & pnt)
 }
 QVector <double> LKS94Projection::MTD11(QVector <double> & p)
 {
-    double scaleFactor     = 0.9998;                        // scale factor
+    double scaleFactor = 0.9998; // scale factor
     double centralMeridian = 0.41887902047863912; // Center qlonglongitude (projection center)
     double latOrigin = 0.0; // center latitude
-    double falseNorthing   = 0.0;         // y offset in meters
-    double falseEasting    = 500000.0;         // x offset in meters
+    double falseNorthing = 0.0; // y offset in meters
+    double falseEasting = 500000.0; // x offset in meters
     double semiMajor = 6378137.0; // major axis
     double semiMinor = 6356752.3141403561; // minor axis
-    double metersPerUnit   = 1.0;
+    double metersPerUnit = 1.0;
 
     double e0, e1, e2, e3; // eccentricity constants
     double e, es, esp; // eccentricity constants
     double ml0; // small value m
 
-    es  = (semiMinor * semiMinor) / (semiMajor * semiMajor);
-    es  = 1.0 - es;
-    e   = sqrt(es);
-    e0  = e0fn(es);
-    e1  = e1fn(es);
-    e2  = e2fn(es);
-    e3  = e3fn(es);
+    es = (semiMinor * semiMinor) / (semiMajor * semiMajor);
+    es = 1.0 - es;
+    e = sqrt(es);
+    e0 = e0fn(es);
+    e1 = e1fn(es);
+    e2 = e2fn(es);
+    e3 = e3fn(es);
     ml0 = semiMajor * mlfn(e0, e1, e2, e3, latOrigin);
     esp = es / (1.0 - es);
 
@@ -420,15 +420,15 @@ QVector <double> LKS94Projection::MTD11(QVector <double> & p)
     if (fabs(phi) < HALF_PI) {
         SinCos(phi, sin_phi, cos_phi);
         tan_phi = tan(phi);
-        c   = esp * pow(cos_phi, 2);
-        cs  = pow(c, 2);
-        t   = pow(tan_phi, 2);
-        ts  = pow(t, 2);
+        c = esp * pow(cos_phi, 2);
+        cs = pow(c, 2);
+        t = pow(tan_phi, 2);
+        ts = pow(t, 2);
         con = 1.0 - es * pow(sin_phi, 2);
-        n   = semiMajor / sqrt(con);
-        r   = n * (1.0 - es) / con;
-        d   = x / (n * scaleFactor);
-        ds  = pow(d, 2);
+        n = semiMajor / sqrt(con);
+        r = n * (1.0 - es) / con;
+        d = x / (n * scaleFactor);
+        ds = pow(d, 2);
 
         double lat = phi - (n * tan_phi * ds / r) * (0.5 - ds / 24.0 * (5.0 + 3.0 * t +
                                                                         10.0 * c - 4.0 * cs - 9.0 * esp - ds / 30.0 * (61.0 + 90.0 * t +

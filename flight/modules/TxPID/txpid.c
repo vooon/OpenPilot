@@ -104,9 +104,9 @@ int32_t TxPIDInitialize(void)
         AccessoryDesiredInitialize();
 
         UAVObjEvent ev = {
-            .obj    = AccessoryDesiredHandle(),
+            .obj = AccessoryDesiredHandle(),
             .instId = 0,
-            .event  = 0,
+            .event = 0,
         };
         EventPeriodicCallbackCreate(&ev, updatePIDs, SAMPLE_PERIOD_MS / portTICK_RATE_MS);
 
@@ -121,7 +121,7 @@ int32_t TxPIDInitialize(void)
         StabilizationSettingsInitialize();
         StabilizationSettingsGetMetadata(&metadata);
         metadata.telemetryAcked = 0;
-        metadata.telemetryUpdateMode   = UPDATEMODE_PERIODIC;
+        metadata.telemetryUpdateMode = UPDATEMODE_PERIODIC;
         metadata.telemetryUpdatePeriod = TELEMETRY_UPDATE_PERIOD_MS;
         StabilizationSettingsSetMetadata(&metadata);
 #endif
@@ -319,7 +319,7 @@ static float scale(float val, float inMin, float inMax, float outMin, float outM
         float t = outMin;
         outMin = outMax;
         outMax = t;
-        val    = 1.0f - val;
+        val = 1.0f - val;
     }
 
     return (outMax - outMin) * val + outMin;

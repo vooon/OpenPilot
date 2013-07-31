@@ -33,7 +33,7 @@ QStyleOptionViewItem MyListWidget::viewOptions() const
 
     if (m_iconAbove) {
         option.decorationPosition = QStyleOptionViewItem::Top;
-        option.displayAlignment   = Qt::AlignCenter;
+        option.displayAlignment = Qt::AlignCenter;
     }
     return option;
 }

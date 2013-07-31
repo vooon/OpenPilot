@@ -134,8 +134,8 @@ void BiasCalibrationUtil::startMeasurement()
     m_gyroY = 0;
     m_gyroZ = 0;
 
-    ExtensionSystem::PluginManager *pm     = ExtensionSystem::PluginManager::instance();
-    UAVObjectManager *uavObjectManager     = pm->getObject<UAVObjectManager>();
+    ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
+    UAVObjectManager *uavObjectManager = pm->getObject<UAVObjectManager>();
     Q_ASSERT(uavObjectManager);
 
     RevoCalibration *revolutionCalibration = RevoCalibration::GetInstance(uavObjectManager);
@@ -144,9 +144,9 @@ void BiasCalibrationUtil::startMeasurement()
     revoCalibrationData.accel_bias[RevoCalibration::ACCEL_BIAS_X] = 0;
     revoCalibrationData.accel_bias[RevoCalibration::ACCEL_BIAS_Y] = 0;
     revoCalibrationData.accel_bias[RevoCalibration::ACCEL_BIAS_Z] = 0;
-    revoCalibrationData.gyro_bias[RevoCalibration::GYRO_BIAS_X]   = 0;
-    revoCalibrationData.gyro_bias[RevoCalibration::GYRO_BIAS_Y]   = 0;
-    revoCalibrationData.gyro_bias[RevoCalibration::GYRO_BIAS_Z]   = 0;
+    revoCalibrationData.gyro_bias[RevoCalibration::GYRO_BIAS_X] = 0;
+    revoCalibrationData.gyro_bias[RevoCalibration::GYRO_BIAS_Y] = 0;
+    revoCalibrationData.gyro_bias[RevoCalibration::GYRO_BIAS_Z] = 0;
     revoCalibrationData.BiasCorrectedRaw = RevoCalibration::BIASCORRECTEDRAW_FALSE;
     int i;
     for (i = 0; i < 5; i++) {
@@ -159,9 +159,9 @@ void BiasCalibrationUtil::startMeasurement()
     attitudeSettingsData.AccelBias[AttitudeSettings::ACCELBIAS_X] = 0;
     attitudeSettingsData.AccelBias[AttitudeSettings::ACCELBIAS_Y] = 0;
     attitudeSettingsData.AccelBias[AttitudeSettings::ACCELBIAS_Z] = 0;
-    attitudeSettingsData.GyroBias[AttitudeSettings::GYROBIAS_X]   = 0;
-    attitudeSettingsData.GyroBias[AttitudeSettings::GYROBIAS_Y]   = 0;
-    attitudeSettingsData.GyroBias[AttitudeSettings::GYROBIAS_Z]   = 0;
+    attitudeSettingsData.GyroBias[AttitudeSettings::GYROBIAS_X] = 0;
+    attitudeSettingsData.GyroBias[AttitudeSettings::GYROBIAS_Y] = 0;
+    attitudeSettingsData.GyroBias[AttitudeSettings::GYROBIAS_Z] = 0;
     for (i = 0; i < 5; i++) {
         AttitudeSettings::GetInstance(uavObjectManager)->setData(attitudeSettingsData);
     }

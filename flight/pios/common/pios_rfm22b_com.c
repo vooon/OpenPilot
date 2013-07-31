@@ -44,12 +44,12 @@ static bool PIOS_RFM22B_COM_Available(uint32_t rfm22b_com_id);
 
 /* Local variables */
 const struct pios_com_driver pios_rfm22b_com_driver = {
-    .set_baud   = PIOS_RFM22B_COM_ChangeBaud,
-    .tx_start   = PIOS_RFM22B_COM_TxStart,
-    .rx_start   = PIOS_RFM22B_COM_RxStart,
+    .set_baud = PIOS_RFM22B_COM_ChangeBaud,
+    .tx_start = PIOS_RFM22B_COM_TxStart,
+    .rx_start = PIOS_RFM22B_COM_RxStart,
     .bind_tx_cb = PIOS_RFM22B_COM_RegisterTxCallback,
     .bind_rx_cb = PIOS_RFM22B_COM_RegisterRxCallback,
-    .available  = PIOS_RFM22B_COM_Available
+    .available = PIOS_RFM22B_COM_Available
 };
 
 /**

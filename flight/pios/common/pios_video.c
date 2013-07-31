@@ -70,8 +70,8 @@ uint8_t *draw_buffer_mask;
 uint8_t *disp_buffer_level;
 uint8_t *disp_buffer_mask;
 
-volatile uint8_t gLineType     = LINE_TYPE_UNKNOWN;
-volatile uint16_t gActiveLine  = 0;
+volatile uint8_t gLineType = LINE_TYPE_UNKNOWN;
+volatile uint16_t gActiveLine = 0;
 volatile uint16_t gActivePixmapLine = 0;
 volatile uint16_t line = 0;
 volatile uint16_t Vsync_update = 0;
@@ -119,7 +119,7 @@ bool PIOS_Vsync_ISR()
     flush_spi();
     TIM_Cmd(dev_cfg->pixel_timer.timer, DISABLE);
 
-    gActiveLine  = 0;
+    gActiveLine = 0;
     Hsync_update = 0;
     Vsync_update++;
     if (Vsync_update >= 2) {
@@ -154,21 +154,21 @@ static void stop_hsync_timers()
 
 const struct pios_tim_callbacks px_callback = {
     .overflow = NULL,
-    .edge     = NULL,
+    .edge = NULL,
 };
 
 #ifdef PAL
 const uint32_t period = 10;
-const uint32_t dc     = (10 / 2);
+const uint32_t dc = (10 / 2);
 #else
 const uint32_t period = 11;
-const uint32_t dc     = (11 / 2);
+const uint32_t dc = (11 / 2);
 #endif
 /**
  * Reset the timer and configure for next call.  Keeps them synced.  Ideally this won't even be needed
  * since I don't think the slave mode gets lost, and this can simply be disable timer
  */
-uint32_t failcount    = 0;
+uint32_t failcount = 0;
 static void reset_hsync_timers()
 {
     // Stop both timers
@@ -232,11 +232,11 @@ static void configure_hsync_timers()
     default:
         PIOS_Assert(0);
     }
-    TIM_ICInitStructure.TIM_ICPolarity  = TIM_ICPolarity_Falling;
+    TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Falling;
     // TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;
     TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;
     TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
-    TIM_ICInitStructure.TIM_ICFilter    = 0;
+    TIM_ICInitStructure.TIM_ICFilter = 0;
     TIM_ICInit(dev_cfg->pixel_timer.timer, &TIM_ICInitStructure);
 
     // Set up the channel to output the pixel clock
@@ -283,11 +283,11 @@ void PIOS_Video_Init(const struct pios_video_cfg *cfg)
 
     /* needed for HW hack */
     const GPIO_InitTypeDef initStruct = {
-        .GPIO_Pin   = GPIO_Pin_12,
+        .GPIO_Pin = GPIO_Pin_12,
         .GPIO_Speed = GPIO_Speed_100MHz,
-        .GPIO_Mode  = GPIO_Mode_IN,
+        .GPIO_Mode = GPIO_Mode_IN,
         .GPIO_OType = GPIO_OType_PP,
-        .GPIO_PuPd  = GPIO_PuPd_NOPULL
+        .GPIO_PuPd = GPIO_PuPd_NOPULL
     };
     GPIO_Init(GPIOC, &initStruct);
 
@@ -337,9 +337,9 @@ void PIOS_Video_Init(const struct pios_video_cfg *cfg)
 
     /* Configure and clear buffers */
     draw_buffer_level = buffer0_level;
-    draw_buffer_mask  = buffer0_mask;
+    draw_buffer_mask = buffer0_mask;
     disp_buffer_level = buffer1_level;
-    disp_buffer_mask  = buffer1_mask;
+    disp_buffer_mask = buffer1_mask;
     memset(disp_buffer_mask, 0, GRAPHICS_WIDTH * GRAPHICS_HEIGHT);
     memset(disp_buffer_level, 0, GRAPHICS_WIDTH * GRAPHICS_HEIGHT);
     memset(draw_buffer_mask, 0, GRAPHICS_WIDTH * GRAPHICS_HEIGHT);
@@ -353,8 +353,8 @@ void PIOS_Video_Init(const struct pios_video_cfg *cfg)
     SPI_I2S_DMACmd(cfg->mask.regs, SPI_I2S_DMAReq_Tx, ENABLE);
     SPI_I2S_DMACmd(cfg->level.regs, SPI_I2S_DMAReq_Tx, ENABLE);
 
-    mask_dma    = DMA1;
-    main_dma    = DMA2;
+    mask_dma = DMA1;
+    main_dma = DMA2;
     main_stream = cfg->level.dma.tx.channel;
     mask_stream = cfg->mask.dma.tx.channel;
     /* Configure the Video Line interrupt */
@@ -410,15 +410,15 @@ void DMA2_Stream5_IRQHandler(void) __attribute__((alias("PIOS_VIDEO_DMA_Handler"
  */
 static void flush_spi()
 {
-    bool level_empty   = false;
-    bool mask_empty    = false;
+    bool level_empty = false;
+    bool mask_empty = false;
     bool level_stopped = false;
-    bool mask_stopped  = false;
+    bool mask_stopped = false;
 
     // Can't flush if clock not running
     while ((dev_cfg->pixel_timer.timer->CR1 & 0x0001) && (!level_stopped | !mask_stopped)) {
         level_empty |= SPI_I2S_GetFlagStatus(dev_cfg->level.regs, SPI_I2S_FLAG_TXE) == SET;
-        mask_empty  |= SPI_I2S_GetFlagStatus(dev_cfg->mask.regs, SPI_I2S_FLAG_TXE) == SET;
+        mask_empty |= SPI_I2S_GetFlagStatus(dev_cfg->mask.regs, SPI_I2S_FLAG_TXE) == SET;
 
         if (level_empty && !level_stopped) { // && SPI_I2S_GetFlagStatus(dev_cfg->level.regs ,SPI_I2S_FLAG_BSY) == RESET) {
             SPI_Cmd(dev_cfg->level.regs, DISABLE);

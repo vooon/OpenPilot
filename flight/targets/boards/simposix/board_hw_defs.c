@@ -36,7 +36,7 @@
  * Telemetry on main USART
  */
 const struct pios_udp_cfg pios_udp_telem_cfg = {
-    .ip   = "0.0.0.0",
+    .ip = "0.0.0.0",
     .port = 9000,
 };
 #endif /* PIOS_COM_TELEM */
@@ -46,7 +46,7 @@ const struct pios_udp_cfg pios_udp_telem_cfg = {
  * GPS USART
  */
 const struct pios_udp_cfg pios_udp_gps_cfg = {
-    .ip   = "0.0.0.0",
+    .ip = "0.0.0.0",
     .port = 9001,
 };
 
@@ -57,7 +57,7 @@ const struct pios_udp_cfg pios_udp_gps_cfg = {
  * AUX USART (UART label on rev2)
  */
 const struct pios_udp_cfg pios_udp_aux_cfg = {
-    .ip   = "0.0.0.0",
+    .ip = "0.0.0.0",
     .port = 9002,
 };
 #endif /* PIOS_COM_AUX */

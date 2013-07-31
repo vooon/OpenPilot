@@ -41,7 +41,7 @@ class QStatusBar;
 QT_END_NAMESPACE
 
 struct FancyTab {
-    QIcon   icon;
+    QIcon icon;
     QString text;
     QString toolTip;
 };

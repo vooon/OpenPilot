@@ -60,7 +60,7 @@ bool wdg_expired;
 void PIOS_WDG_Init()
 {
     wdg_registered_flags = 0;
-    wdg_updated_flags    = 0;
+    wdg_updated_flags = 0;
 }
 
 /**
@@ -98,8 +98,8 @@ bool PIOS_WDG_UpdateFlag(uint16_t flag)
     wdg_updated_flags |= flag;
     if (wdg_updated_flags == wdg_registered_flags) {
         wdg_last_update_time = PIOS_DELAY_DiffuS(wdg_cleared_time);
-        wdg_updated_flags    = 0;
-        wdg_cleared_time     = PIOS_DELAY_GetRaw();
+        wdg_updated_flags = 0;
+        wdg_cleared_time = PIOS_DELAY_GetRaw();
     }
     return true;
 }

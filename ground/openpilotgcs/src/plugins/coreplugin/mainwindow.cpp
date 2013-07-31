@@ -179,7 +179,7 @@ MainWindow::MainWindow() :
 
     m_connectionManager = new ConnectionManager(this, m_modeStack);
 
-    m_messageManager    = new MessageManager;
+    m_messageManager = new MessageManager;
     setCentralWidget(m_modeStack);
 
     connect(QApplication::instance(), SIGNAL(focusChanged(QWidget *, QWidget *)),
@@ -220,11 +220,11 @@ MainWindow::~MainWindow()
     pm->removeObject(m_generalSettings);
     pm->removeObject(m_workspaceSettings);
     delete m_messageManager;
-    m_messageManager    = 0;
+    m_messageManager = 0;
     delete m_shortcutSettings;
-    m_shortcutSettings  = 0;
+    m_shortcutSettings = 0;
     delete m_generalSettings;
-    m_generalSettings   = 0;
+    m_generalSettings = 0;
     delete m_workspaceSettings;
     m_workspaceSettings = 0;
     delete m_settings;
@@ -234,10 +234,10 @@ MainWindow::~MainWindow()
 
     pm->removeObject(m_coreImpl);
     delete m_coreImpl;
-    m_coreImpl     = 0;
+    m_coreImpl = 0;
 
     delete m_modeManager;
-    m_modeManager  = 0;
+    m_modeManager = 0;
     delete m_mimeDatabase;
     m_mimeDatabase = 0;
 }
@@ -268,8 +268,8 @@ void MainWindow::extensionsInitialized()
     qs->beginGroup("General");
 
     m_config_description = qs->value("Description", "none").toString();
-    m_config_details     = qs->value("Details", "none").toString();
-    m_config_stylesheet  = qs->value("StyleSheet", "none").toString();
+    m_config_details = qs->value("Details", "none").toString();
+    m_config_stylesheet = qs->value("StyleSheet", "none").toString();
 
     qDebug() << "Configured style sheet:" << m_config_stylesheet;
     if (m_config_stylesheet == "wide") {
@@ -278,7 +278,7 @@ void MainWindow::extensionsInitialized()
     }
 
     // Load common style sheet
-    QString style    = loadStyleSheet(m_config_stylesheet + ".qss");
+    QString style = loadStyleSheet(m_config_stylesheet + ".qss");
 
     // Load and concatenate platform specific style sheet
     QString fileName = m_config_stylesheet;
@@ -289,7 +289,7 @@ void MainWindow::extensionsInitialized()
 #else
     fileName += "_windows.qss";
 #endif
-    style    += loadStyleSheet(fileName);
+    style += loadStyleSheet(fileName);
 
     // We'll use qApp macro to get the QApplication pointer
     // and set the style sheet application wide.
@@ -505,11 +505,11 @@ static Command *createSeparator(ActionManager *am, QObject *parent, const QStrin
 void MainWindow::registerDefaultActions()
 {
     ActionManagerPrivate *am = m_actionManager;
-    ActionContainer *mfile   = am->actionContainer(Constants::M_FILE);
-    ActionContainer *medit   = am->actionContainer(Constants::M_EDIT);
-    ActionContainer *mtools  = am->actionContainer(Constants::M_TOOLS);
+    ActionContainer *mfile = am->actionContainer(Constants::M_FILE);
+    ActionContainer *medit = am->actionContainer(Constants::M_EDIT);
+    ActionContainer *mtools = am->actionContainer(Constants::M_TOOLS);
     ActionContainer *mwindow = am->actionContainer(Constants::M_WINDOW);
-    ActionContainer *mhelp   = am->actionContainer(Constants::M_HELP);
+    ActionContainer *mhelp = am->actionContainer(Constants::M_HELP);
 
     // File menu separators
     Command *cmd = createSeparator(am, this, QLatin1String("QtCreator.File.Sep.Save"), m_globalContext);
@@ -1095,12 +1095,12 @@ void MainWindow::showUavGadgetMenus(bool show, bool hasSplitter)
 inline int takeLeastPriorityUavGadgetManager(const QList<Core::UAVGadgetManager *> m_uavGadgetManagers)
 {
     int index = 0;
-    int prio  = m_uavGadgetManagers.at(0)->priority();
+    int prio = m_uavGadgetManagers.at(0)->priority();
 
     for (int i = 0; i < m_uavGadgetManagers.count(); i++) {
         int prio2 = m_uavGadgetManagers.at(i)->priority();
         if (prio2 < prio) {
-            prio  = prio2;
+            prio = prio2;
             index = i;
         }
     }
@@ -1116,7 +1116,7 @@ void MainWindow::createWorkspaces(QSettings *qs, bool diffOnly)
     // If diffOnly is true, we only add/remove the number of workspaces
     // that has changed,
     // otherwise a complete reload of workspaces is done
-    int toRemoveFirst   = m_uavGadgetManagers.count();
+    int toRemoveFirst = m_uavGadgetManagers.count();
     int newWorkspacesNo = m_workspaceSettings->numberOfWorkspaces();
 
     if (diffOnly && m_uavGadgetManagers.count() > newWorkspacesNo) {
@@ -1149,7 +1149,7 @@ void MainWindow::createWorkspaces(QSettings *qs, bool diffOnly)
         QElapsedTimer timer;
         timer.start();
 
-        const QString name     = m_workspaceSettings->name(i);
+        const QString name = m_workspaceSettings->name(i);
         const QString iconName = m_workspaceSettings->iconName(i);
         const QString modeName = m_workspaceSettings->modeName(i);
         uavGadgetManager = new Core::UAVGadgetManager(CoreImpl::instance(), name, QIcon(iconName), 90 - i + 1, modeName,
@@ -1172,11 +1172,11 @@ void MainWindow::createWorkspaces(QSettings *qs, bool diffOnly)
     qDebug() << "MainWindow::createWorkspaces - creating workspaces took" << totalTimer.elapsed() << "ms";
 }
 
-static const char *settingsGroup  = "MainWindow";
-static const char *geometryKey    = "Geometry";
+static const char *settingsGroup = "MainWindow";
+static const char *geometryKey = "Geometry";
 static const char *colorKey = "Color";
 static const char *maxKey = "Maximized";
-static const char *fullScreenKey  = "FullScreen";
+static const char *fullScreenKey = "FullScreen";
 static const char *modePriorities = "ModePriorities";
 
 void MainWindow::readSettings(QSettings *qs, bool workspaceDiffOnly)

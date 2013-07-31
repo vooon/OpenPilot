@@ -38,8 +38,8 @@ UdpSender::UdpSender(const QList<quint8> map,
     for (int i = 0; i < 8; ++i) {
         channels << 0.0;
     }
-    channelsMap   = map;
-    takeFromTX    = isTX;
+    channelsMap = map;
+    takeFromTX = isTX;
     packetsSended = 0;
 }
 
@@ -55,8 +55,8 @@ UdpSender::~UdpSender()
 void UdpSender::init(const QString &remoteHost, quint16 remotePort)
 {
     qDebug() << this << "UdpSender::init";
-    outHost   = remoteHost;
-    outPort   = remotePort;
+    outHost = remoteHost;
+    outPort = remotePort;
     outSocket = new QUdpSocket();
 }
 
@@ -123,13 +123,13 @@ UdpReceiver::UdpReceiver(const QList<quint8> map,
 {
     qDebug() << this << "UdpReceiver::UdpReceiver thread:" << thread();
 
-    stopped  = false;
+    stopped = false;
     inSocket = NULL;
     for (int i = 0; i < 10; ++i) {
         channels << -1.0;
     }
-    channelsMap    = map;
-    sendToRX       = isRX;
+    channelsMap = map;
+    sendToRX = isRX;
     armed = 0;
     mode = 0;
     packetsRecived = 1;
@@ -179,11 +179,11 @@ void UdpReceiver::setChannels(pluginToSim *pts)
             float channelValue = qBound(-1.0f, channels.at(i), 1.0f);
             if (sendToRX) {
                 // direct connect to ESC/motors/ailerons/etc
-                pts->chNewRX[mapTo]  = channelValue;
+                pts->chNewRX[mapTo] = channelValue;
                 pts->chOverRX[mapTo] = true;
             } else {
                 // replace simulators transmitter
-                pts->chNewTX[mapTo]  = channelValue;
+                pts->chNewTX[mapTo] = channelValue;
                 pts->chOverTX[mapTo] = true;
             }
         }

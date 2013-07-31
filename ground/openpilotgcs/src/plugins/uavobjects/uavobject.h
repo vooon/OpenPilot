@@ -58,9 +58,9 @@ public:
      * Object update mode
      */
     typedef enum {
-        UPDATEMODE_MANUAL    = 0,  /** Manually update object, by calling the updated() function */
-        UPDATEMODE_PERIODIC  = 1, /** Automatically update object at periodic intervals */
-        UPDATEMODE_ONCHANGE  = 2, /** Only update object when its data changes */
+        UPDATEMODE_MANUAL = 0, /** Manually update object, by calling the updated() function */
+        UPDATEMODE_PERIODIC = 1, /** Automatically update object at periodic intervals */
+        UPDATEMODE_ONCHANGE = 2, /** Only update object when its data changes */
         UPDATEMODE_THROTTLED = 3 /** Object is updated on change, but not more often than the interval time */
     } UpdateMode;
 
@@ -69,7 +69,7 @@ public:
      */
     typedef enum {
         ACCESS_READWRITE = 0,
-        ACCESS_READONLY  = 1
+        ACCESS_READONLY = 1
     } AccessMode;
 
     /**
@@ -89,7 +89,7 @@ public:
      *    6-7    gcsTelemetryUpdateMode     Update mode used by the GCS (UAVObjUpdateMode)
      */
     typedef struct {
-        quint8  flags; /** Defines flags for update and logging modes and whether an update should be ACK'd (bits defined above) */
+        quint8 flags; /** Defines flags for update and logging modes and whether an update should be ACK'd (bits defined above) */
         quint16 flightTelemetryUpdatePeriod; /** Update period used by the telemetry module (only if telemetry mode is PERIODIC) */
         quint16 gcsTelemetryUpdatePeriod; /** Update period used by the GCS (only if telemetry mode is PERIODIC) */
         quint16 loggingUpdatePeriod; /** Update period used by the logging module (only if logging mode is PERIODIC) */

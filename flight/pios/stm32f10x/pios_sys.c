@@ -62,7 +62,7 @@ void PIOS_SYS_Init(void)
     GPIO_InitTypeDef GPIO_InitStructure;
     GPIO_StructInit(&GPIO_InitStructure);
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
-    GPIO_InitStructure.GPIO_Pin  = PIOS_USB_DETECT_GPIO_PIN;
+    GPIO_InitStructure.GPIO_Pin = PIOS_USB_DETECT_GPIO_PIN;
     GPIO_Init(PIOS_USB_DETECT_GPIO_PORT, &GPIO_InitStructure);
 #endif
 

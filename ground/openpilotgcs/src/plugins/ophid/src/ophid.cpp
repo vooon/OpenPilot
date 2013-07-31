@@ -37,11 +37,11 @@
 class IConnection;
 
 // timeout value used when we want to return directly without waiting
-static const int READ_TIMEOUT  = 200;
-static const int READ_SIZE     = 64;
+static const int READ_TIMEOUT = 200;
+static const int READ_SIZE = 64;
 
 static const int WRITE_TIMEOUT = 1000;
-static const int WRITE_SIZE    = 64;
+static const int WRITE_SIZE = 64;
 
 
 // *********************************************************************************

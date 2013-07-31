@@ -97,7 +97,7 @@ int stabilization_virtual_flybar_pirocomp(float z_gyro, float dT)
     float sy = sinf(DEG2RAD(z_gyro) * dT);
 
     float vbar_pitch = cy * vbar_integral[1] - sy * vbar_integral[0];
-    float vbar_roll  = sy * vbar_integral[1] + cy * vbar_integral[0];
+    float vbar_roll = sy * vbar_integral[1] + cy * vbar_integral[0];
 
     vbar_integral[1] = vbar_pitch;
     vbar_integral[0] = vbar_roll;

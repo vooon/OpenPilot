@@ -32,8 +32,8 @@
 #include <QtNetwork/QHostAddress>
 
 typedef struct {
-    int    ActionID;
-    int    FunctionID;
+    int ActionID;
+    int FunctionID;
     double Amount;
 } buttonSettingsStruct;
 

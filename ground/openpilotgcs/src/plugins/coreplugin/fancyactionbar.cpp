@@ -39,12 +39,12 @@ using namespace Core;
 using namespace Internal;
 
 static const char *const svgIdButtonBase = "ButtonBase";
-static const char *const svgIdButtonNormalBase      = "ButtonNormalBase";
-static const char *const svgIdButtonNormalOverlay   = "ButtonNormalOverlay";
-static const char *const svgIdButtonPressedBase     = "ButtonPressedBase";
-static const char *const svgIdButtonPressedOverlay  = "ButtonPressedOverlay";
+static const char *const svgIdButtonNormalBase = "ButtonNormalBase";
+static const char *const svgIdButtonNormalOverlay = "ButtonNormalOverlay";
+static const char *const svgIdButtonPressedBase = "ButtonPressedBase";
+static const char *const svgIdButtonPressedOverlay = "ButtonPressedOverlay";
 static const char *const svgIdButtonDisabledOverlay = "ButtonDisabledOverlay";
-static const char *const svgIdButtonHoverOverlay    = "ButtonHoverOverlay";
+static const char *const svgIdButtonHoverOverlay = "ButtonHoverOverlay";
 
 static const char *const elementsSvgIds[] = {
     svgIdButtonBase,

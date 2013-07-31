@@ -41,12 +41,12 @@ public:
 
     LoadTask(Point pos, int zoom)
     {
-        Pos  = pos;
+        Pos = pos;
         Zoom = zoom;
     }
     LoadTask()
     {
-        Pos  = core::Point(-1, -1);
+        Pos = core::Point(-1, -1);
         Zoom = -1;
     }
     bool HasValue()

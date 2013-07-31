@@ -36,8 +36,8 @@ bool UAVObjectGeneratorJava::generate(UAVObjectParser *parser, QString templatep
     fieldTypeStrCPPClass << "INT8" << "INT16" << "INT32"
                          << "UINT8" << "UINT16" << "UINT32" << "FLOAT32" << "ENUM";
 
-    javaCodePath     = QDir(templatepath + QString(JAVA_TEMPLATE_DIR));
-    javaOutputPath   = QDir(outputpath + QString("java"));
+    javaCodePath = QDir(templatepath + QString(JAVA_TEMPLATE_DIR));
+    javaOutputPath = QDir(outputpath + QString("java"));
     javaOutputPath.mkpath(javaOutputPath.absolutePath());
 
     javaCodeTemplate = readFile(javaCodePath.absoluteFilePath("uavobject.java.template"));
@@ -83,7 +83,7 @@ bool UAVObjectGeneratorJava::process_object(ObjectInfo *info)
 
     // Prepare output strings
     QString outInclude = javaIncludeTemplate;
-    QString outCode    = javaCodeTemplate;
+    QString outCode = javaCodeTemplate;
 
     // Replace common tags
     replaceCommonTags(outInclude, info);
@@ -111,7 +111,7 @@ bool UAVObjectGeneratorJava::process_object(ObjectInfo *info)
         finit.append("\n");
 
         // Setup element names
-        QString varElemName   = info->fields[n]->name + "ElemNames";
+        QString varElemName = info->fields[n]->name + "ElemNames";
         finit.append(QString("\t\tList<String> %1 = new ArrayList<String>();\n").arg(varElemName));
         QStringList elemNames = info->fields[n]->elementNames;
         for (int m = 0; m < elemNames.length(); ++m) {
@@ -124,7 +124,7 @@ bool UAVObjectGeneratorJava::process_object(ObjectInfo *info)
         if (info->fields[n]->type == FIELDTYPE_ENUM) {
             QString varOptionName = info->fields[n]->name + "EnumOptions";
             finit.append(QString("\t\tList<String> %1 = new ArrayList<String>();\n").arg(varOptionName));
-            QStringList options   = info->fields[n]->options;
+            QStringList options = info->fields[n]->options;
             for (int m = 0; m < options.length(); ++m) {
                 finit.append(QString("\t\t%1.add(\"%2\");\n")
                              .arg(varOptionName)

@@ -49,7 +49,7 @@ ConnectionManager::ConnectionManager(Internal::MainWindow *mainWindow, QTabWidge
     m_mainWindow(mainWindow)
 {
     // monitor widget
-    m_monitorWidget    = new TelemetryMonitorWidget(this);
+    m_monitorWidget = new TelemetryMonitorWidget(this);
 
     // device list
     m_availableDevList = new QComboBox;

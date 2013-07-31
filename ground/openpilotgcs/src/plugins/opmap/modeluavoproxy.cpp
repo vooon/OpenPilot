@@ -32,9 +32,9 @@ modelUavoProxy::modelUavoProxy(QObject *parent, flightDataModel *model) : QObjec
     ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
 
     Q_ASSERT(pm != NULL);
-    objManager    = pm->getObject<UAVObjectManager>();
+    objManager = pm->getObject<UAVObjectManager>();
     Q_ASSERT(objManager != NULL);
-    waypointObj   = Waypoint::GetInstance(objManager);
+    waypointObj = Waypoint::GetInstance(objManager);
     Q_ASSERT(waypointObj != NULL);
     pathactionObj = PathAction::GetInstance(objManager);
     Q_ASSERT(pathactionObj != NULL);
@@ -42,7 +42,7 @@ modelUavoProxy::modelUavoProxy(QObject *parent, flightDataModel *model) : QObjec
 void modelUavoProxy::modelToObjects()
 {
     PathAction *act = NULL;
-    Waypoint *wp    = NULL;
+    Waypoint *wp = NULL;
     QModelIndex index;
     double distance;
     double bearing;
@@ -65,18 +65,18 @@ void modelUavoProxy::modelToObjects()
         PathAction::DataFields action = act->getData();
 
         ///Waypoint object data
-        index    = myModel->index(x, flightDataModel::DISRELATIVE);
+        index = myModel->index(x, flightDataModel::DISRELATIVE);
         distance = myModel->data(index).toDouble();
-        index    = myModel->index(x, flightDataModel::BEARELATIVE);
-        bearing  = myModel->data(index).toDouble();
-        index    = myModel->index(x, flightDataModel::ALTITUDERELATIVE);
+        index = myModel->index(x, flightDataModel::BEARELATIVE);
+        bearing = myModel->data(index).toDouble();
+        index = myModel->index(x, flightDataModel::ALTITUDERELATIVE);
         altitude = myModel->data(index).toFloat();
-        index    = myModel->index(x, flightDataModel::VELOCITY);
+        index = myModel->index(x, flightDataModel::VELOCITY);
         waypoint.Velocity = myModel->data(index).toFloat();
 
         waypoint.Position[Waypoint::POSITION_NORTH] = distance * cos(bearing / 180 * M_PI);
-        waypoint.Position[Waypoint::POSITION_EAST]  = distance * sin(bearing / 180 * M_PI);
-        waypoint.Position[Waypoint::POSITION_DOWN]  = (-1.0f) * altitude;
+        waypoint.Position[Waypoint::POSITION_EAST] = distance * sin(bearing / 180 * M_PI);
+        waypoint.Position[Waypoint::POSITION_DOWN] = (-1.0f) * altitude;
 
         ///PathAction object data
         index = myModel->index(x, flightDataModel::MODE);
@@ -138,20 +138,20 @@ void modelUavoProxy::objectsToModel()
         }
         wpfields = wp->getData();
         myModel->insertRow(x);
-        index    = myModel->index(x, flightDataModel::VELOCITY);
+        index = myModel->index(x, flightDataModel::VELOCITY);
         myModel->setData(index, wpfields.Velocity);
         distance = sqrt(wpfields.Position[Waypoint::POSITION_NORTH] * wpfields.Position[Waypoint::POSITION_NORTH] +
                         wpfields.Position[Waypoint::POSITION_EAST] * wpfields.Position[Waypoint::POSITION_EAST]);
-        bearing  = atan2(wpfields.Position[Waypoint::POSITION_EAST], wpfields.Position[Waypoint::POSITION_NORTH]) * 180 / M_PI;
+        bearing = atan2(wpfields.Position[Waypoint::POSITION_EAST], wpfields.Position[Waypoint::POSITION_NORTH]) * 180 / M_PI;
 
         if (bearing != bearing) {
             bearing = 0;
         }
-        index  = myModel->index(x, flightDataModel::DISRELATIVE);
+        index = myModel->index(x, flightDataModel::DISRELATIVE);
         myModel->setData(index, distance);
-        index  = myModel->index(x, flightDataModel::BEARELATIVE);
+        index = myModel->index(x, flightDataModel::BEARELATIVE);
         myModel->setData(index, bearing);
-        index  = myModel->index(x, flightDataModel::ALTITUDERELATIVE);
+        index = myModel->index(x, flightDataModel::ALTITUDERELATIVE);
         myModel->setData(index, (-1.0f) * wpfields.Position[Waypoint::POSITION_DOWN]);
 
         action = PathAction::GetInstance(objManager, wpfields.Action);

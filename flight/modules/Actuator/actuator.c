@@ -91,7 +91,7 @@ float ProcessMixer(const int index, const float curve1, const float curve2,
 // this structure is equivalent to the UAVObjects for one mixer.
 typedef struct {
     uint8_t type;
-    int8_t  matrix[5];
+    int8_t matrix[5];
 } __attribute__((packed)) Mixer_t;
 
 /**
@@ -212,9 +212,9 @@ static void actuatorTask(__attribute__((unused)) void *parameters)
         }
 
         // Check how long since last update
-        thisSysTime    = xTaskGetTickCount();
+        thisSysTime = xTaskGetTickCount();
         dTMilliseconds = (thisSysTime == lastSysTime) ? 1 : (thisSysTime - lastSysTime) * portTICK_RATE_MS;
-        lastSysTime    = thisSysTime;
+        lastSysTime = thisSysTime;
         dTSeconds = dTMilliseconds * 0.001f;
 
         FlightStatusGet(&flightStatus);
@@ -224,7 +224,7 @@ static void actuatorTask(__attribute__((unused)) void *parameters)
 #ifdef DIAG_MIXERSTATUS
         MixerStatusGet(&mixerStatus);
 #endif
-        int nMixers     = 0;
+        int nMixers = 0;
         Mixer_t *mixers = (Mixer_t *)&mixerSettings.Mixer1Type;
         for (int ct = 0; ct < MAX_MIX_ACTUATORS; ct++) {
             if (mixers[ct].type != MIXERSETTINGS_MIXER1TYPE_DISABLED) {
@@ -240,7 +240,7 @@ static void actuatorTask(__attribute__((unused)) void *parameters)
 
         bool armed = flightStatus.Armed == FLIGHTSTATUS_ARMED_ARMED;
         bool positiveThrottle = desired.Throttle >= 0.00f;
-        bool spinWhileArmed   = actuatorSettings.MotorsSpinWhileArmed == ACTUATORSETTINGS_MOTORSSPINWHILEARMED_TRUE;
+        bool spinWhileArmed = actuatorSettings.MotorsSpinWhileArmed == ACTUATORSETTINGS_MOTORSSPINWHILEARMED_TRUE;
 
         float curve1 = MixerCurve(desired.Throttle, mixerSettings.ThrottleCurve1, MIXERSETTINGS_THROTTLECURVE1_NUMELEM);
 
@@ -411,7 +411,7 @@ float ProcessMixer(const int index, const float curve1, const float curve2,
 {
     static float lastFilteredResult[MAX_MIX_ACTUATORS];
     const Mixer_t *mixers = (Mixer_t *)&mixerSettings->Mixer1Type; // pointer to array of mixers in UAVObjects
-    const Mixer_t *mixer  = &mixers[index];
+    const Mixer_t *mixer = &mixers[index];
 
     float result = (((float)mixer->matrix[MIXERSETTINGS_MIXER1VECTOR_THROTTLECURVE1] / 128.0f) * curve1) +
                    (((float)mixer->matrix[MIXERSETTINGS_MIXER1VECTOR_THROTTLECURVE2] / 128.0f) * curve2) +
@@ -448,7 +448,7 @@ float ProcessMixer(const int index, const float curve1, const float curve2,
         result += accumulator;
 
         // acceleration limit
-        float dt    = result - lastFilteredResult[index];
+        float dt = result - lastFilteredResult[index];
         float maxDt = mixerSettings->MaxAccel * period;
         if (dt > maxDt) { // we are accelerating too hard
             result = lastFilteredResult[index] + maxDt;
@@ -467,14 +467,14 @@ float ProcessMixer(const int index, const float curve1, const float curve2,
 static float MixerCurve(const float throttle, const float *curve, uint8_t elements)
 {
     float scale = throttle * (float)(elements - 1);
-    int idx1    = scale;
+    int idx1 = scale;
 
     scale -= (float)idx1; // remainder
     if (curve[0] < -1) {
         return throttle;
     }
     if (idx1 < 0) {
-        idx1  = 0; // clamp to lowest entry in table
+        idx1 = 0; // clamp to lowest entry in table
         scale = 0;
     }
     int idx2 = idx1 + 1;
@@ -611,7 +611,7 @@ static inline bool buzzerState(buzzertype type)
     }
 
     // Play tune
-    bool buzzOn     = false;
+    bool buzzOn = false;
     static portTickType lastSysTime = 0;
     portTickType thisSysTime = xTaskGetTickCount();
     portTickType dT = 0;

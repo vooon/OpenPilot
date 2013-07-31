@@ -49,30 +49,30 @@
 enum { debugMimeDB = 0 };
 
 // XML tags in mime files
-static const char *mimeInfoTagC                = "mime-info";
-static const char *mimeTypeTagC                = "mime-type";
-static const char *mimeTypeAttributeC          = "type";
-static const char *subClassTagC                = "sub-class-of";
-static const char *commentTagC                 = "comment";
-static const char *globTagC                    = "glob";
-static const char *aliasTagC                   = "alias";
-static const char *patternAttributeC           = "pattern";
-static const char *localeAttributeC            = "xml:lang";
+static const char *mimeInfoTagC = "mime-info";
+static const char *mimeTypeTagC = "mime-type";
+static const char *mimeTypeAttributeC = "type";
+static const char *subClassTagC = "sub-class-of";
+static const char *commentTagC = "comment";
+static const char *globTagC = "glob";
+static const char *aliasTagC = "alias";
+static const char *patternAttributeC = "pattern";
+static const char *localeAttributeC = "xml:lang";
 
-static const char *magicTagC                   = "magic";
-static const char *priorityAttributeC          = "priority";
-static const char *matchTagC                   = "match";
-static const char *matchValueAttributeC        = "value";
-static const char *matchTypeAttributeC         = "type";
-static const char *matchStringTypeValueC       = "string";
-static const char *matchOffsetAttributeC       = "offset";
+static const char *magicTagC = "magic";
+static const char *priorityAttributeC = "priority";
+static const char *matchTagC = "match";
+static const char *matchValueAttributeC = "value";
+static const char *matchTypeAttributeC = "type";
+static const char *matchStringTypeValueC = "string";
+static const char *matchOffsetAttributeC = "offset";
 
 // Types
-static const char *textTypeC                   = "text/plain";
-static const char *binaryTypeC                 = "application/octet-stream";
+static const char *textTypeC = "text/plain";
+static const char *binaryTypeC = "application/octet-stream";
 
 // UTF16 byte order marks
-static const char bigEndianByteOrderMarkC[]    = "\xFE\xFF";
+static const char bigEndianByteOrderMarkC[] = "\xFE\xFF";
 static const char littleEndianByteOrderMarkC[] = "\xFF\xFE";
 
 // Fallback priorities, must be low.
@@ -141,7 +141,7 @@ QByteArray FileMatchContext::data()
         const QString fullName = m_fileInfo.absoluteFilePath();
         QFile file(fullName);
         if (file.open(QIODevice::ReadOnly)) {
-            m_data  = file.read(MaxData);
+            m_data = file.read(MaxData);
             m_state = DataRead;
         } else {
             qWarning("%s failed to open %s: %s\n", Q_FUNC_INFO, fullName.toUtf8().constData(), file.errorString().toUtf8().constData());
@@ -306,7 +306,7 @@ void MimeTypeData::clear()
 void MimeTypeData::debug(QTextStream &str, int indent) const
 {
     const QString indentS = QString(indent, QLatin1Char(' '));
-    const QString comma   = QString(1, QLatin1Char(','));
+    const QString comma = QString(1, QLatin1Char(','));
 
     str << indentS << "Type: " << type;
     if (!aliases.empty()) {
@@ -717,10 +717,10 @@ static bool addMagicMatchRule(const QXmlStreamAttributes &atts,
     }
     // Parse for offset as "1" or "1:10"
     int startPos, endPos;
-    const QString offsetS   = atts.value(QLatin1String(matchOffsetAttributeC)).toString();
-    const int colonIndex    = offsetS.indexOf(QLatin1Char(':'));
+    const QString offsetS = atts.value(QLatin1String(matchOffsetAttributeC)).toString();
+    const int colonIndex = offsetS.indexOf(QLatin1Char(':'));
     const QString startPosS = colonIndex == -1 ? offsetS : offsetS.mid(0, colonIndex);
-    const QString endPosS   = colonIndex == -1 ? offsetS : offsetS.mid(colonIndex + 1);
+    const QString endPosS = colonIndex == -1 ? offsetS : offsetS.mid(colonIndex + 1);
     if (!parseNumber(startPosS, &startPos, errorMessage) || !parseNumber(endPosS, &endPos, errorMessage)) {
         return false;
     }

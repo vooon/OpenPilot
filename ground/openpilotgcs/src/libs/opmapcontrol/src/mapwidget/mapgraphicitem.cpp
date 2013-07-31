@@ -189,9 +189,9 @@ void MapGraphicItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
             core->BeginDrag(core->mouseDown);
             this->update();
         } else if (!isSelected && ((event->modifiers() == Qt::ControlModifier) || (event->modifiers() == Qt::ShiftModifier))) {
-            isSelected     = true;
+            isSelected = true;
             SetSelectedArea(internals::RectLatLng::Empty);
-            selectionEnd   = internals::PointLatLng::Empty;
+            selectionEnd = internals::PointLatLng::Empty;
             selectionStart = FromLocalToLatLng(event->pos().x(), event->pos().y());
         }
     }
@@ -486,7 +486,7 @@ QRectF MapGraphicItem::boundingBox(const QRectF &rect, const qreal &angle)
 }
 QSize MapGraphicItem::sizeHint() const
 {
-    core::Size size     = core->projection->GetTileMatrixMaxXY(MinZoom());
+    core::Size size = core->projection->GetTileMatrixMaxXY(MinZoom());
     core::Size tilesize = core->projection->TileSize();
     QSize rsize((size.Width() + 1) * tilesize.Width(), (size.Height() + 1) * tilesize.Height());
 

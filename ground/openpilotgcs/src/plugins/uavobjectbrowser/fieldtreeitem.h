@@ -59,7 +59,7 @@ public:
     {
         return true;
     }
-    virtual QWidget *createEditor(QWidget *parent)   = 0;
+    virtual QWidget *createEditor(QWidget *parent) = 0;
     virtual QVariant getEditorValue(QWidget *editor) = 0;
     virtual void setEditorValue(QWidget *editor, QVariant value) = 0;
     virtual void apply() {}
@@ -79,8 +79,8 @@ public:
     void setData(QVariant value, int column)
     {
         QStringList options = m_field->getOptions();
-        QVariant tmpValue   = m_field->getValue(m_index);
-        int tmpValIndex     = options.indexOf(tmpValue.toString());
+        QVariant tmpValue = m_field->getValue(m_index);
+        int tmpValIndex = options.indexOf(tmpValue.toString());
 
         setChanged(tmpValIndex != value);
         TreeItem::setData(value, column);
@@ -104,7 +104,7 @@ public:
     {
         QStringList options = m_field->getOptions();
         QVariant value = m_field->getValue(m_index);
-        int valIndex   = options.indexOf(value.toString());
+        int valIndex = options.indexOf(value.toString());
 
         if (data() != valIndex || changed()) {
             TreeItem::setData(valIndex);

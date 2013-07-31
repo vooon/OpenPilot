@@ -7,10 +7,10 @@
 
 struct pios_board_info {
     uint32_t magic;
-    uint8_t  board_type;
-    uint8_t  board_rev;
-    uint8_t  bl_rev;
-    uint8_t  hw_type;
+    uint8_t board_type;
+    uint8_t board_rev;
+    uint8_t bl_rev;
+    uint8_t hw_type;
     uint32_t fw_base;
     uint32_t fw_size;
     uint32_t desc_base;

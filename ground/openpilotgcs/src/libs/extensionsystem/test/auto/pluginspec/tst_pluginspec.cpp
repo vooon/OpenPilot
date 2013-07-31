@@ -72,10 +72,10 @@ void tst_PluginSpec::read()
     QCOMPARE(spec.description, QString("This plugin is just a test.\n    it demonstrates the great use of the plugin spec."));
     QCOMPARE(spec.url, QString("http://www.trolltech.com"));
     PluginDependency dep1;
-    dep1.name    = QString("SomeOtherPlugin");
+    dep1.name = QString("SomeOtherPlugin");
     dep1.version = QString("2.3.0_2");
     PluginDependency dep2;
-    dep2.name    = QString("EvenOther");
+    dep2.name = QString("EvenOther");
     dep2.version = QString("1.0.0");
     QCOMPARE(spec.dependencies, QList<PluginDependency>() << dep1 << dep2);
 

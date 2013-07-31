@@ -126,7 +126,7 @@ void gps_airspeedGet(AirspeedSensorData *airspeedData, AirspeedSettingsData *air
 
         if (gpsVelData.North * gpsVelData.North + gpsVelData.East * gpsVelData.East + gpsVelData.Down * gpsVelData.Down < 1.0f) {
             airspeedData->CalibratedAirspeed = 0;
-            airspeedData->SensorConnected    = AIRSPEEDSENSOR_SENSORCONNECTED_FALSE;
+            airspeedData->SensorConnected = AIRSPEEDSENSOR_SENSORCONNECTED_FALSE;
             return; // do not calculate if gps velocity is insufficient...
         }
 
@@ -140,18 +140,18 @@ void gps_airspeedGet(AirspeedSensorData *airspeedData, AirspeedSettingsData *air
         float airspeed = sqrtf(normDiffGPS2 / normDiffAttitude2);
         if (!IS_REAL(airspeedData->CalibratedAirspeed)) {
             airspeedData->CalibratedAirspeed = 0;
-            airspeedData->SensorConnected    = AIRSPEEDSENSOR_SENSORCONNECTED_FALSE;
+            airspeedData->SensorConnected = AIRSPEEDSENSOR_SENSORCONNECTED_FALSE;
         } else {
             // need a low pass filter to filter out spikes in non coordinated maneuvers
             airspeedData->CalibratedAirspeed = (1.0f - airspeedSettings->GroundSpeedBasedEstimationLowPassAlpha) * gps->oldAirspeed + airspeedSettings->GroundSpeedBasedEstimationLowPassAlpha * airspeed;
             gps->oldAirspeed = airspeedData->CalibratedAirspeed;
-            airspeedData->SensorConnected    = AIRSPEEDSENSOR_SENSORCONNECTED_TRUE;
+            airspeedData->SensorConnected = AIRSPEEDSENSOR_SENSORCONNECTED_TRUE;
         }
 
         // Save old variables for next pass
-        gps->gpsVelOld_N    = gpsVelData.North;
-        gps->gpsVelOld_E    = gpsVelData.East;
-        gps->gpsVelOld_D    = gpsVelData.Down;
+        gps->gpsVelOld_N = gpsVelData.North;
+        gps->gpsVelOld_E = gpsVelData.East;
+        gps->gpsVelOld_D = gpsVelData.Down;
 
         gps->RbeCol1_old[0] = Rbe[0][0];
         gps->RbeCol1_old[1] = Rbe[0][1];

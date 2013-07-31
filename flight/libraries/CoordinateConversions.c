@@ -37,12 +37,12 @@
 // ****** convert Lat,Lon,Alt to ECEF  ************
 void LLA2ECEF(int32_t LLAi[3], double ECEF[3])
 {
-    const double a  = 6378137.0d; // Equatorial Radius
-    const double e  = 8.1819190842622e-2d; // Eccentricity
+    const double a = 6378137.0d; // Equatorial Radius
+    const double e = 8.1819190842622e-2d; // Eccentricity
     const double e2 = e * e; // Eccentricity squared
     double sinLat, sinLon, cosLat, cosLon;
     double N;
-    double LLA[3]   = {
+    double LLA[3] = {
         (double)LLAi[0] * 1e-7d,
         (double)LLAi[1] * 1e-7d,
         (double)LLAi[2] * 1e-4d
@@ -82,21 +82,21 @@ uint16_t ECEF2LLA(double ECEF[3], float LLA[3])
 #define ACCURACY 1.0e-11d // used to be e-14, but we don't need sub micrometer exact calculations
 
     LLA[1] = (float)RAD2DEG_D(atan2(y, x));
-    Lat    = DEG2RAD_D((double)LLA[0]);
-    esLat  = e * sin(Lat);
+    Lat = DEG2RAD_D((double)LLA[0]);
+    esLat = e * sin(Lat);
     N = a / sqrt(1 - esLat * esLat);
     NplusH = N + (double)LLA[2];
-    delta  = 1;
-    iter   = 0;
+    delta = 1;
+    iter = 0;
 
     while (((delta > ACCURACY) || (delta < -ACCURACY))
            && (iter < MAX_ITER)) {
-        delta  = Lat - atan(z / (sqrt(x * x + y * y) * (1 - (N * e * e / NplusH))));
-        Lat    = Lat - delta;
-        esLat  = e * sin(Lat);
-        N      = a / sqrt(1 - esLat * esLat);
+        delta = Lat - atan(z / (sqrt(x * x + y * y) * (1 - (N * e * e / NplusH))));
+        Lat = Lat - delta;
+        esLat = e * sin(Lat);
+        N = a / sqrt(1 - esLat * esLat);
         NplusH = sqrt(x * x + y * y) / cos(Lat);
-        iter  += 1;
+        iter += 1;
     }
 
     LLA[0] = RAD2DEG_D(Lat);
@@ -110,10 +110,10 @@ void RneFromLLA(int32_t LLAi[3], float Rne[3][3])
 {
     float sinLat, sinLon, cosLat, cosLon;
 
-    sinLat    = sinf(DEG2RAD((float)LLAi[0] * 1e-7f));
-    sinLon    = sinf(DEG2RAD((float)LLAi[1] * 1e-7f));
-    cosLat    = cosf(DEG2RAD((float)LLAi[0] * 1e-7f));
-    cosLon    = cosf(DEG2RAD((float)LLAi[1] * 1e-7f));
+    sinLat = sinf(DEG2RAD((float)LLAi[0] * 1e-7f));
+    sinLon = sinf(DEG2RAD((float)LLAi[1] * 1e-7f));
+    cosLat = cosf(DEG2RAD((float)LLAi[0] * 1e-7f));
+    cosLon = cosf(DEG2RAD((float)LLAi[1] * 1e-7f));
 
     Rne[0][0] = -sinLat * cosLon;
     Rne[0][1] = -sinLat * sinLon;
@@ -135,11 +135,11 @@ void Quaternion2RPY(const float q[4], float rpy[3])
     float q2s = q[2] * q[2];
     float q3s = q[3] * q[3];
 
-    R13    = 2.0f * (q[1] * q[3] - q[0] * q[2]);
-    R11    = q0s + q1s - q2s - q3s;
-    R12    = 2.0f * (q[1] * q[2] + q[0] * q[3]);
-    R23    = 2.0f * (q[2] * q[3] + q[0] * q[1]);
-    R33    = q0s - q1s - q2s + q3s;
+    R13 = 2.0f * (q[1] * q[3] - q[0] * q[2]);
+    R11 = q0s + q1s - q2s - q3s;
+    R12 = 2.0f * (q[1] * q[2] + q[0] * q[3]);
+    R23 = 2.0f * (q[2] * q[3] + q[0] * q[1]);
+    R33 = q0s - q1s - q2s + q3s;
 
     rpy[1] = RAD2DEG(asinf(-R13)); // pitch always between -pi/2 to pi/2
     rpy[2] = RAD2DEG(atan2f(R12, R11));
@@ -154,20 +154,20 @@ void RPY2Quaternion(const float rpy[3], float q[4])
     float phi, theta, psi;
     float cphi, sphi, ctheta, stheta, cpsi, spsi;
 
-    phi    = DEG2RAD(rpy[0] / 2);
-    theta  = DEG2RAD(rpy[1] / 2);
-    psi    = DEG2RAD(rpy[2] / 2);
-    cphi   = cosf(phi);
-    sphi   = sinf(phi);
+    phi = DEG2RAD(rpy[0] / 2);
+    theta = DEG2RAD(rpy[1] / 2);
+    psi = DEG2RAD(rpy[2] / 2);
+    cphi = cosf(phi);
+    sphi = sinf(phi);
     ctheta = cosf(theta);
     stheta = sinf(theta);
-    cpsi   = cosf(psi);
-    spsi   = sinf(psi);
+    cpsi = cosf(psi);
+    spsi = sinf(psi);
 
-    q[0]   = cphi * ctheta * cpsi + sphi * stheta * spsi;
-    q[1]   = sphi * ctheta * cpsi - cphi * stheta * spsi;
-    q[2]   = cphi * stheta * cpsi + sphi * ctheta * spsi;
-    q[3]   = cphi * ctheta * spsi - sphi * stheta * cpsi;
+    q[0] = cphi * ctheta * cpsi + sphi * stheta * spsi;
+    q[1] = sphi * ctheta * cpsi - cphi * stheta * spsi;
+    q[2] = cphi * stheta * cpsi + sphi * ctheta * spsi;
+    q[3] = cphi * ctheta * spsi - sphi * stheta * cpsi;
 
     if (q[0] < 0) { // q0 always positive for uniqueness
         q[0] = -q[0];
@@ -205,9 +205,9 @@ void LLA2Base(int32_t LLAi[3], double BaseECEF[3], float Rne[3][3], float NED[3]
     diff[1] = (float)(ECEF[1] - BaseECEF[1]);
     diff[2] = (float)(ECEF[2] - BaseECEF[2]);
 
-    NED[0]  = Rne[0][0] * diff[0] + Rne[0][1] * diff[1] + Rne[0][2] * diff[2];
-    NED[1]  = Rne[1][0] * diff[0] + Rne[1][1] * diff[1] + Rne[1][2] * diff[2];
-    NED[2]  = Rne[2][0] * diff[0] + Rne[2][1] * diff[1] + Rne[2][2] * diff[2];
+    NED[0] = Rne[0][0] * diff[0] + Rne[0][1] * diff[1] + Rne[0][2] * diff[2];
+    NED[1] = Rne[1][0] * diff[0] + Rne[1][1] * diff[1] + Rne[1][2] * diff[2];
+    NED[2] = Rne[2][0] * diff[0] + Rne[2][1] * diff[1] + Rne[2][2] * diff[2];
 }
 
 // ****** Express ECEF in a local NED Base Frame ********
@@ -219,9 +219,9 @@ void ECEF2Base(double ECEF[3], double BaseECEF[3], float Rne[3][3], float NED[3]
     diff[1] = (float)(ECEF[1] - BaseECEF[1]);
     diff[2] = (float)(ECEF[2] - BaseECEF[2]);
 
-    NED[0]  = Rne[0][0] * diff[0] + Rne[0][1] * diff[1] + Rne[0][2] * diff[2];
-    NED[1]  = Rne[1][0] * diff[0] + Rne[1][1] * diff[1] + Rne[1][2] * diff[2];
-    NED[2]  = Rne[2][0] * diff[0] + Rne[2][1] * diff[1] + Rne[2][2] * diff[2];
+    NED[0] = Rne[0][0] * diff[0] + Rne[0][1] * diff[1] + Rne[0][2] * diff[2];
+    NED[1] = Rne[1][0] * diff[0] + Rne[1][1] * diff[1] + Rne[1][2] * diff[2];
+    NED[2] = Rne[2][0] * diff[0] + Rne[2][1] * diff[1] + Rne[2][2] * diff[2];
 }
 
 // ****** convert Rotation Matrix to Quaternion ********
@@ -231,17 +231,17 @@ void R2Quaternion(float R[3][3], float q[4])
     float m[4], mag;
     uint8_t index, i;
 
-    m[0]  = 1 + R[0][0] + R[1][1] + R[2][2];
-    m[1]  = 1 + R[0][0] - R[1][1] - R[2][2];
-    m[2]  = 1 - R[0][0] + R[1][1] - R[2][2];
-    m[3]  = 1 - R[0][0] - R[1][1] + R[2][2];
+    m[0] = 1 + R[0][0] + R[1][1] + R[2][2];
+    m[1] = 1 + R[0][0] - R[1][1] - R[2][2];
+    m[2] = 1 - R[0][0] + R[1][1] - R[2][2];
+    m[3] = 1 - R[0][0] - R[1][1] + R[2][2];
 
     // find maximum divisor
     index = 0;
-    mag   = m[0];
+    mag = m[0];
     for (i = 1; i < 4; i++) {
         if (m[i] > mag) {
-            mag   = m[i];
+            mag = m[i];
             index = i;
         }
     }

@@ -38,7 +38,7 @@ void PopupWidget::setWidget(QWidget *widget)
     m_widgetParent = widget->parentWidget();
 
     // save the current width,height so we can restore when closed
-    m_widgetWidth  = m_widget->width();
+    m_widgetWidth = m_widget->width();
     m_widgetHeight = m_widget->height();
 
     // double the size of the widget for the dialog

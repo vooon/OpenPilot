@@ -69,17 +69,17 @@ void WayPointCircle::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
     myPen.setColor(myColor);
     qreal arrowSize = 10;
     painter->setPen(myPen);
-    QBrush brush    = painter->brush();
+    QBrush brush = painter->brush();
     painter->setBrush(myColor);
-    double angle    = 0;
+    double angle = 0;
     if (!myClockWise) {
         angle += M_PI;
     }
 
-    QPointF arrowP1  = p1 + QPointF(sin(angle + M_PI / 3) * arrowSize,
-                                    cos(angle + M_PI / 3) * arrowSize);
-    QPointF arrowP2  = p1 + QPointF(sin(angle + M_PI - M_PI / 3) * arrowSize,
-                                    cos(angle + M_PI - M_PI / 3) * arrowSize);
+    QPointF arrowP1 = p1 + QPointF(sin(angle + M_PI / 3) * arrowSize,
+                                   cos(angle + M_PI / 3) * arrowSize);
+    QPointF arrowP2 = p1 + QPointF(sin(angle + M_PI - M_PI / 3) * arrowSize,
+                                   cos(angle + M_PI - M_PI / 3) * arrowSize);
 
     QPointF arrowP21 = p2 + QPointF(sin(angle + M_PI + M_PI / 3) * arrowSize,
                                     cos(angle + M_PI + M_PI / 3) * arrowSize);

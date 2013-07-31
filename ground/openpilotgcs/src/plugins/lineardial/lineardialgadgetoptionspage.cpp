@@ -187,7 +187,7 @@ void LineardialGadgetOptionsPage::on_objectName_currentIndexChanged(QString val)
     ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
     UAVObjectManager *objManager = pm->getObject<UAVObjectManager>();
     UAVDataObject *obj = dynamic_cast<UAVDataObject *>(objManager->getObject(val));
-    QList<UAVObjectField *> fieldList  = obj->getFields();
+    QList<UAVObjectField *> fieldList = obj->getFields();
     foreach(UAVObjectField * field, fieldList) {
         if (field->getElementNames().count() > 1) {
             foreach(QString elemName, field->getElementNames()) {

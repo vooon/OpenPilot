@@ -139,7 +139,7 @@ void NMEAParser::nmeaTerminateAtChecksum(char *gps_buffer)
 uint8_t NMEAParser::nmeaProcess(cBuffer *rxBuffer)
 {
     uint8_t foundpacket = NMEA_NODATA;
-    uint8_t startFlag   = FALSE;
+    uint8_t startFlag = FALSE;
     // u08 data;
     uint16_t i, j;
 
@@ -272,12 +272,12 @@ void NMEAParser::nmeaProcessGPGSV(char *packet)
 
     int sats = (tokenslist.size() - 4) / 4;
     for (int sat = 0; sat < sats; sat++) {
-        int base          = 4 + sat * 4;
-        const int id      = tokenslist.at(base + 0).toInt(); // Satellite PRN number
-        const int elv     = tokenslist.at(base + 1).toInt(); // Elevation, degrees
+        int base = 4 + sat * 4;
+        const int id = tokenslist.at(base + 0).toInt(); // Satellite PRN number
+        const int elv = tokenslist.at(base + 1).toInt(); // Elevation, degrees
         const int azimuth = tokenslist.at(base + 2).toInt(); // Azimuth, degrees
-        const int sig     = tokenslist.at(base + 3).toInt(); // SNR - higher is better
-        const int index   = (sentence_index - 1) * 4 + sat;
+        const int sig = tokenslist.at(base + 3).toInt(); // SNR - higher is better
+        const int index = (sentence_index - 1) * 4 + sat;
         emit satellite(index, id, elv, azimuth, sig);
     }
 
@@ -311,9 +311,9 @@ void NMEAParser::nmeaProcessGPGGA(char *packet)
 
     QString nmeaString(packet);
     QStringList tokenslist = nmeaString.split(",");
-    GpsData.GPStime  = tokenslist.at(1).toDouble();
+    GpsData.GPStime = tokenslist.at(1).toDouble();
     GpsData.Latitude = tokenslist.at(2).toDouble();
-    int deg    = (int)GpsData.Latitude / 100;
+    int deg = (int)GpsData.Latitude / 100;
     double min = ((GpsData.Latitude) - (deg * 100)) / 60.0;
     GpsData.Latitude = deg + min;
     // next field: N/S indicator
@@ -361,11 +361,11 @@ void NMEAParser::nmeaProcessGPRMC(char *packet)
 
     QString nmeaString(packet);
     QStringList tokenslist = nmeaString.split(",");
-    GpsData.GPStime     = tokenslist.at(1).toDouble();
+    GpsData.GPStime = tokenslist.at(1).toDouble();
     GpsData.Groundspeed = tokenslist.at(7).toDouble();
     GpsData.Groundspeed = GpsData.Groundspeed * 0.51444;
-    GpsData.Heading     = tokenslist.at(8).toDouble();
-    GpsData.GPSdate     = tokenslist.at(9).toDouble();
+    GpsData.Heading = tokenslist.at(8).toDouble();
+    GpsData.GPSdate = tokenslist.at(9).toDouble();
     emit datetime(GpsData.GPSdate, GpsData.GPStime);
     emit speedheading(GpsData.Groundspeed, GpsData.Heading);
 }
@@ -392,7 +392,7 @@ void NMEAParser::nmeaProcessGPVTG(char *packet)
     QString nmeaString(packet);
     QStringList tokenslist = nmeaString.split(",");
 
-    GpsData.Heading     = tokenslist.at(1).toDouble();
+    GpsData.Heading = tokenslist.at(1).toDouble();
     GpsData.Groundspeed = tokenslist.at(7).toDouble();
     GpsData.Groundspeed = GpsData.Groundspeed / 3.6;
     emit speedheading(GpsData.Groundspeed, GpsData.Heading);
@@ -479,9 +479,9 @@ void NMEAParser::nmeaProcessGPZDA(char *packet)
     QStringList tokenslist = nmeaString.split(",");
 
     GpsData.GPStime = tokenslist.at(1).toDouble();
-    int day   = tokenslist.at(2).toInt();
+    int day = tokenslist.at(2).toInt();
     int month = tokenslist.at(3).toInt();
-    int year  = tokenslist.at(4).toInt();
+    int year = tokenslist.at(4).toInt();
     GpsData.GPSdate = day * 10000 + month * 100 + (year - 2000);
     emit datetime(GpsData.GPSdate, GpsData.GPStime);
 }

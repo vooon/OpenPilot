@@ -38,13 +38,13 @@ using namespace Core;
 struct PlotCurveConfiguration {
     QString uavObject;
     QString uavField;
-    int     yScalePower; // This is the power to which each value must be raised
-    QRgb    color;
-    int     yMeanSamples;
+    int yScalePower; // This is the power to which each value must be raised
+    QRgb color;
+    int yMeanSamples;
     QString mathFunction;
-    double  yMinimum;
-    double  yMaximum;
-    bool    drawAntialiased;
+    double yMinimum;
+    double yMaximum;
+    bool drawAntialiased;
 };
 
 class ScopeGadgetConfiguration : public IUAVGadgetConfiguration {

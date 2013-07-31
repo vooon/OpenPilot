@@ -218,7 +218,7 @@ bool USBRegistrationWidget::winEvent(MSG *message, long *result)
         OPHID_TRACE("IN");
         qese->onDeviceChangeWin(message->wParam, message->lParam);
         *result = 1;
-        ret     = true;
+        ret = true;
         OPHID_TRACE("OUT");
     }
 
@@ -451,11 +451,11 @@ int USBMonitor::infoFromHandle(const GUID & guid, USBPortInfo & info, HDEVINFO &
     }
 
     free(details);
-    attrib.Size     = sizeof(HIDD_ATTRIBUTES);
+    attrib.Size = sizeof(HIDD_ATTRIBUTES);
     ret = HidD_GetAttributes(h, &attrib);
-    info.vendorID   = attrib.VendorID;
-    info.productID  = attrib.ProductID;
-    info.bcdDevice  = attrib.VersionNumber;
+    info.vendorID = attrib.VendorID;
+    info.productID = attrib.ProductID;
+    info.bcdDevice = attrib.VersionNumber;
     info.devicePath = qDevicePath;
 
     if (attrib.VendorID != 0x20A0) {
@@ -477,7 +477,7 @@ int USBMonitor::infoFromHandle(const GUID & guid, USBPortInfo & info, HDEVINFO &
     }
 
     info.UsagePage = capabilities.UsagePage;
-    info.Usage     = capabilities.Usage;
+    info.Usage = capabilities.Usage;
     HidD_FreePreparsedData(hid_data);
     char temp[126];
     HidD_GetSerialNumberString(h, temp, sizeof(temp));
@@ -487,7 +487,7 @@ int USBMonitor::infoFromHandle(const GUID & guid, USBPortInfo & info, HDEVINFO &
     HidD_GetProductString(h, temp, sizeof(temp));
     info.product = QString().fromUtf16((ushort *)temp, -1);
     CloseHandle(h);
-    h   = NULL;
+    h = NULL;
     ret = OPHID_NO_ERROR;
 
 leave:

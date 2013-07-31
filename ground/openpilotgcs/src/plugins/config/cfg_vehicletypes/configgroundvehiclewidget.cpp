@@ -446,7 +446,7 @@ bool ConfigGroundVehicleWidget::throwConfigError(QString airframeType)
     bool error = false;
 
     // Create a red block. All combo boxes are the same size, so any one should do as a model
-    int size   = m_aircraft->gvEngineChannelBox->style()->pixelMetric(QStyle::PM_SmallIconSize);
+    int size = m_aircraft->gvEngineChannelBox->style()->pixelMetric(QStyle::PM_SmallIconSize);
     QPixmap pixmap(size, size);
 
     pixmap.fill(QColor("red"));

@@ -63,9 +63,9 @@ void ins_outdoor_update()
     }
 
     // format data for INS algo
-    gyro[0]  = gyro_data.filtered.x;
-    gyro[1]  = gyro_data.filtered.y;
-    gyro[2]  = gyro_data.filtered.z;
+    gyro[0] = gyro_data.filtered.x;
+    gyro[1] = gyro_data.filtered.y;
+    gyro[2] = gyro_data.filtered.z;
     accel[0] = accel_data.filtered.x,
     accel[1] = accel_data.filtered.y,
     accel[2] = accel_data.filtered.z,
@@ -81,15 +81,15 @@ void ins_outdoor_update()
     PositionActualData positionActual;
     PositionActualGet(&positionActual);
     positionActual.North = Nav.Pos[0];
-    positionActual.East  = Nav.Pos[1];
-    positionActual.Down  = Nav.Pos[2];
+    positionActual.East = Nav.Pos[1];
+    positionActual.Down = Nav.Pos[2];
     PositionActualSet(&positionActual);
 
     VelocityActualData velocityActual;
     VelocityActualGet(&velocityActual);
     velocityActual.North = Nav.Vel[0];
-    velocityActual.East  = Nav.Vel[1];
-    velocityActual.Down  = Nav.Vel[2];
+    velocityActual.East = Nav.Vel[1];
+    velocityActual.Down = Nav.Vel[2];
     VelocityActualSet(&velocityActual);
 
     sensors = 0;
@@ -160,7 +160,7 @@ void ins_indoor_update()
     static uint32_t updated_without_gps = 0;
 
     float gyro[3], accel[3];
-    float zeros[3]   = { 0, 0, 0 };
+    float zeros[3] = { 0, 0, 0 };
     static uint32_t ins_last_time = 0;
     uint16_t sensors = 0;
     float dT;
@@ -174,9 +174,9 @@ void ins_indoor_update()
     }
 
     // format data for INS algo
-    gyro[0]  = gyro_data.filtered.x;
-    gyro[1]  = gyro_data.filtered.y;
-    gyro[2]  = gyro_data.filtered.z;
+    gyro[0] = gyro_data.filtered.x;
+    gyro[1] = gyro_data.filtered.y;
+    gyro[2] = gyro_data.filtered.z;
     accel[0] = accel_data.filtered.x,
     accel[1] = accel_data.filtered.y,
     accel[2] = accel_data.filtered.z,
@@ -206,19 +206,19 @@ void ins_indoor_update()
         PositionActualData positionActual;
         PositionActualGet(&positionActual);
         positionActual.North = gps_data.NED[0];
-        positionActual.East  = gps_data.NED[1];
-        positionActual.Down  = Nav.Pos[2];
+        positionActual.East = gps_data.NED[1];
+        positionActual.Down = Nav.Pos[2];
         PositionActualSet(&positionActual);
 
         VelocityActualData velocityActual;
         VelocityActualGet(&velocityActual);
         velocityActual.North = gps_data.groundspeed * cos(gps_data.heading * DEG_TO_RAD);
-        velocityActual.East  = gps_data.groundspeed * sin(gps_data.heading * DEG_TO_RAD);
-        velocityActual.Down  = Nav.Vel[2];
+        velocityActual.East = gps_data.groundspeed * sin(gps_data.heading * DEG_TO_RAD);
+        velocityActual.Down = Nav.Vel[2];
         VelocityActualSet(&velocityActual);
 
-        updated_without_gps  = 0;
-        gps_data.updated     = false;
+        updated_without_gps = 0;
+        gps_data.updated = false;
     } else {
         PositionActualData positionActual;
         PositionActualGet(&positionActual);
@@ -232,9 +232,9 @@ void ins_indoor_update()
         if (updated_without_gps > 500) {
             // After 2-3 seconds without a GPS update set velocity estimate to NAN
             positionActual.North = NAN;
-            positionActual.East  = NAN;
+            positionActual.East = NAN;
             velocityActual.North = NAN;
-            velocityActual.East  = NAN;
+            velocityActual.East = NAN;
         } else {
             updated_without_gps++;
         }
@@ -272,14 +272,14 @@ void ins_init_algorithm()
     HomeLocationData home;
     HomeLocationGet(&home);
 
-    accels[0]   = accel_data.filtered.x;
-    accels[1]   = accel_data.filtered.y;
-    accels[2]   = accel_data.filtered.z;
+    accels[0] = accel_data.filtered.x;
+    accels[1] = accel_data.filtered.y;
+    accels[2] = accel_data.filtered.z;
 
-    using_mags  = (ahrs_algorithm == INSSETTINGS_ALGORITHM_INSGPS_OUTDOOR) || (ahrs_algorithm == INSSETTINGS_ALGORITHM_INSGPS_INDOOR);
+    using_mags = (ahrs_algorithm == INSSETTINGS_ALGORITHM_INSGPS_OUTDOOR) || (ahrs_algorithm == INSSETTINGS_ALGORITHM_INSGPS_INDOOR);
     using_mags &= (home.Be[0] != 0) || (home.Be[1] != 0) || (home.Be[2] != 0); /* only use mags when valid home location */
 
-    using_gps   = (ahrs_algorithm == INSSETTINGS_ALGORITHM_INSGPS_OUTDOOR) && (gps_data.quality >= INSGPS_GPS_MINSAT);
+    using_gps = (ahrs_algorithm == INSSETTINGS_ALGORITHM_INSGPS_OUTDOOR) && (gps_data.quality >= INSGPS_GPS_MINSAT);
 
     /* Block till a data update */
     get_accel_gyro_data();
@@ -304,7 +304,7 @@ void ins_init_algorithm()
         }
     } else {
         // assume yaw = 0
-        mag    = VectorMagnitude(accels);
+        mag = VectorMagnitude(accels);
         rpy[1] = asinf(-accels[0] / mag);
         rpy[0] = atan2(accels[1] / mag, accels[2] / mag);
         rpy[2] = 0;

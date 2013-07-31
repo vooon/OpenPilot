@@ -40,7 +40,7 @@ enum gpio_direction { GPIO0_TX_GPIO1_RX, GPIO0_RX_GPIO1_TX };
 
 /* Global Types */
 struct pios_rfm22b_cfg {
-    const struct pios_spi_cfg  *spi_cfg; /* Pointer to SPI interface configuration */
+    const struct pios_spi_cfg *spi_cfg; /* Pointer to SPI interface configuration */
     const struct pios_exti_cfg *exti_cfg; /* Pointer to the EXTI configuration */
     uint8_t RFXtalCap;
     uint8_t slave_num;
@@ -60,11 +60,11 @@ enum rfm22b_tx_power {
 };
 
 enum rfm22b_datarate {
-    RFM22_datarate_9600   = 0,
-    RFM22_datarate_19200  = 1,
-    RFM22_datarate_32000  = 2,
-    RFM22_datarate_57600  = 3,
-    RFM22_datarate_64000  = 4,
+    RFM22_datarate_9600 = 0,
+    RFM22_datarate_19200 = 1,
+    RFM22_datarate_32000 = 2,
+    RFM22_datarate_57600 = 3,
+    RFM22_datarate_64000 = 4,
     RFM22_datarate_100000 = 5,
     RFM22_datarate_128000 = 6,
     RFM22_datarate_192000 = 7,
@@ -84,20 +84,20 @@ struct rfm22b_stats {
     uint16_t rx_byte_count;
     uint16_t tx_seq;
     uint16_t rx_seq;
-    uint8_t  rx_good;
-    uint8_t  rx_corrected;
-    uint8_t  rx_error;
-    uint8_t  rx_missed;
-    uint8_t  rx_failure;
-    uint8_t  tx_dropped;
-    uint8_t  tx_resent;
-    uint8_t  tx_failure;
-    uint8_t  resets;
-    uint8_t  timeouts;
-    uint8_t  link_quality;
-    int8_t   rssi;
-    int8_t   afc_correction;
-    uint8_t  link_state;
+    uint8_t rx_good;
+    uint8_t rx_corrected;
+    uint8_t rx_error;
+    uint8_t rx_missed;
+    uint8_t rx_failure;
+    uint8_t tx_dropped;
+    uint8_t tx_resent;
+    uint8_t tx_failure;
+    uint8_t resets;
+    uint8_t timeouts;
+    uint8_t link_quality;
+    int8_t rssi;
+    int8_t afc_correction;
+    uint8_t link_state;
 };
 
 /* Public Functions */

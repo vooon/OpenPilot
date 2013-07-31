@@ -118,38 +118,38 @@ typedef struct _CONNECTION {
     QString dataPath;
     QString hostAddress;
     QString remoteAddress;
-    int     outPort;
-    int     inPort;
-    bool    startSim;
-    bool    addNoise;
+    int outPort;
+    int inPort;
+    bool startSim;
+    bool addNoise;
     QString latitude;
     QString longitude;
 
 // bool homeLocation;
 
-    bool    attRawEnabled;
-    quint8  attRawRate;
+    bool attRawEnabled;
+    quint8 attRawRate;
 
-    bool    attStateEnabled;
-    bool    attActHW;
-    bool    attActSim;
-    bool    attActCalc;
+    bool attStateEnabled;
+    bool attActHW;
+    bool attActSim;
+    bool attActCalc;
 
-    bool    baroSensorEnabled;
+    bool baroSensorEnabled;
     quint16 baroAltRate;
 
-    bool    groundTruthEnabled;
+    bool groundTruthEnabled;
     quint16 groundTruthRate;
 
-    bool    gpsPositionEnabled;
+    bool gpsPositionEnabled;
     quint16 gpsPosRate;
 
-    bool    inputCommand;
-    bool    gcsReceiverEnabled;
-    bool    manualControlEnabled;
+    bool inputCommand;
+    bool gcsReceiverEnabled;
+    bool manualControlEnabled;
     quint16 minOutputPeriod;
 
-    bool    airspeedStateEnabled;
+    bool airspeedStateEnabled;
     quint16 airspeedStateRate;
 } SimulatorSettings;
 

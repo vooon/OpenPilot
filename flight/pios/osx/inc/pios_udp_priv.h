@@ -40,7 +40,7 @@
 
 struct pios_udp_cfg {
     const char *ip;
-    uint16_t   port;
+    uint16_t port;
 };
 
 typedef struct {
@@ -52,16 +52,16 @@ typedef struct {
     struct sockaddr_in client;
     uint32_t clientLength;
 
-    pthread_cond_t     cond;
-    pthread_mutex_t    mutex;
+    pthread_cond_t cond;
+    pthread_mutex_t mutex;
 
-    pios_com_callback  tx_out_cb;
+    pios_com_callback tx_out_cb;
     uint32_t tx_out_context;
-    pios_com_callback  rx_in_cb;
+    pios_com_callback rx_in_cb;
     uint32_t rx_in_context;
 
-    uint8_t  rx_buffer[PIOS_UDP_RX_BUFFER_SIZE];
-    uint8_t  tx_buffer[PIOS_UDP_RX_BUFFER_SIZE];
+    uint8_t rx_buffer[PIOS_UDP_RX_BUFFER_SIZE];
+    uint8_t tx_buffer[PIOS_UDP_RX_BUFFER_SIZE];
 } pios_udp_dev;
 
 extern int32_t PIOS_UDP_Init(uint32_t *udp_id, const struct pios_udp_cfg *cfg);

@@ -87,22 +87,22 @@ enum Commands {
 };
 
 enum eBoardType {
-    eBoardUnkwn   = 0,
+    eBoardUnkwn = 0,
     eBoardMainbrd = 1,
     eBoardINS,
-    eBoardPip     = 3,
+    eBoardPip = 3,
     eBoardCC = 4,
-    eBoardRevo    = 9,
+    eBoardRevo = 9,
 };
 
 struct device {
-    int     ID;
+    int ID;
     quint32 FW_CRC;
-    int     BL_Version;
-    int     SizeOfDesc;
+    int BL_Version;
+    int SizeOfDesc;
     quint32 SizeOfCode;
-    bool    Readable;
-    bool    Writable;
+    bool Readable;
+    bool Writable;
 };
 
 

@@ -63,7 +63,7 @@ static void DelayedCb6();
  */
 int32_t CallbackTestInitialize()
 {
-    mutex     = xSemaphoreCreateRecursiveMutex();
+    mutex = xSemaphoreCreateRecursiveMutex();
 
     cbinfo[0] = DelayedCallbackCreate(&DelayedCb0, CALLBACK_PRIORITY_LOW, tskIDLE_PRIORITY + 2, STACK_SIZE);
     cbinfo[1] = DelayedCallbackCreate(&DelayedCb1, CALLBACK_PRIORITY_LOW, tskIDLE_PRIORITY + 2, STACK_SIZE);

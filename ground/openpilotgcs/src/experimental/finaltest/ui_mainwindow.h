@@ -174,7 +174,7 @@ public:
 
         verticalLayout_3->addWidget(groupBox_2);
 
-        groupBox_3     = new QGroupBox(widget);
+        groupBox_3 = new QGroupBox(widget);
         groupBox_3->setObjectName(QString::fromUtf8("groupBox_3"));
         verticalLayout = new QVBoxLayout(groupBox_3);
         verticalLayout->setSpacing(6);
@@ -183,7 +183,7 @@ public:
         horizontalLayout_3 = new QHBoxLayout();
         horizontalLayout_3->setSpacing(6);
         horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
-        pushButtonZoomP    = new QPushButton(groupBox_3);
+        pushButtonZoomP = new QPushButton(groupBox_3);
         pushButtonZoomP->setObjectName(QString::fromUtf8("pushButtonZoomP"));
 
         horizontalLayout_3->addWidget(pushButtonZoomP);
@@ -260,7 +260,7 @@ public:
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName(QString::fromUtf8("mainToolBar"));
         MainWindow->addToolBar(Qt::TopToolBarArea, mainToolBar);
-        statusBar   = new QStatusBar(MainWindow);
+        statusBar = new QStatusBar(MainWindow);
         statusBar->setObjectName(QString::fromUtf8("statusBar"));
         MainWindow->setStatusBar(statusBar);
 

@@ -62,7 +62,7 @@ public:
 
     virtual bool isRunning() const = 0;
     virtual qint64 applicationPID() const = 0;
-    virtual int exitCode() const   = 0;
+    virtual int exitCode() const = 0;
 
 // signals:
     virtual void processError(const QString &error) = 0;

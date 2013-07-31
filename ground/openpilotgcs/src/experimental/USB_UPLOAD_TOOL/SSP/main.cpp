@@ -15,19 +15,19 @@ int main(int argc, char *argv[])
 
     port *info;
     PortSettings settings;
-    settings.BaudRate    = BAUD57600;
-    settings.DataBits    = DATA_8;
+    settings.BaudRate = BAUD57600;
+    settings.DataBits = DATA_8;
     settings.FlowControl = FLOW_OFF;
     settings.Parity = PAR_NONE;
-    settings.StopBits    = STOP_1;
+    settings.StopBits = STOP_1;
     settings.Timeout_Millisec = 5000;
 
     info = new port(settings, "COM3");
-    info->rxBuf      = sspRxBuf;
-    info->rxBufSize  = MAX_PACKET_DATA_LEN;
-    info->txBuf      = sspTxBuf;
-    info->txBufSize  = 255;
-    info->max_retry  = 3;
+    info->rxBuf = sspRxBuf;
+    info->rxBufSize = MAX_PACKET_DATA_LEN;
+    info->txBuf = sspTxBuf;
+    info->txBufSize = 255;
+    info->max_retry = 3;
     info->timeoutLen = 5000;
     // qssp b(info);
     qsspt bb(info);

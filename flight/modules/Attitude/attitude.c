@@ -88,24 +88,24 @@ static int32_t updateSensorsCC3D(AccelStateData *accelStateData, GyroStateData *
 static void updateAttitude(AccelStateData *, GyroStateData *);
 static void settingsUpdatedCb(UAVObjEvent *objEv);
 
-static float accelKi     = 0;
-static float accelKp     = 0;
+static float accelKi = 0;
+static float accelKp = 0;
 static float accel_alpha = 0;
 static bool accel_filter_enabled = false;
 static float accels_filtered[3];
 static float grot_filtered[3];
 static float yawBiasRate = 0;
 static float rollPitchBiasRate = 0.0f;
-static float gyroGain    = 0.42f;
+static float gyroGain = 0.42f;
 static int16_t accelbias[3];
 static float q[4] = { 1, 0, 0, 0 };
 static float R[3][3];
 static int8_t rotate = 0;
 static bool zero_during_arming = false;
-static bool bias_correct_gyro  = true;
+static bool bias_correct_gyro = true;
 
 // For running trim flights
-static volatile bool trim_requested   = false;
+static volatile bool trim_requested = false;
 static volatile int32_t trim_accels[3];
 static volatile int32_t trim_samples;
 int32_t const MAX_TRIM_FLIGHT_SAMPLES = 65535;
@@ -221,17 +221,17 @@ static void AttitudeTask(__attribute__((unused)) void *parameters)
 
         if ((xTaskGetTickCount() < 7000) && (xTaskGetTickCount() > 1000)) {
             // Use accels to initialise attitude and calculate gyro bias
-            accelKp     = 1.0f;
-            accelKi     = 0.0f;
+            accelKp = 1.0f;
+            accelKi = 0.0f;
             yawBiasRate = 0.01f;
-            rollPitchBiasRate    = 0.01f;
+            rollPitchBiasRate = 0.01f;
             accel_filter_enabled = false;
             init = 0;
         } else if (zero_during_arming && (flightStatus.Armed == FLIGHTSTATUS_ARMED_ARMING)) {
-            accelKp     = 1.0f;
-            accelKi     = 0.0f;
+            accelKp = 1.0f;
+            accelKi = 0.0f;
             yawBiasRate = 0.01f;
-            rollPitchBiasRate    = 0.01f;
+            rollPitchBiasRate = 0.01f;
             accel_filter_enabled = false;
             init = 0;
         } else if (init == 0) {
@@ -404,9 +404,9 @@ static int32_t updateSensorsCC3D(AccelStateData *accelStateData, GyroStateData *
         return 0;
     }
 
-    gyros[0]  = mpu6000_data.gyro_x * PIOS_MPU6000_GetScale();
-    gyros[1]  = mpu6000_data.gyro_y * PIOS_MPU6000_GetScale();
-    gyros[2]  = mpu6000_data.gyro_z * PIOS_MPU6000_GetScale();
+    gyros[0] = mpu6000_data.gyro_x * PIOS_MPU6000_GetScale();
+    gyros[1] = mpu6000_data.gyro_y * PIOS_MPU6000_GetScale();
+    gyros[2] = mpu6000_data.gyro_z * PIOS_MPU6000_GetScale();
 
     accels[0] = mpu6000_data.accel_x * PIOS_MPU6000_GetAccelScale();
     accels[1] = mpu6000_data.accel_y * PIOS_MPU6000_GetAccelScale();
@@ -424,9 +424,9 @@ static int32_t updateSensorsCC3D(AccelStateData *accelStateData, GyroStateData *
         accels[1] = vec_out[1];
         accels[2] = vec_out[2];
         rot_mult(R, gyros, vec_out);
-        gyros[0]  = vec_out[0];
-        gyros[1]  = vec_out[1];
-        gyros[2]  = vec_out[2];
+        gyros[0] = vec_out[0];
+        gyros[1] = vec_out[1];
+        gyros[2] = vec_out[2];
     }
 
     accelStateData->x = accels[0] - accelbias[0] * ACCEL_SCALE; // Applying arbitrary scale here to match CC v1
@@ -481,7 +481,7 @@ static void updateAttitude(AccelStateData *accelStateData, GyroStateData *gyrosD
     lastSysTime = thisSysTime;
 
     // Bad practice to assume structure order, but saves memory
-    float *gyros  = &gyrosData->x;
+    float *gyros = &gyrosData->x;
     float *accels = &accelStateData->x;
 
     float grot[3];
@@ -543,10 +543,10 @@ static void updateAttitude(AccelStateData *accelStateData, GyroStateData *gyrosD
         qdot[3] = (-q[2] * gyros[0] + q[1] * gyros[1] + q[0] * gyros[2]) * dT * (M_PI_F / 180.0f / 2.0f);
 
         // Take a time step
-        q[0]    = q[0] + qdot[0];
-        q[1]    = q[1] + qdot[1];
-        q[2]    = q[2] + qdot[2];
-        q[3]    = q[3] + qdot[3];
+        q[0] = q[0] + qdot[0];
+        q[1] = q[1] + qdot[1];
+        q[2] = q[2] + qdot[2];
+        q[3] = q[3] + qdot[3];
 
         if (q[0] < 0) {
             q[0] = -q[0];
@@ -591,10 +591,10 @@ static void settingsUpdatedCb(__attribute__((unused)) UAVObjEvent *objEv)
     AttitudeSettingsGet(&attitudeSettings);
 
 
-    accelKp     = attitudeSettings.AccelKp;
-    accelKi     = attitudeSettings.AccelKi;
+    accelKp = attitudeSettings.AccelKp;
+    accelKi = attitudeSettings.AccelKi;
     yawBiasRate = attitudeSettings.YawBiasRate;
-    gyroGain    = attitudeSettings.GyroGain;
+    gyroGain = attitudeSettings.GyroGain;
 
     // Calculate accel filter alpha, in the same way as for gyro data in stabilization module.
     const float fakeDt = 0.0025f;
@@ -607,7 +607,7 @@ static void settingsUpdatedCb(__attribute__((unused)) UAVObjEvent *objEv)
     }
 
     zero_during_arming = attitudeSettings.ZeroDuringArming == ATTITUDESETTINGS_ZERODURINGARMING_TRUE;
-    bias_correct_gyro  = attitudeSettings.BiasCorrectGyro == ATTITUDESETTINGS_BIASCORRECTGYRO_TRUE;
+    bias_correct_gyro = attitudeSettings.BiasCorrectGyro == ATTITUDESETTINGS_BIASCORRECTGYRO_TRUE;
 
     accelbias[0] = attitudeSettings.AccelBias[ATTITUDESETTINGS_ACCELBIAS_X];
     accelbias[1] = attitudeSettings.AccelBias[ATTITUDESETTINGS_ACCELBIAS_Y];
@@ -639,7 +639,7 @@ static void settingsUpdatedCb(__attribute__((unused)) UAVObjEvent *objEv)
         trim_accels[0] = 0;
         trim_accels[1] = 0;
         trim_accels[2] = 0;
-        trim_samples   = 0;
+        trim_samples = 0;
         trim_requested = true;
     } else if (attitudeSettings.TrimFlight == ATTITUDESETTINGS_TRIMFLIGHT_LOAD) {
         trim_requested = false;

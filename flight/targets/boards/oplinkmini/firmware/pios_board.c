@@ -64,15 +64,15 @@ uint32_t pios_com_telem_uart_main_id = 0;
 uint32_t pios_com_telem_uart_flexi_id = 0;
 uint32_t pios_com_telemetry_id = 0;
 #if defined(PIOS_INCLUDE_PPM)
-uint32_t pios_ppm_rcvr_id   = 0;
+uint32_t pios_ppm_rcvr_id = 0;
 #endif
 #if defined(PIOS_INCLUDE_PPM_OUT)
-uint32_t pios_ppm_out_id    = 0;
+uint32_t pios_ppm_out_id = 0;
 #endif
 #if defined(PIOS_INCLUDE_RFM22B)
-uint32_t pios_rfm22b_id     = 0;
+uint32_t pios_rfm22b_id = 0;
 uint32_t pios_com_rfm22b_id = 0;
-uint32_t pios_com_radio_id  = 0;
+uint32_t pios_com_radio_id = 0;
 #endif
 uint8_t *pios_uart_rx_buffer;
 uint8_t *pios_uart_tx_buffer;
@@ -222,10 +222,10 @@ void PIOS_Board_Init(void)
     OPLinkSettingsData oplinkSettings;
     OPLinkSettingsGet(&oplinkSettings);
     bool is_coordinator = (oplinkSettings.Coordinator == OPLINKSETTINGS_COORDINATOR_TRUE);
-    bool is_oneway   = (oplinkSettings.OneWay == OPLINKSETTINGS_ONEWAY_TRUE);
-    bool ppm_only    = (oplinkSettings.PPMOnly == OPLINKSETTINGS_PPMONLY_TRUE);
-    bool ppm_mode    = false;
-    bool servo_main  = false;
+    bool is_oneway = (oplinkSettings.OneWay == OPLINKSETTINGS_ONEWAY_TRUE);
+    bool ppm_only = (oplinkSettings.PPMOnly == OPLINKSETTINGS_PPMONLY_TRUE);
+    bool ppm_mode = false;
+    bool servo_main = false;
     bool servo_flexi = false;
     switch (oplinkSettings.MainPort) {
     case OPLINKSETTINGS_MAINPORT_TELEMETRY:
@@ -355,7 +355,7 @@ void PIOS_Board_Init(void)
     // Get our hardware information.
     const struct pios_board_info *bdinfo = &pios_board_info_blob;
 
-    oplinkStatus.BoardType     = bdinfo->board_type;
+    oplinkStatus.BoardType = bdinfo->board_type;
     PIOS_BL_HELPER_FLASH_Read_Description(oplinkStatus.Description, OPLINKSTATUS_DESCRIPTION_NUMELEM);
     PIOS_SYS_SerialNumberGetBinary(oplinkStatus.CPUSerial);
     oplinkStatus.BoardRevision = bdinfo->board_rev;

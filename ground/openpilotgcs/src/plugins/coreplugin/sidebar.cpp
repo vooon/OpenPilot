@@ -240,7 +240,7 @@ SideBarWidget::SideBarWidget(SideBar *sideBar, const QString &title)
     m_comboBox = new ComboBox(this);
     m_comboBox->setMinimumContentsLength(15);
 
-    m_toolbar  = new QToolBar(this);
+    m_toolbar = new QToolBar(this);
     m_toolbar->setContentsMargins(0, 0, 0, 0);
     m_toolbar->addWidget(m_comboBox);
 
@@ -317,8 +317,8 @@ void SideBarWidget::setCurrentItem(const QString &title)
 
 void SideBarWidget::updateAvailableItems()
 {
-    bool blocked     = m_comboBox->blockSignals(true);
-    QString current  = m_comboBox->currentText();
+    bool blocked = m_comboBox->blockSignals(true);
+    QString current = m_comboBox->currentText();
 
     m_comboBox->clear();
     QStringList itms = m_sideBar->availableItems();

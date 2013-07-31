@@ -125,8 +125,8 @@ struct SubmitEditorWidgetPrivate {
     Ui::SubmitEditorWidget m_ui;
     bool m_filesSelected;
     bool m_filesChecked;
-    int  m_fileNameColumn;
-    int  m_activatedRow;
+    int m_fileNameColumn;
+    int m_activatedRow;
 
     QList<AdditionalContextMenuAction> descriptionEditContextMenuActions;
     QVBoxLayout *m_fieldLayout;
@@ -492,7 +492,7 @@ void SubmitEditorWidget::addSubmitFieldWidget(SubmitFieldWidget *f)
         QHBoxLayout *outerLayout = new QHBoxLayout;
         outerLayout->addLayout(m_d->m_fieldLayout);
         outerLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Ignored));
-        QBoxLayout *descrLayout  = qobject_cast<QBoxLayout *>(m_d->m_ui.descriptionBox->layout());
+        QBoxLayout *descrLayout = qobject_cast<QBoxLayout *>(m_d->m_ui.descriptionBox->layout());
         Q_ASSERT(descrLayout);
         descrLayout->addLayout(outerLayout);
     }

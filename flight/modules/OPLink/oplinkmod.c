@@ -80,7 +80,7 @@ int32_t OPLinkModStart(void)
 {
     // Initialize vars
     stackOverflow = false;
-    mallocFailed  = false;
+    mallocFailed = false;
     // Create oplink system task
     xTaskCreate(systemTask, (signed char *)"OPLink", STACK_SIZE_BYTES / 4, NULL, TASK_PRIORITY, &systemTaskHandle);
     // Register task
@@ -153,16 +153,16 @@ static void systemTask(__attribute__((unused)) void *parameters)
         oplinkStatus.HeapRemaining = xPortGetFreeHeapSize();
         oplinkStatus.DeviceID = PIOS_RFM22B_DeviceID(pios_rfm22b_id);
         oplinkStatus.RxGood = radio_stats.rx_good;
-        oplinkStatus.RxCorrected   = radio_stats.rx_corrected;
+        oplinkStatus.RxCorrected = radio_stats.rx_corrected;
         oplinkStatus.RxErrors = radio_stats.rx_error;
         oplinkStatus.RxMissed = radio_stats.rx_missed;
-        oplinkStatus.RxFailure     = radio_stats.rx_failure;
-        oplinkStatus.TxDropped     = radio_stats.tx_dropped;
+        oplinkStatus.RxFailure = radio_stats.rx_failure;
+        oplinkStatus.TxDropped = radio_stats.tx_dropped;
         oplinkStatus.TxResent = radio_stats.tx_resent;
-        oplinkStatus.TxFailure     = radio_stats.tx_failure;
-        oplinkStatus.Resets      = radio_stats.resets;
-        oplinkStatus.Timeouts    = radio_stats.timeouts;
-        oplinkStatus.RSSI        = radio_stats.rssi;
+        oplinkStatus.TxFailure = radio_stats.tx_failure;
+        oplinkStatus.Resets = radio_stats.resets;
+        oplinkStatus.Timeouts = radio_stats.timeouts;
+        oplinkStatus.RSSI = radio_stats.rssi;
         oplinkStatus.LinkQuality = radio_stats.link_quality;
         if (first_time) {
             first_time = false;
@@ -176,8 +176,8 @@ static void systemTask(__attribute__((unused)) void *parameters)
             prev_tx_count = tx_count;
             prev_rx_count = rx_count;
         }
-        oplinkStatus.TXSeq     = radio_stats.tx_seq;
-        oplinkStatus.RXSeq     = radio_stats.rx_seq;
+        oplinkStatus.TXSeq = radio_stats.tx_seq;
+        oplinkStatus.RXSeq = radio_stats.rx_seq;
         oplinkStatus.LinkState = radio_stats.link_state;
         if (radio_stats.link_state == OPLINKSTATUS_LINKSTATE_CONNECTED) {
             LINK_LED_ON;

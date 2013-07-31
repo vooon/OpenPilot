@@ -54,7 +54,7 @@ ConfigCustomWidget::ConfigCustomWidget(QWidget *parent) :
     m_aircraft->setupUi(this);
 
     // Put combo boxes in line one of the custom mixer table:
-    UAVDataObject *mixer  = dynamic_cast<UAVDataObject *>(getObjectManager()->getObject(QString("MixerSettings")));
+    UAVDataObject *mixer = dynamic_cast<UAVDataObject *>(getObjectManager()->getObject(QString("MixerSettings")));
     Q_ASSERT(mixer);
 
     UAVObjectField *field = mixer->getField(QString("Mixer1Type"));

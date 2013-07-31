@@ -35,8 +35,8 @@
  */
 TelemetryMonitor::TelemetryMonitor(UAVObjectManager *objMngr, Telemetry *tel)
 {
-    this->objMngr    = objMngr;
-    this->tel        = tel;
+    this->objMngr = objMngr;
+    this->tel = tel;
     this->objPending = NULL;
     this->connectionTimer = new QTime();
 
@@ -44,7 +44,7 @@ TelemetryMonitor::TelemetryMonitor(UAVObjectManager *objMngr, Telemetry *tel)
     mutex = new QMutex(QMutex::Recursive);
 
     // Get stats objects
-    gcsStatsObj    = GCSTelemetryStats::GetInstance(objMngr);
+    gcsStatsObj = GCSTelemetryStats::GetInstance(objMngr);
     flightStatsObj = FlightTelemetryStats::GetInstance(objMngr);
 
     // Listen for flight stats updates
@@ -179,16 +179,16 @@ void TelemetryMonitor::processStatsUpdates()
     // Get telemetry stats
     GCSTelemetryStats::DataFields gcsStats = gcsStatsObj->getData();
     FlightTelemetryStats::DataFields flightStats = flightStatsObj->getData();
-    Telemetry::TelemetryStats telStats     = tel->getStats();
+    Telemetry::TelemetryStats telStats = tel->getStats();
 
     tel->resetStats();
 
     // Update stats object
-    gcsStats.RxDataRate  = (float)telStats.rxBytes / ((float)statsTimer->interval() / 1000.0);
-    gcsStats.TxDataRate  = (float)telStats.txBytes / ((float)statsTimer->interval() / 1000.0);
+    gcsStats.RxDataRate = (float)telStats.rxBytes / ((float)statsTimer->interval() / 1000.0);
+    gcsStats.TxDataRate = (float)telStats.txBytes / ((float)statsTimer->interval() / 1000.0);
     gcsStats.RxFailures += telStats.rxErrors;
     gcsStats.TxFailures += telStats.txErrors;
-    gcsStats.TxRetries  += telStats.txRetries;
+    gcsStats.TxRetries += telStats.txRetries;
 
     // Check for a connection timeout
     bool connectionTimeout;

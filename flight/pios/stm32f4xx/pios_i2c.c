@@ -82,11 +82,11 @@ volatile uint8_t i2c_state_history_pointer = 0;
 volatile enum i2c_adapter_event i2c_state_event_history[I2C_LOG_DEPTH];
 volatile uint8_t i2c_state_event_history_pointer;
 
-static uint8_t i2c_fsm_fault_count   = 0;
+static uint8_t i2c_fsm_fault_count = 0;
 static uint8_t i2c_bad_event_counter = 0;
 static uint8_t i2c_error_interrupt_counter = 0;
 static uint8_t i2c_nack_counter = 0;
-static uint8_t i2c_timeout_counter   = 0;
+static uint8_t i2c_timeout_counter = 0;
 #endif
 
 static void go_fsm_fault(struct pios_i2c_adapter *i2c_adapter);
@@ -133,41 +133,41 @@ static void i2c_adapter_log_fault(enum pios_i2c_error_type type);
 static bool i2c_adapter_callback_handler(struct pios_i2c_adapter *i2c_adapter);
 
 static const struct i2c_adapter_transition i2c_adapter_transitions[I2C_STATE_NUM_STATES] = {
-    [I2C_STATE_FSM_FAULT] =             {
-        .entry_fn   = go_fsm_fault,
-        .next_state =                   {
+    [I2C_STATE_FSM_FAULT] = {
+        .entry_fn = go_fsm_fault,
+        .next_state = {
             [I2C_EVENT_AUTO] = I2C_STATE_STOPPING,
         },
     },
-    [I2C_STATE_BUS_ERROR] =             {
-        .entry_fn   = go_bus_error,
-        .next_state =                   {
+    [I2C_STATE_BUS_ERROR] = {
+        .entry_fn = go_bus_error,
+        .next_state = {
             [I2C_EVENT_AUTO] = I2C_STATE_STOPPING,
         },
     },
 
-    [I2C_STATE_STOPPED] =               {
-        .entry_fn   = go_stopped,
-        .next_state =                   {
-            [I2C_EVENT_START]     = I2C_STATE_STARTING,
+    [I2C_STATE_STOPPED] = {
+        .entry_fn = go_stopped,
+        .next_state = {
+            [I2C_EVENT_START] = I2C_STATE_STARTING,
             [I2C_EVENT_BUS_ERROR] = I2C_STATE_BUS_ERROR,
         },
     },
 
-    [I2C_STATE_STOPPING] =              {
-        .entry_fn   = go_stopping,
-        .next_state =                   {
-            [I2C_EVENT_STOPPED]   = I2C_STATE_STOPPED,
+    [I2C_STATE_STOPPING] = {
+        .entry_fn = go_stopping,
+        .next_state = {
+            [I2C_EVENT_STOPPED] = I2C_STATE_STOPPED,
             [I2C_EVENT_BUS_ERROR] = I2C_STATE_BUS_ERROR,
         },
     },
 
-    [I2C_STATE_STARTING] =              {
-        .entry_fn   = go_starting,
-        .next_state =                   {
-            [I2C_EVENT_STARTED_MORE_TXN_READ]  = I2C_STATE_R_MORE_TXN_ADDR,
+    [I2C_STATE_STARTING] = {
+        .entry_fn = go_starting,
+        .next_state = {
+            [I2C_EVENT_STARTED_MORE_TXN_READ] = I2C_STATE_R_MORE_TXN_ADDR,
             [I2C_EVENT_STARTED_MORE_TXN_WRITE] = I2C_STATE_W_MORE_TXN_ADDR,
-            [I2C_EVENT_STARTED_LAST_TXN_READ]  = I2C_STATE_R_LAST_TXN_ADDR,
+            [I2C_EVENT_STARTED_LAST_TXN_READ] = I2C_STATE_R_LAST_TXN_ADDR,
             [I2C_EVENT_STARTED_LAST_TXN_WRITE] = I2C_STATE_W_LAST_TXN_ADDR,
             [I2C_EVENT_NACK] = I2C_STATE_NACK,
             [I2C_EVENT_BUS_ERROR] = I2C_STATE_BUS_ERROR,
@@ -178,9 +178,9 @@ static const struct i2c_adapter_transition i2c_adapter_transitions[I2C_STATE_NUM
      * Read with restart
      */
 
-    [I2C_STATE_R_MORE_TXN_ADDR] =       {
-        .entry_fn   = go_r_any_txn_addr,
-        .next_state =                   {
+    [I2C_STATE_R_MORE_TXN_ADDR] = {
+        .entry_fn = go_r_any_txn_addr,
+        .next_state = {
             [I2C_EVENT_ADDR_SENT_LEN_EQ_1] = I2C_STATE_R_MORE_TXN_PRE_ONE,
             [I2C_EVENT_ADDR_SENT_LEN_EQ_2] = I2C_STATE_R_MORE_TXN_PRE_FIRST,
             [I2C_EVENT_ADDR_SENT_LEN_GT_2] = I2C_STATE_R_MORE_TXN_PRE_FIRST,
@@ -188,17 +188,17 @@ static const struct i2c_adapter_transition i2c_adapter_transitions[I2C_STATE_NUM
         },
     },
 
-    [I2C_STATE_R_MORE_TXN_PRE_ONE] =    {
-        .entry_fn   = go_r_more_txn_pre_one,
-        .next_state =                   {
+    [I2C_STATE_R_MORE_TXN_PRE_ONE] = {
+        .entry_fn = go_r_more_txn_pre_one,
+        .next_state = {
             [I2C_EVENT_TRANSFER_DONE_LEN_EQ_1] = I2C_STATE_R_MORE_TXN_POST_LAST,
             [I2C_EVENT_BUS_ERROR] = I2C_STATE_BUS_ERROR,
         },
     },
 
-    [I2C_STATE_R_MORE_TXN_PRE_FIRST] =  {
-        .entry_fn   = go_r_any_txn_pre_first,
-        .next_state =                   {
+    [I2C_STATE_R_MORE_TXN_PRE_FIRST] = {
+        .entry_fn = go_r_any_txn_pre_first,
+        .next_state = {
             [I2C_EVENT_TRANSFER_DONE_LEN_EQ_2] = I2C_STATE_R_MORE_TXN_PRE_LAST,
             [I2C_EVENT_TRANSFER_DONE_LEN_GT_2] = I2C_STATE_R_MORE_TXN_PRE_MIDDLE,
             [I2C_EVENT_BUS_ERROR] = I2C_STATE_BUS_ERROR,
@@ -206,25 +206,25 @@ static const struct i2c_adapter_transition i2c_adapter_transitions[I2C_STATE_NUM
     },
 
     [I2C_STATE_R_MORE_TXN_PRE_MIDDLE] = {
-        .entry_fn   = go_r_any_txn_pre_middle,
-        .next_state =                   {
+        .entry_fn = go_r_any_txn_pre_middle,
+        .next_state = {
             [I2C_EVENT_TRANSFER_DONE_LEN_EQ_2] = I2C_STATE_R_MORE_TXN_PRE_LAST,
             [I2C_EVENT_TRANSFER_DONE_LEN_GT_2] = I2C_STATE_R_MORE_TXN_PRE_MIDDLE,
             [I2C_EVENT_BUS_ERROR] = I2C_STATE_BUS_ERROR,
         },
     },
 
-    [I2C_STATE_R_MORE_TXN_PRE_LAST] =   {
-        .entry_fn   = go_r_more_txn_pre_last,
-        .next_state =                   {
+    [I2C_STATE_R_MORE_TXN_PRE_LAST] = {
+        .entry_fn = go_r_more_txn_pre_last,
+        .next_state = {
             [I2C_EVENT_TRANSFER_DONE_LEN_EQ_1] = I2C_STATE_R_MORE_TXN_POST_LAST,
             [I2C_EVENT_BUS_ERROR] = I2C_STATE_BUS_ERROR,
         },
     },
 
-    [I2C_STATE_R_MORE_TXN_POST_LAST] =  {
-        .entry_fn   = go_r_any_txn_post_last,
-        .next_state =                   {
+    [I2C_STATE_R_MORE_TXN_POST_LAST] = {
+        .entry_fn = go_r_any_txn_post_last,
+        .next_state = {
             [I2C_EVENT_AUTO] = I2C_STATE_STARTING,
         },
     },
@@ -233,9 +233,9 @@ static const struct i2c_adapter_transition i2c_adapter_transitions[I2C_STATE_NUM
      * Read
      */
 
-    [I2C_STATE_R_LAST_TXN_ADDR] =       {
-        .entry_fn   = go_r_any_txn_addr,
-        .next_state =                   {
+    [I2C_STATE_R_LAST_TXN_ADDR] = {
+        .entry_fn = go_r_any_txn_addr,
+        .next_state = {
             [I2C_EVENT_ADDR_SENT_LEN_EQ_1] = I2C_STATE_R_LAST_TXN_PRE_ONE,
             [I2C_EVENT_ADDR_SENT_LEN_EQ_2] = I2C_STATE_R_LAST_TXN_PRE_FIRST,
             [I2C_EVENT_ADDR_SENT_LEN_GT_2] = I2C_STATE_R_LAST_TXN_PRE_FIRST,
@@ -243,17 +243,17 @@ static const struct i2c_adapter_transition i2c_adapter_transitions[I2C_STATE_NUM
         },
     },
 
-    [I2C_STATE_R_LAST_TXN_PRE_ONE] =    {
-        .entry_fn   = go_r_last_txn_pre_one,
-        .next_state =                   {
+    [I2C_STATE_R_LAST_TXN_PRE_ONE] = {
+        .entry_fn = go_r_last_txn_pre_one,
+        .next_state = {
             [I2C_EVENT_TRANSFER_DONE_LEN_EQ_1] = I2C_STATE_R_LAST_TXN_POST_LAST,
             [I2C_EVENT_BUS_ERROR] = I2C_STATE_BUS_ERROR,
         },
     },
 
-    [I2C_STATE_R_LAST_TXN_PRE_FIRST] =  {
-        .entry_fn   = go_r_any_txn_pre_first,
-        .next_state =                   {
+    [I2C_STATE_R_LAST_TXN_PRE_FIRST] = {
+        .entry_fn = go_r_any_txn_pre_first,
+        .next_state = {
             [I2C_EVENT_TRANSFER_DONE_LEN_EQ_2] = I2C_STATE_R_LAST_TXN_PRE_LAST,
             [I2C_EVENT_TRANSFER_DONE_LEN_GT_2] = I2C_STATE_R_LAST_TXN_PRE_MIDDLE,
             [I2C_EVENT_BUS_ERROR] = I2C_STATE_BUS_ERROR,
@@ -261,25 +261,25 @@ static const struct i2c_adapter_transition i2c_adapter_transitions[I2C_STATE_NUM
     },
 
     [I2C_STATE_R_LAST_TXN_PRE_MIDDLE] = {
-        .entry_fn   = go_r_any_txn_pre_middle,
-        .next_state =                   {
+        .entry_fn = go_r_any_txn_pre_middle,
+        .next_state = {
             [I2C_EVENT_TRANSFER_DONE_LEN_EQ_2] = I2C_STATE_R_LAST_TXN_PRE_LAST,
             [I2C_EVENT_TRANSFER_DONE_LEN_GT_2] = I2C_STATE_R_LAST_TXN_PRE_MIDDLE,
             [I2C_EVENT_BUS_ERROR] = I2C_STATE_BUS_ERROR,
         },
     },
 
-    [I2C_STATE_R_LAST_TXN_PRE_LAST] =   {
-        .entry_fn   = go_r_last_txn_pre_last,
-        .next_state =                   {
+    [I2C_STATE_R_LAST_TXN_PRE_LAST] = {
+        .entry_fn = go_r_last_txn_pre_last,
+        .next_state = {
             [I2C_EVENT_TRANSFER_DONE_LEN_EQ_1] = I2C_STATE_R_LAST_TXN_POST_LAST,
             [I2C_EVENT_BUS_ERROR] = I2C_STATE_BUS_ERROR,
         },
     },
 
-    [I2C_STATE_R_LAST_TXN_POST_LAST] =  {
-        .entry_fn   = go_r_any_txn_post_last,
-        .next_state =                   {
+    [I2C_STATE_R_LAST_TXN_POST_LAST] = {
+        .entry_fn = go_r_any_txn_post_last,
+        .next_state = {
             [I2C_EVENT_AUTO] = I2C_STATE_STOPPING,
         },
     },
@@ -288,9 +288,9 @@ static const struct i2c_adapter_transition i2c_adapter_transitions[I2C_STATE_NUM
      * Write with restart
      */
 
-    [I2C_STATE_W_MORE_TXN_ADDR] =       {
-        .entry_fn   = go_w_any_txn_addr,
-        .next_state =                   {
+    [I2C_STATE_W_MORE_TXN_ADDR] = {
+        .entry_fn = go_w_any_txn_addr,
+        .next_state = {
             [I2C_EVENT_ADDR_SENT_LEN_EQ_1] = I2C_STATE_W_MORE_TXN_LAST,
             [I2C_EVENT_ADDR_SENT_LEN_EQ_2] = I2C_STATE_W_MORE_TXN_MIDDLE,
             [I2C_EVENT_ADDR_SENT_LEN_GT_2] = I2C_STATE_W_MORE_TXN_MIDDLE,
@@ -299,9 +299,9 @@ static const struct i2c_adapter_transition i2c_adapter_transitions[I2C_STATE_NUM
         },
     },
 
-    [I2C_STATE_W_MORE_TXN_MIDDLE] =     {
-        .entry_fn   = go_w_any_txn_middle,
-        .next_state =                   {
+    [I2C_STATE_W_MORE_TXN_MIDDLE] = {
+        .entry_fn = go_w_any_txn_middle,
+        .next_state = {
             [I2C_EVENT_TRANSFER_DONE_LEN_EQ_1] = I2C_STATE_W_MORE_TXN_LAST,
             [I2C_EVENT_TRANSFER_DONE_LEN_EQ_2] = I2C_STATE_W_MORE_TXN_MIDDLE,
             [I2C_EVENT_TRANSFER_DONE_LEN_GT_2] = I2C_STATE_W_MORE_TXN_MIDDLE,
@@ -310,9 +310,9 @@ static const struct i2c_adapter_transition i2c_adapter_transitions[I2C_STATE_NUM
         },
     },
 
-    [I2C_STATE_W_MORE_TXN_LAST] =       {
-        .entry_fn   = go_w_more_txn_last,
-        .next_state =                   {
+    [I2C_STATE_W_MORE_TXN_LAST] = {
+        .entry_fn = go_w_more_txn_last,
+        .next_state = {
             [I2C_EVENT_TRANSFER_DONE_LEN_EQ_0] = I2C_STATE_STARTING,
             [I2C_EVENT_NACK] = I2C_STATE_NACK,
             [I2C_EVENT_BUS_ERROR] = I2C_STATE_BUS_ERROR,
@@ -323,9 +323,9 @@ static const struct i2c_adapter_transition i2c_adapter_transitions[I2C_STATE_NUM
      * Write
      */
 
-    [I2C_STATE_W_LAST_TXN_ADDR] =       {
-        .entry_fn   = go_w_any_txn_addr,
-        .next_state =                   {
+    [I2C_STATE_W_LAST_TXN_ADDR] = {
+        .entry_fn = go_w_any_txn_addr,
+        .next_state = {
             [I2C_EVENT_ADDR_SENT_LEN_EQ_1] = I2C_STATE_W_LAST_TXN_LAST,
             [I2C_EVENT_ADDR_SENT_LEN_EQ_2] = I2C_STATE_W_LAST_TXN_MIDDLE,
             [I2C_EVENT_ADDR_SENT_LEN_GT_2] = I2C_STATE_W_LAST_TXN_MIDDLE,
@@ -334,9 +334,9 @@ static const struct i2c_adapter_transition i2c_adapter_transitions[I2C_STATE_NUM
         },
     },
 
-    [I2C_STATE_W_LAST_TXN_MIDDLE] =     {
-        .entry_fn   = go_w_any_txn_middle,
-        .next_state =                   {
+    [I2C_STATE_W_LAST_TXN_MIDDLE] = {
+        .entry_fn = go_w_any_txn_middle,
+        .next_state = {
             [I2C_EVENT_TRANSFER_DONE_LEN_EQ_1] = I2C_STATE_W_LAST_TXN_LAST,
             [I2C_EVENT_TRANSFER_DONE_LEN_EQ_2] = I2C_STATE_W_LAST_TXN_MIDDLE,
             [I2C_EVENT_TRANSFER_DONE_LEN_GT_2] = I2C_STATE_W_LAST_TXN_MIDDLE,
@@ -345,17 +345,17 @@ static const struct i2c_adapter_transition i2c_adapter_transitions[I2C_STATE_NUM
         },
     },
 
-    [I2C_STATE_W_LAST_TXN_LAST] =       {
-        .entry_fn   = go_w_last_txn_last,
-        .next_state =                   {
+    [I2C_STATE_W_LAST_TXN_LAST] = {
+        .entry_fn = go_w_last_txn_last,
+        .next_state = {
             [I2C_EVENT_TRANSFER_DONE_LEN_EQ_0] = I2C_STATE_STOPPING,
             [I2C_EVENT_NACK] = I2C_STATE_NACK,
             [I2C_EVENT_BUS_ERROR] = I2C_STATE_BUS_ERROR,
         },
     },
-    [I2C_STATE_NACK] =                  {
-        .entry_fn   = go_nack,
-        .next_state =                   {
+    [I2C_STATE_NACK] = {
+        .entry_fn = go_nack,
+        .next_state = {
             [I2C_EVENT_AUTO] = I2C_STATE_STOPPING,
         },
     },
@@ -415,7 +415,7 @@ static void go_starting(struct pios_i2c_adapter *i2c_adapter)
     PIOS_DEBUG_Assert(i2c_adapter->active_txn <= i2c_adapter->last_txn);
 
     i2c_adapter->active_byte = &(i2c_adapter->active_txn->buf[0]);
-    i2c_adapter->last_byte   = &(i2c_adapter->active_txn->buf[i2c_adapter->active_txn->len - 1]);
+    i2c_adapter->last_byte = &(i2c_adapter->active_txn->buf[i2c_adapter->active_txn->len - 1]);
 
     I2C_GenerateSTART(i2c_adapter->cfg->regs, ENABLE);
     if (i2c_adapter->active_txn->rw == PIOS_I2C_TXN_READ) {
@@ -944,7 +944,7 @@ int32_t PIOS_I2C_Init(uint32_t *i2c_id, const struct pios_i2c_adapter_cfg *cfg)
     vSemaphoreCreateBinary(i2c_adapter->sem_ready);
     i2c_adapter->sem_busy = xSemaphoreCreateMutex();
 #else
-    i2c_adapter->busy     = 0;
+    i2c_adapter->busy = 0;
 #endif // USE_FREERTOS
 
     /* Initialize the state machine */
@@ -995,18 +995,18 @@ int32_t PIOS_I2C_Transfer(uint32_t i2c_id, const struct pios_i2c_txn txn_list[],
 
     PIOS_DEBUG_Assert(i2c_adapter->curr_state == I2C_STATE_STOPPED);
 
-    i2c_adapter->first_txn  = &txn_list[0];
-    i2c_adapter->last_txn   = &txn_list[num_txns - 1];
+    i2c_adapter->first_txn = &txn_list[0];
+    i2c_adapter->last_txn = &txn_list[num_txns - 1];
     i2c_adapter->active_txn = i2c_adapter->first_txn;
 
 #ifdef USE_FREERTOS
     /* Make sure the done/ready semaphore is consumed before we start */
-    semaphore_success     &= (xSemaphoreTake(i2c_adapter->sem_ready, timeout) == pdTRUE);
+    semaphore_success &= (xSemaphoreTake(i2c_adapter->sem_ready, timeout) == pdTRUE);
 #endif
 
-    i2c_adapter->callback  = NULL;
+    i2c_adapter->callback = NULL;
     i2c_adapter->bus_error = false;
-    i2c_adapter->nack      = false;
+    i2c_adapter->nack = false;
     i2c_adapter_inject_event(i2c_adapter, I2C_EVENT_START);
 
     /* Wait for the transfer to complete */
@@ -1074,16 +1074,16 @@ int32_t PIOS_I2C_Transfer_Callback(uint32_t i2c_id, const struct pios_i2c_txn tx
 
     PIOS_DEBUG_Assert(i2c_adapter->curr_state == I2C_STATE_STOPPED);
 
-    i2c_adapter->first_txn  = &txn_list[0];
-    i2c_adapter->last_txn   = &txn_list[num_txns - 1];
+    i2c_adapter->first_txn = &txn_list[0];
+    i2c_adapter->last_txn = &txn_list[num_txns - 1];
     i2c_adapter->active_txn = i2c_adapter->first_txn;
 
 #ifdef USE_FREERTOS
     /* Make sure the done/ready semaphore is consumed before we start */
-    semaphore_success     &= (xSemaphoreTake(i2c_adapter->sem_ready, timeout) == pdTRUE);
+    semaphore_success &= (xSemaphoreTake(i2c_adapter->sem_ready, timeout) == pdTRUE);
 #endif
 
-    i2c_adapter->callback  = callback;
+    i2c_adapter->callback = callback;
     i2c_adapter->bus_error = false;
     i2c_adapter_inject_event(i2c_adapter, I2C_EVENT_START);
 

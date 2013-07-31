@@ -81,10 +81,10 @@ uint32_t STOPWATCH_Init(u32 resolution, TIM_TypeDef *TIM)
 
     // time base configuration
     TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
-    TIM_TimeBaseStructure.TIM_Period        = 0xffff; // max period
-    TIM_TimeBaseStructure.TIM_Prescaler     = (72 * resolution) - 1; // <resolution> uS accuracy @ 72 MHz
+    TIM_TimeBaseStructure.TIM_Period = 0xffff; // max period
+    TIM_TimeBaseStructure.TIM_Prescaler = (72 * resolution) - 1; // <resolution> uS accuracy @ 72 MHz
     TIM_TimeBaseStructure.TIM_ClockDivision = 0;
-    TIM_TimeBaseStructure.TIM_CounterMode   = TIM_CounterMode_Up;
+    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
     TIM_TimeBaseInit(TIM, &TIM_TimeBaseStructure);
 
     // enable interrupt request

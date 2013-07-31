@@ -64,7 +64,7 @@ static int32_t i2c_id;
 int32_t ms5611_read_flag;
 void PIOS_MS5611_Init(const struct pios_ms5611_cfg *cfg, int32_t i2c_device)
 {
-    i2c_id  = i2c_device;
+    i2c_id = i2c_device;
 
     oversampling = cfg->oversampling;
     dev_cfg = cfg; // Store cfg before enabling interrupt
@@ -186,7 +186,7 @@ int32_t PIOS_MS5611_ReadADC(void)
         RawTemperature = (Data[0] << 16) | (Data[1] << 8) | Data[2];
 
         deltaTemp = ((int32_t)RawTemperature) - (CalibData.C[4] << 8);
-        Temperature    = 2000l + ((deltaTemp * CalibData.C[5]) >> 23);
+        Temperature = 2000l + ((deltaTemp * CalibData.C[5]) >> 23);
     } else {
         int64_t Offset;
         int64_t Sens;
@@ -197,9 +197,9 @@ int32_t PIOS_MS5611_ReadADC(void)
         }
         RawPressure = ((Data[0] << 16) | (Data[1] << 8) | Data[2]);
 
-        Offset   = (((int64_t)CalibData.C[1]) << 16) + ((((int64_t)CalibData.C[3]) * deltaTemp) >> 7);
-        Sens     = ((int64_t)CalibData.C[0]) << 15;
-        Sens     = Sens + ((((int64_t)CalibData.C[2]) * deltaTemp) >> 8);
+        Offset = (((int64_t)CalibData.C[1]) << 16) + ((((int64_t)CalibData.C[3]) * deltaTemp) >> 7);
+        Sens = ((int64_t)CalibData.C[0]) << 15;
+        Sens = Sens + ((((int64_t)CalibData.C[2]) * deltaTemp) >> 8);
 
         Pressure = (((((int64_t)RawPressure) * Sens) >> 21) - Offset) >> 15;
     }
@@ -236,17 +236,17 @@ int32_t PIOS_MS5611_Read(uint8_t address, uint8_t *buffer, uint8_t len)
         {
             .info = __func__,
             .addr = MS5611_I2C_ADDR,
-            .rw   = PIOS_I2C_TXN_WRITE,
-            .len  = 1,
-            .buf  = &address,
+            .rw = PIOS_I2C_TXN_WRITE,
+            .len = 1,
+            .buf = &address,
         }
         ,
         {
             .info = __func__,
             .addr = MS5611_I2C_ADDR,
-            .rw   = PIOS_I2C_TXN_READ,
-            .len  = len,
-            .buf  = buffer,
+            .rw = PIOS_I2C_TXN_READ,
+            .len = len,
+            .buf = buffer,
         }
     };
 
@@ -266,9 +266,9 @@ int32_t PIOS_MS5611_WriteCommand(uint8_t command)
         {
             .info = __func__,
             .addr = MS5611_I2C_ADDR,
-            .rw   = PIOS_I2C_TXN_WRITE,
-            .len  = 1,
-            .buf  = &command,
+            .rw = PIOS_I2C_TXN_WRITE,
+            .len = 1,
+            .buf = &command,
         }
         ,
     };

@@ -52,21 +52,21 @@ void PIOS_ADC_DMC_irq_handler(void);
 void DMA2_Stream4_IRQHandler(void) __attribute__((alias("PIOS_ADC_DMC_irq_handler")));
 struct pios_adc_cfg pios_adc_cfg = {
     .adc_dev = ADC1,
-    .dma     = {
-        .irq                                       = {
+    .dma = {
+        .irq = {
             .flags = (DMA_FLAG_TCIF4 | DMA_FLAG_TEIF4 | DMA_FLAG_HTIF4),
-            .init  = {
-                .NVIC_IRQChannel    = DMA2_Stream4_IRQn,
+            .init = {
+                .NVIC_IRQChannel = DMA2_Stream4_IRQn,
                 .NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_LOW,
-                .NVIC_IRQChannelSubPriority        = 0,
+                .NVIC_IRQChannelSubPriority = 0,
                 .NVIC_IRQChannelCmd = ENABLE,
             },
         },
-        .rx                                        = {
+        .rx = {
             .channel = DMA2_Stream4,
-            .init    = {
-                .DMA_Channel                       = DMA_Channel_0,
-                .DMA_PeripheralBaseAddr            = (uint32_t)&ADC1->DR
+            .init = {
+                .DMA_Channel = DMA_Channel_0,
+                .DMA_PeripheralBaseAddr = (uint32_t)&ADC1->DR
             },
         }
     },
@@ -85,29 +85,29 @@ void PIOS_ADC_DMC_irq_handler(void)
 #include "pios_hmc5883.h"
 static const struct pios_exti_cfg pios_exti_hmc5883_cfg __exti_config = {
     .vector = PIOS_HMC5883_IRQHandler,
-    .line   = EXTI_Line5,
-    .pin    = {
+    .line = EXTI_Line5,
+    .pin = {
         .gpio = GPIOB,
         .init = {
-            .GPIO_Pin   = GPIO_Pin_5,
+            .GPIO_Pin = GPIO_Pin_5,
             .GPIO_Speed = GPIO_Speed_100MHz,
-            .GPIO_Mode  = GPIO_Mode_IN,
+            .GPIO_Mode = GPIO_Mode_IN,
             .GPIO_OType = GPIO_OType_OD,
-            .GPIO_PuPd  = GPIO_PuPd_NOPULL,
+            .GPIO_PuPd = GPIO_PuPd_NOPULL,
         },
     },
-    .irq                                       = {
-        .init                                  = {
-            .NVIC_IRQChannel    = EXTI9_5_IRQn,
+    .irq = {
+        .init = {
+            .NVIC_IRQChannel = EXTI9_5_IRQn,
             .NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_LOW,
-            .NVIC_IRQChannelSubPriority        = 0,
+            .NVIC_IRQChannelSubPriority = 0,
             .NVIC_IRQChannelCmd = ENABLE,
         },
     },
-    .exti                                      = {
-        .init                                  = {
-            .EXTI_Line    = EXTI_Line5, // matches above GPIO pin
-            .EXTI_Mode    = EXTI_Mode_Interrupt,
+    .exti = {
+        .init = {
+            .EXTI_Line = EXTI_Line5, // matches above GPIO pin
+            .EXTI_Mode = EXTI_Mode_Interrupt,
             .EXTI_Trigger = EXTI_Trigger_Rising,
             .EXTI_LineCmd = ENABLE,
         },
@@ -115,8 +115,8 @@ static const struct pios_exti_cfg pios_exti_hmc5883_cfg __exti_config = {
 };
 
 static const struct pios_hmc5883_cfg pios_hmc5883_cfg = {
-    .exti_cfg  = &pios_exti_hmc5883_cfg,
-    .M_ODR     = PIOS_HMC5883_ODR_75,
+    .exti_cfg = &pios_exti_hmc5883_cfg,
+    .M_ODR = PIOS_HMC5883_ODR_75,
     .Meas_Conf = PIOS_HMC5883_MEASCONF_NORMAL,
     .Gain = PIOS_HMC5883_GAIN_1_9,
     .Mode = PIOS_HMC5883_MODE_CONTINUOUS,
@@ -140,38 +140,38 @@ static const struct pios_ms5611_cfg pios_ms5611_cfg = {
 #include "pios_bma180.h"
 static const struct pios_exti_cfg pios_exti_bma180_cfg __exti_config = {
     .vector = PIOS_BMA180_IRQHandler,
-    .line   = EXTI_Line4,
-    .pin    = {
+    .line = EXTI_Line4,
+    .pin = {
         .gpio = GPIOC,
         .init = {
-            .GPIO_Pin   = GPIO_Pin_4,
+            .GPIO_Pin = GPIO_Pin_4,
             .GPIO_Speed = GPIO_Speed_100MHz,
-            .GPIO_Mode  = GPIO_Mode_IN,
+            .GPIO_Mode = GPIO_Mode_IN,
             .GPIO_OType = GPIO_OType_OD,
-            .GPIO_PuPd  = GPIO_PuPd_NOPULL,
+            .GPIO_PuPd = GPIO_PuPd_NOPULL,
         },
     },
-    .irq                                       = {
-        .init                                  = {
-            .NVIC_IRQChannel    = EXTI4_IRQn,
+    .irq = {
+        .init = {
+            .NVIC_IRQChannel = EXTI4_IRQn,
             .NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_LOW,
-            .NVIC_IRQChannelSubPriority        = 0,
+            .NVIC_IRQChannelSubPriority = 0,
             .NVIC_IRQChannelCmd = ENABLE,
         },
     },
-    .exti                                      = {
-        .init                                  = {
-            .EXTI_Line    = EXTI_Line4, // matches above GPIO pin
-            .EXTI_Mode    = EXTI_Mode_Interrupt,
+    .exti = {
+        .init = {
+            .EXTI_Line = EXTI_Line4, // matches above GPIO pin
+            .EXTI_Mode = EXTI_Mode_Interrupt,
             .EXTI_Trigger = EXTI_Trigger_Rising,
             .EXTI_LineCmd = ENABLE,
         },
     },
 };
 static const struct pios_bma180_cfg pios_bma180_cfg = {
-    .exti_cfg  = &pios_exti_bma180_cfg,
+    .exti_cfg = &pios_exti_bma180_cfg,
     .bandwidth = BMA_BW_600HZ,
-    .range     = BMA_RANGE_8G,
+    .range = BMA_RANGE_8G,
 };
 #endif /* PIOS_INCLUDE_BMA180 */
 
@@ -183,29 +183,29 @@ static const struct pios_bma180_cfg pios_bma180_cfg = {
 #include "pios_mpu6000_config.h"
 static const struct pios_exti_cfg pios_exti_mpu6000_cfg __exti_config = {
     .vector = PIOS_MPU6000_IRQHandler,
-    .line   = EXTI_Line8,
-    .pin    = {
+    .line = EXTI_Line8,
+    .pin = {
         .gpio = GPIOD,
         .init = {
-            .GPIO_Pin   = GPIO_Pin_8,
+            .GPIO_Pin = GPIO_Pin_8,
             .GPIO_Speed = GPIO_Speed_100MHz,
-            .GPIO_Mode  = GPIO_Mode_IN,
+            .GPIO_Mode = GPIO_Mode_IN,
             .GPIO_OType = GPIO_OType_OD,
-            .GPIO_PuPd  = GPIO_PuPd_NOPULL,
+            .GPIO_PuPd = GPIO_PuPd_NOPULL,
         },
     },
-    .irq                                       = {
-        .init                                  = {
-            .NVIC_IRQChannel    = EXTI9_5_IRQn,
+    .irq = {
+        .init = {
+            .NVIC_IRQChannel = EXTI9_5_IRQn,
             .NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGH,
-            .NVIC_IRQChannelSubPriority        = 0,
+            .NVIC_IRQChannelSubPriority = 0,
             .NVIC_IRQChannelCmd = ENABLE,
         },
     },
-    .exti                                      = {
-        .init                                  = {
-            .EXTI_Line    = EXTI_Line8, // matches above GPIO pin
-            .EXTI_Mode    = EXTI_Mode_Interrupt,
+    .exti = {
+        .init = {
+            .EXTI_Line = EXTI_Line8, // matches above GPIO pin
+            .EXTI_Mode = EXTI_Mode_Interrupt,
             .EXTI_Trigger = EXTI_Trigger_Rising,
             .EXTI_LineCmd = ENABLE,
         },
@@ -213,20 +213,20 @@ static const struct pios_exti_cfg pios_exti_mpu6000_cfg __exti_config = {
 };
 
 static const struct pios_mpu6000_cfg pios_mpu6000_cfg = {
-    .exti_cfg   = &pios_exti_mpu6000_cfg,
+    .exti_cfg = &pios_exti_mpu6000_cfg,
     .Fifo_store = PIOS_MPU6000_FIFO_TEMP_OUT | PIOS_MPU6000_FIFO_GYRO_X_OUT | PIOS_MPU6000_FIFO_GYRO_Y_OUT | PIOS_MPU6000_FIFO_GYRO_Z_OUT,
     // Clock at 8 khz, downsampled by 12 for 666Hz
     .Smpl_rate_div_no_dlp = 11,
     // with dlp on output rate is 500Hz
-    .Smpl_rate_div_dlp    = 1,
+    .Smpl_rate_div_dlp = 1,
     .interrupt_cfg = PIOS_MPU6000_INT_CLR_ANYRD,
-    .interrupt_en  = PIOS_MPU6000_INTEN_DATA_RDY,
-    .User_ctl             = PIOS_MPU6000_USERCTL_FIFO_EN | PIOS_MPU6000_USERCTL_DIS_I2C,
-    .Pwr_mgmt_clk  = PIOS_MPU6000_PWRMGMT_PLL_X_CLK,
-    .accel_range   = PIOS_MPU6000_ACCEL_8G,
-    .gyro_range    = PIOS_MPU6000_SCALE_2000_DEG,
-    .filter               = PIOS_MPU6000_LOWPASS_256_HZ,
-    .orientation   = PIOS_MPU6000_TOP_0DEG
+    .interrupt_en = PIOS_MPU6000_INTEN_DATA_RDY,
+    .User_ctl = PIOS_MPU6000_USERCTL_FIFO_EN | PIOS_MPU6000_USERCTL_DIS_I2C,
+    .Pwr_mgmt_clk = PIOS_MPU6000_PWRMGMT_PLL_X_CLK,
+    .accel_range = PIOS_MPU6000_ACCEL_8G,
+    .gyro_range = PIOS_MPU6000_SCALE_2000_DEG,
+    .filter = PIOS_MPU6000_LOWPASS_256_HZ,
+    .orientation = PIOS_MPU6000_TOP_0DEG
 };
 #endif /* PIOS_INCLUDE_MPU6000 */
 
@@ -237,29 +237,29 @@ static const struct pios_mpu6000_cfg pios_mpu6000_cfg = {
 #include "pios_l3gd20.h"
 static const struct pios_exti_cfg pios_exti_l3gd20_cfg __exti_config = {
     .vector = PIOS_L3GD20_IRQHandler,
-    .line   = EXTI_Line8,
-    .pin    = {
+    .line = EXTI_Line8,
+    .pin = {
         .gpio = GPIOD,
         .init = {
-            .GPIO_Pin   = GPIO_Pin_8,
+            .GPIO_Pin = GPIO_Pin_8,
             .GPIO_Speed = GPIO_Speed_100MHz,
-            .GPIO_Mode  = GPIO_Mode_IN,
+            .GPIO_Mode = GPIO_Mode_IN,
             .GPIO_OType = GPIO_OType_OD,
-            .GPIO_PuPd  = GPIO_PuPd_NOPULL,
+            .GPIO_PuPd = GPIO_PuPd_NOPULL,
         },
     },
-    .irq                                       = {
-        .init                                  = {
-            .NVIC_IRQChannel    = EXTI9_5_IRQn,
+    .irq = {
+        .init = {
+            .NVIC_IRQChannel = EXTI9_5_IRQn,
             .NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGH,
-            .NVIC_IRQChannelSubPriority        = 0,
+            .NVIC_IRQChannelSubPriority = 0,
             .NVIC_IRQChannelCmd = ENABLE,
         },
     },
-    .exti                                      = {
-        .init                                  = {
-            .EXTI_Line    = EXTI_Line8, // matches above GPIO pin
-            .EXTI_Mode    = EXTI_Mode_Interrupt,
+    .exti = {
+        .init = {
+            .EXTI_Line = EXTI_Line8, // matches above GPIO pin
+            .EXTI_Mode = EXTI_Mode_Interrupt,
             .EXTI_Trigger = EXTI_Trigger_Rising,
             .EXTI_LineCmd = ENABLE,
         },
@@ -268,7 +268,7 @@ static const struct pios_exti_cfg pios_exti_l3gd20_cfg __exti_config = {
 
 static const struct pios_l3gd20_cfg pios_l3gd20_cfg = {
     .exti_cfg = &pios_exti_l3gd20_cfg,
-    .range    = PIOS_L3GD20_SCALE_500_DEG,
+    .range = PIOS_L3GD20_SCALE_500_DEG,
 };
 #endif /* PIOS_INCLUDE_L3GD20 */
 
@@ -296,13 +296,13 @@ uint32_t pios_rcvr_group_map[MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE];
 #define PIOS_COM_HKOSD_TX_BUF_LEN     22
 
 
-uint32_t pios_com_aux_id       = 0;
-uint32_t pios_com_gps_id       = 0;
+uint32_t pios_com_aux_id = 0;
+uint32_t pios_com_gps_id = 0;
 uint32_t pios_com_telem_usb_id = 0;
-uint32_t pios_com_telem_rf_id  = 0;
-uint32_t pios_com_bridge_id    = 0;
-uint32_t pios_com_overo_id     = 0;
-uint32_t pios_com_hkosd_id     = 0;
+uint32_t pios_com_telem_rf_id = 0;
+uint32_t pios_com_bridge_id = 0;
+uint32_t pios_com_overo_id = 0;
+uint32_t pios_com_hkosd_id = 0;
 
 uintptr_t pios_uavo_settings_fs_id;
 uintptr_t pios_user_fs_id;

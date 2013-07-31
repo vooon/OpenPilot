@@ -49,9 +49,9 @@ int HomeLocationUtil::getDetails(double LLA[3], double Be[3])
     // *************
     // check input parms
 
-    double latitude  = LLA[0];
+    double latitude = LLA[0];
     double longitude = LLA[1];
-    double altitude  = LLA[2];
+    double altitude = LLA[2];
 
     if (latitude != latitude) {
         return -1; // prevent nan error
@@ -71,7 +71,7 @@ int HomeLocationUtil::getDetails(double LLA[3], double Be[3])
     QDateTime dt = QDateTime::currentDateTime().toUTC();
 
     // Fetch world magnetic model
-    int result   = WorldMagModel().GetMagVector(LLA, dt.date().month(), dt.date().day(), dt.date().year(), Be);
+    int result = WorldMagModel().GetMagVector(LLA, dt.date().month(), dt.date().day(), dt.date().year(), Be);
     Q_ASSERT(result == 0);
 
     return result;

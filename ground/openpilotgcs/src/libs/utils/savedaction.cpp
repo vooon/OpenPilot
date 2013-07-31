@@ -155,7 +155,7 @@ void SavedAction::setSettingsKey(const QString &key)
  */
 void SavedAction::setSettingsKey(const QString &group, const QString &key)
 {
-    m_settingsKey   = key;
+    m_settingsKey = key;
     m_settingsGroup = group;
 }
 
@@ -221,7 +221,7 @@ QAction *SavedAction::updatedAction(const QString &text0)
 
     if (!m_textPattern.isEmpty()) {
         if (text.isEmpty()) {
-            text    = m_textPattern;
+            text = m_textPattern;
             text.remove("\"%1\"");
             text.remove("%1");
             enabled = false;
@@ -290,7 +290,7 @@ void SavedAction::connectWidget(QWidget *widget, ApplyMode applyMode)
 {
     QTC_ASSERT(!m_widget,
                qDebug() << "ALREADY CONNECTED: " << widget << m_widget << toString(); return );
-    m_widget    = widget;
+    m_widget = widget;
     m_applyMode = applyMode;
 
     if (QAbstractButton * button = qobject_cast<QAbstractButton *>(widget)) {

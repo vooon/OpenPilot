@@ -121,46 +121,46 @@ void HITLOptionsPage::apply()
     SimulatorSettings settings;
     int i = m_optionsPage->chooseFlightSimulator->currentIndex();
 
-    settings.simulatorId          = m_optionsPage->chooseFlightSimulator->itemData(i).toString();
-    settings.binPath              = m_optionsPage->executablePath->path();
-    settings.dataPath             = m_optionsPage->dataPath->path();
-    settings.startSim             = m_optionsPage->startSim->isChecked();
-    settings.addNoise             = m_optionsPage->noiseCheckBox->isChecked();
-    settings.hostAddress          = m_optionsPage->hostAddress->text();
-    settings.remoteAddress        = m_optionsPage->remoteAddress->text();
+    settings.simulatorId = m_optionsPage->chooseFlightSimulator->itemData(i).toString();
+    settings.binPath = m_optionsPage->executablePath->path();
+    settings.dataPath = m_optionsPage->dataPath->path();
+    settings.startSim = m_optionsPage->startSim->isChecked();
+    settings.addNoise = m_optionsPage->noiseCheckBox->isChecked();
+    settings.hostAddress = m_optionsPage->hostAddress->text();
+    settings.remoteAddress = m_optionsPage->remoteAddress->text();
 
     settings.inPort = m_optionsPage->inputPort->text().toInt();
-    settings.outPort              = m_optionsPage->outputPort->text().toInt();
-    settings.longitude            = m_optionsPage->longitude->text();
-    settings.latitude             = m_optionsPage->latitude->text();
+    settings.outPort = m_optionsPage->outputPort->text().toInt();
+    settings.longitude = m_optionsPage->longitude->text();
+    settings.latitude = m_optionsPage->latitude->text();
 
-    settings.addNoise             = m_optionsPage->noiseCheckBox->isChecked();
+    settings.addNoise = m_optionsPage->noiseCheckBox->isChecked();
 
-    settings.attRawEnabled        = m_optionsPage->attRawCheckbox->isChecked();
-    settings.attRawRate           = m_optionsPage->attRawRateSpinbox->value();
+    settings.attRawEnabled = m_optionsPage->attRawCheckbox->isChecked();
+    settings.attRawRate = m_optionsPage->attRawRateSpinbox->value();
 
-    settings.attStateEnabled      = m_optionsPage->attStateCheckbox->isChecked();
+    settings.attStateEnabled = m_optionsPage->attStateCheckbox->isChecked();
 
-    settings.gpsPositionEnabled   = m_optionsPage->gpsPositionCheckbox->isChecked();
-    settings.gpsPosRate           = m_optionsPage->gpsPosRateSpinbox->value();
+    settings.gpsPositionEnabled = m_optionsPage->gpsPositionCheckbox->isChecked();
+    settings.gpsPosRate = m_optionsPage->gpsPosRateSpinbox->value();
 
-    settings.groundTruthEnabled   = m_optionsPage->groundTruthCheckbox->isChecked();
-    settings.groundTruthRate      = m_optionsPage->groundTruthRateSpinbox->value();
+    settings.groundTruthEnabled = m_optionsPage->groundTruthCheckbox->isChecked();
+    settings.groundTruthRate = m_optionsPage->groundTruthRateSpinbox->value();
 
-    settings.baroSensorEnabled    = m_optionsPage->baroAltitudeCheckbox->isChecked();
-    settings.baroAltRate          = m_optionsPage->baroAltRateSpinbox->value();
+    settings.baroSensorEnabled = m_optionsPage->baroAltitudeCheckbox->isChecked();
+    settings.baroAltRate = m_optionsPage->baroAltRateSpinbox->value();
 
-    settings.minOutputPeriod      = m_optionsPage->minOutputPeriodSpinbox->value();
+    settings.minOutputPeriod = m_optionsPage->minOutputPeriodSpinbox->value();
 
     settings.manualControlEnabled = m_optionsPage->manualControlRadioButton->isChecked();
-    settings.gcsReceiverEnabled   = m_optionsPage->gcsReceiverRadioButton->isChecked();
+    settings.gcsReceiverEnabled = m_optionsPage->gcsReceiverRadioButton->isChecked();
 
-    settings.attActHW             = m_optionsPage->attActHW->isChecked();
-    settings.attActSim            = m_optionsPage->attActSim->isChecked();
-    settings.attActCalc           = m_optionsPage->attActCalc->isChecked();
+    settings.attActHW = m_optionsPage->attActHW->isChecked();
+    settings.attActSim = m_optionsPage->attActSim->isChecked();
+    settings.attActCalc = m_optionsPage->attActCalc->isChecked();
 
     settings.airspeedStateEnabled = m_optionsPage->airspeedStateCheckbox->isChecked();
-    settings.airspeedStateRate    = m_optionsPage->airspeedRateSpinbox->value();
+    settings.airspeedStateRate = m_optionsPage->airspeedRateSpinbox->value();
 
     // Write settings to file
     config->setSimulatorSettings(settings);

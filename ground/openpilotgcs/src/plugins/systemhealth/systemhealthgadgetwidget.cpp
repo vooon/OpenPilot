@@ -47,7 +47,7 @@ SystemHealthGadgetWidget::SystemHealthGadgetWidget(QWidget *parent) : QGraphicsV
     m_renderer = new QSvgRenderer();
     background = new QGraphicsSvgItem();
     foreground = new QGraphicsSvgItem();
-    nolink     = new QGraphicsSvgItem();
+    nolink = new QGraphicsSvgItem();
     missingElements = new QStringList();
     paint();
 
@@ -99,13 +99,13 @@ void SystemHealthGadgetWidget::updateAlarms(UAVObject *systemAlarm)
     foreach(UAVObjectField * field, systemAlarm->getFields()) {
         for (uint i = 0; i < field->getNumElements(); ++i) {
             QString element = field->getElementNames()[i];
-            QString value   = field->getValue(i).toString();
+            QString value = field->getValue(i).toString();
             if (!missingElements->contains(element)) {
                 if (m_renderer->elementExists(element)) {
                     QMatrix blockMatrix = m_renderer->matrixForElement(element);
                     qreal startX = blockMatrix.mapRect(m_renderer->boundsOnElement(element)).x();
                     qreal startY = blockMatrix.mapRect(m_renderer->boundsOnElement(element)).y();
-                    QString element2    = element + "-" + value;
+                    QString element2 = element + "-" + value;
                     if (!missingElements->contains(element2)) {
                         if (m_renderer->elementExists(element2)) {
                             QGraphicsSvgItem *ind = new QGraphicsSvgItem();
@@ -168,7 +168,7 @@ void SystemHealthGadgetWidget::setSystemFile(QString dfn)
             // Check whether the autopilot is connected already, by the way:
             ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
             UAVObjectManager *objManager = pm->getObject<UAVObjectManager>();
-            TelemetryManager *telMngr    = pm->getObject<TelemetryManager>();
+            TelemetryManager *telMngr = pm->getObject<TelemetryManager>();
             if (telMngr->isConnected()) {
                 onAutopilotConnect();
                 SystemAlarms *obj = dynamic_cast<SystemAlarms *>(objManager->getObject(QString("SystemAlarms")));

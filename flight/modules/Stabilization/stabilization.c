@@ -79,9 +79,9 @@ static StabilizationSettingsData settings;
 static xQueueHandle queue;
 float gyro_alpha = 0;
 float axis_lock_accum[3] = { 0, 0, 0 };
-uint8_t max_axis_lock     = 0;
+uint8_t max_axis_lock = 0;
 uint8_t max_axislock_rate = 0;
-float weak_leveling_kp    = 0;
+float weak_leveling_kp = 0;
 uint8_t weak_leveling_max = 0;
 bool lowThrottleZeroIntegral;
 bool lowThrottleZeroAxis[MAX_AXES];
@@ -237,7 +237,7 @@ static void stabilizationTask(__attribute__((unused)) void *parameters)
 
         float *attitudeDesiredAxis = &stabDesired.Roll;
         float *actuatorDesiredAxis = &actuatorDesired.Roll;
-        float *rateDesiredAxis     = &rateDesired.Roll;
+        float *rateDesiredAxis = &rateDesired.Roll;
 
         ActuatorDesiredGet(&actuatorDesired);
 
@@ -259,7 +259,7 @@ static void stabilizationTask(__attribute__((unused)) void *parameters)
                 }
 
                 // Store to rate desired variable for storing to UAVO
-                rateDesiredAxis[i]     = bound(attitudeDesiredAxis[i], settings.ManualRate[i]);
+                rateDesiredAxis[i] = bound(attitudeDesiredAxis[i], settings.ManualRate[i]);
 
                 // Compute the inner loop
                 actuatorDesiredAxis[i] = pid_apply_setpoint(&pids[PID_RATE_ROLL + i], rateDesiredAxis[i], gyro_filtered[i], dT);
@@ -274,8 +274,8 @@ static void stabilizationTask(__attribute__((unused)) void *parameters)
                 }
 
                 // Compute the outer loop
-                rateDesiredAxis[i]     = pid_apply(&pids[PID_ROLL + i], local_error[i], dT);
-                rateDesiredAxis[i]     = bound(rateDesiredAxis[i], settings.MaximumRate[i]);
+                rateDesiredAxis[i] = pid_apply(&pids[PID_ROLL + i], local_error[i], dT);
+                rateDesiredAxis[i] = bound(rateDesiredAxis[i], settings.MaximumRate[i]);
 
                 // Compute the inner loop
                 actuatorDesiredAxis[i] = pid_apply_setpoint(&pids[PID_RATE_ROLL + i], rateDesiredAxis[i], gyro_filtered[i], dT);
@@ -303,7 +303,7 @@ static void stabilizationTask(__attribute__((unused)) void *parameters)
                 weak_leveling = bound(weak_leveling, weak_leveling_max);
 
                 // Compute desired rate as input biased towards leveling
-                rateDesiredAxis[i]     = attitudeDesiredAxis[i] + weak_leveling;
+                rateDesiredAxis[i] = attitudeDesiredAxis[i] + weak_leveling;
                 actuatorDesiredAxis[i] = pid_apply_setpoint(&pids[PID_RATE_ROLL + i], rateDesiredAxis[i], gyro_filtered[i], dT);
                 actuatorDesiredAxis[i] = bound(actuatorDesiredAxis[i], 1.0f);
 
@@ -322,11 +322,11 @@ static void stabilizationTask(__attribute__((unused)) void *parameters)
                 } else {
                     // For weaker commands or no command simply attitude lock (almost) on no gyro change
                     axis_lock_accum[i] += (attitudeDesiredAxis[i] - gyro_filtered[i]) * dT;
-                    axis_lock_accum[i]  = bound(axis_lock_accum[i], max_axis_lock);
-                    rateDesiredAxis[i]  = pid_apply(&pids[PID_ROLL + i], axis_lock_accum[i], dT);
+                    axis_lock_accum[i] = bound(axis_lock_accum[i], max_axis_lock);
+                    rateDesiredAxis[i] = pid_apply(&pids[PID_ROLL + i], axis_lock_accum[i], dT);
                 }
 
-                rateDesiredAxis[i]     = bound(rateDesiredAxis[i], settings.ManualRate[i]);
+                rateDesiredAxis[i] = bound(rateDesiredAxis[i], settings.ManualRate[i]);
 
                 actuatorDesiredAxis[i] = pid_apply_setpoint(&pids[PID_RATE_ROLL + i], rateDesiredAxis[i], gyro_filtered[i], dT);
                 actuatorDesiredAxis[i] = bound(actuatorDesiredAxis[i], 1.0f);
@@ -377,7 +377,7 @@ static void stabilizationTask(__attribute__((unused)) void *parameters)
 
         // Save dT
         actuatorDesired.UpdateTime = dT * 1000;
-        actuatorDesired.Throttle   = stabDesired.Throttle;
+        actuatorDesired.Throttle = stabDesired.Throttle;
 
         // Suppress desired output while disarmed or throttle low, for configured axis
         if (flightStatus.Armed != FLIGHTSTATUS_ARMED_ARMED || stabDesired.Throttle < 0) {
@@ -492,20 +492,20 @@ static void SettingsUpdatedCb(__attribute__((unused)) UAVObjEvent *ev)
     pid_configure_derivative(settings.DerivativeCutoff, settings.DerivativeGamma);
 
     // Maximum deviation to accumulate for axis lock
-    max_axis_lock     = settings.MaxAxisLock;
+    max_axis_lock = settings.MaxAxisLock;
     max_axislock_rate = settings.MaxAxisLockRate;
 
     // Settings for weak leveling
-    weak_leveling_kp  = settings.WeakLevelingKp;
+    weak_leveling_kp = settings.WeakLevelingKp;
     weak_leveling_max = settings.MaxWeakLevelingRate;
 
     // Whether to zero the PID integrals while throttle is low
-    lowThrottleZeroIntegral    = settings.LowThrottleZeroIntegral == STABILIZATIONSETTINGS_LOWTHROTTLEZEROINTEGRAL_TRUE;
+    lowThrottleZeroIntegral = settings.LowThrottleZeroIntegral == STABILIZATIONSETTINGS_LOWTHROTTLEZEROINTEGRAL_TRUE;
 
     // Whether to suppress (zero) the StabilizationDesired output for each axis while disarmed or throttle is low
-    lowThrottleZeroAxis[ROLL]  = settings.LowThrottleZeroAxis[STABILIZATIONSETTINGS_LOWTHROTTLEZEROAXIS_ROLL] == STABILIZATIONSETTINGS_LOWTHROTTLEZEROAXIS_TRUE;
+    lowThrottleZeroAxis[ROLL] = settings.LowThrottleZeroAxis[STABILIZATIONSETTINGS_LOWTHROTTLEZEROAXIS_ROLL] == STABILIZATIONSETTINGS_LOWTHROTTLEZEROAXIS_TRUE;
     lowThrottleZeroAxis[PITCH] = settings.LowThrottleZeroAxis[STABILIZATIONSETTINGS_LOWTHROTTLEZEROAXIS_PITCH] == STABILIZATIONSETTINGS_LOWTHROTTLEZEROAXIS_TRUE;
-    lowThrottleZeroAxis[YAW]   = settings.LowThrottleZeroAxis[STABILIZATIONSETTINGS_LOWTHROTTLEZEROAXIS_YAW] == STABILIZATIONSETTINGS_LOWTHROTTLEZEROAXIS_TRUE;
+    lowThrottleZeroAxis[YAW] = settings.LowThrottleZeroAxis[STABILIZATIONSETTINGS_LOWTHROTTLEZEROAXIS_YAW] == STABILIZATIONSETTINGS_LOWTHROTTLEZEROAXIS_TRUE;
 
     // The dT has some jitter iteration to iteration that we don't want to
     // make thie result unpredictable.  Still, it's nicer to specify the constant

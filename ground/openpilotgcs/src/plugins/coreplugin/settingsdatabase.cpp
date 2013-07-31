@@ -110,7 +110,7 @@ SettingsDatabase::SettingsDatabase(const QString &path,
     fileName += application;
     fileName += QLatin1String(".db");
 
-    d->m_db   = QSqlDatabase::addDatabase("QSQLITE", QLatin1String("settings"));
+    d->m_db = QSqlDatabase::addDatabase("QSQLITE", QLatin1String("settings"));
     d->m_db.setDatabaseName(fileName);
     if (!d->m_db.open()) {
         qWarning().nospace() << "Warning: Failed to open settings database at " << fileName << " ("
@@ -168,7 +168,7 @@ void SettingsDatabase::setValue(const QString &key, const QVariant &value)
 
 QVariant SettingsDatabase::value(const QString &key, const QVariant &defaultValue) const
 {
-    const QString effectiveKey    = d->effectiveKey(key);
+    const QString effectiveKey = d->effectiveKey(key);
     QVariant value = defaultValue;
 
     SettingsMap::const_iterator i = d->m_settings.constFind(effectiveKey);

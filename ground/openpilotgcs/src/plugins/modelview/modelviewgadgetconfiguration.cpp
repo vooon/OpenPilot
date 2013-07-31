@@ -37,8 +37,8 @@ ModelViewGadgetConfiguration::ModelViewGadgetConfiguration(QString classId, QSet
     // if a saved configuration exists load it
     if (qSettings != 0) {
         QString modelFile = qSettings->value("acFilename").toString();
-        QString bgFile    = qSettings->value("bgFilename").toString();
-        m_enableVbo  = qSettings->value("enableVbo").toBool();
+        QString bgFile = qSettings->value("bgFilename").toString();
+        m_enableVbo = qSettings->value("enableVbo").toBool();
         m_acFilename = Utils::PathUtils().InsertDataPath(modelFile);
         m_bgFilename = Utils::PathUtils().InsertDataPath(bgFile);
     }
@@ -50,7 +50,7 @@ IUAVGadgetConfiguration *ModelViewGadgetConfiguration::clone()
 
     mv->m_acFilename = m_acFilename;
     mv->m_bgFilename = m_bgFilename;
-    mv->m_enableVbo  = m_enableVbo;
+    mv->m_enableVbo = m_enableVbo;
     return mv;
 }
 

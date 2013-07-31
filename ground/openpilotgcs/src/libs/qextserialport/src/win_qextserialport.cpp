@@ -11,12 +11,12 @@
 
 void QextSerialPort::platformSpecificInit()
 {
-    Win_Handle       = INVALID_HANDLE_VALUE;
+    Win_Handle = INVALID_HANDLE_VALUE;
     ZeroMemory(&overlap, sizeof(OVERLAPPED));
-    overlap.hEvent   = CreateEvent(NULL, true, false, NULL);
+    overlap.hEvent = CreateEvent(NULL, true, false, NULL);
     winEventNotifier = 0;
     bytesToWriteLock = new QReadWriteLock;
-    _bytesToWrite    = 0;
+    _bytesToWrite = 0;
 }
 
 /*!
@@ -50,7 +50,7 @@ QString QextSerialPort::fullPortNameWin(const QString & name)
  */
 bool QextSerialPort::open(OpenMode mode)
 {
-    unsigned long confSize     = sizeof(COMMCONFIG);
+    unsigned long confSize = sizeof(COMMCONFIG);
 
     Win_CommConfig.dwSize = confSize;
     DWORD dwFlagsAndAttributes = 0;
@@ -73,10 +73,10 @@ bool QextSerialPort::open(OpenMode mode)
 
             /*set up parameters*/
             Win_CommConfig.dcb.fBinary = TRUE;
-            Win_CommConfig.dcb.fInX    = FALSE;
-            Win_CommConfig.dcb.fOutX   = FALSE;
+            Win_CommConfig.dcb.fInX = FALSE;
+            Win_CommConfig.dcb.fOutX = FALSE;
             Win_CommConfig.dcb.fAbortOnError = FALSE;
-            Win_CommConfig.dcb.fNull   = FALSE;
+            Win_CommConfig.dcb.fNull = FALSE;
             setBaudRate(Settings.BaudRate);
             setDataBits(Settings.DataBits);
             setStopBits(Settings.StopBits);
@@ -88,10 +88,10 @@ bool QextSerialPort::open(OpenMode mode)
             // init event driven approach
             if (queryMode() == QextSerialPort::EventDriven) {
                 Win_CommTimeouts.ReadIntervalTimeout = MAXDWORD;
-                Win_CommTimeouts.ReadTotalTimeoutMultiplier  = 0;
-                Win_CommTimeouts.ReadTotalTimeoutConstant    = 0;
+                Win_CommTimeouts.ReadTotalTimeoutMultiplier = 0;
+                Win_CommTimeouts.ReadTotalTimeoutConstant = 0;
                 Win_CommTimeouts.WriteTotalTimeoutMultiplier = 0;
-                Win_CommTimeouts.WriteTotalTimeoutConstant   = 0;
+                Win_CommTimeouts.WriteTotalTimeoutConstant = 0;
                 SetCommTimeouts(Win_Handle, &Win_CommTimeouts);
                 if (!SetCommMask(Win_Handle, EV_TXEMPTY | EV_RXCHAR | EV_DSR)) {
                     qWarning() << "failed to set Comm Mask. Error code:", GetLastError();
@@ -236,12 +236,12 @@ qint64 QextSerialPort::readData(char *data, qint64 maxSize)
                 GetOverlappedResult(Win_Handle, &overlapRead, &retVal, true);
             } else {
                 lastErr = E_READ_FAILED;
-                retVal  = (DWORD)-1;
+                retVal = (DWORD)-1;
             }
         }
     } else if (!ReadFile(Win_Handle, (void *)data, (DWORD)maxSize, &retVal, NULL)) {
         lastErr = E_READ_FAILED;
-        retVal  = (DWORD)-1;
+        retVal = (DWORD)-1;
     }
     return (qint64)retVal;
 }
@@ -274,7 +274,7 @@ qint64 QextSerialPort::writeData(const char *data, qint64 maxSize)
         } else {
             qDebug() << "serialport write error:" << GetLastError();
             lastErr = E_WRITE_FAILED;
-            retVal  = (DWORD)-1;
+            retVal = (DWORD)-1;
             if (!CancelIo(newOverlapWrite->hEvent)) {
                 qDebug() << "serialport: couldn't cancel IO";
             }
@@ -285,7 +285,7 @@ qint64 QextSerialPort::writeData(const char *data, qint64 maxSize)
         }
     } else if (!WriteFile(Win_Handle, (void *)data, (DWORD)maxSize, &retVal, NULL)) {
         lastErr = E_WRITE_FAILED;
-        retVal  = (DWORD)-1;
+        retVal = (DWORD)-1;
     }
     return (qint64)retVal;
 }
@@ -321,8 +321,8 @@ void QextSerialPort::setFlowControl(FlowType flow)
         /*no flow control*/
         case FLOW_OFF:
             Win_CommConfig.dcb.fOutxCtsFlow = FALSE;
-            Win_CommConfig.dcb.fRtsControl  = RTS_CONTROL_DISABLE;
-            Win_CommConfig.dcb.fInX  = FALSE;
+            Win_CommConfig.dcb.fRtsControl = RTS_CONTROL_DISABLE;
+            Win_CommConfig.dcb.fInX = FALSE;
             Win_CommConfig.dcb.fOutX = FALSE;
             SetCommConfig(Win_Handle, &Win_CommConfig, sizeof(COMMCONFIG));
             break;
@@ -330,16 +330,16 @@ void QextSerialPort::setFlowControl(FlowType flow)
         /*software (XON/XOFF) flow control*/
         case FLOW_XONXOFF:
             Win_CommConfig.dcb.fOutxCtsFlow = FALSE;
-            Win_CommConfig.dcb.fRtsControl  = RTS_CONTROL_DISABLE;
-            Win_CommConfig.dcb.fInX  = TRUE;
+            Win_CommConfig.dcb.fRtsControl = RTS_CONTROL_DISABLE;
+            Win_CommConfig.dcb.fInX = TRUE;
             Win_CommConfig.dcb.fOutX = TRUE;
             SetCommConfig(Win_Handle, &Win_CommConfig, sizeof(COMMCONFIG));
             break;
 
         case FLOW_HARDWARE:
             Win_CommConfig.dcb.fOutxCtsFlow = TRUE;
-            Win_CommConfig.dcb.fRtsControl  = RTS_CONTROL_HANDSHAKE;
-            Win_CommConfig.dcb.fInX  = FALSE;
+            Win_CommConfig.dcb.fRtsControl = RTS_CONTROL_HANDSHAKE;
+            Win_CommConfig.dcb.fInX = FALSE;
             Win_CommConfig.dcb.fOutX = FALSE;
             SetCommConfig(Win_Handle, &Win_CommConfig, sizeof(COMMCONFIG));
             break;
@@ -900,9 +900,9 @@ void QextSerialPort::setTimeout(long millisec)
         Win_CommTimeouts.ReadIntervalTimeout = millisec;
         Win_CommTimeouts.ReadTotalTimeoutConstant = millisec;
     }
-    Win_CommTimeouts.ReadTotalTimeoutMultiplier  = 0;
+    Win_CommTimeouts.ReadTotalTimeoutMultiplier = 0;
     Win_CommTimeouts.WriteTotalTimeoutMultiplier = millisec;
-    Win_CommTimeouts.WriteTotalTimeoutConstant   = 0;
+    Win_CommTimeouts.WriteTotalTimeoutConstant = 0;
     if (queryMode() != QextSerialPort::EventDriven) {
         SetCommTimeouts(Win_Handle, &Win_CommTimeouts);
     }

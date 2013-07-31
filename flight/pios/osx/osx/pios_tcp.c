@@ -50,9 +50,9 @@ static void PIOS_TCP_TxStart(uint32_t udp_id, uint16_t tx_bytes_avail);
 static void PIOS_TCP_RxStart(uint32_t udp_id, uint16_t rx_bytes_avail);
 
 const struct pios_com_driver pios_tcp_com_driver = {
-    .set_baud   = PIOS_TCP_ChangeBaud,
-    .tx_start   = PIOS_TCP_TxStart,
-    .rx_start   = PIOS_TCP_RxStart,
+    .set_baud = PIOS_TCP_ChangeBaud,
+    .tx_start = PIOS_TCP_TxStart,
+    .rx_start = PIOS_TCP_RxStart,
     .bind_tx_cb = PIOS_TCP_RegisterTxCallback,
     .bind_rx_cb = PIOS_TCP_RegisterRxCallback,
 };
@@ -160,9 +160,9 @@ int32_t PIOS_TCP_Init(uint32_t *tcp_id, const struct pios_tcp_cfg *cfg)
 
 
     /* initialize */
-    tcp_dev->rx_in_cb  = NULL;
+    tcp_dev->rx_in_cb = NULL;
     tcp_dev->tx_out_cb = NULL;
-    tcp_dev->cfg    = cfg;
+    tcp_dev->cfg = cfg;
 
     /* assign socket */
     tcp_dev->socket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -170,7 +170,7 @@ int32_t PIOS_TCP_Init(uint32_t *tcp_id, const struct pios_tcp_cfg *cfg)
     memset(&tcp_dev->client, 0, sizeof(tcp_dev->client));
     tcp_dev->server.sin_family = AF_INET;
     tcp_dev->server.sin_addr.s_addr = INADDR_ANY; // inet_addr(tcp_dev->cfg->ip);
-    tcp_dev->server.sin_port   = htons(tcp_dev->cfg->port);
+    tcp_dev->server.sin_port = htons(tcp_dev->cfg->port);
     int res = bind(tcp_dev->socket, (struct sockaddr *)&tcp_dev->server, sizeof(tcp_dev->server));
     if (res == -1) {
         perror("Binding socket failed\n");
@@ -228,7 +228,7 @@ static void PIOS_TCP_TxStart(uint32_t tcp_id, uint16_t tx_bytes_avail)
         while (tx_bytes_avail > 0) {
             bool tx_need_yield = false;
             length = (tcp_dev->tx_out_cb)(tcp_dev->tx_out_context, tcp_dev->tx_buffer, PIOS_TCP_RX_BUFFER_SIZE, NULL, &tx_need_yield);
-            rem    = length;
+            rem = length;
             while (rem > 0) {
                 if (tcp_dev->socket_connection != 0) {
                     len = write(tcp_dev->socket_connection, tcp_dev->tx_buffer, length);

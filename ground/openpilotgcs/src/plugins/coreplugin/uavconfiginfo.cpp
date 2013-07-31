@@ -170,7 +170,7 @@ void UAVConfigInfo::read(QSettings *qs)
 {
     qs->beginGroup("configInfo");
     m_version = UAVConfigVersion(qs->value("version", VERSION_DEFAULT).toString());
-    m_locked  = qs->value("locked", false).toBool();
+    m_locked = qs->value("locked", false).toBool();
     qs->endGroup();
 }
 
@@ -266,15 +266,15 @@ UAVConfigVersion::UAVConfigVersion(QString versionString)
     int begin;
     int end = 0;
 
-    begin   = end;
-    end     = versionString.indexOf(".", begin);
+    begin = end;
+    end = versionString.indexOf(".", begin);
     majorNr = versionString.mid(begin, end - begin).toInt();
 
-    begin   = end + 1;
-    end     = versionString.indexOf(".", begin);
+    begin = end + 1;
+    end = versionString.indexOf(".", begin);
     minorNr = versionString.mid(begin, end - begin).toInt();
 
-    begin   = end + 1;
+    begin = end + 1;
     patchNr = versionString.mid(begin).toInt();
 }
 

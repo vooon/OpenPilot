@@ -157,7 +157,7 @@ int32_t TelemetryInitialize(void)
 #endif
 
     // Create periodic event that will be used to update the telemetry stats
-    txErrors  = 0;
+    txErrors = 0;
     txRetries = 0;
     UAVObjEvent ev;
     memset(&ev, 0, sizeof(UAVObjEvent));
@@ -190,9 +190,9 @@ static void registerObject(UAVObjHandle obj)
             (updateMode == UPDATEMODE_THROTTLED)) {
             // Setup object for periodic updates
             UAVObjEvent ev = {
-                .obj    = obj,
+                .obj = obj,
                 .instId = UAVOBJ_ALL_INSTANCES,
-                .event  = EV_UPDATED_PERIODIC,
+                .event = EV_UPDATED_PERIODIC,
             };
             EventPeriodicQueueCreate(&ev, queue, 0);
         }
@@ -286,8 +286,8 @@ static void processObjEvent(UAVObjEvent *ev)
         updateMode = UAVObjGetTelemetryUpdateMode(&metadata);
 
         // Act on event
-        retries    = 0;
-        success    = -1;
+        retries = 0;
+        success = -1;
         if (ev->event == EV_UPDATED || ev->event == EV_UPDATED_MANUAL || ((ev->event == EV_UPDATED_PERIODIC) && (updateMode != UPDATEMODE_THROTTLED))) {
             // Send update to GCS (with retries)
             while (retries < MAX_RETRIES && success == -1) {
@@ -441,9 +441,9 @@ static int32_t setUpdatePeriod(UAVObjHandle obj, int32_t updatePeriodMs)
     UAVObjEvent ev;
 
     // Add object for periodic updates
-    ev.obj    = obj;
+    ev.obj = obj;
     ev.instId = UAVOBJ_ALL_INSTANCES;
-    ev.event  = EV_UPDATED_PERIODIC;
+    ev.event = EV_UPDATED_PERIODIC;
     return EventPeriodicQueueUpdate(&ev, queue, updatePeriodMs);
 }
 
@@ -490,11 +490,11 @@ static void updateTelemetryStats()
 
     // Update stats object
     if (flightStats.Status == FLIGHTTELEMETRYSTATS_STATUS_CONNECTED) {
-        flightStats.RxDataRate  = (float)utalkStats.rxBytes / ((float)STATS_UPDATE_PERIOD_MS / 1000.0f);
-        flightStats.TxDataRate  = (float)utalkStats.txBytes / ((float)STATS_UPDATE_PERIOD_MS / 1000.0f);
+        flightStats.RxDataRate = (float)utalkStats.rxBytes / ((float)STATS_UPDATE_PERIOD_MS / 1000.0f);
+        flightStats.TxDataRate = (float)utalkStats.txBytes / ((float)STATS_UPDATE_PERIOD_MS / 1000.0f);
         flightStats.RxFailures += utalkStats.rxErrors;
         flightStats.TxFailures += txErrors;
-        flightStats.TxRetries  += txRetries;
+        flightStats.TxRetries += txRetries;
         txErrors = 0;
         txRetries = 0;
     } else {
@@ -502,7 +502,7 @@ static void updateTelemetryStats()
         flightStats.TxDataRate = 0;
         flightStats.RxFailures = 0;
         flightStats.TxFailures = 0;
-        flightStats.TxRetries  = 0;
+        flightStats.TxRetries = 0;
         txErrors = 0;
         txRetries = 0;
     }

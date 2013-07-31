@@ -62,8 +62,8 @@ uint8_t PIOS_CRC_updateByte(uint8_t crc, const uint8_t data)
 uint8_t PIOS_CRC_updateCRC(uint8_t crc, const uint8_t *data, int32_t length)
 {
     // use registers for speed
-    register int32_t len      = length;
-    register uint8_t crc8     = crc;
+    register int32_t len = length;
+    register uint8_t crc8 = crc;
     register const uint8_t *p = data;
 
     while (len--) {

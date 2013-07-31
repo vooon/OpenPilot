@@ -55,7 +55,7 @@ int parse_ubx_stream(uint8_t c, char *gps_rx_buffer, GPSPositionSensorData *GpsD
 
     static enum proto_states proto_state = START;
     static uint8_t rx_count = 0;
-    struct UBXPacket *ubx   = (struct UBXPacket *)gps_rx_buffer;
+    struct UBXPacket *ubx = (struct UBXPacket *)gps_rx_buffer;
 
     switch (proto_state) {
     case START: // detect protocol
@@ -72,15 +72,15 @@ int parse_ubx_stream(uint8_t c, char *gps_rx_buffer, GPSPositionSensorData *GpsD
         break;
     case UBX_CLASS:
         ubx->header.class = c;
-        proto_state      = UBX_ID;
+        proto_state = UBX_ID;
         break;
     case UBX_ID:
-        ubx->header.id   = c;
-        proto_state      = UBX_LEN1;
+        ubx->header.id = c;
+        proto_state = UBX_LEN1;
         break;
     case UBX_LEN1:
-        ubx->header.len  = c;
-        proto_state      = UBX_LEN2;
+        ubx->header.len = c;
+        proto_state = UBX_LEN2;
         break;
     case UBX_LEN2:
         ubx->header.len += (c << 8);
@@ -88,7 +88,7 @@ int parse_ubx_stream(uint8_t c, char *gps_rx_buffer, GPSPositionSensorData *GpsD
             gpsRxStats->gpsRxOverflow++;
             proto_state = START;
         } else {
-            rx_count    = 0;
+            rx_count = 0;
             proto_state = UBX_PAYLOAD;
         }
         break;
@@ -145,7 +145,7 @@ int parse_ubx_stream(uint8_t c, char *gps_rx_buffer, GPSPositionSensorData *GpsD
 
 static struct msgtracker {
     uint32_t currentTOW; // TOW of the message set currently in progress
-    uint8_t  msg_received;   // keep track of received message types
+    uint8_t msg_received; // keep track of received message types
 } msgtracker;
 
 // Check if a message belongs to the current data set and register it as 'received'
@@ -153,7 +153,7 @@ bool check_msgtracker(uint32_t tow, uint8_t msg_flag)
 {
     if (tow > msgtracker.currentTOW ? true // start of a new message set
         : (msgtracker.currentTOW - tow > 6 * 24 * 3600 * 1000)) { // 6 days, TOW wrap around occured
-        msgtracker.currentTOW   = tow;
+        msgtracker.currentTOW = tow;
         msgtracker.msg_received = NONE_RECEIVED;
     } else if (tow < msgtracker.currentTOW) { // message outdated (don't process)
         return false;
@@ -168,8 +168,8 @@ bool checksum_ubx_message(struct UBXPacket *ubx)
     int i;
     uint8_t ck_a, ck_b;
 
-    ck_a  = ubx->header.class;
-    ck_b  = ck_a;
+    ck_a = ubx->header.class;
+    ck_b = ck_a;
 
     ck_a += ubx->header.id;
     ck_b += ck_a;
@@ -197,9 +197,9 @@ void parse_ubx_nav_posllh(struct UBX_NAV_POSLLH *posllh, GPSPositionSensorData *
 {
     if (check_msgtracker(posllh->iTOW, POSLLH_RECEIVED)) {
         if (GpsPosition->Status != GPSPOSITIONSENSOR_STATUS_NOFIX) {
-            GpsPosition->Altitude  = (float)posllh->hMSL * 0.001f;
+            GpsPosition->Altitude = (float)posllh->hMSL * 0.001f;
             GpsPosition->GeoidSeparation = (float)(posllh->height - posllh->hMSL) * 0.001f;
-            GpsPosition->Latitude  = posllh->lat;
+            GpsPosition->Latitude = posllh->lat;
             GpsPosition->Longitude = posllh->lon;
         }
     }
@@ -241,12 +241,12 @@ void parse_ubx_nav_velned(struct UBX_NAV_VELNED *velned, GPSPositionSensorData *
 
     if (check_msgtracker(velned->iTOW, VELNED_RECEIVED)) {
         if (GpsPosition->Status != GPSPOSITIONSENSOR_STATUS_NOFIX) {
-            GpsVelocity.North        = (float)velned->velN / 100.0f;
-            GpsVelocity.East         = (float)velned->velE / 100.0f;
-            GpsVelocity.Down         = (float)velned->velD / 100.0f;
+            GpsVelocity.North = (float)velned->velN / 100.0f;
+            GpsVelocity.East = (float)velned->velE / 100.0f;
+            GpsVelocity.Down = (float)velned->velD / 100.0f;
             GPSVelocitySensorSet(&GpsVelocity);
             GpsPosition->Groundspeed = (float)velned->gSpeed * 0.01f;
-            GpsPosition->Heading     = (float)velned->heading * 1.0e-5f;
+            GpsPosition->Heading = (float)velned->heading * 1.0e-5f;
         }
     }
 }
@@ -260,10 +260,10 @@ void parse_ubx_nav_timeutc(struct UBX_NAV_TIMEUTC *timeutc)
 
     GPSTimeData GpsTime;
 
-    GpsTime.Year   = timeutc->year;
-    GpsTime.Month  = timeutc->month;
-    GpsTime.Day    = timeutc->day;
-    GpsTime.Hour   = timeutc->hour;
+    GpsTime.Year = timeutc->year;
+    GpsTime.Month = timeutc->month;
+    GpsTime.Day = timeutc->day;
+    GpsTime.Hour = timeutc->hour;
     GpsTime.Minute = timeutc->min;
     GpsTime.Second = timeutc->sec;
 
@@ -280,7 +280,7 @@ void parse_ubx_nav_svinfo(struct UBX_NAV_SVINFO *svinfo)
     svdata.SatsInView = 0;
     for (chan = 0; chan < svinfo->numCh; chan++) {
         if (svdata.SatsInView < GPSSATELLITES_PRN_NUMELEM) {
-            svdata.Azimuth[svdata.SatsInView]   = (float)svinfo->sv[chan].azim;
+            svdata.Azimuth[svdata.SatsInView] = (float)svinfo->sv[chan].azim;
             svdata.Elevation[svdata.SatsInView] = (float)svinfo->sv[chan].elev;
             svdata.PRN[svdata.SatsInView] = svinfo->sv[chan].svid;
             svdata.SNR[svdata.SatsInView] = svinfo->sv[chan].cno;
@@ -289,7 +289,7 @@ void parse_ubx_nav_svinfo(struct UBX_NAV_SVINFO *svinfo)
     }
     // fill remaining slots (if any)
     for (chan = svdata.SatsInView; chan < GPSSATELLITES_PRN_NUMELEM; chan++) {
-        svdata.Azimuth[chan]   = (float)0.0f;
+        svdata.Azimuth[chan] = (float)0.0f;
         svdata.Elevation[chan] = (float)0.0f;
         svdata.PRN[chan] = 0;
         svdata.SNR[chan] = 0;

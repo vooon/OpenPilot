@@ -33,10 +33,10 @@
 DoubleSpinDelegate::DoubleSpinDelegate(QObject *parent)
     : QItemDelegate(parent)
 {
-    m_min      = 0.0;
-    m_max      = 1.0;
+    m_min = 0.0;
+    m_max = 1.0;
     m_decimals = 2;
-    m_step     = 0.01;
+    m_step = 0.01;
 }
 
 QWidget *DoubleSpinDelegate::createEditor(QWidget *parent,

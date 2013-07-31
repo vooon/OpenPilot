@@ -311,7 +311,7 @@ void ModelViewGadgetWidget::keyPressEvent(QKeyEvent *e) // switch between camera
 //////////////////////////////////////////////////////////////////////
 void ModelViewGadgetWidget::updateAttitude()
 {
-    AttitudeState::DataFields data  = attState->getData(); // get attitude data
+    AttitudeState::DataFields data = attState->getData(); // get attitude data
     GLC_StructOccurence *rootObject = m_World.rootOccurence(); // get the full 3D model
     double x = data.q3;
     double y = data.q2;

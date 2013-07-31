@@ -63,7 +63,7 @@ static xTaskHandle taskHandle;
 #define alt_ds_size 4
 static int32_t alt_ds_temp = 0;
 static int32_t alt_ds_pres = 0;
-static int alt_ds_count    = 0;
+static int alt_ds_count = 0;
 #endif
 
 static bool altitudeEnabled;
@@ -115,8 +115,8 @@ int32_t AltitudeInitialize()
 
 #if defined(PIOS_INCLUDE_BMP085)
     // init down-sampling data
-    alt_ds_temp  = 0;
-    alt_ds_pres  = 0;
+    alt_ds_temp = 0;
+    alt_ds_pres = 0;
     alt_ds_count = 0;
 #endif
     HwSettingsCC_RcvrPortGet(&hwsettings_rcvrport);
@@ -133,7 +133,7 @@ static void altitudeTask(__attribute__((unused)) void *parameters)
 #if defined(PIOS_INCLUDE_HCSR04)
     SonarAltitudeData sonardata;
     int32_t value = 0, timeout = 5;
-    float coeff   = 0.25, height_out = 0, height_in = 0;
+    float coeff = 0.25, height_out = 0, height_in = 0;
     if (hwsettings_rcvrport == HWSETTINGS_CC_RCVRPORT_DISABLED) {
         PIOS_HCSR04_Trigger();
     }
@@ -153,7 +153,7 @@ static void altitudeTask(__attribute__((unused)) void *parameters)
                 value = PIOS_HCSR04_Get();
                 // from 3.4cm to 5.1m
                 if ((value > 100) && (value < 15000)) {
-                    height_in  = value * 0.00034f / 2.0f;
+                    height_in = value * 0.00034f / 2.0f;
                     height_out = (height_out * (1 - coeff)) + (height_in * coeff);
                     sonardata.Altitude = height_out; // m/us
                 }
@@ -192,15 +192,15 @@ static void altitudeTask(__attribute__((unused)) void *parameters)
         alt_ds_pres += PIOS_BMP085_GetPressure();
 
         if (++alt_ds_count >= alt_ds_size) {
-            alt_ds_count     = 0;
+            alt_ds_count = 0;
 
             // Convert from 1/10ths of degC to degC
             data.Temperature = alt_ds_temp / (10.0 * alt_ds_size);
-            alt_ds_temp   = 0;
+            alt_ds_temp = 0;
 
             // Convert from Pa to kPa
             data.Pressure = alt_ds_pres / (1000.0f * alt_ds_size);
-            alt_ds_pres   = 0;
+            alt_ds_pres = 0;
 
             // Compute the current altitude (all pressures in kPa)
             data.Altitude = 44330.0 * (1.0 - powf((data.Pressure / (BMP085_P0 / 1000.0)), (1.0 / 5.255)));
