@@ -197,7 +197,7 @@ export OPUAVSYNTHDIR := $(BUILD_DIR)/uavobject-synthetics/flight
 export OPGCSSYNTHDIR := $(BUILD_DIR)/openpilotgcs-synthetics
 
 # Define supported board lists
-ALL_BOARDS    := coptercontrol oplinkmini revolution osd revoproto simposix
+ALL_BOARDS    := coptercontrol oplinkmini revolution osd revoproto discoveryf4 simposix
 
 # Short names of each board (used to display board name in parallel builds)
 coptercontrol_short    := 'cc  '
@@ -205,6 +205,7 @@ oplinkmini_short       := 'oplm'
 revolution_short       := 'revo'
 osd_short              := 'osd '
 revoproto_short        := 'revp'
+discoveryf4_short      := 'dif4'
 simposix_short         := 'posx'
 
 # SimPosix only builds on Linux so drop it from the list for
