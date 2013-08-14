@@ -298,9 +298,14 @@ void PIOS_Board_Init(void)
     /* Delay system */
     PIOS_DELAY_Init();
 
+    const struct pios_board_info *bdinfo = &pios_board_info_blob;
+
 #if defined(PIOS_INCLUDE_LED)
-    PIOS_LED_Init(&pios_led_cfg);
+    const struct pios_gpio_cfg *led_cfg  = PIOS_BOARD_HW_DEFS_GetLedCfg(bdinfo->board_rev);
+    PIOS_Assert(led_cfg);
+    PIOS_LED_Init(led_cfg);
 #endif /* PIOS_INCLUDE_LED */
+	PIOS_LED_On(PIOS_LED_ORANGE);
 
     /* Set up the SPI interface to the gyro/acelerometer */
     //if (PIOS_SPI_Init(&pios_spi_accel_id, &pios_spi_accel_cfg)) {
@@ -401,7 +406,7 @@ void PIOS_Board_Init(void)
 #endif
 
     uint32_t pios_usb_id;
-    PIOS_USB_Init(&pios_usb_id, &pios_usb_main_cfg);
+    PIOS_USB_Init(&pios_usb_id, PIOS_BOARD_HW_DEFS_GetUsbCfg(bdinfo->board_rev));
 
 #if defined(PIOS_INCLUDE_USB_CDC)
 
@@ -647,20 +652,21 @@ void PIOS_Board_Init(void)
 #endif
 
     // Disable GPIO_A8 Pullup to prevent wrong results on battery voltage readout
-    /*GPIO_InitTypeDef gpioA8 = {
-        .GPIO_Speed = GPIO_Speed_2MHz,
-        .GPIO_Mode  = GPIO_Mode_IN,
-        .GPIO_PuPd  = GPIO_PuPd_NOPULL,
-        .GPIO_Pin   = GPIO_Pin_8,
-        .GPIO_OType = GPIO_OType_OD,
-    };
-    GPIO_Init(GPIOA, &gpioA8);*/
+    //GPIO_InitTypeDef gpioA8 = {
+    //    .GPIO_Speed = GPIO_Speed_2MHz,
+    //    .GPIO_Mode  = GPIO_Mode_IN,
+    //    .GPIO_PuPd  = GPIO_PuPd_NOPULL,
+    //    .GPIO_Pin   = GPIO_Pin_8,
+    //    .GPIO_OType = GPIO_OType_OD,
+    //};
+    //GPIO_Init(GPIOA, &gpioA8);
 
     //if (PIOS_I2C_Init(&pios_i2c_mag_pressure_adapter_id, &pios_i2c_mag_pressure_adapter_cfg)) {
     //    PIOS_DEBUG_Assert(0);
     //}
 
     PIOS_DELAY_WaitmS(50);
+	PIOS_LED_Off(PIOS_LED_ORANGE);
 
 #if defined(PIOS_INCLUDE_ADC)
     PIOS_ADC_Init(&pios_adc_cfg);

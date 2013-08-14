@@ -30,18 +30,18 @@ USE_DSP_LIB ?= NO
 # List of mandatory modules to include
 #MODULES += Sensors
 #MODULES += Attitude/revolution
-MODULES += StateEstimation # use instead of Attitude
+#MODULES += StateEstimation # use instead of Attitude
 #MODULES += Altitude/revolution
 #MODULES += Airspeed
 #MODULES += AltitudeHold
-MODULES += Stabilization
+#MODULES += Stabilization
 #MODULES += VtolPathFollower
 MODULES += ManualControl
 MODULES += Actuator
 #MODULES += GPS
 #MODULES += TxPID
 #MODULES += CameraStab
-MODULES += Battery
+#MODULES += Battery
 MODULES += FirmwareIAP
 #MODULES += Radio
 #MODULES += PathPlanner
@@ -49,7 +49,7 @@ MODULES += FirmwareIAP
 #MODULES += Osd/osdoutout
 MODULES += Telemetry
 
-OPTMODULES += ComUsbBridge
+#OPTMODULES += ComUsbBridge
 
 # Include all camera options
 CDEFS += -DUSE_INPUT_LPF -DUSE_GIMBAL_LPF -DUSE_GIMBAL_FF

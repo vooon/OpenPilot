@@ -63,7 +63,7 @@
 #define PIOS_INCLUDE_SPI
 #define PIOS_INCLUDE_GPIO
 #define PIOS_INCLUDE_EXTI
-#define PIOS_INCLUDE_WDG
+/* #define PIOS_INCLUDE_WDG */
 
 /* PIOS USB functions */
 #define PIOS_INCLUDE_USB
@@ -82,7 +82,7 @@
 /* #define PIOS_HMC5883_HAS_GPIOS */
 /* #define PIOS_INCLUDE_BMP085 */
 /* #define PIOS_INCLUDE_MS5611 */
-#define PIOS_INCLUDE_MPXV
+/* #define PIOS_INCLUDE_MPXV */
 /* #define PIOS_INCLUDE_ETASV3 */
 /* #define PIOS_INCLUDE_HCSR04 */
 
